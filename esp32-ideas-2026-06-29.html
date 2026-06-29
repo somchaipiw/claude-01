@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 29 มิถุนายน 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263349;
+    --accent-1: #6366f1;
+    --accent-2: #06b6d4;
+    --accent-3: #10b981;
+    --accent-4: #f59e0b;
+    --accent-5: #ec4899;
+    --text-primary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #1a0533 0%, #0f172a 40%, #001a2e 100%);
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 40%, rgba(99,102,241,0.12) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(6,182,212,0.10) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+
+  header h1 {
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #a5b4fc, #67e8f9, #6ee7b7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+
+  .header-sub {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent-2);
+    display: block;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ===== LAYOUT ===== */
+  main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+  }
+
+  /* ===== SECTION ===== */
+  section {
+    margin-bottom: 4rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.8rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .icon-purple { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+  .icon-cyan   { background: linear-gradient(135deg, #06b6d4, #0284c7); }
+  .icon-green  { background: linear-gradient(135deg, #10b981, #059669); }
+  .icon-amber  { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+  .section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .section-count {
+    margin-left: auto;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+  }
+
+  /* ===== GRID ===== */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; }
+
+  /* ===== CARD ===== */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(99,102,241,0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .card:hover::before { opacity: 1; }
+  .card.accent-purple::before { background: linear-gradient(90deg, #6366f1, #a855f7); }
+  .card.accent-cyan::before   { background: linear-gradient(90deg, #06b6d4, #3b82f6); }
+  .card.accent-green::before  { background: linear-gradient(90deg, #10b981, #06b6d4); }
+  .card.accent-amber::before  { background: linear-gradient(90deg, #f59e0b, #f97316); }
+  .card.accent-pink::before   { background: linear-gradient(90deg, #ec4899, #8b5cf6); }
+
+  .card-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.65rem;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+  }
+
+  .tag-purple { background: rgba(99,102,241,0.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+  .tag-cyan   { background: rgba(6,182,212,0.15);  color: #67e8f9; border: 1px solid rgba(6,182,212,0.3); }
+  .tag-green  { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+  .tag-amber  { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+  .tag-pink   { background: rgba(236,72,153,0.15); color: #f9a8d4; border: 1px solid rgba(236,72,153,0.3); }
+
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+  }
+
+  .card-body {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.75;
+  }
+
+  .card-body p { margin-bottom: 0.5rem; }
+  .card-body p:last-child { margin-bottom: 0; }
+
+  /* ===== FEATURE LIST ===== */
+  .feature-list {
+    list-style: none;
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .feature-list li {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    padding-left: 1.25rem;
+    position: relative;
+  }
+
+  .feature-list li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--accent-2);
+    font-weight: 700;
+  }
+
+  /* ===== CHIP BADGE ===== */
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .chip {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  .chip.highlight { background: rgba(6,182,212,0.12); border-color: rgba(6,182,212,0.35); color: #67e8f9; }
+
+  /* ===== SENSOR CARD (wide) ===== */
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem 1.5rem;
+    transition: all 0.25s ease;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.2rem;
+    align-items: start;
+  }
+
+  .sensor-card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(16,185,129,0.35);
+    transform: translateY(-2px);
+  }
+
+  .sensor-icon-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .sensor-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .sensor-spec {
+    font-size: 0.82rem;
+    color: var(--accent-3);
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
+
+  .sensor-desc {
+    font-size: 0.86rem;
+    color: var(--text-muted);
+    line-height: 1.65;
+  }
+
+  /* ===== RESOURCE LINK CARD ===== */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.2rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: block;
+    color: inherit;
+  }
+
+  .resource-card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(99,102,241,0.4);
+    transform: translateY(-2px);
+  }
+
+  .resource-cat {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-1);
+    margin-bottom: 0.35rem;
+  }
+
+  .resource-name {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.2rem;
+  }
+
+  .resource-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* ===== FEATURED BANNER ===== */
+  .featured-banner {
+    background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(6,182,212,0.08));
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 16px;
+    padding: 1.8rem 2rem;
+    margin-bottom: 1.5rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .featured-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #6366f1, #06b6d4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    flex-shrink: 0;
+  }
+
+  .featured-tag {
+    display: inline-block;
+    background: linear-gradient(90deg, #6366f1, #06b6d4);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.65rem;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+  }
+
+  .featured-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+  }
+
+  .featured-desc {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+  }
+
+  .footer-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .footer-src {
+    font-size: 0.78rem;
+    color: #475569;
+    line-height: 1.8;
+  }
+
+  .footer-src a {
+    color: var(--accent-1);
+    text-decoration: none;
+  }
+
+  .footer-src a:hover { text-decoration: underline; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 600px) {
+    header { padding: 2rem 1rem 1.5rem; }
+    .header-stats { gap: 1rem; }
+    main { padding: 1.5rem 1rem; }
+    .featured-banner { grid-template-columns: 1fr; }
+    .featured-icon { width: 50px; height: 50px; font-size: 1.6rem; }
+    .sensor-card { grid-template-columns: 1fr; }
+    .sensor-icon-box { width: 44px; height: 44px; font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-badge">Daily Research · 29 June 2026</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="header-sub">LoRa Mesh · ToF 3D Mapping · Audio I2S · Touch UI · GPS · Industrial IoT</p>
+  <div class="header-stats">
+    <div class="stat-item">
+      <span class="stat-number">4</span>
+      <span class="stat-label">นวัตกรรมใหม่</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">4</span>
+      <span class="stat-label">ไอเดียโปรเจกต์</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">5</span>
+      <span class="stat-label">Sensors น่าสนใจ</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">8</span>
+      <span class="stat-label">แหล่งข้อมูล</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-purple">⚡</div>
+      <h2 class="section-title">นวัตกรรมและอัปเดตล่าสุด</h2>
+      <span class="section-count">4 รายการ</span>
+    </div>
+
+    <!-- Featured: Meshtastic 2026 -->
+    <div class="featured-banner">
+      <div class="featured-icon">📡</div>
+      <div>
+        <span class="featured-tag">Featured · 2026</span>
+        <div class="featured-title">Meshtastic 2026 — LoRa Mesh Network ที่ไม่ต้องการ Infrastructure</div>
+        <div class="featured-desc">
+          Meshtastic คือเฟิร์มแวร์ open-source สำหรับสื่อสารแบบ off-grid mesh ผ่าน LoRa ไม่ต้องใช้อินเทอร์เน็ต ไม่ต้องมีสัญญาณมือถือ
+          ในปี 2026 รองรับฮาร์ดแวร์กว่า <strong>100 ชนิด</strong> และ Web Flasher ใหม่ช่วยให้ Flash firmware ได้ภายใน 5 นาที
+          โดยไม่ต้องเขียนโค้ด รองรับ text messaging, location sharing, telemetry ผ่าน mesh network ที่ self-healing
+          <br>ราคาอุปกรณ์เริ่มต้นเพียง <strong>$10</strong> (XIAO ESP32S3 + SX1262 LoRa)
+        </div>
+        <div class="chip-row">
+          <span class="chip highlight">ESP32 / ESP32-S3</span>
+          <span class="chip">LoRa SX1262</span>
+          <span class="chip">Off-grid Mesh</span>
+          <span class="chip">Web Flasher</span>
+          <span class="chip">MQTT Gateway</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid 2x2 -->
+    <div class="grid-2">
+
+      <div class="card accent-cyan">
+        <span class="card-tag tag-cyan">LoRaWAN · 2026</span>
+        <div class="card-title">XIAO ESP32S3 + Wio-SX1262 — Single Channel LoRaWAN Gateway</div>
+        <div class="card-body">
+          <p>Seeed Studio ออก guide ใหม่ (พ.ค. 2026) สำหรับการตั้งค่า ESP32-S3 + SX1262 LoRa เป็น Single Channel
+             LoRaWAN Gateway ด้วย SenseCraft App ลงทะเบียนกับ <em>The Things Network</em> หรือ
+             <em>ChirpStack</em> ได้ทันที ค่า path loss ของ LoRa ทำให้สัญญาณส่งได้ไกล 2–15 km ในพื้นที่เปิดโล่ง</p>
+          <ul class="feature-list">
+            <li>ราคาชุด XIAO ESP32S3 + SX1262 ≈ $10</li>
+            <li>รองรับ ABP และ OTAA activation</li>
+            <li>Library: EzLoRaWAN (Francois Riotte)</li>
+            <li>รองรับการ deploy sensor node ทั่ว campus หรือฟาร์ม</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card accent-purple">
+        <span class="card-tag tag-purple">Touch UI · 2026</span>
+        <div class="card-title">LVGL v9 + ESP32 CYD — Professional Touch Screen UI โดยไม่ต้องเขียน CSS</div>
+        <div class="card-body">
+          <p>ESP32 Cheap Yellow Display (ESP32-2432S028R) กับ LVGL v9 ทำให้สร้าง touch screen UI ระดับมืออาชีพ
+             ได้บนชิปตัวเดียว ไม่ต้องมี OS รองรับ button, slider, gauge, chart, multi-page navigation
+             ออกแบบ UI ด้วย <em>SquareLine Studio</em> แล้ว export C code เพื่อ compile ใน Arduino IDE</p>
+          <ul class="feature-list">
+            <li>Display 2.8" ILI9341 (320×240) built-in touch resistive</li>
+            <li>LVGL handles partial redraw → smooth 30+ fps</li>
+            <li>รองรับ display ขนาด 7" (800×480) บน ESP32-S3</li>
+            <li>ผสาน MQTT ส่งสถานะ relay / sensor ไป Home Assistant</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card accent-green">
+        <span class="card-tag tag-green">Trail Mate · 2026</span>
+        <div class="card-title">Trail Mate Firmware — ESP32 Off-grid Handheld ไม่พึ่งสมาร์ทโฟน</div>
+        <div class="card-body">
+          <p>Trail Mate คือ open-source firmware สำหรับ ESP32 + LoRa handhelds โดยเฉพาะ รองรับทั้ง
+             <em>Meshtastic</em> และ <em>MeshCore</em> protocols บนอุปกรณ์เดียวกัน ไม่ต้องพึ่ง Bluetooth
+             หรือสมาร์ทโฟน มี GPS map north-up, direct LoRa text messaging และ GNSS waypoint logging</p>
+          <ul class="feature-list">
+            <li>ออกแบบเน้น stability + efficiency สำหรับกิจกรรม outdoor</li>
+            <li>รองรับ interoperability กับ Meshtastic nodes อื่นๆ</li>
+            <li>เหมาะกับ SAR (Search and Rescue) และ wilderness exploration</li>
+            <li>ทำ DIY ได้ด้วย ESP32 + SX1262 + GPS module + OLED</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card accent-amber">
+        <span class="card-tag tag-amber">Audio · 2026</span>
+        <div class="card-title">ESP32 I2S Audio Stack — Sound Level Meter + FFT อัปเดตล่าสุด Jun 2026</div>
+        <div class="card-body">
+          <p>โปรเจกต์ <em>esp32-i2s-slm</em> (Sound Level Meter) อัปเดตล่าสุด 25 มิถุนายน 2026 รองรับ
+             I2S MEMS microphone + digital IIR filters สำหรับ A-weighting และ equalization ให้ค่า dBSPL
+             ที่แม่นยำ ปัจจุบัน DFRobot ออก Fermion I2S MEMS Microphone (SEN0526) พร้อม breakout board
+             ที่ต่อ ESP32 ได้ง่ายมาก</p>
+          <ul class="feature-list">
+            <li>Fermion SEN0526: SNR 65 dBSPL, AOP 120 dBSPL</li>
+            <li>Library: ESP32-AudioInI2S รองรับ FFT 64 buckets</li>
+            <li>Visualize audio บน WS2812B LED strip หรือ TFT display</li>
+            <li>ใช้กับ MAX98357A I2S amplifier สำหรับ speaker output</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-cyan">🛠️</div>
+      <h2 class="section-title">ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+      <span class="section-count">4 โปรเจกต์</span>
+    </div>
+
+    <div class="grid-2">
+
+      <div class="card accent-purple">
+        <span class="card-tag tag-purple">Hackaday · Feb 2026</span>
+        <div class="card-title">3D Room Mapping ด้วย VL53L5CX + IMU — โปรเจกต์ซีเรียสที่ใช้ ESP32</div>
+        <div class="card-body">
+          <p>นักพัฒนาสร้างระบบ real-time 3D room scanning โดยใช้ VL53L5CX (8×8 ToF matrix) บวก IMU
+             เพื่อเพิ่มข้อมูล orientation ผลลัพธ์ส่งเป็น JSON stream จาก ESP32 ไปยังคอมพิวเตอร์
+             สำหรับ render point cloud เหมาะสำหรับ robot navigation และ indoor mapping</p>
+          <ul class="feature-list">
+            <li>VL53L5CX: 64 zones (8×8), วัดระยะสูงสุด 4 เมตร, 60 Hz</li>
+            <li>ผสาน IMU (ICM-42688) เพื่อ fuse pose + depth data</li>
+            <li>Stream JSON ผ่าน WiFi → Python + Open3D visualization</li>
+            <li>ต้นทุน: VL53L5CX SparkFun Qwiic ≈ $20</li>
+          </ul>
+          <div class="chip-row">
+            <span class="chip highlight">ESP32</span>
+            <span class="chip">VL53L5CX</span>
+            <span class="chip">I2C</span>
+            <span class="chip">Point Cloud</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card accent-cyan">
+        <span class="card-tag tag-cyan">GPS · GNSS</span>
+        <div class="card-title">ESP32 + NEO-M9N GNSS — GPS Tracker ความแม่นยำสูง Multi-constellation</div>
+        <div class="card-body">
+          <p>NEO-M9N รับสัญญาณได้ 4 ระบบพร้อมกัน (GPS, GLONASS, Galileo, BeiDou) ทำให้ lock สัญญาณเร็วกว่า
+             NEO-6M/M8N มาก ต่อ ESP32 ผ่าน UART2 (GPIO 16/17) baudrate 38400 ใช้ Library TinyGPSPlus
+             ส่งพิกัดขึ้น MQTT → แสดงบน Google Maps / Dashboard</p>
+          <ul class="feature-list">
+            <li>Accuracy: CEP 2.5 m, Cold start lock &lt; 30 วินาที</li>
+            <li>ใช้ GeoLinker API (Circuit Digest) visualize real-time</li>
+            <li>รองรับ deep sleep → Battery life สูงสุดหลายสัปดาห์</li>
+            <li>ใช้กับ SIM7600 4G ส่งข้อมูลแม้ไม่มี WiFi</li>
+          </ul>
+          <div class="chip-row">
+            <span class="chip highlight">ESP32</span>
+            <span class="chip">NEO-M9N</span>
+            <span class="chip">TinyGPSPlus</span>
+            <span class="chip">MQTT</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card accent-green">
+        <span class="card-tag tag-green">Industrial IoT</span>
+        <div class="card-title">ESP32 Modbus RTU/TCP Gateway — เชื่อม PLC เก่ากับ Cloud ยุคใหม่</div>
+        <div class="card-body">
+          <p>ESP32 + LAN8720A Ethernet PHY ทำเป็น Modbus RTU-to-TCP/IP Gateway เชื่อม RS-485 Industrial
+             device (PLC, VFD, sensor) เก่าเข้ากับ WiFi/Ethernet และส่งข้อมูลขึ้น AWS IoT, ThingsBoard,
+             หรือ MQTT broker ได้ทันที เหมาะสำหรับ retrofit โรงงานเก่า</p>
+          <ul class="feature-list">
+            <li>รองรับทั้ง Modbus RTU Master/Slave และ TCP Client/Server</li>
+            <li>Library: esp32ModbusMaster, ModbusMaster (Doc Walker)</li>
+            <li>อ่านค่า Float (32-bit) และ Integer จาก holding registers</li>
+            <li>PCB Gerber + schematics พร้อมบน Hackster.io</li>
+          </ul>
+          <div class="chip-row">
+            <span class="chip highlight">ESP32</span>
+            <span class="chip">RS-485</span>
+            <span class="chip">Modbus RTU</span>
+            <span class="chip">LAN8720</span>
+            <span class="chip">MQTT</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card accent-pink">
+        <span class="card-tag tag-pink">Spectral · Color</span>
+        <div class="card-title">AS7341 Spectral Analyzer Web UI — วัดสีด้วย 11 ช่องสัญญาณผ่าน Browser</div>
+        <div class="card-body">
+          <p>AS7341 เป็น 11-channel visible light spectrometer จาก ams OSRAM วัดแสง 415–680 nm ในย่าน
+             visible + NIR + no-filter channel โปรเจกต์บน GitHub (Roger-random) ใช้ ESP32 อ่านค่าผ่าน I2C
+             แล้ว serve web UI ผ่าน WiFi ให้ interact กับ sensor ได้ real-time จาก browser</p>
+          <ul class="feature-list">
+            <li>ใช้ตรวจ plant health, display calibration, material QC</li>
+            <li>รองรับ flicker detection (50/60 Hz mains)</li>
+            <li>ESPHome มี component as7341 แล้วใน 2026</li>
+            <li>ราคา breakout ≈ $15 (Adafruit / Waveshare)</li>
+          </ul>
+          <div class="chip-row">
+            <span class="chip highlight">ESP32</span>
+            <span class="chip">AS7341</span>
+            <span class="chip">I2C</span>
+            <span class="chip">Web UI</span>
+            <span class="chip">ESPHome</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">🔬</div>
+      <h2 class="section-title">Sensors น่าสนใจประจำสัปดาห์</h2>
+      <span class="section-count">5 รายการ</span>
+    </div>
+
+    <div class="grid-3" style="grid-template-columns: 1fr 1fr;">
+
+      <div class="sensor-card">
+        <div class="sensor-icon-box" style="background: linear-gradient(135deg,#6366f1,#a855f7);">📐</div>
+        <div>
+          <div class="sensor-name">VL53L5CX — 8×8 ToF Matrix Distance Sensor</div>
+          <div class="sensor-spec">ST Microelectronics · I2C · 400cm · 60 Hz</div>
+          <div class="sensor-desc">
+            Sensor ToF (Time-of-Flight) รุ่นใหม่ที่มี 64 zones (8×8 grid) วัดระยะสูงสุด 4 เมตร
+            ด้วยความเร็ว 60 fps ทำให้สร้าง low-res depth map ได้ ไม่ขึ้นกับสีหรือ reflectance ของวัตถุ
+            ใช้ได้กับ ESP32/RP2040 (8-bit MCU RAM ไม่พอ) เหมาะกับ robot obstacle avoidance,
+            people counting, 3D room scanning
+          </div>
+          <div class="chip-row">
+            <span class="chip highlight">3D Mapping</span>
+            <span class="chip">Robot Nav</span>
+            <span class="chip">People Counter</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon-box" style="background: linear-gradient(135deg,#f59e0b,#ef4444);">🌈</div>
+        <div>
+          <div class="sensor-name">AS7341 — 11-Channel Spectral Color Sensor</div>
+          <div class="sensor-spec">ams OSRAM · I2C · 415–680 nm + NIR · ESPHome</div>
+          <div class="sensor-desc">
+            วัดแสง visible spectrum ใน 8 ช่อง (F1–F8: 415–680 nm) + NIR + no-filter channel + flicker detection
+            ช่วยให้วิเคราะห์สีของวัตถุหรือแหล่งกำเนิดแสงได้อย่างแม่นยำ เหมาะกับ plant health monitoring,
+            display color calibration, อาหาร/ยาตรวจสอบคุณภาพ
+          </div>
+          <div class="chip-row">
+            <span class="chip highlight">Plant Health</span>
+            <span class="chip">Color Calib</span>
+            <span class="chip">Quality Check</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon-box" style="background: linear-gradient(135deg,#06b6d4,#3b82f6);">🎙️</div>
+        <div>
+          <div class="sensor-name">DFRobot SEN0526 — Fermion I2S MEMS Microphone</div>
+          <div class="sensor-spec">DFRobot · I2S Digital · SNR 65 dBSPL · AOP 120 dBSPL</div>
+          <div class="sensor-desc">
+            MEMS microphone แบบ digital I2S สำหรับ ESP32 โดยเฉพาะ ให้สัญญาณดิจิทัลตรงโดยไม่มี ADC noise
+            รองรับทั้ง audio recording, FFT spectrum analysis, voice command, sound level monitoring
+            ต้องติดตั้งหงายขึ้นเพื่อให้รูรับเสียงที่ด้านล่างหันขึ้น
+          </div>
+          <div class="chip-row">
+            <span class="chip highlight">Audio Recording</span>
+            <span class="chip">FFT</span>
+            <span class="chip">Voice AI</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon-box" style="background: linear-gradient(135deg,#10b981,#06b6d4);">🛰️</div>
+        <div>
+          <div class="sensor-name">u-blox NEO-M9N — Multi-constellation GNSS Module</div>
+          <div class="sensor-spec">u-blox · UART/I2C · GPS+GLONASS+Galileo+BeiDou · 2.5m CEP</div>
+          <div class="sensor-desc">
+            GNSS รุ่นใหม่รับ 4 ระบบดาวเทียมพร้อมกัน lock ได้เร็วกว่า NEO-6M/M8N สังเกตได้ชัดในพื้นที่
+            มีสิ่งกีดขวาง ต่อ ESP32 ผ่าน UART2 baudrate 38400 หรือ I2C Library TinyGPSPlus อ่าน NMEA
+            รองรับ RTK correction สำหรับ accuracy ระดับ centimeter ด้วยโมดูลเสริม
+          </div>
+          <div class="chip-row">
+            <span class="chip highlight">Multi-GNSS</span>
+            <span class="chip">Vehicle Tracker</span>
+            <span class="chip">RTK Ready</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sensor-card" style="grid-column: 1 / -1;">
+        <div class="sensor-icon-box" style="background: linear-gradient(135deg,#ec4899,#6366f1);">🔊</div>
+        <div>
+          <div class="sensor-name">MAX98357A — I2S Digital Audio Amplifier (3W Mono)</div>
+          <div class="sensor-spec">Maxim · I2S Input · 3W @ 4Ω · Class D · No Extra Power Rail</div>
+          <div class="sensor-desc">
+            คู่หูของ MEMS microphone สำหรับ ESP32 audio projects — MAX98357A รับสัญญาณ I2S ดิจิทัลจาก ESP32
+            โดยตรง แล้วขยายเป็นสัญญาณ speaker output 3W Class D efficiency สูงกว่า 90% ไม่ต้องมี power rail
+            แยก Adafruit มีชุด breakout board พร้อม I2S pins labeled ชัดเจน เหมาะสำหรับสร้าง smart speaker,
+            audio alert system, เครื่องเล่น MP3 ด้วย ESP32 และ SD card
+          </div>
+          <div class="chip-row">
+            <span class="chip highlight">Smart Speaker</span>
+            <span class="chip">MP3 Player</span>
+            <span class="chip">Audio Alert</span>
+            <span class="chip">TTS Output</span>
+            <span class="chip">Class D</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-amber">📚</div>
+      <h2 class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+      <span class="section-count">8 แหล่ง</span>
+    </div>
+
+    <div class="resource-grid">
+
+      <a class="resource-card" href="https://meshtastic.org/docs/getting-started/" target="_blank" rel="noopener">
+        <div class="resource-cat">Official Docs</div>
+        <div class="resource-name">Meshtastic Getting Started</div>
+        <div class="resource-desc">เริ่มต้นใช้งาน Meshtastic firmware อย่างเป็นทางการ รองรับ ESP32 100+ boards ใช้ Web Flasher ได้เลย</div>
+      </a>
+
+      <a class="resource-card" href="https://www.seeedstudio.com/blog/2026/05/26/esp32-lora-guide/" target="_blank" rel="noopener">
+        <div class="resource-cat">Seeed Studio · May 2026</div>
+        <div class="resource-name">ESP32S3 LoRa Setup, Range & Meshtastic</div>
+        <div class="resource-desc">Guide ล่าสุด setup XIAO ESP32S3 + Wio-SX1262 เป็น LoRaWAN Gateway เชื่อม The Things Network / ChirpStack</div>
+      </a>
+
+      <a class="resource-card" href="https://github.com/lvgl/lv_port_esp32" target="_blank" rel="noopener">
+        <div class="resource-cat">GitHub · LVGL</div>
+        <div class="resource-name">lv_port_esp32 — LVGL for ESP32</div>
+        <div class="resource-desc">Port LVGL graphics library สำหรับ ESP32 รองรับ display และ touchpad drivers หลากหลาย</div>
+      </a>
+
+      <a class="resource-card" href="https://www.esp32s.com/blog/build-professional-guis-on-esp32-cyd-with-lvgl-complete-setup-project-guide/" target="_blank" rel="noopener">
+        <div class="resource-cat">Tutorial</div>
+        <div class="resource-name">LVGL on ESP32 CYD — Complete GUI Setup</div>
+        <div class="resource-desc">คู่มือครบจบสำหรับ ESP32 Cheap Yellow Display + LVGL สร้าง touch UI แบบมืออาชีพ</div>
+      </a>
+
+      <a class="resource-card" href="https://hackaday.com/2026/02/14/real-time-3d-room-mapping-with-esp32-vl53l5cx-sensor-and-imu/" target="_blank" rel="noopener">
+        <div class="resource-cat">Hackaday · Feb 2026</div>
+        <div class="resource-name">3D Room Mapping with ESP32 + VL53L5CX</div>
+        <div class="resource-desc">Real-time 3D room mapping ด้วย ESP32 + VL53L5CX 8×8 ToF + IMU stream เป็น JSON point cloud</div>
+      </a>
+
+      <a class="resource-card" href="https://randomnerdtutorials.com/esp32-neo-m8n-gps-logger-google-earth/" target="_blank" rel="noopener">
+        <div class="resource-cat">Random Nerd Tutorials</div>
+        <div class="resource-name">ESP32 NEO-M8N GPS Logger & Google Earth</div>
+        <div class="resource-desc">บันทึก GPS track ด้วย ESP32 + NEO-M8N แล้ว export เป็น KML สำหรับ Google Earth</div>
+      </a>
+
+      <a class="resource-card" href="https://zbotic.in/esp32-modbus-tcp-connect-industrial-plcs-to-iot-cloud/" target="_blank" rel="noopener">
+        <div class="resource-cat">Tutorial · Industrial</div>
+        <div class="resource-name">ESP32 Modbus TCP — Connect PLCs to IoT Cloud</div>
+        <div class="resource-desc">ตั้งค่า ESP32 เป็น Modbus TCP master อ่านข้อมูลจาก PLC และส่งขึ้น AWS IoT / ThingsBoard / MQTT</div>
+      </a>
+
+      <a class="resource-card" href="https://esphome.io/components/sensor/as7341/" target="_blank" rel="noopener">
+        <div class="resource-cat">ESPHome Docs</div>
+        <div class="resource-name">AS7341 Spectral Color Sensor — ESPHome</div>
+        <div class="resource-desc">Document component as7341 ใน ESPHome 2026 สำหรับ 11-channel spectral sensing ไม่ต้องเขียนโค้ด</div>
+      </a>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-date">สร้างเมื่อ 29 มิถุนายน 2569 (2026) · ESP32 & IoT Daily Research by AI Researcher</div>
+  <div class="footer-src">
+    แหล่งอ้างอิง:
+    <a href="https://meshtastic.org" target="_blank">meshtastic.org</a> ·
+    <a href="https://www.seeedstudio.com/blog/2026/05/26/esp32-lora-guide/" target="_blank">Seeed Studio 2026</a> ·
+    <a href="https://hackaday.com/2026/02/14/real-time-3d-room-mapping-with-esp32-vl53l5cx-sensor-and-imu/" target="_blank">Hackaday Feb 2026</a> ·
+    <a href="https://lvgl.io" target="_blank">lvgl.io</a> ·
+    <a href="https://randomnerdtutorials.com" target="_blank">randomnerdtutorials.com</a> ·
+    <a href="https://esphome.io" target="_blank">esphome.io</a> ·
+    <a href="https://ams-osram.com" target="_blank">ams-osram.com</a> ·
+    <a href="https://wiki.dfrobot.com/sen0526/" target="_blank">DFRobot SEN0526</a>
+  </div>
+</footer>
+
+</body>
+</html>
