@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 30 มิถุนายน 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0c1445 100%);
+    border-bottom: 1px solid rgba(99,102,241,0.3);
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(99,102,241,0.2);
+    border: 1px solid rgba(99,102,241,0.5);
+    color: #a5b4fc;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 0.25rem 1rem;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #818cf8, #c084fc, #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .header-date {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #818cf8;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* MAIN LAYOUT */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 3.5rem;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .section-icon {
+    font-size: 1.4rem;
+  }
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+  .section-count {
+    margin-left: auto;
+    background: rgba(255,255,255,0.05);
+    color: #64748b;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 99px;
+  }
+
+  /* Chip colors per section */
+  .sec-innovations .section-title { color: #60a5fa; }
+  .sec-innovations .section-header { border-color: rgba(96,165,250,0.2); }
+  .sec-projects .section-title { color: #fbbf24; }
+  .sec-projects .section-header { border-color: rgba(251,191,36,0.2); }
+  .sec-sensors .section-title { color: #34d399; }
+  .sec-sensors .section-header { border-color: rgba(52,211,153,0.2); }
+  .sec-libraries .section-title { color: #f472b6; }
+  .sec-libraries .section-header { border-color: rgba(244,114,182,0.2); }
+  .sec-resources .section-title { color: #a78bfa; }
+  .sec-resources .section-header { border-color: rgba(167,139,250,0.2); }
+
+  /* CARDS GRID */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.25rem;
+  }
+  .cards-grid-2 {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+
+  /* CARD */
+  .card {
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+
+  /* Color accents */
+  .card-blue::before { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+  .card-blue:hover { border-color: rgba(96,165,250,0.3); }
+  .card-amber::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .card-amber:hover { border-color: rgba(251,191,36,0.3); }
+  .card-green::before { background: linear-gradient(90deg, #10b981, #34d399); }
+  .card-green:hover { border-color: rgba(52,211,153,0.3); }
+  .card-pink::before { background: linear-gradient(90deg, #ec4899, #f472b6); }
+  .card-pink:hover { border-color: rgba(244,114,182,0.3); }
+  .card-purple::before { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+  .card-purple:hover { border-color: rgba(167,139,250,0.3); }
+  .card-cyan::before { background: linear-gradient(90deg, #06b6d4, #67e8f9); }
+  .card-cyan:hover { border-color: rgba(103,232,249,0.3); }
+  .card-red::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+  .card-red:hover { border-color: rgba(248,113,113,0.3); }
+  .card-orange::before { background: linear-gradient(90deg, #f97316, #fb923c); }
+  .card-orange:hover { border-color: rgba(251,146,60,0.3); }
+
+  .card-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 99px;
+    margin-bottom: 0.75rem;
+  }
+  .tag-blue { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .tag-amber { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .tag-green { background: rgba(16,185,129,0.15); color: #34d399; }
+  .tag-pink { background: rgba(236,72,153,0.15); color: #f472b6; }
+  .tag-purple { background: rgba(124,58,237,0.15); color: #a78bfa; }
+  .tag-cyan { background: rgba(6,182,212,0.15); color: #67e8f9; }
+  .tag-red { background: rgba(239,68,68,0.15); color: #f87171; }
+  .tag-orange { background: rgba(249,115,22,0.15); color: #fb923c; }
+
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card-desc {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    margin-bottom: 1rem;
+    line-height: 1.7;
+  }
+
+  /* SPECS */
+  .spec-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+  }
+  .spec-chip {
+    font-size: 0.72rem;
+    background: rgba(255,255,255,0.05);
+    color: #94a3b8;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: #0f172a;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: #67e8f9;
+    overflow-x: auto;
+    margin-top: 0.75rem;
+    line-height: 1.6;
+  }
+  .code-comment { color: #475569; }
+  .code-keyword { color: #c084fc; }
+  .code-string { color: #86efac; }
+  .code-func { color: #fbbf24; }
+  .code-num { color: #f87171; }
+
+  /* HIGHLIGHT BOX */
+  .highlight-box {
+    background: rgba(99,102,241,0.08);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+  }
+  .highlight-box.green { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.25); }
+  .highlight-box.amber { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.25); }
+  .highlight-box.red { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.25); }
+
+  .highlight-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #818cf8;
+    margin-bottom: 0.25rem;
+  }
+  .highlight-box.green .highlight-label { color: #34d399; }
+  .highlight-box.amber .highlight-label { color: #fbbf24; }
+  .highlight-box.red .highlight-label { color: #f87171; }
+
+  .highlight-text {
+    font-size: 0.82rem;
+    color: #cbd5e1;
+  }
+
+  /* WIDE CARD (full width) */
+  .card-wide {
+    grid-column: 1 / -1;
+  }
+
+  /* STEPS */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+  }
+  .step {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  .step-num {
+    min-width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(99,102,241,0.2);
+    color: #818cf8;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+  }
+  .step-text {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    line-height: 1.6;
+  }
+  .step-text strong { color: #cbd5e1; }
+
+  /* RESOURCE LINK */
+  .resource-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    text-decoration: none;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    transition: background 0.15s, border-color 0.15s;
+    margin-bottom: 0.5rem;
+  }
+  .resource-link:hover { background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.3); color: #c7d2fe; }
+  .resource-link .link-icon { font-size: 1.1rem; }
+  .resource-link .link-title { font-weight: 600; color: #e2e8f0; }
+  .resource-link .link-url { font-size: 0.72rem; color: #475569; }
+
+  /* SENSOR TABLE */
+  .sensor-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+  .sensor-table th {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #475569;
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .sensor-table td {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  .sensor-table tr:last-child td { border-bottom: none; }
+  .sensor-table td:first-child { color: #e2e8f0; font-weight: 600; }
+
+  /* INFO ROW */
+  .info-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+  .info-item {
+    flex: 1;
+    min-width: 120px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    text-align: center;
+  }
+  .info-value { font-size: 1rem; font-weight: 700; color: #f1f5f9; }
+  .info-key { font-size: 0.7rem; color: #475569; margin-top: 0.1rem; }
+
+  /* FOOTER */
+  footer {
+    background: #0b1120;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    text-align: center;
+    padding: 2rem 1.5rem;
+    color: #334155;
+    font-size: 0.8rem;
+    line-height: 2;
+  }
+  footer a { color: #475569; text-decoration: none; }
+  footer a:hover { color: #818cf8; }
+
+  /* RESPONSIVE */
+  @media (max-width: 640px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    header { padding: 2rem 1rem 1.5rem; }
+    main { padding: 1.5rem 1rem 3rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-badge">ESP32 &amp; IoT Daily Research</div>
+  <h1>Automotive, AI Vision &amp; Electronic Nose</h1>
+  <p class="header-date">30 มิถุนายน 2569 (2026) &nbsp;|&nbsp; โดย AI Researcher</p>
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-number">4</div>
+      <div class="stat-label">นวัตกรรมใหม่</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">5</div>
+      <div class="stat-label">ไอเดียโปรเจกต์</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">4</div>
+      <div class="stat-label">Sensors น่าสนใจ</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">4</div>
+      <div class="stat-label">Libraries &amp; Tools</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <section class="section sec-innovations">
+    <div class="section-header">
+      <span class="section-icon">⚡</span>
+      <span class="section-title">นวัตกรรมและอัปเดตล่าสุด — มิถุนายน 2026</span>
+      <span class="section-count">4 รายการ</span>
+    </div>
+    <div class="cards-grid">
+
+      <!-- Card 1: ESP32 TWAI / CAN Bus -->
+      <div class="card card-blue">
+        <div class="card-tag tag-blue">🚗 Automotive IoT</div>
+        <div class="card-title">ESP32 TWAI™ — Built-in CAN Bus Controller สำหรับ Automotive IoT</div>
+        <div class="card-desc">
+          ESP32 มี CAN controller ในตัวชื่อ <strong>TWAI (Two-Wire Automotive Interface)</strong> รองรับ CAN 2.0B ทำให้สามารถต่อรถยนต์ผ่าน OBD-II ได้โดยตรงด้วยแค่ IC transceiver เพิ่ม เช่น MCP2551 หรือ TJA1050 ราคาต่ำกว่า 30 บาท — เปิดประตูสู่โปรเจกต์ยานยนต์ราคาประหยัด
+        </div>
+        <div class="spec-list">
+          <span class="spec-chip">CAN 2.0B</span>
+          <span class="spec-chip">ISO 11898</span>
+          <span class="spec-chip">OBD-II</span>
+          <span class="spec-chip">TWAI Controller</span>
+          <span class="spec-chip">1 Mbps</span>
+          <span class="spec-chip">TJA1050 / MCP2551</span>
+        </div>
+        <div class="highlight-box green">
+          <div class="highlight-label">ทำอะไรได้บ้าง</div>
+          <div class="highlight-text">อ่านค่า RPM / Speed / Coolant Temp, ดึง Fault Code (DTC), สร้าง Dashboard ไร้สาย, บันทึก Trip Log, ส่งข้อมูลไป MQTT/Cloud</div>
+        </div>
+        <div class="code-block">
+<span class="code-comment">// ตั้งค่า TWAI driver</span>
+<span class="code-keyword">#include</span> <span class="code-string">"driver/twai.h"</span>
+twai_general_config_t g_config =
+  TWAI_GENERAL_CONFIG_DEFAULT(GPIO_NUM_21, GPIO_NUM_22,
+                               TWAI_MODE_NORMAL);
+twai_timing_config_t t_config =
+  TWAI_TIMING_CONFIG_500KBITS();
+twai_filter_config_t f_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
+<span class="code-func">twai_driver_install</span>(&amp;g_config, &amp;t_config, &amp;f_config);
+<span class="code-func">twai_start</span>();
+        </div>
+      </div>
+
+      <!-- Card 2: ESP32-P4 Multimedia Platform -->
+      <div class="card card-purple">
+        <div class="card-tag tag-purple">🎬 High Performance</div>
+        <div class="card-title">ESP32-P4 Function EV Board v1.5 — Multimedia Platform ครบเครื่อง</div>
+        <div class="card-desc">
+          บอร์ด ESP32-P4 เวอร์ชันใหม่ v1.5.2 เพิ่ม USB 2.0 480 Mbps, จอ 7" 1024×600 Capacitive Touch, กล้อง 2MP MIPI-CSI และใช้ ESP32-C6 เป็น wireless co-processor ที่รองรับ Wi-Fi 6 — ออกแบบมาสำหรับ HMI / Edge AI / Industrial Display
+        </div>
+        <div class="spec-list">
+          <span class="spec-chip">Dual-core RISC-V 400MHz</span>
+          <span class="spec-chip">32MB PSRAM</span>
+          <span class="spec-chip">USB 2.0 HS</span>
+          <span class="spec-chip">MIPI-CSI/DSI</span>
+          <span class="spec-chip">H.264 Encoder</span>
+          <span class="spec-chip">Wi-Fi 6 (C6)</span>
+        </div>
+        <div class="info-row">
+          <div class="info-item">
+            <div class="info-value">400MHz</div>
+            <div class="info-key">Clock Speed</div>
+          </div>
+          <div class="info-item">
+            <div class="info-value">32MB</div>
+            <div class="info-key">PSRAM</div>
+          </div>
+          <div class="info-item">
+            <div class="info-value">7"</div>
+            <div class="info-key">Touch Display</div>
+          </div>
+          <div class="info-item">
+            <div class="info-value">2MP</div>
+            <div class="info-key">Camera</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: ESP32-C6 Thread Border Router -->
+      <div class="card card-cyan">
+        <div class="card-tag tag-cyan">🔗 Matter over Thread</div>
+        <div class="card-title">ESP32-C6 Thread Border Router — สะพานเชื่อม Smart Home ยุคใหม่</div>
+        <div class="card-desc">
+          Espressif เปิดตัว SDK อย่างเป็นทางการให้ ESP32-C6 ทำหน้าที่ <strong>Thread Border Router</strong> ที่ผ่านการรับรองจาก Thread Group — เชื่อมอุปกรณ์ Matter-over-Thread (เซนเซอร์, หลอดไฟ, ล็อค) เข้ากับ Wi-Fi โดยใช้ชิปตัวเดียว ราคาต่ำกว่า 100 บาท
+        </div>
+        <div class="spec-list">
+          <span class="spec-chip">IEEE 802.15.4</span>
+          <span class="spec-chip">Thread 1.3</span>
+          <span class="spec-chip">Matter 1.3</span>
+          <span class="spec-chip">OpenThread</span>
+          <span class="spec-chip">Wi-Fi 6</span>
+          <span class="spec-chip">ESPHome 2026.3</span>
+        </div>
+        <div class="highlight-box">
+          <div class="highlight-label">บทบาทของ ESP32-C6</div>
+          <div class="highlight-text">ทำงานเป็น RCP (Radio Co-Processor) ควบคู่กับ ESP32-S3 ที่รัน OpenThread Border Router stack — เชื่อม Thread mesh network กับ IP network ผ่าน Spinel protocol</div>
+        </div>
+      </div>
+
+      <!-- Card 4: ESP32-S3 AMOLED Watch -->
+      <div class="card card-pink">
+        <div class="card-tag tag-pink">⌚ Wearable</div>
+        <div class="card-title">ESP32-S3 AMOLED Watch Dev Board — สร้าง Smartwatch เองได้แล้ว!</div>
+        <div class="card-desc">
+          Waveshare เปิดตัวบอร์ดพัฒนา ESP32-S3 รูปทรงนาฬิกาพร้อมจอ AMOLED 2.06" ความละเอียด 410×502 px, Touch screen, ไมค์ dual array, และรองรับ Offline Voice Recognition — ออกแบบมาสำหรับทำ Wearable DIY โดยเฉพาะ
+        </div>
+        <div class="spec-list">
+          <span class="spec-chip">ESP32-S3R8</span>
+          <span class="spec-chip">2.06" AMOLED</span>
+          <span class="spec-chip">410×502 px</span>
+          <span class="spec-chip">FT3168 Touch</span>
+          <span class="spec-chip">QMI8658 IMU</span>
+          <span class="spec-chip">Dual Mic</span>
+        </div>
+        <div class="highlight-box amber">
+          <div class="highlight-label">Use Case ที่น่าสนใจ</div>
+          <div class="highlight-text">Heart Rate + SpO2 Monitor, Gesture Watch, BLE Remote Control, Offline Voice Command, Pet Tracker, DIY Smartwatch ด้วย LVGL UI</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <section class="section sec-projects">
+    <div class="section-header">
+      <span class="section-icon">💡</span>
+      <span class="section-title">ไอเดียโปรเจกต์ที่น่าลองสร้าง — ยังไม่เคยทำมาก่อน!</span>
+      <span class="section-count">5 ไอเดีย</span>
+    </div>
+    <div class="cards-grid">
+
+      <!-- Project 1: OBD2 Automotive Diagnostic Tool -->
+      <div class="card card-orange">
+        <div class="card-tag tag-orange">🚗 Automotive</div>
+        <div class="card-title">ESP32 OBD2 Vehicle Telematics — ดีไวซ์วินิจฉัยรถยนต์ DIY</div>
+        <div class="card-desc">
+          สร้างอุปกรณ์วินิจฉัยรถยนต์แบบ WiFi ด้วย ESP32 + TJA1050 — ดึงข้อมูล Engine RPM, ความเร็ว, อุณหภูมิ, อ่าน DTC (Fault Code) แล้วส่งไปแสดงบน Web Dashboard หรือ MQTT broker แบบ Real-time
+        </div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Hardware:</strong> ESP32 + TJA1050 transceiver + OBD-II connector (DB9 หรือ socket) + 12V→5V converter</div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Library:</strong> ใช้ <code>OBD2_CAN_Bus_Library</code> หรือ <code>esp32_obd2</code> บน GitHub ของ MagnusThome</div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Software:</strong> สร้าง Web server บน ESP32 แสดง Dashboard + MQTT publish ทุก 1 วินาที</div></div>
+          <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Advanced:</strong> เพิ่ม GPS (NEO-6M) + SD Card Logger สำหรับบันทึก Trip ทั้งหมด</div></div>
+        </div>
+        <div class="code-block">
+<span class="code-comment">// อ่านค่า RPM จาก OBD2</span>
+OBD2 obd;
+<span class="code-keyword">float</span> rpm = obd.<span class="code-func">pidRead</span>(ENGINE_RPM);
+<span class="code-keyword">float</span> speed = obd.<span class="code-func">pidRead</span>(VEHICLE_SPEED);
+<span class="code-keyword">float</span> coolant = obd.<span class="code-func">pidRead</span>(ENGINE_COOLANT_TEMP);
+mqtt.<span class="code-func">publish</span>(<span class="code-string">"car/rpm"</span>, String(rpm).c_str());
+        </div>
+      </div>
+
+      <!-- Project 2: AI Camera + Gemini Vision -->
+      <div class="card card-blue">
+        <div class="card-tag tag-blue">🤖 AI Vision</div>
+        <div class="card-title">ESP32-S3 Camera + Gemini AI Vision — กล้องวิเคราะห์ภาพด้วย Cloud AI</div>
+        <div class="card-desc">
+          ใช้ XIAO ESP32S3 Sense หรือ ESP32-CAM ถ่ายภาพส่งไปให้ Google Gemini API วิเคราะห์ — ไม่ต้องฝึก ML model เอง เพียงแค่ส่งภาพ JPEG ผ่าน HTTPS แล้วรับคำอธิบายกลับมา เหมาะสำหรับ: ตรวจสอบสินค้า, นับของ, แจ้งเตือนบุคคล, อ่านมิเตอร์
+        </div>
+        <div class="spec-list">
+          <span class="spec-chip">XIAO ESP32S3 Sense</span>
+          <span class="spec-chip">OV2640 Camera</span>
+          <span class="spec-chip">Gemini Flash API</span>
+          <span class="spec-chip">HTTPS Client</span>
+          <span class="spec-chip">Base64 Encoding</span>
+        </div>
+        <div class="highlight-box green">
+          <div class="highlight-label">ข้อดีเทียบกับ Edge AI</div>
+          <div class="highlight-text">ไม่ต้องฝึกโมเดลเอง → ระบุวัตถุได้ทุกชนิดทันที แต่ต้องการ Wi-Fi และมี API cost — เหมาะสำหรับ prototype ที่ต้องการความยืดหยุ่นสูง</div>
+        </div>
+      </div>
+
+      <!-- Project 3: Electronic Nose -->
+      <div class="card card-green">
+        <div class="card-tag tag-green">👃 Electronic Nose</div>
+        <div class="card-title">ESP32 + BME688 eNose — จมูกอิเล็กทรอนิกส์ที่ฝึก AI ได้</div>
+        <div class="card-desc">
+          สร้าง Electronic Nose ด้วย BME688 + ESP32 โดยใช้ <strong>Bosch BME AI-Studio</strong> ฝึกโมเดล Machine Learning จำแนกกลิ่นได้โดยไม่ต้องเขียนโค้ด ML — เหมาะสำหรับตรวจจับกาแฟเสีย, อาหารเน่า, แก๊สรั่ว, หรือควันไฟ
+        </div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div class="step-text"><strong>เก็บ Dataset:</strong> วาง BME688 ใกล้กลิ่นแต่ละประเภท เก็บข้อมูล Resistance Pattern 30+ ตัวอย่าง/กลิ่น</div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-text"><strong>ฝึกโมเดล:</strong> ใช้ Bosch BME AI-Studio หรือ scikit-learn (Random Forest / SVM) จำแนก Pattern</div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Deploy:</strong> Export โมเดลเป็น C array ฝังลงบน ESP32 ด้วย ESP-DL หรือ TFLite Micro</div></div>
+          <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Alert:</strong> MQTT alert เมื่อตรวจจับกลิ่นผิดปกติ + บันทึก timestamp ลง SD</div></div>
+        </div>
+        <div class="highlight-box">
+          <div class="highlight-label">ผลงานวิจัยล่าสุด 2026</div>
+          <div class="highlight-text">งานวิจัยใช้ BME688 x8 บอร์ด + HUZZAH32 ESP32 จำแนก Coffee Powder 3 ชนิดจาก 3,583 ตัวอย่างได้ความแม่นยำ >95% ด้วย Random Forest</div>
+        </div>
+      </div>
+
+      <!-- Project 4: Stepper Motor Server -->
+      <div class="card card-amber">
+        <div class="card-tag tag-amber">🦾 Robotics</div>
+        <div class="card-title">ESP-StepperMotor-Server — ควบคุม Stepper ผ่าน Web UI + REST API</div>
+        <div class="card-desc">
+          Library open-source ที่เปลี่ยน ESP32 ให้กลายเป็น Stepper Motor Control Server ครบเครื่อง — มี Web UI สวยงาม, REST API, Serial Control ในตัว รองรับ TMC2208/TMC2209 และ A4988 — เหมาะสำหรับ CNC, 3D Printer head, Telescope tracker, Camera slider
+        </div>
+        <div class="spec-list">
+          <span class="spec-chip">ESP-StepperMotor-Server</span>
+          <span class="spec-chip">TMC2209</span>
+          <span class="spec-chip">A4988</span>
+          <span class="spec-chip">REST API</span>
+          <span class="spec-chip">WebSocket</span>
+          <span class="spec-chip">FreeRTOS</span>
+        </div>
+        <div class="code-block">
+<span class="code-comment">// ตั้งค่า Stepper Motor Server</span>
+<span class="code-keyword">#include</span> <span class="code-string">"ESPStepperMotorServer.h"</span>
+ESPStepperMotorServer server(ESPServerRestApiEnabled
+                           | ESPServerWebserverEnabled);
+ESPStepperMotorServer_StepperConfiguration stepper(
+  <span class="code-num">26</span>, <span class="code-num">27</span>); <span class="code-comment">// STEP, DIR pins</span>
+<span class="code-func">server.addOrUpdateStepper</span>(&amp;stepper);
+<span class="code-func">server.start</span>();
+        </div>
+      </div>
+
+      <!-- Project 5: Gesture Glove -->
+      <div class="card card-purple">
+        <div class="card-tag tag-purple">🧤 Gesture Control</div>
+        <div class="card-title">ESP32 Gesture Glove — ถุงมือควบคุมหุ่นยนต์ด้วยท่าทาง</div>
+        <div class="card-desc">
+          สร้างถุงมือควบคุมด้วย Flex Sensor (ดัดนิ้ว) + MPU6050 IMU + ESP32 ส่งข้อมูลผ่าน BLE/ESP-NOW ไปยังหุ่นยนต์แขนกล, RC Car หรือ Drone — ตีความท่าทางด้วย TFLite Micro Gesture Recognition
+        </div>
+        <div class="spec-list">
+          <span class="spec-chip">5x Flex Sensor</span>
+          <span class="spec-chip">MPU6050 IMU</span>
+          <span class="spec-chip">ESP-NOW</span>
+          <span class="spec-chip">TFLite Micro</span>
+          <span class="spec-chip">LiPo Battery</span>
+          <span class="spec-chip">3.3V logic</span>
+        </div>
+        <div class="highlight-box amber">
+          <div class="highlight-label">ไอเดียต่อยอด</div>
+          <div class="highlight-text">เพิ่ม Haptic Feedback (vibration motor) ให้ผู้ใช้รู้สึกเมื่อหุ่นสัมผัสวัตถุ + Force-sensitive resistor (FSR) วัดแรงจับ → Teleoperation สำหรับงาน Hazardous</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <section class="section sec-sensors">
+    <div class="section-header">
+      <span class="section-icon">🌡️</span>
+      <span class="section-title">Sensors น่าสนใจ — Automotive, Biometric &amp; Gas</span>
+      <span class="section-count">4 ตัว</span>
+    </div>
+    <div class="cards-grid cards-grid-2">
+
+      <!-- Sensor 1: BME688 -->
+      <div class="card card-green">
+        <div class="card-tag tag-green">🌬️ Gas + AI Sensor</div>
+        <div class="card-title">BME688 — Gas Sensor พร้อม AI ในตัว</div>
+        <div class="card-desc">
+          Bosch BME688 เป็น sensor ตัวแรกของโลกที่รวม AI capability ไว้ในตัว — วัด Temperature, Humidity, Pressure และ Gas Resistance พร้อมกัน จำแนก VOC, VSC, CO, H₂ ได้ในระดับ ppb
+        </div>
+        <table class="sensor-table">
+          <tr><th>พารามิเตอร์</th><th>ค่า</th></tr>
+          <tr><td>Interface</td><td>I²C / SPI</td></tr>
+          <tr><td>Temp Range</td><td>-40 ถึง +85°C ±0.5°C</td></tr>
+          <tr><td>Humidity</td><td>0-100% RH ±3%</td></tr>
+          <tr><td>Pressure</td><td>300-1100 hPa</td></tr>
+          <tr><td>Gas Accuracy</td><td>ppb level</td></tr>
+          <tr><td>Supply</td><td>1.71-3.6V</td></tr>
+          <tr><td>ราคาโดยประมาณ</td><td>~300-500 บาท</td></tr>
+        </table>
+        <div class="highlight-box green">
+          <div class="highlight-label">Tool: Bosch BME AI-Studio</div>
+          <div class="highlight-text">GUI สำหรับเก็บ dataset และฝึก ML โมเดลบนเซ็นเซอร์โดยไม่ต้องเขียนโค้ด — Export เป็น BSEC library สำหรับ Arduino/ESP32</div>
+        </div>
+      </div>
+
+      <!-- Sensor 2: R503 Fingerprint -->
+      <div class="card card-purple">
+        <div class="card-tag tag-purple">🔐 Biometric</div>
+        <div class="card-title">R503 Fingerprint Sensor — ลายนิ้วมือความแม่นยำสูง</div>
+        <div class="card-desc">
+          R503 เป็น optical fingerprint sensor พร้อม LED วงกลมสวยงาม รองรับ 200 ลายนิ้วมือ ต่อผ่าน UART กับ ESP32 ได้ง่าย — ใช้ library <code>Adafruit_Fingerprint</code> หรือโปรเจกต์ <em>FingerprintDoorbell</em> บน GitHub
+        </div>
+        <table class="sensor-table">
+          <tr><th>ข้อมูล</th><th>ค่า</th></tr>
+          <tr><td>Interface</td><td>UART 57600 baud</td></tr>
+          <tr><td>Template</td><td>200 ลายนิ้วมือ</td></tr>
+          <tr><td>Response Time</td><td>&lt;0.3 วินาที</td></tr>
+          <tr><td>FAR / FRR</td><td>&lt;0.001% / &lt;0.1%</td></tr>
+          <tr><td>Power</td><td>3.3V / 30mA</td></tr>
+          <tr><td>ราคา</td><td>~300-400 บาท</td></tr>
+        </table>
+        <div class="highlight-box">
+          <div class="highlight-label">โปรเจกต์ FingerprintDoorbell</div>
+          <div class="highlight-text">ประตูอัจฉริยะ MQTT-enabled ที่รวม fingerprint reader + กริ่งประตูไว้ด้วยกัน — บน GitHub พร้อม ESPHome integration</div>
+        </div>
+      </div>
+
+      <!-- Sensor 3: ICM-42688-P IMU -->
+      <div class="card card-blue">
+        <div class="card-tag tag-blue">🏃 High-precision IMU</div>
+        <div class="card-title">ICM-42688-P — IMU 6-axis ความแม่นยำสูงรุ่นใหม่ล่าสุด</div>
+        <div class="card-desc">
+          TDK InvenSense ICM-42688-P คือ IMU รุ่นใหม่ที่แม่นยำกว่า MPU6050 มาก — 3-axis Gyro + 3-axis Accel, noise ต่ำมาก เหมาะสำหรับ Drone flight controller, Robot balancing, Motion capture, Gesture recognition
+        </div>
+        <table class="sensor-table">
+          <tr><th>ข้อมูล</th><th>ค่า</th></tr>
+          <tr><td>Interface</td><td>SPI (24MHz) / I²C</td></tr>
+          <tr><td>Gyro Noise</td><td>2.8 mdps/√Hz</td></tr>
+          <tr><td>Accel Noise</td><td>70 μg/√Hz</td></tr>
+          <tr><td>Gyro Range</td><td>±15.625 ถึง ±2000 dps</td></tr>
+          <tr><td>ODR</td><td>ถึง 32kHz</td></tr>
+          <tr><td>Power</td><td>1.8V / 0.65mA (low power)</td></tr>
+        </table>
+        <div class="highlight-box">
+          <div class="highlight-label">ดีกว่า MPU6050 อย่างไร</div>
+          <div class="highlight-text">Noise ต่ำกว่า 10x, Data rate สูงกว่า 100x, มี Anti-alias filter ในตัว, รองรับ SPI สูงสุด 24MHz — เหมาะสำหรับ application ที่ต้องการความแม่นยำสูง</div>
+        </div>
+      </div>
+
+      <!-- Sensor 4: Flex Sensor -->
+      <div class="card card-amber">
+        <div class="card-tag tag-amber">🤸 Bend Sensing</div>
+        <div class="card-title">Flex Sensor 2.2" / 4.5" — วัดการดัดงอสำหรับ Gesture &amp; Wearable</div>
+        <div class="card-desc">
+          Flex Sensor เปลี่ยน Resistance เมื่องอ (~25kΩ ตรง / ~100kΩ งอเต็ม) ต่อกับ ESP32 ผ่าน Voltage Divider แบบง่ายๆ — ใช้ทำถุงมือ Gesture, กายภาพบำบัด, หุ่นยนต์มือ, เครื่องดนตรีดิจิทัล
+        </div>
+        <table class="sensor-table">
+          <tr><th>ข้อมูล</th><th>ค่า</th></tr>
+          <tr><td>Resistance (flat)</td><td>~25 kΩ</td></tr>
+          <tr><td>Resistance (90° bend)</td><td>~45-125 kΩ</td></tr>
+          <tr><td>Supply</td><td>3.3V (Voltage Divider)</td></tr>
+          <tr><td>LifeCycle</td><td>&gt;1,000,000 cycles</td></tr>
+          <tr><td>ราคา/ชิ้น</td><td>~100-200 บาท</td></tr>
+        </table>
+        <div class="code-block">
+<span class="code-comment">// อ่านค่า Flex Sensor</span>
+<span class="code-keyword">const int</span> FLEX_PIN = <span class="code-num">34</span>;
+<span class="code-keyword">const float</span> VCC = <span class="code-num">3.3</span>, R_DIV = <span class="code-num">47000.0</span>;
+<span class="code-keyword">int</span> raw = <span class="code-func">analogRead</span>(FLEX_PIN);
+<span class="code-keyword">float</span> voltage = raw * VCC / <span class="code-num">4095.0</span>;
+<span class="code-keyword">float</span> flex_r = R_DIV * (VCC / voltage - <span class="code-num">1.0</span>);
+<span class="code-keyword">float</span> angle = <span class="code-func">map</span>(flex_r, <span class="code-num">25000</span>, <span class="code-num">100000</span>, <span class="code-num">0</span>, <span class="code-num">90</span>);
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: LIBRARIES ===== -->
+  <section class="section sec-libraries">
+    <div class="section-header">
+      <span class="section-icon">📦</span>
+      <span class="section-title">Library &amp; Framework น่าสนใจ — Automotive &amp; Advanced IoT</span>
+      <span class="section-count">4 ตัว</span>
+    </div>
+    <div class="cards-grid">
+
+      <!-- Lib 1: OBD2 CAN Bus Library -->
+      <div class="card card-orange">
+        <div class="card-tag tag-orange">🚗 OBD2</div>
+        <div class="card-title">OBD2_CAN_Bus_Library — อ่านข้อมูลรถยนต์ด้วย 5 บรรทัด</div>
+        <div class="card-desc">
+          Library Arduino ของ muki01 บน GitHub รองรับ OBD2 มาตรฐาน ISO15765-4 และ ISO11898 ผ่าน ESP32 TWAI controller โดยตรง — รองรับ PID มาตรฐานทุกตัว
+        </div>
+        <div class="spec-list">
+          <span class="spec-chip">ISO15765-4</span>
+          <span class="spec-chip">ISO11898</span>
+          <span class="spec-chip">Arduino IDE</span>
+          <span class="spec-chip">TWAI native</span>
+          <span class="spec-chip">30+ OBD PIDs</span>
+        </div>
+        <div class="code-block">
+<span class="code-keyword">#include</span> <span class="code-string">"OBD2_CAN_Bus.h"</span>
+OBD2 obd(CAN_TX_PIN, CAN_RX_PIN);
+obd.<span class="code-func">begin</span>();
+Serial.<span class="code-func">println</span>(obd.<span class="code-func">getRPM</span>());
+Serial.<span class="code-func">println</span>(obd.<span class="code-func">getSpeed</span>());
+        </div>
+      </div>
+
+      <!-- Lib 2: ESP32_MQTTv5 -->
+      <div class="card card-cyan">
+        <div class="card-tag tag-cyan">📡 MQTT 5.0</div>
+        <div class="card-title">ESP32_MQTTv5 — MQTT Protocol รุ่นใหม่ที่ IoT Enterprise ต้องการ</div>
+        <div class="card-desc">
+          MQTT 5.0 นำเสนอ feature ใหม่ที่ขาดไม่ได้สำหรับ Enterprise IoT: <strong>Message Expiry</strong>, <strong>Topic Alias</strong> (ลด bandwidth), <strong>Shared Subscriptions</strong> (load balance), <strong>Enhanced Authentication</strong> และ <strong>Reason Codes</strong> ที่ละเอียดกว่า
+        </div>
+        <div class="spec-list">
+          <span class="spec-chip">MQTT 5.0</span>
+          <span class="spec-chip">QoS 0/1/2</span>
+          <span class="spec-chip">Topic Alias</span>
+          <span class="spec-chip">Shared Subscription</span>
+          <span class="spec-chip">Message Expiry</span>
+          <span class="spec-chip">Will Delay</span>
+        </div>
+        <div class="highlight-box">
+          <div class="highlight-label">MQTT 5.0 vs 3.1.1 — ความแตกต่างสำคัญ</div>
+          <div class="highlight-text">• Topic Alias: ย่อ topic ยาวเป็น ID ตัวเลข ลด payload 60-80%<br>• Session Expiry: กำหนดอายุ session ได้ละเอียด<br>• Reason Codes: debug ปัญหาได้ง่ายกว่าเดิมมาก</div>
+        </div>
+      </div>
+
+      <!-- Lib 3: EmbeddedMqttBroker -->
+      <div class="card card-red">
+        <div class="card-tag tag-red">🏠 Local Broker</div>
+        <div class="card-title">EmbeddedMqttBroker — รัน MQTT Broker บน ESP32 เองเลย!</div>
+        <div class="card-desc">
+          Library โอเพ่นซอร์ส (alexCajas) ที่ทำให้ ESP32 กลายเป็น MQTT Broker ในตัว — รองรับ TCP/TLS (mTLS), WebSocket, Secure WebSocket พร้อม FreeRTOS multitasking — ไม่ต้องพึ่ง Cloud broker เลย
+        </div>
+        <div class="spec-list">
+          <span class="spec-chip">TCP + TLS</span>
+          <span class="spec-chip">mTLS</span>
+          <span class="spec-chip">WebSocket</span>
+          <span class="spec-chip">WSS</span>
+          <span class="spec-chip">FreeRTOS</span>
+          <span class="spec-chip">Async + Sync mode</span>
+        </div>
+        <div class="highlight-box red">
+          <div class="highlight-label">Use Case: Offline IoT Mesh</div>
+          <div class="highlight-text">ฟาร์ม / โกดัง / เหมืองที่ไม่มี Internet — ESP32 ตัวหนึ่งเป็น Local Broker, เซ็นเซอร์ทั้งหมด publish ได้โดยไม่ต้องพึ่ง Cloud เลย</div>
+        </div>
+      </div>
+
+      <!-- Lib 4: ESP-StepperMotor-Server -->
+      <div class="card card-amber">
+        <div class="card-tag tag-amber">⚙️ Motor Control</div>
+        <div class="card-title">ESP-StepperMotor-Server — Stepper Control พร้อม Web UI ครบเครื่อง</div>
+        <div class="card-desc">
+          GitHub Library ที่ได้รับความนิยมสูง — เปลี่ยน ESP32 ให้เป็น Stepper Motor Controller server ที่มี <strong>Web UI</strong>, <strong>REST API</strong>, <strong>MQTT</strong>, <strong>Serial interface</strong> ในตัว รองรับ TMC2208/2209 Stealthchop ด้วย
+        </div>
+        <div class="spec-list">
+          <span class="spec-chip">pkerspe/ESP-StepperMotor-Server</span>
+          <span class="spec-chip">Web UI</span>
+          <span class="spec-chip">REST API</span>
+          <span class="spec-chip">TMC2209</span>
+          <span class="spec-chip">Encoder Support</span>
+          <span class="spec-chip">Homing</span>
+        </div>
+        <div class="highlight-box amber">
+          <div class="highlight-label">Feature ที่น่าประทับใจ</div>
+          <div class="highlight-text">กำหนด Acceleration/Deceleration profile, Homing sequence, Limit switch, Rotary encoder feedback — ทั้งหมดผ่าน Web UI ไม่ต้องเขียนโค้ดเพิ่ม</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 5: RESOURCES ===== -->
+  <section class="section sec-resources">
+    <div class="section-header">
+      <span class="section-icon">🔗</span>
+      <span class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง</span>
+      <span class="section-count">8 แหล่ง</span>
+    </div>
+    <div class="cards-grid">
+      <div class="card card-purple card-wide">
+        <div class="card-title" style="margin-bottom:1rem;">ลิงก์อ้างอิงทั้งหมด</div>
+
+        <a class="resource-link" href="https://github.com/muki01/OBD2_CAN_Bus_Library" target="_blank">
+          <span class="link-icon">🚗</span>
+          <div><div class="link-title">OBD2_CAN_Bus_Library</div><div class="link-url">github.com/muki01/OBD2_CAN_Bus_Library</div></div>
+        </a>
+
+        <a class="resource-link" href="https://github.com/MagnusThome/RejsaCAN-ESP32" target="_blank">
+          <span class="link-icon">🚗</span>
+          <div><div class="link-title">RejsaCAN-ESP32 — ESP32/S3 CAN Interface Board</div><div class="link-url">github.com/MagnusThome/RejsaCAN-ESP32</div></div>
+        </a>
+
+        <a class="resource-link" href="https://medium.com/@pritamkumarroy/esp32-cam-gemini-ai-build-your-own-object-detection-camera-with-ai-vision-c5823f6f1700" target="_blank">
+          <span class="link-icon">🤖</span>
+          <div><div class="link-title">ESP32-CAM + Gemini AI: Object Detection Camera</div><div class="link-url">medium.com — pritamkumarroy</div></div>
+        </a>
+
+        <a class="resource-link" href="https://github.com/AndyYuen/eNose" target="_blank">
+          <span class="link-icon">👃</span>
+          <div><div class="link-title">eNose — Smell Detection ด้วย BME688 + scikit-learn AI</div><div class="link-url">github.com/AndyYuen/eNose</div></div>
+        </a>
+
+        <a class="resource-link" href="https://github.com/pkerspe/ESP-StepperMotor-Server" target="_blank">
+          <span class="link-icon">⚙️</span>
+          <div><div class="link-title">ESP-StepperMotor-Server — Web UI + REST API Stepper Control</div><div class="link-url">github.com/pkerspe/ESP-StepperMotor-Server</div></div>
+        </a>
+
+        <a class="resource-link" href="https://github.com/alexCajas/EmbeddedMqttBroker" target="_blank">
+          <span class="link-icon">📡</span>
+          <div><div class="link-title">EmbeddedMqttBroker — MQTT Broker บน ESP32 รองรับ TLS/WSS</div><div class="link-url">github.com/alexCajas/EmbeddedMqttBroker</div></div>
+        </a>
+
+        <a class="resource-link" href="https://github.com/p01di/esp32c6-thread-border-router" target="_blank">
+          <span class="link-icon">🔗</span>
+          <div><div class="link-title">ESP32-C6 Single-chip Thread Border Router สำหรับ Home Assistant</div><div class="link-url">github.com/p01di/esp32c6-thread-border-router</div></div>
+        </a>
+
+        <a class="resource-link" href="https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4-function-ev-board/user_guide.html" target="_blank">
+          <span class="link-icon">📋</span>
+          <div><div class="link-title">ESP32-P4-Function-EV-Board v1.5.2 Official User Guide</div><div class="link-url">docs.espressif.com — ESP32-P4 Dev Kit</div></div>
+        </a>
+
+        <a class="resource-link" href="https://www.hackster.io/news/control-everything-with-this-esp32-based-gesture-glove-c21b9e1cc2d2" target="_blank">
+          <span class="link-icon">🧤</span>
+          <div><div class="link-title">ESP32 Gesture Glove — Control Everything with Hand Gestures</div><div class="link-url">hackster.io — Gesture Glove Project</div></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div style="margin-bottom:0.5rem; color:#475569; font-size:0.85rem;">
+    สร้างโดย AI Researcher &nbsp;|&nbsp; 30 มิถุนายน 2569 (2026) &nbsp;|&nbsp; ESP32 &amp; IoT Daily Research
+  </div>
+  <div>
+    แหล่งข้อมูล:
+    <a href="https://github.com/muki01/OBD2_CAN_Bus_Library">GitHub</a> &nbsp;·&nbsp;
+    <a href="https://www.hackster.io">Hackster.io</a> &nbsp;·&nbsp;
+    <a href="https://docs.espressif.com">Espressif Docs</a> &nbsp;·&nbsp;
+    <a href="https://www.bosch-sensortec.com">Bosch Sensortec</a>
+  </div>
+  <div style="margin-top:0.5rem; color:#1e293b; font-size:0.72rem;">
+    หัวข้อวันนี้: Automotive CAN/OBD2 · AI Vision Camera · Electronic Nose (BME688) · Thread Border Router · AMOLED Wearable · Stepper Server · MQTT 5.0 · Gesture Glove
+  </div>
+</footer>
+
+</body>
+</html>
