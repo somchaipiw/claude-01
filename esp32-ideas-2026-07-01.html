@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 1 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #0a0f1e; color: #e2e8f0; line-height: 1.8; min-height: 100vh; }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    border-bottom: 1px solid rgba(99,102,241,0.3);
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.15) 0%, transparent 70%);
+  }
+  header .badge {
+    display: inline-block;
+    background: rgba(99,102,241,0.2);
+    border: 1px solid rgba(99,102,241,0.5);
+    color: #a5b4fc;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 2rem;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #e0e7ff, #a5b4fc, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+  header .subtitle {
+    color: #94a3b8;
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+  }
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-item .num {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #a5b4fc;
+  }
+  .stat-item .lbl {
+    font-size: 0.78rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* Navigation */
+  nav {
+    background: rgba(15,23,42,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 0.8rem 1.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav a {
+    color: #94a3b8;
+    text-decoration: none;
+    padding: 0.4rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  nav a:hover { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+
+  /* Main layout */
+  main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.2rem 4rem; }
+
+  /* Section headings */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 3rem 0 1.5rem;
+  }
+  .section-title .icon {
+    width: 2.5rem; height: 2.5rem;
+    border-radius: 0.75rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .section-title h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #e2e8f0;
+  }
+  .section-title .divider {
+    flex: 1; height: 1px;
+    background: linear-gradient(to right, rgba(99,102,241,0.4), transparent);
+  }
+
+  /* Card grid */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 1.25rem; }
+  .card-grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(500px, 1fr)); gap: 1.25rem; }
+
+  /* Card base */
+  .card {
+    background: #111827;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  }
+
+  /* Color variants */
+  .card-violet { border-color: rgba(139,92,246,0.3); }
+  .card-violet:hover { border-color: rgba(139,92,246,0.6); box-shadow: 0 10px 30px rgba(139,92,246,0.15); }
+  .card-violet::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(to right, #7c3aed, #a78bfa); }
+
+  .card-blue { border-color: rgba(59,130,246,0.3); }
+  .card-blue:hover { border-color: rgba(59,130,246,0.6); box-shadow: 0 10px 30px rgba(59,130,246,0.15); }
+  .card-blue::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(to right, #1d4ed8, #60a5fa); }
+
+  .card-emerald { border-color: rgba(16,185,129,0.3); }
+  .card-emerald:hover { border-color: rgba(16,185,129,0.6); box-shadow: 0 10px 30px rgba(16,185,129,0.15); }
+  .card-emerald::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(to right, #059669, #34d399); }
+
+  .card-amber { border-color: rgba(245,158,11,0.3); }
+  .card-amber:hover { border-color: rgba(245,158,11,0.6); box-shadow: 0 10px 30px rgba(245,158,11,0.15); }
+  .card-amber::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(to right, #b45309, #fbbf24); }
+
+  .card-rose { border-color: rgba(244,63,94,0.3); }
+  .card-rose:hover { border-color: rgba(244,63,94,0.6); box-shadow: 0 10px 30px rgba(244,63,94,0.15); }
+  .card-rose::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(to right, #be123c, #fb7185); }
+
+  .card-cyan { border-color: rgba(6,182,212,0.3); }
+  .card-cyan:hover { border-color: rgba(6,182,212,0.6); box-shadow: 0 10px 30px rgba(6,182,212,0.15); }
+  .card-cyan::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(to right, #0891b2, #22d3ee); }
+
+  /* Card inner styles */
+  .card-header { display: flex; align-items: flex-start; gap: 0.9rem; margin-bottom: 1rem; }
+  .card-emoji { font-size: 2rem; flex-shrink: 0; line-height: 1; }
+  .card-title { font-size: 1.05rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.2rem; }
+  .card-subtitle { font-size: 0.78rem; color: #64748b; font-weight: 400; }
+  .card p { font-size: 0.88rem; color: #94a3b8; line-height: 1.7; margin-bottom: 0.8rem; }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* Tags */
+  .tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.9rem; }
+  .tag {
+    font-size: 0.7rem; font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.3rem;
+    letter-spacing: 0.03em;
+  }
+  .tag-violet { background: rgba(139,92,246,0.15); color: #a78bfa; }
+  .tag-blue { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .tag-emerald { background: rgba(16,185,129,0.15); color: #34d399; }
+  .tag-amber { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .tag-rose { background: rgba(244,63,94,0.15); color: #fb7185; }
+  .tag-cyan { background: rgba(6,182,212,0.15); color: #22d3ee; }
+  .tag-slate { background: rgba(100,116,139,0.2); color: #94a3b8; }
+
+  /* Spec table */
+  .spec-table { width: 100%; border-collapse: collapse; margin-top: 0.8rem; font-size: 0.82rem; }
+  .spec-table tr { border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .spec-table tr:last-child { border-bottom: none; }
+  .spec-table td { padding: 0.4rem 0; }
+  .spec-table td:first-child { color: #64748b; width: 45%; }
+  .spec-table td:last-child { color: #e2e8f0; font-weight: 600; }
+
+  /* Alert / highlight box */
+  .highlight-box {
+    background: rgba(99,102,241,0.08);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 0.6rem;
+    padding: 0.9rem 1rem;
+    margin-top: 0.8rem;
+    font-size: 0.84rem;
+    color: #c7d2fe;
+  }
+
+  .highlight-box.green {
+    background: rgba(16,185,129,0.08);
+    border-color: rgba(16,185,129,0.25);
+    color: #a7f3d0;
+  }
+
+  .highlight-box.amber {
+    background: rgba(245,158,11,0.08);
+    border-color: rgba(245,158,11,0.25);
+    color: #fde68a;
+  }
+
+  /* Steps list */
+  .steps { list-style: none; margin-top: 0.8rem; }
+  .steps li {
+    display: flex; gap: 0.7rem;
+    font-size: 0.84rem; color: #94a3b8;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .steps li:last-child { border-bottom: none; }
+  .steps li .step-num {
+    width: 1.4rem; height: 1.4rem;
+    background: rgba(99,102,241,0.2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700; color: #a5b4fc;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  /* Sensor chip cards */
+  .sensor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; }
+  .sensor-card {
+    background: #0d1424;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 0.75rem;
+    padding: 1.1rem 1.2rem;
+    transition: all 0.2s;
+  }
+  .sensor-card:hover { border-color: rgba(99,102,241,0.4); background: #111827; }
+  .sensor-name { font-size: 0.9rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.2rem; }
+  .sensor-type { font-size: 0.7rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.6rem; }
+  .sensor-desc { font-size: 0.82rem; color: #94a3b8; line-height: 1.6; }
+  .sensor-spec { font-size: 0.78rem; color: #475569; margin-top: 0.5rem; }
+  .sensor-spec span { color: #818cf8; font-weight: 600; }
+
+  /* Resource link cards */
+  .link-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.9rem; }
+  .link-card {
+    background: #0d1424;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 0.75rem;
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    display: flex; align-items: center; gap: 0.9rem;
+    transition: all 0.2s;
+  }
+  .link-card:hover { border-color: rgba(99,102,241,0.4); background: #111827; transform: translateX(4px); }
+  .link-icon {
+    width: 2.5rem; height: 2.5rem;
+    background: rgba(99,102,241,0.15);
+    border-radius: 0.5rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+  }
+  .link-info .link-title { font-size: 0.88rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.15rem; }
+  .link-info .link-desc { font-size: 0.75rem; color: #64748b; }
+
+  /* New badge */
+  .new-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    color: #e0e7ff;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 0.25rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    vertical-align: middle;
+    margin-left: 0.4rem;
+  }
+
+  /* Footer */
+  footer {
+    background: #080d1a;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: #334155;
+    font-size: 0.8rem;
+  }
+  footer a { color: #475569; text-decoration: none; }
+  footer a:hover { color: #818cf8; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .card-grid, .card-grid-2 { grid-template-columns: 1fr; }
+    .sensor-grid { grid-template-columns: 1fr; }
+    .link-grid { grid-template-columns: 1fr; }
+    .stats-bar { gap: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Daily Research — 1 July 2026</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">การค้นพบและนวัตกรรมใหม่ในระบบ IoT · วันที่ 1 กรกฎาคม 2569</p>
+  <div class="stats-bar">
+    <div class="stat-item"><span class="num">5</span><span class="lbl">หัวข้อหลัก</span></div>
+    <div class="stat-item"><span class="num">8</span><span class="lbl">โปรเจกต์ไอเดีย</span></div>
+    <div class="stat-item"><span class="num">10</span><span class="lbl">Sensors ใหม่</span></div>
+    <div class="stat-item"><span class="num">6</span><span class="lbl">แหล่งอ้างอิง</span></div>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations">นวัตกรรม</a>
+  <a href="#projects">ไอเดียโปรเจกต์</a>
+  <a href="#sensors">Sensors</a>
+  <a href="#resources">แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- =================== SECTION 1: INNOVATIONS =================== -->
+  <section id="innovations">
+    <div class="section-title">
+      <div class="icon" style="background:rgba(139,92,246,0.15);">⚡</div>
+      <h2>นวัตกรรมและอัปเดตล่าสุด</h2>
+      <div class="divider"></div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Card: ESP32-P4 Rev 3.0 -->
+      <div class="card card-violet">
+        <div class="card-header">
+          <span class="card-emoji">🔋</span>
+          <div>
+            <div class="card-title">ESP32-P4 Revision 3.0 <span class="new-badge">NEW</span></div>
+            <div class="card-subtitle">มีนาคม 2026 — Power Rail ใหม่</div>
+          </div>
+        </div>
+        <p>Espressif ออก ESP32-P4 revision 3.0 พร้อม <strong>power rail ใหม่</strong> ที่ต้องการการออกแบบ PCB และ firmware ใหม่ด้วย นักพัฒนาที่ใช้ P4 รุ่นก่อนหน้าต้องอัปเดตทั้งสองส่วน ก่อนจะนำไปใช้งานจริงในผลิตภัณฑ์</p>
+        <table class="spec-table">
+          <tr><td>CPU</td><td>Dual-core RISC-V @ 400 MHz</td></tr>
+          <tr><td>PSRAM</td><td>32 MB ในตัว</td></tr>
+          <tr><td>GPIO</td><td>55 พิน (มากที่สุดในซีรีส์)</td></tr>
+          <tr><td>Camera</td><td>MIPI-CSI + ISP ฮาร์ดแวร์</td></tr>
+          <tr><td>Video</td><td>H.264 encode 1080p@30fps</td></tr>
+          <tr><td>AI</td><td>CNN accelerator + PSRAM 32MB</td></tr>
+        </table>
+        <div class="highlight-box">
+          <strong>สำคัญ:</strong> revision 3.0 เปลี่ยน power rail — ต้องออกแบบ PCB ใหม่ อัปเดต IDF และ flashing ใหม่ ถ้าซื้อ module ใหม่จากปี 2026 เป็นต้นไปจะเป็น rev 3.0 โดยอัตโนมัติ
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-violet">ESP32-P4</span>
+          <span class="tag tag-violet">Multimedia</span>
+          <span class="tag tag-blue">Edge AI</span>
+          <span class="tag tag-slate">MIPI-CSI</span>
+        </div>
+      </div>
+
+      <!-- Card: Matter 1.5 -->
+      <div class="card card-blue">
+        <div class="card-header">
+          <span class="card-emoji">🏠</span>
+          <div>
+            <div class="card-title">Matter 1.5 — Device Types ใหม่</div>
+            <div class="card-subtitle">ปี 2026 — Smart Home มาตรฐาน</div>
+          </div>
+        </div>
+        <p>Matter protocol เวอร์ชัน 1.5 เพิ่ม <strong>device types ใหม่</strong> หลายประเภท ทำให้ ESP32-C6 และ ESP32-H2 กลายเป็นตัวเลือกอันดับแรกสำหรับการสร้างอุปกรณ์ smart home มาตรฐาน ที่ทำงานร่วมกับ Apple HomeKit, Google Home และ Amazon Alexa ได้ในคราวเดียว</p>
+        <ul class="steps">
+          <li><span class="step-num">✓</span>Camera device type (ESP32-P4 เหมาะมาก)</li>
+          <li><span class="step-num">✓</span>Closure / ประตู-หน้าต่างอัตโนมัติ</li>
+          <li><span class="step-num">✓</span>Soil moisture sensor type ใหม่</li>
+          <li><span class="step-num">✓</span>Enhanced Energy Management</li>
+          <li><span class="step-num">✓</span>Thread border router ในตัว</li>
+        </ul>
+        <div class="highlight-box">
+          ESP-Matter SDK รองรับ Matter 1.5 แล้ว สามารถเริ่มพัฒนา prototype ได้ทันที ด้วย ESP32-C6 ซึ่งรองรับ Thread + Zigbee + Wi-Fi 6 ในชิปเดียว
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-blue">Matter 1.5</span>
+          <span class="tag tag-blue">Thread</span>
+          <span class="tag tag-blue">ESP32-C6</span>
+          <span class="tag tag-emerald">Smart Home</span>
+        </div>
+      </div>
+
+      <!-- Card: ESPHome Zigbee Native -->
+      <div class="card card-cyan">
+        <div class="card-header">
+          <span class="card-emoji">📡</span>
+          <div>
+            <div class="card-title">ESPHome Zigbee Native Component</div>
+            <div class="card-subtitle">2026.5.0 — ESP32-H2/C6 เป็น End Device</div>
+          </div>
+        </div>
+        <p>ESPHome เพิ่ม <strong>native Zigbee component</strong> ที่รันบน ESP32-C6 และ ESP32-H2 โดยตรง ไม่ต้องใช้ coordinator ภายนอก สามารถประกาศ sensor entity เป็น Zigbee cluster ได้ ZHA และ zigbee2mqtt รับรู้อัตโนมัติ</p>
+        <p>ESP32-H2 มีกระแสนอนหลับ <strong>8 µA</strong> ทำให้สร้าง sensor แบตเตอรี่ที่ใช้งานได้นานกว่า 1 ปีได้จริง และ Zigbee mesh ยังช่วยขยายสัญญาณผ่านอุปกรณ์ router ระหว่างกัน</p>
+        <div class="highlight-box">
+          <strong>ตัวอย่าง YAML (ESPHome):</strong><br>
+          <code style="font-size:0.78rem; color:#67e8f9;">
+            zigbee:<br>
+            &nbsp;&nbsp;endpoint: 1<br>
+            &nbsp;&nbsp;device_type: TEMPERATURE_SENSOR<br>
+            sensor:<br>
+            &nbsp;&nbsp;- platform: sht3xd<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;zigbee: true
+          </code>
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-cyan">ESPHome 2026.5</span>
+          <span class="tag tag-cyan">Zigbee</span>
+          <span class="tag tag-cyan">ESP32-H2</span>
+          <span class="tag tag-cyan">ESP32-C6</span>
+        </div>
+      </div>
+
+      <!-- Card: UWB Technology -->
+      <div class="card card-rose">
+        <div class="card-header">
+          <span class="card-emoji">📍</span>
+          <div>
+            <div class="card-title">UWB Indoor Positioning ความแม่นยำ 10 ซม.</div>
+            <div class="card-subtitle">Qorvo DWM3000 + ESP32 — RTLS</div>
+          </div>
+        </div>
+        <p>Ultra-Wideband (UWB) วัดเวลาเดินทางของคลื่นวิทยุระดับนาโนวินาที ทำให้ได้ตำแหน่งแม่นยำถึง <strong>10 เซนติเมตร</strong> ใน indoor โดยไม่ต้องพึ่ง GPS — เหนือกว่า Bluetooth และ Wi-Fi positioning หลายเท่า</p>
+        <table class="spec-table">
+          <tr><td>Module</td><td>Qorvo DWM3000 (IEEE 802.15.4z)</td></tr>
+          <tr><td>Interface</td><td>SPI กับ ESP32</td></tr>
+          <tr><td>ความแม่นยำ</td><td>&lt;10 ซม. (DS-TWR algorithm)</td></tr>
+          <tr><td>ช่วงสัญญาณ</td><td>~60 เมตร ใน LOS</td></tr>
+          <tr><td>Anchors ขั้นต่ำ</td><td>3 จุด (2D), 4 จุด (3D)</td></tr>
+        </table>
+        <div class="tag-row">
+          <span class="tag tag-rose">UWB</span>
+          <span class="tag tag-rose">RTLS</span>
+          <span class="tag tag-rose">DWM3000</span>
+          <span class="tag tag-slate">Indoor Navigation</span>
+        </div>
+      </div>
+
+      <!-- Card: TinyML 2026 -->
+      <div class="card card-emerald">
+        <div class="card-header">
+          <span class="card-emoji">🧠</span>
+          <div>
+            <div class="card-title">TinyML บน ESP32 — Production Ready 2026</div>
+            <div class="card-subtitle">Edge AI Inference ไม่ต้องพึ่ง Cloud</div>
+          </div>
+        </div>
+        <p>ตลาด TinyML โต <strong>80% ต่อปี</strong> คาดว่าจะแตะ $1.5 พันล้าน USD ภายในปี 2027 ESP32-S3 และ P4 กลายเป็นแพลตฟอร์ม edge AI ที่ใช้งานได้จริงในระดับ production โดยไม่ต้องส่งข้อมูลขึ้น cloud</p>
+        <ul class="steps">
+          <li><span class="step-num">1</span><strong>Edge Impulse</strong> — ฝึก model บน cloud deploy ลง ESP32</li>
+          <li><span class="step-num">2</span><strong>TensorFlow Lite Micro</strong> — quantized model ขนาดเล็ก</li>
+          <li><span class="step-num">3</span><strong>ESP-DL</strong> — library จาก Espressif รองรับ P4 accelerator</li>
+          <li><span class="step-num">4</span><strong>SenseCraft AI</strong> — no-code สำหรับ XIAO ESP32-S3</li>
+        </ul>
+        <div class="highlight-box green">
+          <strong>Seeed Studio</strong> เปิดตัว Vibration Anomaly Detection Kit สำหรับ XIAO ESP32-S3 ใช้ algorithm GEDAD ตรวจจับความผิดปกติได้แบบ no-code ผ่าน SenseCraft AI
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-emerald">TinyML</span>
+          <span class="tag tag-emerald">Edge AI</span>
+          <span class="tag tag-blue">ESP32-S3</span>
+          <span class="tag tag-violet">ESP32-P4</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =================== SECTION 2: PROJECTS =================== -->
+  <section id="projects">
+    <div class="section-title">
+      <div class="icon" style="background:rgba(16,185,129,0.15);">🛠</div>
+      <h2>ไอเดียโปรเจกต์น่าสร้าง</h2>
+      <div class="divider"></div>
+    </div>
+
+    <div class="card-grid-2">
+
+      <!-- Project 1: UWB RTLS Warehouse -->
+      <div class="card card-rose">
+        <div class="card-header">
+          <span class="card-emoji">🏭</span>
+          <div>
+            <div class="card-title">ระบบ UWB RTLS ติดตามสินทรัพย์ใน Warehouse</div>
+            <div class="card-subtitle">แม่นยำระดับเซนติเมตร · ไม่ต้องพึ่ง GPS</div>
+          </div>
+        </div>
+        <p>สร้างระบบ Real-Time Location System (RTLS) สำหรับโรงงานหรือคลังสินค้า โดยติดตั้ง anchor node 4 จุดที่มุมห้อง แล้วใช้ tag บน forklift หรือ pallet ระบบคำนวณตำแหน่ง X,Y,Z ด้วยอัลกอริทึม trilateration</p>
+        <p><strong>Hardware:</strong> ESP32 + DWM3000 × 4 (anchor) + ESP32 + DWM3000 × n (tag) + MQTT broker</p>
+        <ul class="steps">
+          <li><span class="step-num">1</span>ติดตั้ง anchor 4 จุดที่พิกัดที่รู้ค่าแน่นอน</li>
+          <li><span class="step-num">2</span>tag วัด TWR กับทุก anchor อัตโนมัติ</li>
+          <li><span class="step-num">3</span>ESP32 คำนวณตำแหน่งด้วย least-squares optimization</li>
+          <li><span class="step-num">4</span>ส่งพิกัดผ่าน Wi-Fi → MQTT → Dashboard</li>
+          <li><span class="step-num">5</span>แสดง floor map real-time บน web browser</li>
+        </ul>
+        <div class="highlight-box">
+          <strong>โปรเจกต์อ้างอิง:</strong> Circuit-Digest/ESP32-DWM3000-UWB-Indoor-RTLS-Tracker บน GitHub มีโค้ดสมบูรณ์พร้อม web dashboard
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-rose">UWB</span>
+          <span class="tag tag-rose">RTLS</span>
+          <span class="tag tag-amber">Warehouse</span>
+          <span class="tag tag-blue">MQTT</span>
+          <span class="tag tag-slate">ระดับกลาง</span>
+        </div>
+      </div>
+
+      <!-- Project 2: Smart Beehive -->
+      <div class="card card-amber">
+        <div class="card-header">
+          <span class="card-emoji">🐝</span>
+          <div>
+            <div class="card-title">Smart Beehive — ระบบตรวจสอบรังผึ้ง IoT</div>
+            <div class="card-subtitle">น้ำหนัก + เสียง + อุณหภูมิ + ความชื้น</div>
+          </div>
+        </div>
+        <p>ผึ้งเป็นตัวชี้วัดสุขภาพสิ่งแวดล้อม การตรวจสอบรังด้วย IoT ช่วยให้รู้ว่าผึ้งกำลัง swarm, ราชินีสูญหาย หรือมีแมลงศัตรูรบกวนได้ก่อนที่คนเลี้ยงจะไปถึงรัง</p>
+        <p><strong>Hardware:</strong> ESP32 + HX711 + Load Cell (น้ำหนัก) + DHT22/SHT40 (Temp/Humidity) + INMP441 MEMS Mic (เสียง) + Solar Panel + LiPo</p>
+        <table class="spec-table">
+          <tr><td>น้ำหนักรัง</td><td>HX711 + Load Cell 100kg · ±5g</td></tr>
+          <tr><td>อุณหภูมิภายใน</td><td>DS18B20 ใส่ในรัง · ±0.5°C</td></tr>
+          <tr><td>เสียงผึ้ง</td><td>INMP441 I2S · FFT วิเคราะห์ความถี่</td></tr>
+          <tr><td>สื่อสาร</td><td>ESP-NOW (apiary) + GSM/LoRa (cloud)</td></tr>
+          <tr><td>พลังงาน</td><td>Solar 5W + LiPo 3000mAh</td></tr>
+        </table>
+        <div class="highlight-box amber">
+          เสียงผึ้งที่ความถี่ 200-600 Hz บ่งบอกสถานะอาณานิคม — ผึ้งปกติ ~250 Hz, ก่อน swarm ความถี่สูงขึ้นและดังขึ้นมาก สามารถฝึก TinyML model ตรวจจับได้อัตโนมัติ
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-amber">Smart Agriculture</span>
+          <span class="tag tag-amber">Beehive</span>
+          <span class="tag tag-emerald">Solar Power</span>
+          <span class="tag tag-emerald">TinyML</span>
+        </div>
+      </div>
+
+      <!-- Project 3: Hydroponics Auto Dosing -->
+      <div class="card card-emerald">
+        <div class="card-header">
+          <span class="card-emoji">🌱</span>
+          <div>
+            <div class="card-title">Hydroponics Auto Dosing System</div>
+            <div class="card-subtitle">ระบบควบคุม EC/pH อัตโนมัติด้วย IoT</div>
+          </div>
+        </div>
+        <p>ระบบไฮโดรโปนิกส์อัจฉริยะที่ควบคุม <strong>ค่า EC (ความเข้มข้นธาตุอาหาร)</strong> และ <strong>pH</strong> โดยอัตโนมัติ เมื่อ sensor ตรวจพบว่าค่าเกินขีดจำกัด ปั้มจ่ายสารจะทำงานและหยุดอัตโนมัติ ไม่ต้องดูแลตลอดเวลา</p>
+        <p><strong>Stack:</strong> ESP32 + MQTT + InfluxDB + Node-RED + Grafana (MING Stack)</p>
+        <table class="spec-table">
+          <tr><td>pH Sensor</td><td>Gravity Analog pH Meter V2 · ±0.1</td></tr>
+          <tr><td>EC Sensor</td><td>Gravity TDS/EC Meter · 0–1000 ppm</td></tr>
+          <tr><td>อุณหภูมิน้ำ</td><td>DS18B20 Waterproof · ±0.5°C</td></tr>
+          <tr><td>ระดับน้ำ</td><td>Ultrasonic HC-SR04 หรือ float switch</td></tr>
+          <tr><td>ปั้ม dosing</td><td>Peristaltic Pump 12V × 4 ทิศทาง</td></tr>
+        </table>
+        <div class="highlight-box green">
+          <strong>Algorithm:</strong> Hysteresis control — pH pump เปิดเมื่อ pH &gt; 6.5, ปิดเมื่อ pH &lt; 6.0 ป้องกันการแกว่งเกินและประหยัดสาร dosing
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-emerald">Hydroponics</span>
+          <span class="tag tag-emerald">Smart Farm</span>
+          <span class="tag tag-blue">MQTT</span>
+          <span class="tag tag-blue">InfluxDB</span>
+          <span class="tag tag-slate">ระดับกลาง</span>
+        </div>
+      </div>
+
+      <!-- Project 4: SHM Bridge -->
+      <div class="card card-violet">
+        <div class="card-header">
+          <span class="card-emoji">🌉</span>
+          <div>
+            <div class="card-title">Structural Health Monitoring — ตรวจสุขภาพโครงสร้าง</div>
+            <div class="card-subtitle">MEMS Accelerometer + Anomaly Detection บน IoT</div>
+          </div>
+        </div>
+        <p>ใช้ ESP32-C6 เป็น edge sensor hub เก็บข้อมูลการสั่นสะเทือนของสะพาน อาคาร หรือโครงสร้างงานวิศวกรรม ประมวลผลด้วย FFT วิเคราะห์ frequency response เพื่อตรวจจับ damage หรือความเสื่อมโทรมก่อนที่จะเกิดความเสียหาย</p>
+        <p><strong>Hardware:</strong> ESP32-C6 + MPU6050/ICM-42688 + ESP32-S3 (edge compute) + Wi-Fi 6 mesh</p>
+        <ul class="steps">
+          <li><span class="step-num">1</span>ติดตั้ง sensor node ที่จุดวิกฤต เช่น mid-span ของสะพาน</li>
+          <li><span class="step-num">2</span>วัด acceleration 3 แกน ที่ความถี่สูง (≥1kHz)</li>
+          <li><span class="step-num">3</span>FFT บน ESP32 หาค่า natural frequency</li>
+          <li><span class="step-num">4</span>เปรียบเทียบ baseline — ถ้า shift &gt; threshold → alert</li>
+          <li><span class="step-num">5</span>คำนวณ NDI/DPR/SDI/HSI indices รายวัน</li>
+        </ul>
+        <div class="highlight-box">
+          <strong>งานวิจัย:</strong> ระบบ SHM แบบ low-cost บน ESP32 ถูกนำไปใช้กับสะพาน Bhakta Kannappa Sethu ในอินเดีย ติดตาม 12 เดือน พิสูจน์ว่า MEMS + ESP32 ใช้งานได้จริงในระดับ infrastructure
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-violet">SHM</span>
+          <span class="tag tag-violet">Vibration</span>
+          <span class="tag tag-blue">ESP32-C6</span>
+          <span class="tag tag-slate">ระดับสูง</span>
+        </div>
+      </div>
+
+      <!-- Project 5: Lightning Detector Weather Station -->
+      <div class="card card-amber">
+        <div class="card-header">
+          <span class="card-emoji">⚡</span>
+          <div>
+            <div class="card-title">Flash Bee — สถานีอุตุฯ + ตรวจจับฟ้าผ่า</div>
+            <div class="card-subtitle">AS3935 + ESP32-C3 · ตรวจฟ้าผ่าในระยะ 40 กม.</div>
+          </div>
+        </div>
+        <p>โปรเจกต์ <strong>Flash Bee</strong> (เมษายน 2026) แสดงให้เห็นว่า ESP32-C3 + AS3935 สามารถสร้างเครื่องตรวจจับฟ้าผ่าแบบพกพาได้ในราคาถูก AS3935 ใช้คลื่น 500kHz ตรวจพบ lightning strike ทั้ง cloud-to-ground และ intra-cloud ได้ไกลถึง 40 กม.</p>
+        <table class="spec-table">
+          <tr><td>Sensor</td><td>AMS AS3935 Franklin Lightning Sensor</td></tr>
+          <tr><td>Interface</td><td>SPI หรือ I2C</td></tr>
+          <tr><td>ระยะตรวจ</td><td>1–40 กม. (14 ระดับ)</td></tr>
+          <tr><td>ความแม่นยำ</td><td>±1 กม. ต่อระดับ</td></tr>
+          <tr><td>Battery Life</td><td>6–7 ชั่วโมง (Flash Bee prototype)</td></tr>
+          <tr><td>ESPHome</td><td>มี component as3935 ใช้งานง่าย</td></tr>
+        </table>
+        <div class="tag-row">
+          <span class="tag tag-amber">Lightning</span>
+          <span class="tag tag-amber">AS3935</span>
+          <span class="tag tag-blue">ESP32-C3</span>
+          <span class="tag tag-emerald">Weather Station</span>
+        </div>
+      </div>
+
+      <!-- Project 6: AI Hydroponics with MING Stack -->
+      <div class="card card-cyan">
+        <div class="card-header">
+          <span class="card-emoji">🤖</span>
+          <div>
+            <div class="card-title">AI-Powered Hydroponics ด้วย MING Stack</div>
+            <div class="card-subtitle">MQTT + InfluxDB + Node-RED + Grafana</div>
+          </div>
+        </div>
+        <p>ระบบ NFT hydroponics ระดับ production ที่ใช้ ESP32 เป็น edge controller เชื่อมกับ MING stack — ข้อมูลเดินทาง ESP32 → MQTT → Node-RED (control logic) → InfluxDB (timeseries) → Grafana (visualization) พร้อม AI ทำนายความต้องการธาตุอาหารล่วงหน้า</p>
+        <p>ระบบผ่าน TLS/ACL security, มี hysteresis algorithm ป้องกันปั้มทำงานถี่เกินไป และ dual-mode operation (auto/manual) เพื่อความปลอดภัยในกรณี sensor ขัดข้อง</p>
+        <div class="highlight-box">
+          <strong>ความสำเร็จ:</strong> งานวิจัยจาก MDPI 2026 แสดงว่าระบบ ESP32 + MING stack มี uptime 99.3% ตลอด 30 วัน และควบคุม pH ให้อยู่ในช่วง ±0.2 จาก setpoint ได้สำเร็จ
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-cyan">MING Stack</span>
+          <span class="tag tag-cyan">Node-RED</span>
+          <span class="tag tag-cyan">Grafana</span>
+          <span class="tag tag-blue">InfluxDB</span>
+          <span class="tag tag-emerald">AI</span>
+        </div>
+      </div>
+
+      <!-- Project 7: EnviroGo Wearable -->
+      <div class="card card-blue">
+        <div class="card-header">
+          <span class="card-emoji">⌚</span>
+          <div>
+            <div class="card-title">EnviroGo — Wearable Environmental Monitor</div>
+            <div class="card-subtitle">ESP32-S3 + 7 Sensors · สวมใส่ได้</div>
+          </div>
+        </div>
+        <p>EnviroGo เป็น ESP32-S3 wearable ที่เปิดตัวใน Crowdfunding มกราคม 2026 ติดตาม <strong>7 sensors</strong> พร้อมกัน: VOC, UV index, อุณหภูมิ, ความชื้น, ความดันอากาศ, แสง และ motion 9 แกน พร้อม display 0.96 นิ้ว, microSD, RTC</p>
+        <table class="spec-table">
+          <tr><td>VOC/Air</td><td>Organic Compound sensor</td></tr>
+          <tr><td>UV Index</td><td>UV sensor 290-400nm</td></tr>
+          <tr><td>Motion</td><td>9-axis MEMS IMU</td></tr>
+          <tr><td>Display</td><td>0.96" IPS</td></tr>
+          <tr><td>Storage</td><td>microSD local logging</td></tr>
+          <tr><td>Time</td><td>RTC timestamped data</td></tr>
+        </table>
+        <div class="tag-row">
+          <span class="tag tag-blue">Wearable</span>
+          <span class="tag tag-blue">ESP32-S3</span>
+          <span class="tag tag-emerald">Environmental</span>
+          <span class="tag tag-slate">Crowdfunding</span>
+        </div>
+      </div>
+
+      <!-- Project 8: Health + Environment Monitor -->
+      <div class="card card-rose">
+        <div class="card-header">
+          <span class="card-emoji">❤️</span>
+          <div>
+            <div class="card-title">8-Channel Health + Environment Monitor</div>
+            <div class="card-subtitle">ECG + SpO2 + Temperature + ECG — Offline First</div>
+          </div>
+        </div>
+        <p>ระบบ monitor 8 ช่องสัญญาณในบอร์ดเดียว ออกแบบให้ทำงานได้แม้ไม่มี internet — <strong>"Offline First"</strong> — ข้อมูลเก็บ local ก่อน sync เมื่อมี network เหมาะสำหรับพื้นที่ห่างไกลหรือโรงพยาบาลชุมชน</p>
+        <table class="spec-table">
+          <tr><td>Pulse Oximetry</td><td>MAX30105 · SpO2 + Heart Rate</td></tr>
+          <tr><td>Body Temp</td><td>DS18B20 · ±0.5°C</td></tr>
+          <tr><td>ECG</td><td>AD8232 · ติดตามหัวใจ</td></tr>
+          <tr><td>Gas</td><td>MQ-2 · LPG/Smoke/CO</td></tr>
+          <tr><td>Humidity</td><td>DHT11</td></tr>
+          <tr><td>Light</td><td>LDR · ambient light</td></tr>
+        </table>
+        <div class="tag-row">
+          <span class="tag tag-rose">Health Monitor</span>
+          <span class="tag tag-rose">ECG</span>
+          <span class="tag tag-rose">SpO2</span>
+          <span class="tag tag-slate">Offline First</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =================== SECTION 3: SENSORS =================== -->
+  <section id="sensors">
+    <div class="section-title">
+      <div class="icon" style="background:rgba(6,182,212,0.15);">🔬</div>
+      <h2>Sensors น่าสนใจประจำสัปดาห์</h2>
+      <div class="divider"></div>
+    </div>
+
+    <div class="sensor-grid">
+
+      <div class="sensor-card">
+        <div class="sensor-name">Qorvo DWM3000</div>
+        <div class="sensor-type">UWB Positioning Module</div>
+        <div class="sensor-desc">โมดูล UWB ขนาดเล็กที่สุดในตลาด รองรับ IEEE 802.15.4z มีเสาอากาศในตัว เชื่อมต่อ ESP32 ผ่าน SPI</div>
+        <div class="sensor-spec">ความแม่นยำ: <span>&lt;10 ซม.</span> · ช่วง: <span>~60 เมตร</span></div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">AMS AS3935</div>
+        <div class="sensor-type">Lightning Detector</div>
+        <div class="sensor-desc">Franklin Lightning Sensor ตรวจจับฟ้าผ่าและประเมินระยะทางถึง head of storm ผ่านคลื่น 500kHz รองรับ SPI/I2C</div>
+        <div class="sensor-spec">ระยะตรวจ: <span>1–40 กม.</span> · ความแม่นยำ: <span>±1 กม./step</span></div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">SHT40 / SHT45</div>
+        <div class="sensor-type">Temp + Humidity (High Precision)</div>
+        <div class="sensor-desc">Sensirion SHT4x รุ่นใหม่ ขนาดเล็กลง ความแม่นยำสูงขึ้น ±0.1°C, ±1.8%RH เหมาะกับงาน precision climate control</div>
+        <div class="sensor-spec">Interface: <span>I2C</span> · ความแม่นยำ: <span>±0.1°C / ±1.8%RH</span></div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">Gravity EC/TDS Meter V2</div>
+        <div class="sensor-type">Electrical Conductivity Sensor</div>
+        <div class="sensor-desc">DFRobot sensor วัดค่า EC ของสารละลายสำหรับ hydroponics พร้อม temperature compensation อัตโนมัติ output เป็น analog</div>
+        <div class="sensor-spec">ช่วง: <span>1–20 ms/cm</span> · ชดเชย: <span>อุณหภูมิ auto</span></div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">MPU6050 / ICM-42688-P</div>
+        <div class="sensor-type">6-Axis IMU — SHM Applications</div>
+        <div class="sensor-desc">สำหรับงาน Structural Health Monitoring ต้องการ sampling rate สูง ICM-42688-P รองรับ 32kHz และ noise ต่ำกว่า MPU6050 มาก เหมาะกับ FFT analysis</div>
+        <div class="sensor-spec">ICM-42688-P noise: <span>70µg/√Hz</span> · Rate: <span>32kHz</span></div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">Sensirion SCD41</div>
+        <div class="sensor-type">CO₂ Sensor (True Sensing)</div>
+        <div class="sensor-desc">วัด CO₂ ด้วย photoacoustic spectroscopy ขนาดเล็กมาก เหมาะกับ wearable และ smart home รองรับ I2C ราคาถูกกว่า SCD40 รุ่นก่อน</div>
+        <div class="sensor-spec">ช่วง: <span>400–5000 ppm</span> · ความแม่นยำ: <span>±40 ppm</span></div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">HX711 + Load Cell</div>
+        <div class="sensor-type">Weight Measurement — Beehive</div>
+        <div class="sensor-desc">ADC 24-bit สำหรับ load cell ใช้วัดน้ำหนักรังผึ้ง ตรวจสอบผลผลิตน้ำผึ้ง บอกช่วงเวลาที่เหมาะสมในการเก็บเกี่ยว</div>
+        <div class="sensor-spec">ความละเอียด: <span>24-bit</span> · ช่วง: <span>5–100 kg</span></div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">INMP441</div>
+        <div class="sensor-type">I2S MEMS Microphone</div>
+        <div class="sensor-desc">MEMS mic ที่ใช้ I2S interface เหมาะสำหรับ ESP32 นำเสียงมา FFT วิเคราะห์ความถี่ผึ้ง ตรวจจับเสียงผิดปกติในรัง หรือตรวจจับเสียงเครื่องจักร</div>
+        <div class="sensor-spec">SNR: <span>61 dB</span> · Frequency: <span>20Hz–20kHz</span></div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">Peristaltic Pump 12V</div>
+        <div class="sensor-type">Dosing Pump — Hydroponics</div>
+        <div class="sensor-desc">ปั้มที่ใช้ใน hydroponics dosing system ควบคุมปริมาณสารได้แม่นยำ ใช้ ESP32 relay หรือ L298N motor driver ในการ control</div>
+        <div class="sensor-spec">อัตราไหล: <span>100 ml/min</span> · แรงดัน: <span>12V DC</span></div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">DS18B20 Waterproof</div>
+        <div class="sensor-type">Waterproof Temperature Sensor</div>
+        <div class="sensor-desc">Dallas 1-Wire sensor ที่หุ้มด้วยสแตนเลส ใส่ในน้ำ hydroponics, ดิน, หรือ beehive ได้โดยตรง ต่อพ่วงได้หลายตัวบนสาย 1 เส้น</div>
+        <div class="sensor-spec">ความแม่นยำ: <span>±0.5°C</span> · Protocol: <span>1-Wire</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =================== SECTION 4: RESOURCES =================== -->
+  <section id="resources">
+    <div class="section-title">
+      <div class="icon" style="background:rgba(245,158,11,0.15);">📚</div>
+      <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+      <div class="divider"></div>
+    </div>
+
+    <div class="link-grid">
+      <a class="link-card" href="https://github.com/Circuit-Digest/ESP32-DWM3000-UWB-Indoor-RTLS-Tracker" target="_blank" rel="noopener">
+        <div class="link-icon">📦</div>
+        <div class="link-info">
+          <div class="link-title">ESP32 DWM3000 UWB RTLS Tracker</div>
+          <div class="link-desc">GitHub — Real-time indoor positioning โค้ดสมบูรณ์</div>
+        </div>
+      </a>
+      <a class="link-card" href="https://github.com/SmartHomeScene/zigbee-esp32" target="_blank" rel="noopener">
+        <div class="link-icon">📡</div>
+        <div class="link-info">
+          <div class="link-title">DIY Zigbee Devices — ESP32-C6/H2</div>
+          <div class="link-desc">GitHub SmartHomeScene — Zigbee sensor collection</div>
+        </div>
+      </a>
+      <a class="link-card" href="https://www.cnx-software.com/2026/04/09/flash-bee-an-esp32-c3-based-diy-handheld-lightning-detector/" target="_blank" rel="noopener">
+        <div class="link-icon">⚡</div>
+        <div class="link-info">
+          <div class="link-title">Flash Bee — ESP32-C3 Lightning Detector</div>
+          <div class="link-desc">CNX Software — เมษายน 2026 prototype</div>
+        </div>
+      </a>
+      <a class="link-card" href="https://github.com/deaneeth/smart-beehive-monitor" target="_blank" rel="noopener">
+        <div class="link-icon">🐝</div>
+        <div class="link-info">
+          <div class="link-title">Smart Beehive Monitor</div>
+          <div class="link-desc">GitHub — ESP32 + Firebase + Solar beehive IoT</div>
+        </div>
+      </a>
+      <a class="link-card" href="https://www.mdpi.com/2673-4591/122/1/3" target="_blank" rel="noopener">
+        <div class="link-icon">📄</div>
+        <div class="link-info">
+          <div class="link-title">Low-Cost NFT Hydroponics with MING Stack</div>
+          <div class="link-desc">MDPI Research — ESP32 + MQTT + InfluxDB + Grafana</div>
+        </div>
+      </a>
+      <a class="link-card" href="https://www.seeedstudio.com/blog/2025/08/01/introducing-the-vibration-anomaly-detection-kit-for-xiao-esp32-s3-no-code-vibration-detection-with-sensecraft-ai/" target="_blank" rel="noopener">
+        <div class="link-icon">🔬</div>
+        <div class="link-info">
+          <div class="link-title">Vibration Anomaly Detection Kit — XIAO ESP32-S3</div>
+          <div class="link-desc">Seeed Studio — SenseCraft AI no-code detection</div>
+        </div>
+      </a>
+      <a class="link-card" href="https://esphome.io/components/sensor/as3935/" target="_blank" rel="noopener">
+        <div class="link-icon">🌩</div>
+        <div class="link-info">
+          <div class="link-title">AS3935 Lightning Sensor — ESPHome</div>
+          <div class="link-desc">ESPHome docs — component configuration</div>
+        </div>
+      </a>
+      <a class="link-card" href="https://www.hackster.io/ElectroScopeArchive/real-time-uwb-indoor-positioning-system-using-esp32-c1c834" target="_blank" rel="noopener">
+        <div class="link-icon">🗺</div>
+        <div class="link-info">
+          <div class="link-title">Real-Time UWB Indoor Positioning — Hackster.io</div>
+          <div class="link-desc">Project guide พร้อม build steps</div>
+        </div>
+      </a>
+      <a class="link-card" href="https://www.ijert.org/iot-based-integrated-health-and-environmental-monitoring-system-using-esp32-microcontroller-ijertv15is030399" target="_blank" rel="noopener">
+        <div class="link-icon">❤️</div>
+        <div class="link-info">
+          <div class="link-title">Health + Environment Monitor — IJERT</div>
+          <div class="link-desc">งานวิจัย — 8-channel offline-first ESP32 system</div>
+        </div>
+      </a>
+      <a class="link-card" href="https://www.cnx-software.com/2026/01/20/envirogo-esp32-s3-wearable-environmental-monitor-features-7-sensors/" target="_blank" rel="noopener">
+        <div class="link-icon">⌚</div>
+        <div class="link-info">
+          <div class="link-title">EnviroGo ESP32-S3 Wearable</div>
+          <div class="link-desc">CNX Software — 7-sensor wearable crowdfunding</div>
+        </div>
+      </a>
+      <a class="link-card" href="https://saludpcb.com/matter-protocol-guide-esp32-development/" target="_blank" rel="noopener">
+        <div class="link-icon">🏠</div>
+        <div class="link-info">
+          <div class="link-title">Matter Protocol Complete Guide 2026</div>
+          <div class="link-desc">ESP32 smart home development — SaludPCB</div>
+        </div>
+      </a>
+      <a class="link-card" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10280558/" target="_blank" rel="noopener">
+        <div class="link-icon">🔬</div>
+        <div class="link-info">
+          <div class="link-title">Bee Colony Monitoring via ESP-NOW</div>
+          <div class="link-desc">PubMed Research — apiary sensor network</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p style="margin-bottom:0.5rem; color:#475569; font-size:0.85rem;">
+    สร้างโดยระบบ AI Research อัตโนมัติ · วันที่ <strong style="color:#64748b;">1 กรกฎาคม 2569</strong>
+  </p>
+  <p>
+    แหล่งข้อมูล:
+    <a href="https://www.espressif.com/" target="_blank" rel="noopener">Espressif Systems</a> ·
+    <a href="https://circuitdigest.com/" target="_blank" rel="noopener">Circuit Digest</a> ·
+    <a href="https://esphome.io/" target="_blank" rel="noopener">ESPHome</a> ·
+    <a href="https://www.cnx-software.com/" target="_blank" rel="noopener">CNX Software</a> ·
+    <a href="https://www.mdpi.com/" target="_blank" rel="noopener">MDPI Research</a> ·
+    <a href="https://www.seeedstudio.com/" target="_blank" rel="noopener">Seeed Studio</a>
+  </p>
+</footer>
+
+</body>
+</html>
