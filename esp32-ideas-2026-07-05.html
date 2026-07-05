@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 &amp; Sensor Innovations - 5 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-deep:    #080f1e;
+    --bg-card:    #0f1f3a;
+    --bg-glass:   rgba(15, 31, 58, 0.85);
+    --border:     rgba(56, 189, 248, 0.18);
+    --text:       #e2e8f0;
+    --muted:      #94a3b8;
+    --accent1:    #38bdf8;  /* sky blue */
+    --accent2:    #34d399;  /* emerald */
+    --accent3:    #f472b6;  /* pink */
+    --accent4:    #fb923c;  /* orange */
+    --accent5:    #a78bfa;  /* violet */
+    --accent6:    #facc15;  /* yellow */
+    --tag-bg:     rgba(56, 189, 248, 0.12);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    position: relative;
+    overflow: hidden;
+    padding: 3.5rem 2rem 3rem;
+    text-align: center;
+    background: linear-gradient(135deg, #0c1a3a 0%, #081429 60%, #0a0f1e 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%; transform: translateX(-50%);
+    width: 700px; height: 350px;
+    background: radial-gradient(ellipse at center, rgba(56,189,248,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: var(--tag-bg);
+    border: 1px solid var(--accent1);
+    color: var(--accent1);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1.2rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2), var(--accent5));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.6rem;
+  }
+  header p.subtitle {
+    color: var(--muted);
+    font-size: 1rem;
+    max-width: 640px;
+    margin: 0 auto 1.8rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.35rem 1.1rem;
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+  .stat-chip span { color: var(--accent1); font-weight: 700; }
+
+  /* ─── LAYOUT ─── */
+  main {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  section { margin-bottom: 3.5rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.6rem;
+  }
+  .section-header .icon {
+    width: 2.5rem; height: 2.5rem;
+    border-radius: 0.6rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+  .section-divider {
+    height: 2px;
+    border-radius: 999px;
+    margin-bottom: 1.8rem;
+    background: linear-gradient(90deg, currentColor 0%, transparent 100%);
+    opacity: 0.3;
+  }
+
+  /* ─── CARDS ─── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+  }
+  .card-grid.wide {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 1rem 1rem 0 0;
+    background: var(--card-accent, var(--accent1));
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: var(--card-accent, var(--accent1));
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  }
+
+  .card-icon {
+    font-size: 1.8rem;
+    margin-bottom: 0.8rem;
+    display: block;
+  }
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--card-accent, var(--accent1));
+  }
+  .card-desc {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+  .card p { font-size: 0.92rem; margin-bottom: 0.6rem; }
+  .card ul { padding-left: 1.2rem; font-size: 0.9rem; color: var(--text); }
+  .card ul li { margin-bottom: 0.35rem; }
+
+  /* highlight box */
+  .highlight-box {
+    background: rgba(56,189,248,0.06);
+    border-left: 3px solid var(--card-accent, var(--accent1));
+    border-radius: 0 0.5rem 0.5rem 0;
+    padding: 0.6rem 1rem;
+    margin: 0.8rem 0;
+    font-size: 0.88rem;
+  }
+
+  /* code block */
+  .code-block {
+    background: #060d1a;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0.6rem;
+    padding: 0.85rem 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: #7dd3fc;
+    overflow-x: auto;
+    margin: 0.8rem 0;
+    white-space: pre;
+  }
+
+  /* tags */
+  .tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.9rem; }
+  .tag {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    color: var(--accent1);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+  }
+
+  /* NEW badge */
+  .badge-new {
+    display: inline-block;
+    background: var(--accent2);
+    color: #022c22;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-left: 0.4rem;
+  }
+
+  /* spec table */
+  .spec-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 0.8rem 0; }
+  .spec-table td { padding: 0.4rem 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .spec-table td:first-child { color: var(--muted); width: 45%; }
+  .spec-table td:last-child { color: var(--text); font-weight: 600; }
+
+  /* section accent colors */
+  #innovations .section-header h2 { color: var(--accent1); }
+  #innovations .section-divider { color: var(--accent1); }
+  #projects .section-header h2 { color: var(--accent2); }
+  #projects .section-divider { color: var(--accent2); }
+  #sensors .section-header h2 { color: var(--accent3); }
+  #sensors .section-divider { color: var(--accent3); }
+  #resources .section-header h2 { color: var(--accent4); }
+  #resources .section-divider { color: var(--accent4); }
+
+  #innovations .icon { background: rgba(56,189,248,0.12); }
+  #projects .icon   { background: rgba(52,211,153,0.12); }
+  #sensors .icon    { background: rgba(244,114,182,0.12); }
+  #resources .icon  { background: rgba(251,146,60,0.12); }
+
+  /* resource link card */
+  .link-card {
+    display: flex; gap: 1rem; align-items: flex-start;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.8rem;
+    padding: 1rem 1.2rem;
+    margin-bottom: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s;
+  }
+  .link-card:hover { border-color: var(--accent4); }
+  .link-card .lc-icon { font-size: 1.6rem; flex-shrink: 0; }
+  .link-card .lc-title { font-weight: 700; font-size: 0.95rem; color: var(--accent4); }
+  .link-card .lc-desc { font-size: 0.85rem; color: var(--muted); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: #060d1a;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  footer strong { color: var(--accent1); }
+
+  @media (max-width: 640px) {
+    header { padding: 2.5rem 1.2rem 2rem; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════ HEADER -->
+<header>
+  <div class="header-badge">AI Researcher Daily Report</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">ข้อมูลและไอเดียใหม่ล่าสุดประจำวัน — วันเสาร์ที่ 5 กรกฎาคม 2569</p>
+  <div class="stats-row">
+    <div class="stat-chip">📅 <span>5 ก.ค. 2569</span></div>
+    <div class="stat-chip">💡 <span>6</span> หัวข้อหลัก</div>
+    <div class="stat-chip">🔬 <span>4</span> ไอเดียโปรเจกต์</div>
+    <div class="stat-chip">📡 <span>5</span> Sensors ใหม่</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══════════════════════════════════════════ SECTION 1: นวัตกรรมใหม่ -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="icon">⚡</div>
+      <h2>นวัตกรรมและอัปเดตล่าสุด</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <div class="card-grid">
+
+      <!-- ESP-IDF v6.0 -->
+      <div class="card" style="--card-accent: var(--accent1);">
+        <span class="card-icon">🧰</span>
+        <div class="card-title">ESP-IDF v6.0 — SDK ใหม่ล่าสุด <span class="badge-new">มี.ค. 2569</span></div>
+        <p class="card-desc">Espressif ปล่อย ESP-IDF v6.0 พร้อมฟีเจอร์ที่เปลี่ยนแปลงวิธีพัฒนา firmware อย่างมีนัยสำคัญ</p>
+
+        <p><strong style="color:var(--accent1)">AI Integration ผ่าน MCP Server</strong></p>
+        <p>ESP-IDF v6.0 ฝัง MCP (Model Context Protocol) Server ไว้ใน toolchain ทำให้ AI agents อย่าง GitHub Copilot และ Cursor สามารถโต้ตอบโดยตรงกับโปรเจกต์ ESP-IDF ได้ — รวมถึงการ build, flash และ clean project</p>
+
+        <p><strong style="color:var(--accent2)">Safer OTA — ไม่ brick อีกต่อไป</strong></p>
+        <p>มี Recovery Bootloader บน ESP32-C5 และ C61 เมื่ออัปเดต bootloader ไฟล์เก่าถูก backup ไว้ใน recovery partition หากไฟฟ้าดับกลางคัน บอร์ดจะ boot จาก recovery แทนที่จะ brick</p>
+
+        <div class="highlight-box">
+          ⚠️ <strong>Breaking Changes:</strong> ย้ายจาก Newlib → Picolibc, เปลี่ยน crypto API เป็น PSA Crypto (MbedTLS 4.x), ลบ legacy drivers ออก — ต้องอัปเดตโค้ดเก่า
+        </div>
+
+        <p><strong style="color:var(--accent5)">Chip Support ใหม่</strong></p>
+        <ul>
+          <li>✅ Stable: ESP32-C5, ESP32-C61</li>
+          <li>🔬 Preview: ESP32-H21, ESP32-H4</li>
+          <li>🔧 Installation Manager (EIM) — GUI + CLI</li>
+        </ul>
+
+        <div class="tag-row">
+          <span class="tag">ESP-IDF</span>
+          <span class="tag">OTA</span>
+          <span class="tag">MCP</span>
+          <span class="tag">AI Integration</span>
+          <span class="tag">Security</span>
+        </div>
+      </div>
+
+      <!-- mmWave Radar -->
+      <div class="card" style="--card-accent: var(--accent5);">
+        <span class="card-icon">📡</span>
+        <div class="card-title">ESP32 + mmWave Radar — Presence Detection ยุคใหม่</div>
+        <p class="card-desc">ตรวจจับคนได้แม้นั่งนิ่งหรือหายใจเบาๆ — PIR sensor ธรรมดาไม่มีทางทำได้</p>
+
+        <p>mmWave Radar (24 GHz / 60 GHz) ส่งคลื่นวิทยุความถี่สูงและฟังสัญญาณสะท้อน ด้วยเทคโนโลยี FMCW (Frequency Modulated Continuous Wave) สามารถวัดระยะ ทิศทาง และความเร็วของวัตถุได้พร้อมกัน</p>
+
+        <p><strong style="color:var(--accent5)">โมดูลที่ได้รับความนิยม:</strong></p>
+        <table class="spec-table">
+          <tr><td>RD-03D (AI-Thinker)</td><td>24 GHz · motion + presence</td></tr>
+          <tr><td>RD-03E</td><td>24 GHz · ระยะ + gesture</td></tr>
+          <tr><td>LD2410B (HLK)</td><td>24 GHz · presence ≤5m</td></tr>
+          <tr><td>HLK-LD2450</td><td>24 GHz · multi-person tracking</td></tr>
+        </table>
+
+        <div class="highlight-box">
+          🔍 <strong>ทดสอบจริง:</strong> ESP32-C6 + RD-03D สร้าง Radar-Based Home Security — ตรวจจับผู้บุกรุกได้แม้ยืนนิ่ง ไม่มีจุดบอดที่ PIR มักพลาด
+        </div>
+
+        <div class="tag-row">
+          <span class="tag">mmWave</span>
+          <span class="tag">24 GHz</span>
+          <span class="tag">Presence</span>
+          <span class="tag">Gesture</span>
+          <span class="tag">FMCW</span>
+        </div>
+      </div>
+
+      <!-- LoRa Mesh / Meshtastic 2026 -->
+      <div class="card" style="--card-accent: var(--accent2);">
+        <span class="card-icon">🌐</span>
+        <div class="card-title">Meshtastic 2026 — LoRa Mesh สำหรับ Off-Grid</div>
+        <p class="card-desc">Seeed Studio จัด Meshtastic Build-off 2026 Competition — ชุมชนนักพัฒนา LoRa mesh เติบโตสูงสุดในรอบปี</p>
+
+        <p>ระบบ LoRa Mesh ไม่ต้องการ Wi-Fi หรือ cellular — node แต่ละตัว auto-discover กันเองและ relay ข้อมูลผ่าน multi-hop ระยะทางรวมสูงสุดหลายกิโลเมตร</p>
+
+        <p><strong style="color:var(--accent2)">ESP32-S3 + SX1262 สร้าง Off-Grid Communicator:</strong></p>
+        <ul>
+          <li>📨 ส่ง text message ได้โดยไม่ต้องมี internet</li>
+          <li>📍 แชร์ GPS coordinates ในพื้นที่ภัยพิบัติ</li>
+          <li>🔄 Self-healing mesh — node เสียหายเส้นทางใหม่หาเอง</li>
+          <li>☀️ Solar-powered node — ทำงานได้ไม่มีกำหนด</li>
+          <li>💰 ต้นทุนต่อ node ประมาณ ~$10</li>
+        </ul>
+
+        <div class="highlight-box">
+          🚁 <strong>งานวิจัยใหม่:</strong> UAV-aided emergency monitoring ใช้ LoRa mesh เป็น backbone ในพื้นที่ไม่มีโครงสร้างพื้นฐาน — บทความ IEEE 2026
+        </div>
+
+        <div class="tag-row">
+          <span class="tag">LoRa</span>
+          <span class="tag">Meshtastic</span>
+          <span class="tag">Mesh</span>
+          <span class="tag">Off-Grid</span>
+          <span class="tag">SX1262</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════ SECTION 2: ไอเดียโปรเจกต์ -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="icon">🛠️</div>
+      <h2>ไอเดียโปรเจกต์น่าสร้าง</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <div class="card-grid">
+
+      <!-- Solar Dual-Axis Tracker -->
+      <div class="card" style="--card-accent: var(--accent6);">
+        <span class="card-icon">☀️</span>
+        <div class="card-title">Dual-Axis Solar Tracker + Power Monitor</div>
+        <p class="card-desc">ติดตามดวงอาทิตย์ 2 แกน + วัด power output แบบ realtime — เพิ่มประสิทธิภาพพลังงานถึง 38.7%</p>
+
+        <p><strong style="color:var(--accent6)">Hardware:</strong></p>
+        <ul>
+          <li>ESP32 + INA226 (Current/Voltage sensor)</li>
+          <li>LDR × 4 (Light Dependent Resistor สำหรับ tracking)</li>
+          <li>Servo motor × 2 (Azimuth + Elevation)</li>
+          <li>DS18B20 (วัดอุณหภูมิแผง)</li>
+          <li>ThingSpeak / Blynk สำหรับ dashboard</li>
+        </ul>
+
+        <p><strong style="color:var(--accent6)">ผลลัพธ์ที่ได้จากงานวิจัย (2569):</strong></p>
+        <table class="spec-table">
+          <tr><td>Energy yield เพิ่มขึ้น</td><td>+38.7% vs fixed-tilt</td></tr>
+          <tr><td>Tracking accuracy</td><td>±1.5°</td></tr>
+          <tr><td>Power measurement error</td><td>&lt;2%</td></tr>
+          <tr><td>รายงานผ่าน</td><td>WhatsApp / ThingSpeak</td></tr>
+        </table>
+
+        <div class="code-block">// INA226 อ่านกำลังไฟฟ้า
+float voltage = ina226.readBusVoltage();
+float current = ina226.readShuntCurrent();
+float power   = voltage * current; // Watts
+// ส่งขึ้น ThingSpeak ทุก 30 วินาที</div>
+
+        <div class="tag-row">
+          <span class="tag">Solar</span>
+          <span class="tag">INA226</span>
+          <span class="tag">Servo</span>
+          <span class="tag">Energy</span>
+          <span class="tag">ThingSpeak</span>
+        </div>
+      </div>
+
+      <!-- Aquaculture IoT -->
+      <div class="card" style="--card-accent: var(--accent1);">
+        <span class="card-icon">🐟</span>
+        <div class="card-title">Smart Aquaculture — ระบบ IoT เลี้ยงปลา</div>
+        <p class="card-desc">ตรวจสอบคุณภาพน้ำแบบ realtime + พยากรณ์ dissolved oxygen ล่วงหน้า 30 นาที</p>
+
+        <p>งานวิจัย MDPI Sensors (เม.ย. 2569) ทดสอบบ่อเลี้ยงปลา Tilapia จริง — ใช้ ESP32 sensing node ส่งข้อมูลขึ้น cloud แล้วรัน ML model พยากรณ์ DO ล่วงหน้า MAE = 0.783 mg/L, Directional Accuracy 60.23%</p>
+
+        <p><strong style="color:var(--accent1)">Sensor Stack ที่แนะนำ:</strong></p>
+        <ul>
+          <li>🌡️ DS18B20 — อุณหภูมิน้ำ</li>
+          <li>⚗️ Gravity Analog pH Sensor (DFRobot)</li>
+          <li>💧 Turbidity Sensor — ความขุ่น</li>
+          <li>🫧 Atlas Scientific DO Probe — Dissolved O₂</li>
+          <li>📏 HC-SR04 Ultrasonic — ระดับน้ำ</li>
+          <li>🍽️ ESP32 IoT Auger Feeder — อาหารอัตโนมัติ</li>
+        </ul>
+
+        <div class="highlight-box">
+          ⚠️ <strong>Critical parameter:</strong> DO ต่ำกว่า 4 mg/L ปลาเริ่มขาดอากาศ — ต่ำกว่า 2 mg/L ปลาตายได้ภายในชั่วโมง ระบบต้องแจ้งเตือนทันที
+        </div>
+
+        <div class="tag-row">
+          <span class="tag">Aquaculture</span>
+          <span class="tag">pH</span>
+          <span class="tag">DO Sensor</span>
+          <span class="tag">Turbidity</span>
+          <span class="tag">Auto-Feeder</span>
+        </div>
+      </div>
+
+      <!-- Air Quality Multi-Gas Monitor -->
+      <div class="card" style="--card-accent: var(--accent3);">
+        <span class="card-icon">💨</span>
+        <div class="card-title">Multi-Gas Air Quality Station — วัดมลพิษในบ้าน</div>
+        <p class="card-desc">วัดมลพิษอากาศแบบ comprehensive ด้วย sensor หลายตัว แสดงผล AQI realtime</p>
+
+        <p><strong style="color:var(--accent3)">Sensor Stack แบบ Professional:</strong></p>
+        <table class="spec-table">
+          <tr><td>BME680</td><td>Temp, Humidity, Pressure, VOC</td></tr>
+          <tr><td>SCD41</td><td>CO₂ (NDIR, แม่นยำ ±40 ppm)</td></tr>
+          <tr><td>PMS7003</td><td>PM1.0 / PM2.5 / PM10</td></tr>
+          <tr><td>MQ-7</td><td>Carbon Monoxide (CO)</td></tr>
+          <tr><td>MQ-135</td><td>NH₃, NOx, ควัน, เบนซีน</td></tr>
+          <tr><td>MQ-2</td><td>LPG, โพรเพน, ไฮโดรเจน</td></tr>
+        </table>
+
+        <p><strong style="color:var(--accent3)">MQSensorsLib</strong> — Library เดียวรองรับ MQ-2, 3, 4, 5, 6, 7, 8, 9, 131, 135, 136, 303A, 309A ใช้งานกับ Arduino/ESP32 ได้ทันที</p>
+
+        <div class="highlight-box">
+          🏠 <strong>Use Case จริง:</strong> ห้องนอน, ครัว, โรงรถ, ห้องน้ำ, ห้องเรียน — แจ้งเตือนผ่าน Home Assistant เมื่อ CO₂ &gt; 1000 ppm หรือ PM2.5 &gt; 25 μg/m³
+        </div>
+
+        <div class="tag-row">
+          <span class="tag">BME680</span>
+          <span class="tag">SCD41</span>
+          <span class="tag">PMS7003</span>
+          <span class="tag">AQI</span>
+          <span class="tag">Home Assistant</span>
+        </div>
+      </div>
+
+      <!-- Disaster Radio LoRa -->
+      <div class="card" style="--card-accent: var(--accent4);">
+        <span class="card-icon">🆘</span>
+        <div class="card-title">Disaster Radio — วิทยุฉุกเฉิน LoRa Mesh</div>
+        <p class="card-desc">สร้างเครือข่ายสื่อสารที่ทำงานได้โดยไม่ต้องมีโทรศัพท์ อินเทอร์เน็ต หรือไฟฟ้า</p>
+
+        <p><strong style="color:var(--accent4)">Architecture:</strong></p>
+        <ul>
+          <li>📻 ESP32-S3 + SX1262 (LoRa 915 MHz / 868 MHz)</li>
+          <li>🔋 Solar + LiPo 18650 — ทำงานตลอด 24/7</li>
+          <li>📍 NEO-6M GPS — แชร์พิกัดอัตโนมัติ</li>
+          <li>📱 BLE App บน smartphone สำหรับ compose message</li>
+          <li>🔄 Multi-hop relay — ข้อความวิ่งผ่าน node กลาง</li>
+        </ul>
+
+        <p><strong style="color:var(--accent4)">Dual-Mode Communicator (Hackster.io):</strong> รองรับทั้ง ESP-NOW (ระยะ ~200m, latency &lt;10ms) และ LoRa (ระยะ ~5 km) เลือกโหมดได้อัตโนมัติตามระยะทาง</p>
+
+        <div class="highlight-box">
+          🌏 <strong>ไทย Context:</strong> เหมาะสำหรับภูเขา ชายแดน ป่าลึก พื้นที่น้ำท่วม — ที่ไม่มีสัญญาณ AIS/DTAC — ต้นทุน node ละ &lt;1,000 บาท
+        </div>
+
+        <div class="tag-row">
+          <span class="tag">LoRa</span>
+          <span class="tag">ESP-NOW</span>
+          <span class="tag">GPS</span>
+          <span class="tag">Solar</span>
+          <span class="tag">Disaster</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════ SECTION 3: Sensors น่าสนใจ -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="icon">🔬</div>
+      <h2>Sensors น่าสนใจสำหรับ ESP32</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <div class="card-grid">
+
+      <!-- LD2450 Multi-person mmWave -->
+      <div class="card" style="--card-accent: var(--accent5);">
+        <span class="card-icon">👥</span>
+        <div class="card-title">HLK-LD2450 — Multi-Person mmWave Tracker</div>
+        <p class="card-desc">ติดตามคนได้พร้อมกัน 3 คน วัดตำแหน่ง XY แบบ realtime ในห้องเดียว</p>
+        <table class="spec-table">
+          <tr><td>ความถี่</td><td>24 GHz FMCW</td></tr>
+          <tr><td>ระยะตรวจจับ</td><td>0.3 – 6 m</td></tr>
+          <tr><td>มุมครอบคลุม</td><td>±60° horizontal</td></tr>
+          <tr><td>จำนวน target</td><td>≤3 คน พร้อมกัน</td></tr>
+          <tr><td>Output</td><td>UART (X, Y, speed)</td></tr>
+          <tr><td>ราคา</td><td>~$8 – 12</td></tr>
+        </table>
+        <div class="tag-row">
+          <span class="tag">24 GHz</span>
+          <span class="tag">Multi-Target</span>
+          <span class="tag">Position</span>
+        </div>
+      </div>
+
+      <!-- Atlas Scientific DO -->
+      <div class="card" style="--card-accent: var(--accent1);">
+        <span class="card-icon">🫧</span>
+        <div class="card-title">Atlas Scientific DO — Dissolved Oxygen Probe</div>
+        <p class="card-desc">Galvanic probe วัด DO ในน้ำสำหรับ aquaculture และ environmental monitoring</p>
+        <table class="spec-table">
+          <tr><td>ช่วงวัด</td><td>0 – 100 mg/L</td></tr>
+          <tr><td>ความแม่นยำ</td><td>±0.05 mg/L</td></tr>
+          <tr><td>Interface</td><td>I²C / UART</td></tr>
+          <tr><td>ต้องการ calibration</td><td>ใช่ (2 จุด)</td></tr>
+          <tr><td>ราคา</td><td>~$200 (probe + circuit)</td></tr>
+        </table>
+        <div class="tag-row">
+          <span class="tag">Dissolved O₂</span>
+          <span class="tag">Aquaculture</span>
+          <span class="tag">I2C</span>
+        </div>
+      </div>
+
+      <!-- SCD41 CO2 -->
+      <div class="card" style="--card-accent: var(--accent2);">
+        <span class="card-icon">🌬️</span>
+        <div class="card-title">Sensirion SCD41 — CO₂ Sensor NDIR</div>
+        <p class="card-desc">CO₂ sensor ที่แม่นยำที่สุดสำหรับ DIY — ใช้หลักการ NDIR แทน MOS ราคาจับต้องได้</p>
+        <table class="spec-table">
+          <tr><td>ช่วงวัด CO₂</td><td>400 – 5000 ppm</td></tr>
+          <tr><td>ความแม่นยำ</td><td>±(40 ppm + 5% ของค่า)</td></tr>
+          <tr><td>Interface</td><td>I²C</td></tr>
+          <tr><td>Voltage</td><td>3.3 – 5V</td></tr>
+          <tr><td>ยัง bundle</td><td>Temp + Humidity ในตัว</td></tr>
+          <tr><td>ราคา</td><td>~$40 – 50</td></tr>
+        </table>
+        <div class="tag-row">
+          <span class="tag">CO₂</span>
+          <span class="tag">NDIR</span>
+          <span class="tag">Indoor Air</span>
+        </div>
+      </div>
+
+      <!-- INA226 Power Monitor -->
+      <div class="card" style="--card-accent: var(--accent6);">
+        <span class="card-icon">⚡</span>
+        <div class="card-title">INA226 — Power Monitor IC สำหรับ Solar/Battery</div>
+        <p class="card-desc">วัดกำลังไฟฟ้าแบบ bidirectional ด้วย shunt resistor ความแม่นยำสูง</p>
+        <table class="spec-table">
+          <tr><td>Voltage range</td><td>0 – 36 V</td></tr>
+          <tr><td>Current accuracy</td><td>±0.1%</td></tr>
+          <tr><td>Interface</td><td>I²C (16 addr ต่างกัน)</td></tr>
+          <tr><td>ต่อสายเดียวกัน</td><td>ได้ถึง 16 ตัว</td></tr>
+          <tr><td>ราคา</td><td>~$1.5 – 3</td></tr>
+        </table>
+        <div class="tag-row">
+          <span class="tag">Power Monitor</span>
+          <span class="tag">Solar</span>
+          <span class="tag">INA226</span>
+        </div>
+      </div>
+
+      <!-- PMS7003 Particle -->
+      <div class="card" style="--card-accent: var(--accent3);">
+        <span class="card-icon">🌫️</span>
+        <div class="card-title">PMS7003 — Particle Sensor PM1.0/PM2.5/PM10</div>
+        <p class="card-desc">Laser-based particle counter วัด PM2.5 ได้แม่นยำ ใช้งานจริงใน air quality projects</p>
+        <table class="spec-table">
+          <tr><td>วัดได้</td><td>PM1.0, PM2.5, PM10</td></tr>
+          <tr><td>ช่วงวัด</td><td>0 – 500 μg/m³</td></tr>
+          <tr><td>Response time</td><td>&lt;10 วินาที</td></tr>
+          <tr><td>Interface</td><td>UART (9600 baud)</td></tr>
+          <tr><td>ราคา</td><td>~$15 – 25</td></tr>
+        </table>
+        <div class="tag-row">
+          <span class="tag">PM2.5</span>
+          <span class="tag">Laser</span>
+          <span class="tag">AQI</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════ SECTION 4: แหล่งข้อมูล -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="icon">📚</div>
+      <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+    </div>
+    <div class="section-divider"></div>
+
+    <a class="link-card" href="https://developer.espressif.com/blog/2026/03/idf-v6-0-release/" target="_blank" rel="noopener">
+      <div class="lc-icon">🧰</div>
+      <div>
+        <div class="lc-title">Announcing ESP-IDF v6.0 — Espressif Developer Portal</div>
+        <div class="lc-desc">Blog post ทางการ อธิบาย breaking changes, AI integration, recovery bootloader และ chip support ใหม่</div>
+      </div>
+    </a>
+
+    <a class="link-card" href="https://www.hackster.io/tech_nickk/radar-based-home-security-system-using-rd-03d-and-esp32-c6-72fd6e" target="_blank" rel="noopener">
+      <div class="lc-icon">📡</div>
+      <div>
+        <div class="lc-title">Radar-Based Home Security Using RD-03D &amp; ESP32-C6 — Hackster.io</div>
+        <div class="lc-desc">โปรเจกต์ตัวอย่างใช้ mmWave RD-03D กับ ESP32-C6 สร้างระบบ security ตรวจจับผู้บุกรุก พร้อม code เต็ม</div>
+      </div>
+    </a>
+
+    <a class="link-card" href="https://www.seeedstudio.com/blog/2026/05/26/esp32-lora-guide/" target="_blank" rel="noopener">
+      <div class="lc-icon">🌐</div>
+      <div>
+        <div class="lc-title">ESP32-S3 LoRa: Setup, Range &amp; Meshtastic — Seeed Studio Blog</div>
+        <div class="lc-desc">คู่มือครบวงจร LoRa + Meshtastic บน ESP32-S3 พร้อมข้อมูล Meshtastic Build-off 2026 Competition</div>
+      </div>
+    </a>
+
+    <a class="link-card" href="https://ieeexplore.ieee.org/document/11337085" target="_blank" rel="noopener">
+      <div class="lc-icon">☀️</div>
+      <div>
+        <div class="lc-title">Dual-Axis Solar Tracking &amp; Power Monitoring — IEEE 2026</div>
+        <div class="lc-desc">งานวิจัย IEEE ทดสอบ dual-axis tracker บน ESP32 พิสูจน์ energy yield เพิ่มขึ้น 38.7% เทียบกับ fixed panel</div>
+      </div>
+    </a>
+
+    <a class="link-card" href="https://www.mdpi.com/1424-8220/26/13/4242" target="_blank" rel="noopener">
+      <div class="lc-icon">🐟</div>
+      <div>
+        <div class="lc-title">Low-Cost IoT for Dissolved Oxygen Monitoring in Nile Tilapia — MDPI Sensors 2026</div>
+        <div class="lc-desc">งานวิจัยทดสอบจริงบ่อปลาเมษายน 2569 — ESP32 + DO sensor + ML forecast ล่วงหน้า 30 นาที MAE &lt;0.8 mg/L</div>
+      </div>
+    </a>
+
+    <a class="link-card" href="https://www.hackster.io/shivamgupta/dual-mode-off-grid-communicator-esp-now-lora-mesh-6e4996" target="_blank" rel="noopener">
+      <div class="lc-icon">🆘</div>
+      <div>
+        <div class="lc-title">Dual-Mode Off-Grid Communicator: ESP-NOW &amp; LoRa Mesh — Hackster.io</div>
+        <div class="lc-desc">โปรเจกต์รวม ESP-NOW (ระยะใกล้) + LoRa (ระยะไกล) ในอุปกรณ์เดียว เหมาะกับการสื่อสารฉุกเฉิน</div>
+      </div>
+    </a>
+
+    <a class="link-card" href="https://github.com/TitaniumMonkey/ESP32-Air-Quality-Sensor" target="_blank" rel="noopener">
+      <div class="lc-icon">💨</div>
+      <div>
+        <div class="lc-title">ESP32-Air-Quality-Sensor — GitHub (TitaniumMonkey)</div>
+        <div class="lc-desc">Open-source code ครบ: BME680 + PMS7003 + SCD41 + OLED display พร้อม library ครบชุด</div>
+      </div>
+    </a>
+
+    <a class="link-card" href="https://www.cnx-software.com/2026/01/07/espressif-systems-showcases-esp32-e22-wi-fi-6e-soc-and-esp32-h21-ble-mcu-for-battery-powered-devices/" target="_blank" rel="noopener">
+      <div class="lc-icon">🔌</div>
+      <div>
+        <div class="lc-title">ESP32-E22 Wi-Fi 6E &amp; ESP32-H21 — CNX Software</div>
+        <div class="lc-desc">รายละเอียดเต็มของ chip ใหม่ที่เปิดตัว CES 2026 ทั้ง spec, positioning และ use case</div>
+      </div>
+    </a>
+
+  </section>
+
+</main>
+
+<!-- ══════════════════════════════════════════ FOOTER -->
+<footer>
+  <p>สร้างโดย <strong>AI Researcher</strong> — ข้อมูลรวบรวมจากแหล่งข้อมูลเปิดเผย</p>
+  <p style="margin-top:0.4rem; font-size:0.8rem; opacity:0.6;">
+    แหล่งอ้างอิง: Espressif Developer Portal · IEEE Xplore · MDPI Sensors · Hackster.io · CNX Software · Seeed Studio Blog · GitHub
+  </p>
+  <p style="margin-top:0.8rem; font-size:0.75rem; opacity:0.45;">
+    esp32-ideas-2026-07-05.html · สร้างวันที่ 5 กรกฎาคม 2569
+  </p>
+</footer>
+
+</body>
+</html>
