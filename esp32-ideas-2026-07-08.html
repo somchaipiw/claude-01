@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 8 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1e;
+    --surface: #0f172a;
+    --card: #1e293b;
+    --card-hover: #263347;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent1: #38bdf8;
+    --accent2: #a78bfa;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --accent6: #facc15;
+    --red: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    font-size: 16px;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 50%, rgba(56,189,248,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 30% at 80% 50%, rgba(167,139,250,0.10) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-chip {
+    display: inline-block;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.4);
+    color: var(--accent1);
+    padding: 0.25rem 1rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.6rem;
+  }
+  header p.subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.35rem 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .stat-pill span { color: var(--text); font-weight: 600; }
+
+  /* ─── NAV ─── */
+  nav {
+    background: rgba(15,23,42,0.85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 0.75rem 1.5rem;
+  }
+  nav ul {
+    display: flex;
+    list-style: none;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.9rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  nav a:hover { color: var(--text); background: rgba(255,255,255,0.07); }
+
+  /* ─── MAIN LAYOUT ─── */
+  main { max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  section { margin-bottom: 3.5rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+  .section-header h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+  #innovations .section-header h2 { color: var(--accent1); }
+  #projects   .section-header h2 { color: var(--accent2); }
+  #sensors    .section-header h2 { color: var(--accent3); }
+  #resources  .section-header h2 { color: var(--accent4); }
+
+  /* ─── CARD ─── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(148,163,184,0.4);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  }
+  .card.blue::before  { background: linear-gradient(90deg, var(--accent1), #7dd3fc); }
+  .card.purple::before { background: linear-gradient(90deg, var(--accent2), #c4b5fd); }
+  .card.green::before  { background: linear-gradient(90deg, var(--accent3), #6ee7b7); }
+  .card.orange::before { background: linear-gradient(90deg, var(--accent4), #fdba74); }
+  .card.pink::before   { background: linear-gradient(90deg, var(--accent5), #f9a8d4); }
+  .card.yellow::before { background: linear-gradient(90deg, var(--accent6), #fde68a); }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+  .badge.new    { background: rgba(56,189,248,0.2);  color: var(--accent1); }
+  .badge.hot    { background: rgba(251,146,60,0.2);  color: var(--accent4); }
+  .badge.lab    { background: rgba(167,139,250,0.2); color: var(--accent2); }
+  .badge.tip    { background: rgba(52,211,153,0.2);  color: var(--accent3); }
+  .badge.update { background: rgba(250,204,21,0.2);  color: var(--accent6); }
+
+  .card h3 {
+    font-size: 0.98rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 0.6rem;
+  }
+  .card p:last-child { margin-bottom: 0; }
+
+  .highlight-box {
+    background: rgba(56,189,248,0.06);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 8px;
+    padding: 0.7rem 0.9rem;
+    margin-top: 0.7rem;
+    font-size: 0.82rem;
+    color: var(--text);
+  }
+  .highlight-box.purple {
+    background: rgba(167,139,250,0.06);
+    border-color: rgba(167,139,250,0.2);
+  }
+  .highlight-box.green {
+    background: rgba(52,211,153,0.06);
+    border-color: rgba(52,211,153,0.2);
+  }
+  .highlight-box.orange {
+    background: rgba(251,146,60,0.06);
+    border-color: rgba(251,146,60,0.2);
+  }
+
+  code {
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: var(--accent3);
+  }
+
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+  .tag {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.73rem;
+    color: var(--text-muted);
+  }
+
+  /* ─── SENSOR TABLE ─── */
+  .sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .sensor-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+  .sensor-card:hover { border-color: rgba(52,211,153,0.4); }
+  .sensor-icon {
+    font-size: 1.8rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .sensor-info h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .sensor-info p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .sensor-spec {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+  }
+  .spec-tag {
+    background: rgba(52,211,153,0.1);
+    border: 1px solid rgba(52,211,153,0.25);
+    border-radius: 4px;
+    padding: 0.1rem 0.45rem;
+    font-size: 0.7rem;
+    color: var(--accent3);
+  }
+
+  /* ─── RESOURCE CARDS ─── */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  a.resource-card {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  a.resource-card:hover {
+    border-color: rgba(251,146,60,0.4);
+    transform: translateY(-2px);
+  }
+  .resource-emoji { font-size: 1.5rem; flex-shrink: 0; }
+  .resource-text h4 { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.15rem; }
+  .resource-text p { font-size: 0.75rem; color: var(--text-muted); }
+
+  /* ─── FULL-WIDTH CARD ─── */
+  .card-wide {
+    grid-column: 1 / -1;
+  }
+  .steps-list {
+    list-style: none;
+    counter-reset: step;
+    margin-top: 0.75rem;
+  }
+  .steps-list li {
+    counter-increment: step;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+  }
+  .steps-list li::before {
+    content: counter(step);
+    background: rgba(167,139,250,0.2);
+    color: var(--accent2);
+    border-radius: 50%;
+    width: 1.4rem;
+    height: 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 2rem 1.5rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  footer a { color: var(--accent1); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .footer-sources {
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    color: rgba(148,163,184,0.6);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-chip">Daily Research · 8 July 2026</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">8 กรกฎาคม 2569 &nbsp;|&nbsp; รายงานนวัตกรรม IoT ประจำวัน โดย AI Researcher</p>
+  <div class="stats-row">
+    <div class="stat-pill"><span>4</span> นวัตกรรมใหม่</div>
+    <div class="stat-pill"><span>4</span> ไอเดียโปรเจกต์</div>
+    <div class="stat-pill"><span>5</span> Sensors น่าสนใจ</div>
+    <div class="stat-pill"><span>6</span> แหล่งข้อมูล</div>
+  </div>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="#innovations">นวัตกรรม</a></li>
+    <li><a href="#projects">โปรเจกต์</a></li>
+    <li><a href="#sensors">Sensors</a></li>
+    <li><a href="#resources">แหล่งข้อมูล</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- SECTION 1: INNOVATIONS                                  -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <section id="innovations">
+    <div class="section-header">
+      <span class="section-icon">⚡</span>
+      <h2>นวัตกรรมและอัปเดตล่าสุด</h2>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Card 1: ESPHome 2026.4 -->
+      <div class="card blue">
+        <div class="badge update">UPDATE</div>
+        <h3>ESPHome 2026.4.0 — ESP32 เร็วขึ้น 34% พร้อม Breaking Changes</h3>
+        <p>
+          ESPHome เวอร์ชันล่าสุดปล่อยฟีเจอร์ใหม่ที่เปลี่ยนแปลงประสิทธิภาพ ESP32 อย่างมีนัยสำคัญ
+          ค่าเริ่มต้น CPU frequency เปลี่ยนจาก 160 MHz เป็น <strong>240 MHz</strong>
+          ทำให้ API, BLE และ Wi-Fi operations เร็วขึ้นราว 34%
+        </p>
+        <div class="highlight-box">
+          <strong>SRAM1 as IRAM (+40 KB):</strong> เปิดใช้ <code>sram1_as_iram: true</code>
+          ใต้ <code>esp32 &gt; framework &gt; advanced</code> เพื่อปลดล็อค IRAM เพิ่ม 40 KB
+          ลด cache miss สำหรับโค้ดที่รันจาก Flash
+        </div>
+        <div class="highlight-box orange" style="margin-top:0.5rem;">
+          <strong>⚠️ Breaking Change:</strong> บอร์ดที่ใช้แบตเตอรี่หรือมีข้อจำกัดด้านความร้อน
+          ต้องตั้งค่า <code>cpu_frequency: 160MHz</code> เพื่อป้องกันปัญหาพลังงาน
+          นอกจากนี้ SRAM1 feature ต้องใช้ ESP-IDF bootloader v5.1+ เท่านั้น
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESPHome</span>
+          <span class="tag">Performance</span>
+          <span class="tag">IRAM</span>
+          <span class="tag">CPU 240MHz</span>
+        </div>
+      </div>
+
+      <!-- Card 2: ESP32-P4 PoE M5Stack -->
+      <div class="card purple">
+        <div class="badge new">NEW</div>
+        <h3>M5Stack ESP32-P4 + PoE — High-Performance Industrial IoT Module</h3>
+        <p>
+          M5Stack เปิดตัวโมดูล ESP32-P4 ที่รองรับ Power over Ethernet (PoE) เหมาะสำหรับ
+          งาน industrial ที่ต้องการ edge AI พร้อมจ่ายไฟผ่านสาย LAN ไม่ต้องใช้ adapter แยก
+        </p>
+        <p>
+          ESP32-P4 มี dual-core RISC-V 400 MHz, MIPI-CSI/DSI, USB 2.0 HS และ
+          Memory Protection Unit ทำให้เหมาะกับงาน HMI, Computer Vision และระบบรักษาความปลอดภัย
+        </p>
+        <div class="highlight-box purple">
+          <strong>DFRobot FireBeetle 2 ESP32-P4</strong> ราคา $14.50 ทำงานได้ถึง 1080p30
+          เหมาะสำหรับ edge AI และ HMI compact ที่ต้องการ MIPI-CSI camera interface
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESP32-P4</span>
+          <span class="tag">PoE</span>
+          <span class="tag">M5Stack</span>
+          <span class="tag">DFRobot</span>
+          <span class="tag">Edge AI</span>
+        </div>
+      </div>
+
+      <!-- Card 3: ESP32-S3 USB Host + LVGL -->
+      <div class="card green">
+        <div class="badge hot">HOT</div>
+        <h3>ESP32-S3 USB Host + LVGL — Touchscreen Dashboard รับ USB Keyboard/Mouse</h3>
+        <p>
+          ESP32-S3 มี native USB 1.1 OTG hardware ทำให้รองรับ USB Host mode ได้โดยตรง
+          สามารถต่อ USB keyboard, barcode scanner หรือ USB HID device แล้วป้อน input เข้า
+          LVGL UI ได้ทันที — ไม่ต้องใช้บอร์ดเพิ่ม
+        </p>
+        <div class="highlight-box green">
+          <strong>การทำงาน:</strong> ใช้ ESP-IDF <code>usb_host_install()</code> +
+          <code>usb_host_client_register()</code> parse HID report แล้วส่งเข้า
+          <code>lv_indev_drv_t</code> แบบ <code>LV_INDEV_TYPE_KEYPAD</code>
+          ร่วมกับ Parallel LCD interface เพื่อ refresh rate สูงสุด
+        </div>
+        <p style="margin-top:0.6rem;">
+          ไลบรารี <code>esp_lvgl_port</code> v2.6.2 บน ESP Component Registry
+          รองรับ touch, rotary encoder, button และ USB HID ในแพ็กเกจเดียว
+        </p>
+        <div class="tag-row">
+          <span class="tag">ESP32-S3</span>
+          <span class="tag">USB OTG</span>
+          <span class="tag">LVGL v9</span>
+          <span class="tag">HMI</span>
+          <span class="tag">Touchscreen</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Thread 1.4 Border Router ESP32-C6 -->
+      <div class="card orange">
+        <div class="badge lab">RESEARCH</div>
+        <h3>ESP32-C6/H2 Thread Border Router ที่ผ่าน Certification — Matter Smart Home 2026</h3>
+        <p>
+          Espressif เปิดตัว Software Stack + Dev Kit อย่างเป็นทางการ ที่เปลี่ยน ESP32-C6 หรือ ESP32-H2
+          ให้กลายเป็น Thread Border Router พร้อม Certification จาก Thread Group
+        </p>
+        <p>
+          Thread 1.4 (บังคับตั้งแต่มกราคม 2026) เพิ่ม TREL (Thread Radio Encapsulation Link)
+          สำหรับ cross-network backhaul ผ่าน Wi-Fi และ commissioning ที่ดีขึ้น
+          ใช้ ESP32-C6 รัน OpenThread RCP firmware ส่วน Border Router stack รันบน Home Assistant host
+        </p>
+        <div class="highlight-box orange">
+          <strong>GitHub:</strong> <code>p01di/esp32c6-thread-border-router</code> —
+          Single-chip solution ไม่ต้องใช้ Raspberry Pi แยกต่างหาก ราคาถูกที่สุดใน ecosystem
+        </div>
+        <div class="tag-row">
+          <span class="tag">Thread 1.4</span>
+          <span class="tag">Matter</span>
+          <span class="tag">ESP32-C6</span>
+          <span class="tag">OpenThread</span>
+          <span class="tag">Home Assistant</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- SECTION 2: PROJECTS                                     -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <section id="projects">
+    <div class="section-header">
+      <span class="section-icon">🔧</span>
+      <h2>ไอเดียโปรเจกต์น่าสร้าง</h2>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Project 1: BLE Mesh Smart Lighting -->
+      <div class="card purple">
+        <div class="badge hot">HOT</div>
+        <h3>BLE Mesh Smart Lighting สำหรับอาคารขนาดใหญ่ด้วย ESP32</h3>
+        <p>
+          สร้างระบบควบคุมไฟ LED อัจฉริยะด้วย Bluetooth Mesh (ESP-BLE-MESH)
+          ที่รองรับถึง 32,767 โหนดในทางทฤษฎี — optimal สำหรับ 50-200 nodes ในทางปฏิบัติ
+          แต่ละโหนดทำหน้าที่ relay ข้อความให้กัน ไม่มีจุดล้มเหลวเดี่ยว (self-healing)
+        </p>
+        <ul class="steps-list">
+          <li>Provisioning ด้วย nRF Mesh App หรือ EspBlufiApp (PB-ADV / PB-GATT)</li>
+          <li>แต่ละ ESP32 node ควบคุม LED strip ผ่าน PWM บน GPIO</li>
+          <li>ตั้งค่า Publish/Subscribe Address แยกตามโซน (ห้อง/ชั้น)</li>
+          <li>Node ที่ต่อ Wi-Fi ทำหน้าที่เป็น Gateway รับคำสั่งจาก MQTT/Home Assistant</li>
+        </ul>
+        <div class="highlight-box purple">
+          รองรับ Group Control: สั่งปิด-เปิดทั้งชั้นในคราวเดียว หรือ dimming
+          ทีละกลุ่มผ่าน Subscription Address — เหมาะกับออฟฟิศ, โกดัง, โรงแรม
+        </div>
+        <div class="tag-row">
+          <span class="tag">BLE Mesh</span>
+          <span class="tag">ESP-BLE-MESH</span>
+          <span class="tag">LED Control</span>
+          <span class="tag">Building Automation</span>
+        </div>
+      </div>
+
+      <!-- Project 2: Energy Harvesting Sensor Node -->
+      <div class="card green">
+        <div class="badge lab">RESEARCH</div>
+        <h3>ESP32 Energy-Autonomous Sensor Node — Solar + Piezo + Supercapacitor</h3>
+        <p>
+          สร้าง sensor node ที่ไม่ต้องเปลี่ยนแบตเตอรี่ตลอดอายุการใช้งาน
+          โดยผสม 2 แหล่งพลังงาน: <strong>Solar cell</strong> (ชาร์จตอนมีแสง) +
+          <strong>Piezoelectric disc</strong> (เก็บพลังงานจากการสั่นสะเทือน/แรงกด)
+          สะสมไว้ใน Supercapacitor ก่อนส่งให้ ESP32
+        </p>
+        <p>
+          ESP32 ทำงานใน Deep Sleep &gt;99% ของเวลา ตื่นขึ้นทุก 5 นาทีเพื่ออ่านค่า sensor
+          แล้วส่งผ่าน MQTT over Wi-Fi หรือ LoRa จากนั้น sleep ต่อ
+        </p>
+        <div class="highlight-box green">
+          <strong>Use Case จริง:</strong> ติดที่พื้นทางเดิน แรงกดจากการเหยียบผ่าน Piezo
+          ชาร์จ supercap เพียงพอสำหรับ 1 transmission — ไม่ต้องใช้ไฟ external เลย
+        </div>
+        <div class="tag-row">
+          <span class="tag">Energy Harvesting</span>
+          <span class="tag">Piezoelectric</span>
+          <span class="tag">Solar</span>
+          <span class="tag">Supercapacitor</span>
+          <span class="tag">Deep Sleep</span>
+        </div>
+      </div>
+
+      <!-- Project 3: ESP32-P4 Industrial PoE Sensor Hub -->
+      <div class="card blue">
+        <div class="badge new">NEW</div>
+        <h3>ESP32-P4 PoE Industrial Sensor Hub — กล้อง AI + Sensor รวมในกล่องเดียว</h3>
+        <p>
+          ใช้ ESP32-P4 module ที่รองรับ PoE เชื่อมต่อผ่าน Ethernet สายเดียว
+          ได้ทั้งไฟฟ้าและ network ในเวลาเดียวกัน เหมาะสำหรับติดตั้งในโรงงาน
+          ที่ต้องการ real-time monitoring หลายพารามิเตอร์พร้อมกัน
+        </p>
+        <ul class="steps-list">
+          <li>กล้อง MIPI-CSI อ่านภาพ 1080p30 รัน AI inference ตรวจสอบ defect</li>
+          <li>I2C sensors วัด temperature/humidity/pressure ทุก 1 วินาที</li>
+          <li>USB 2.0 HS เชื่อมต่อ barcode reader หรือ USB scale</li>
+          <li>ส่งข้อมูลผ่าน MQTT over Ethernet ไปยัง cloud หรือ on-premise server</li>
+        </ul>
+        <div class="highlight-box">
+          Dual-core 400 MHz รันงานคู่ขนานได้: Core 0 = AI inference, Core 1 = Sensor polling + Network
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESP32-P4</span>
+          <span class="tag">PoE</span>
+          <span class="tag">Industrial</span>
+          <span class="tag">MIPI-CSI</span>
+          <span class="tag">MQTT</span>
+        </div>
+      </div>
+
+      <!-- Project 4: ESPHome 2026.4 USB LVGL Dashboard -->
+      <div class="card orange card-wide">
+        <div class="badge tip">TUTORIAL</div>
+        <h3>ESP32-S3 LVGL Touch Dashboard พร้อม USB HID Input — สร้างพาเนลควบคุมบ้าน</h3>
+        <p>
+          สร้างแผงควบคุม smart home ราคาประหยัดด้วย ESP32-S3 + จอ 5 นิ้ว IPS touchscreen (800×480)
+          + USB keyboard/barcode scanner ผ่าน USB Host mode — เหมาะสำหรับแผงควบคุมหน้าห้อง
+          หรือ self-service kiosk ในออฟฟิศ
+        </p>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top:0.75rem;">
+          <div class="highlight-box">
+            <strong>Components:</strong><br>
+            • ESP32-S3 N16R8<br>
+            • 5" IPS 800×480 + Touch<br>
+            • esp_lvgl_port v2.6.2<br>
+            • USB Host HID driver
+          </div>
+          <div class="highlight-box orange">
+            <strong>ฟีเจอร์:</strong><br>
+            • Scan barcode → Home Assistant action<br>
+            • Keyboard shortcut ควบคุมแสงไฟ<br>
+            • OTA update ผ่าน ArduinoOTA<br>
+            • ESPHome 2026.4 + 240 MHz
+          </div>
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESP32-S3</span>
+          <span class="tag">LVGL v9</span>
+          <span class="tag">USB Host</span>
+          <span class="tag">HID</span>
+          <span class="tag">Smart Home Panel</span>
+          <span class="tag">ESPHome</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- SECTION 3: SENSORS                                      -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <section id="sensors">
+    <div class="section-header">
+      <span class="section-icon">🔬</span>
+      <h2>Sensors น่าสนใจสำหรับ ESP32</h2>
+    </div>
+
+    <div class="sensor-grid">
+
+      <div class="sensor-card">
+        <div class="sensor-icon">🌈</div>
+        <div class="sensor-info">
+          <h3>TCS34725 — RGB Color Sensor</h3>
+          <p>วัดสีแบบ RGB + Clear channel พร้อม IR filter ในตัว ความแม่นยำสูง</p>
+          <p>ใช้วัดสีในกระบวนการผลิต, ตรวจสอบคุณภาพสี, หรือสร้าง smart lighting ที่ปรับสีตามวัตถุ</p>
+          <div class="sensor-spec">
+            <span class="spec-tag">I2C</span>
+            <span class="spec-tag">3.3V</span>
+            <span class="spec-tag">16-bit ADC</span>
+            <span class="spec-tag">IR Filter</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">💧</div>
+        <div class="sensor-info">
+          <h3>YF-S201 — Hall Effect Flow Meter</h3>
+          <p>วัดอัตราการไหลของน้ำ 1–30 L/min ด้วย Hall effect sensor ส่งออก pulse signal</p>
+          <p>เหมาะสำหรับโปรเจกต์ระบบน้ำอัตโนมัติ, การชาร์จน้ำ, หรือมอนิเตอร์การใช้น้ำในบ้าน</p>
+          <div class="sensor-spec">
+            <span class="spec-tag">Pulse Output</span>
+            <span class="spec-tag">5V</span>
+            <span class="spec-tag">1-30 L/min</span>
+            <span class="spec-tag">GPIO Interrupt</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">⚖️</div>
+        <div class="sensor-info">
+          <h3>HX711 + Load Cell — Weight Sensor</h3>
+          <p>ADC 24-bit สำหรับ load cell วัดน้ำหนักได้ตั้งแต่ไม่กี่กรัมถึงหลายร้อยกิโลกรัม</p>
+          <p>ใช้สร้างตาชั่งอัจฉริยะ, ถังเก็บน้ำที่วัดปริมาณ, หรือระบบจ่ายวัตถุดิบอัตโนมัติ</p>
+          <div class="sensor-spec">
+            <span class="spec-tag">24-bit ADC</span>
+            <span class="spec-tag">SPI-like</span>
+            <span class="spec-tag">80/10 SPS</span>
+            <span class="spec-tag">Arduino Lib</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">🌈</div>
+        <div class="sensor-info">
+          <h3>AS7265x — Multispectral Sensor (18 channels)</h3>
+          <p>วัด 18 ช่องความยาวคลื่น 410–940 nm ครอบคลุม UV, Visible และ Near-IR</p>
+          <p>ใช้ในการวิเคราะห์คุณภาพอาหาร, ตรวจสอบพืช, วิเคราะห์วัสดุ — เหนือกว่า RGB sensor หลายเท่า</p>
+          <div class="sensor-spec">
+            <span class="spec-tag">I2C</span>
+            <span class="spec-tag">18 channels</span>
+            <span class="spec-tag">UV-NIR</span>
+            <span class="spec-tag">SparkFun Lib</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">⚡</div>
+        <div class="sensor-info">
+          <h3>PZEM-004T v3 — AC Power Meter Module</h3>
+          <p>วัด Voltage (80–260V AC), Current, Power, Energy, Frequency และ Power Factor ในตัวเดียว</p>
+          <p>ต่อผ่าน UART กับ ESP32 สร้าง smart power monitor ติดตามการใช้ไฟฟ้าแบบ real-time</p>
+          <div class="sensor-spec">
+            <span class="spec-tag">UART</span>
+            <span class="spec-tag">80-260V AC</span>
+            <span class="spec-tag">100A</span>
+            <span class="spec-tag">Energy kWh</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- SECTION 4: RESOURCES                                    -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <section id="resources">
+    <div class="section-header">
+      <span class="section-icon">📚</span>
+      <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+    </div>
+
+    <div class="resource-grid">
+      <a class="resource-card" href="https://esphome.io/changelog/2026.4.0/" target="_blank" rel="noopener">
+        <div class="resource-emoji">📋</div>
+        <div class="resource-text">
+          <h4>ESPHome 2026.4.0 Changelog</h4>
+          <p>รายละเอียด IRAM boost, CPU 240MHz และ breaking changes ทั้งหมด</p>
+        </div>
+      </a>
+
+      <a class="resource-card" href="https://www.hackster.io/news/dfrobot-unveils-the-14-50-firebeetle-2-esp32-p4-for-low-power-edge-ai-and-computer-vision-work-408cd4f9fd0b" target="_blank" rel="noopener">
+        <div class="resource-emoji">🔥</div>
+        <div class="resource-text">
+          <h4>DFRobot FireBeetle 2 ESP32-P4 — Hackster</h4>
+          <p>รีวิวบอร์ด Edge AI ราคา $14.50 พร้อม MIPI-CSI</p>
+        </div>
+      </a>
+
+      <a class="resource-card" href="https://github.com/p01di/esp32c6-thread-border-router" target="_blank" rel="noopener">
+        <div class="resource-emoji">🌐</div>
+        <div class="resource-text">
+          <h4>ESP32-C6 Thread Border Router — GitHub</h4>
+          <p>Single-chip Thread BR สำหรับ Home Assistant Matter</p>
+        </div>
+      </a>
+
+      <a class="resource-card" href="https://components.espressif.com/components/espressif/esp_lvgl_port" target="_blank" rel="noopener">
+        <div class="resource-emoji">🖥️</div>
+        <div class="resource-text">
+          <h4>esp_lvgl_port v2.6.2 — ESP Component Registry</h4>
+          <p>ไลบรารีเชื่อม LVGL กับ display, touch, USB HID</p>
+        </div>
+      </a>
+
+      <a class="resource-card" href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/esp-ble-mesh/ble-mesh-index.html" target="_blank" rel="noopener">
+        <div class="resource-emoji">📡</div>
+        <div class="resource-text">
+          <h4>ESP-BLE-MESH Guide — ESP-IDF Docs</h4>
+          <p>คู่มือ official สำหรับ Bluetooth Mesh networking</p>
+        </div>
+      </a>
+
+      <a class="resource-card" href="https://zbotic.in/esp32-p4-high-performance-mcu-new-features-and-projects/" target="_blank" rel="noopener">
+        <div class="resource-emoji">🚀</div>
+        <div class="resource-text">
+          <h4>ESP32-P4 Features & Projects — Zbotic</h4>
+          <p>รายละเอียด ESP32-P4 พร้อมตัวอย่างโปรเจกต์</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Researcher อัตโนมัติ &nbsp;|&nbsp; 8 กรกฎาคม 2569 &nbsp;|&nbsp;
+    <a href="https://github.com/somchaipiw/claude-01" target="_blank" rel="noopener">somchaipiw/claude-01</a>
+  </p>
+  <p class="footer-sources">
+    แหล่งอ้างอิง: ESPHome Changelog &bull; Hackster.io &bull; CNX Software &bull; Espressif Docs &bull;
+    zbotic.in &bull; GitHub &bull; smarthomescene.com
+  </p>
+</footer>
+
+</body>
+</html>
