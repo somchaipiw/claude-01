@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 13 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: #0a0f1e;
+    color: #e2e8f0;
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ====== HEADER ====== */
+  header {
+    background: linear-gradient(135deg, #0d1b4b 0%, #1a237e 40%, #4a148c 100%);
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(100,140,255,0.2);
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 40%, rgba(100,180,255,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse at 70% 60%, rgba(180,100,255,0.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(100,180,255,0.15);
+    border: 1px solid rgba(100,180,255,0.4);
+    border-radius: 50px;
+    padding: 0.3rem 1.2rem;
+    font-size: 0.82rem;
+    color: #93c5fd;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.6rem;
+    line-height: 1.3;
+  }
+  .header-sub {
+    color: #94a3b8;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 0.6rem 1.4rem;
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #60a5fa;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin-top: 0.2rem;
+  }
+
+  /* ====== LAYOUT ====== */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 3rem;
+  }
+
+  section {
+    margin-bottom: 3.5rem;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.8rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .section-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .section-icon.blue  { background: rgba(59,130,246,0.2); }
+  .section-icon.purple { background: rgba(139,92,246,0.2); }
+  .section-icon.green  { background: rgba(16,185,129,0.2); }
+  .section-icon.orange { background: rgba(245,158,11,0.2); }
+  .section-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #e2e8f0;
+  }
+  .section-desc {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-top: 0.15rem;
+  }
+
+  /* ====== CARDS GRID ====== */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.4rem;
+  }
+  .cards-grid.two-col {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  }
+
+  /* ====== CARD ====== */
+  .card {
+    background: #111827;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+  .card:hover::before { opacity: 1; }
+  .card.accent-blue::before  { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+  .card.accent-purple::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+  .card.accent-green::before  { background: linear-gradient(90deg, #10b981, #34d399); }
+  .card.accent-orange::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .card.accent-pink::before   { background: linear-gradient(90deg, #ec4899, #f472b6); }
+  .card:hover.accent-blue   { border-color: rgba(59,130,246,0.4); }
+  .card:hover.accent-purple { border-color: rgba(139,92,246,0.4); }
+  .card:hover.accent-green  { border-color: rgba(16,185,129,0.4); }
+  .card:hover.accent-orange { border-color: rgba(245,158,11,0.4); }
+  .card:hover.accent-pink   { border-color: rgba(236,72,153,0.4); }
+
+  .card-tag-row {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.8rem;
+  }
+  .tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+  }
+  .tag.blue   { background: rgba(59,130,246,0.2);  color: #60a5fa; }
+  .tag.purple { background: rgba(139,92,246,0.2);  color: #a78bfa; }
+  .tag.green  { background: rgba(16,185,129,0.2);  color: #34d399; }
+  .tag.orange { background: rgba(245,158,11,0.2);  color: #fbbf24; }
+  .tag.pink   { background: rgba(236,72,153,0.2);  color: #f472b6; }
+  .tag.teal   { background: rgba(20,184,166,0.2);  color: #2dd4bf; }
+  .tag.red    { background: rgba(239,68,68,0.2);   color: #f87171; }
+  .tag.yellow { background: rgba(234,179,8,0.2);   color: #facc15; }
+
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card-body {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    line-height: 1.75;
+  }
+  .card-body strong { color: #cbd5e1; }
+
+  /* ====== SPEC TABLE ====== */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-top: 0.8rem;
+  }
+  .spec-table tr { border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .spec-table tr:last-child { border-bottom: none; }
+  .spec-table td { padding: 0.45rem 0.4rem; vertical-align: top; }
+  .spec-table td:first-child { color: #64748b; width: 40%; font-size: 0.8rem; }
+  .spec-table td:last-child { color: #cbd5e1; font-weight: 500; }
+
+  /* ====== CHIP BADGE ====== */
+  .chip-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 8px;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.8rem;
+    color: #a5b4fc;
+    margin-bottom: 0.6rem;
+  }
+
+  /* ====== FEATURE LIST ====== */
+  .feature-list {
+    list-style: none;
+    margin-top: 0.7rem;
+  }
+  .feature-list li {
+    padding: 0.3rem 0;
+    font-size: 0.88rem;
+    color: #94a3b8;
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  .feature-list li::before {
+    content: '▸';
+    color: #60a5fa;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+
+  /* ====== SENSOR CARD HIGHLIGHT ====== */
+  .sensor-highlight {
+    display: inline-block;
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.25);
+    border-radius: 8px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.78rem;
+    color: #34d399;
+    margin-right: 0.4rem;
+    margin-bottom: 0.3rem;
+  }
+
+  /* ====== PROJECT CARD (wide) ====== */
+  .project-card {
+    background: #111827;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    padding: 1.6rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 3px;
+    border-radius: 3px 0 0 3px;
+  }
+  .project-card.left-blue::before   { background: #3b82f6; }
+  .project-card.left-purple::before { background: #8b5cf6; }
+  .project-card.left-green::before  { background: #10b981; }
+  .project-card.left-orange::before { background: #f59e0b; }
+  .project-card:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(0,0,0,0.4); }
+  .project-info { padding-left: 0.5rem; }
+  .project-difficulty {
+    text-align: center;
+    padding: 0.5rem;
+  }
+  .diff-label {
+    font-size: 0.7rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .diff-value {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-top: 0.3rem;
+  }
+  .diff-value.easy   { color: #34d399; }
+  .diff-value.medium { color: #fbbf24; }
+  .diff-value.hard   { color: #f87171; }
+
+  /* ====== RESOURCE LINKS ====== */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: #111827;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    transition: border-color 0.2s;
+  }
+  .resource-card:hover { border-color: rgba(100,130,255,0.35); }
+  .resource-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 0.3rem;
+  }
+  .resource-desc {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.5;
+  }
+  .resource-url {
+    font-size: 0.75rem;
+    color: #60a5fa;
+    margin-top: 0.4rem;
+    word-break: break-all;
+  }
+
+  /* ====== INFO BANNER ====== */
+  .info-banner {
+    background: rgba(59,130,246,0.08);
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 12px;
+    padding: 1rem 1.4rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.88rem;
+    color: #93c5fd;
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+  }
+  .info-banner-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; }
+
+  /* ====== FOOTER ====== */
+  footer {
+    background: #070c1a;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: #475569;
+    font-size: 0.82rem;
+    line-height: 2;
+  }
+  footer strong { color: #64748b; }
+
+  @media (max-width: 640px) {
+    .project-card { grid-template-columns: 1fr; }
+    .project-difficulty { text-align: left; display: flex; gap: 1rem; align-items: center; }
+    .header-stats { gap: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<header>
+  <div class="header-badge">Daily ESP32 Research · AI Researcher Bot</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="header-sub">13 กรกฎาคม 2569 · ESP32-C5 Wi-Fi 6 Dual-Band, Matter 1.5 Energy, AI Voice, Gateway Smartwatch</p>
+  <div class="header-stats">
+    <div class="stat-item">
+      <div class="stat-num">4</div>
+      <div class="stat-label">นวัตกรรมใหม่</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">4</div>
+      <div class="stat-label">ไอเดียโปรเจกต์</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">4</div>
+      <div class="stat-label">Sensors ใหม่</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">6</div>
+      <div class="stat-label">แหล่งข้อมูล</div>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== MAIN ===================== -->
+<main>
+
+  <!-- ========== SECTION 1: นวัตกรรม ========== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon blue">🔬</div>
+      <div>
+        <div class="section-title">นวัตกรรมและอัปเดตล่าสุด</div>
+        <div class="section-desc">ข้อมูลใหม่ประจำวันที่ 13 กรกฎาคม 2569</div>
+      </div>
+    </div>
+
+    <div class="info-banner">
+      <span class="info-banner-icon">💡</span>
+      <span>วันนี้เน้น <strong>ESP32-C5 ecosystem</strong> — ชิปแรกจาก Espressif ที่รองรับ Dual-Band Wi-Fi 6 (2.4/5 GHz) พร้อมบอร์ด XIAO และ FireBeetle ที่พร้อมใช้งาน, Matter 1.5 Energy Management Tier ใหม่, และโปรเจกต์ AI Voice ระดับขั้นสูง</span>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- Card 1: ESP32-C5 Dual-Band -->
+      <div class="card accent-blue">
+        <div class="card-tag-row">
+          <span class="tag blue">NEW CHIP</span>
+          <span class="tag teal">Wi-Fi 6</span>
+          <span class="tag purple">RISC-V</span>
+        </div>
+        <div class="chip-badge">🔵 ESP32-C5</div>
+        <div class="card-title">ESP32-C5 — Dual-Band Wi-Fi 6 ชิปแรกของ Espressif</div>
+        <div class="card-body">
+          ชิปตัวแรกในตระกูล ESP32 ที่รองรับ <strong>2.4 GHz และ 5 GHz Wi-Fi 6 (802.11ax)</strong> พร้อมกัน บน core RISC-V 240 MHz พร้อม BLE 5 + IEEE 802.15.4 ช่วยหลีกเลี่ยงคลื่นความถี่แออัดในย่าน 2.4 GHz ได้สิ้นเชิง
+          <table class="spec-table">
+            <tr><td>CPU</td><td>RISC-V 32-bit, 240 MHz</td></tr>
+            <tr><td>Wi-Fi</td><td>2.4 + 5 GHz, Wi-Fi 6 (OFDMA, MU-MIMO, TWT)</td></tr>
+            <tr><td>Bluetooth</td><td>BLE 5 + IEEE 802.15.4 (Zigbee/Thread)</td></tr>
+            <tr><td>SRAM</td><td>384 KB + ext. PSRAM</td></tr>
+            <tr><td>Deep Sleep</td><td>21 μA (FireBeetle)</td></tr>
+            <tr><td>Security</td><td>TEE, APM, PMP, Secure Boot, Key Manager</td></tr>
+            <tr><td>GPIO</td><td>สูงสุด 29 pins</td></tr>
+            <tr><td>Framework</td><td>ESP-IDF (ไม่รองรับ Arduino)</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- Card 2: XIAO ESP32-C5 ESPHome -->
+      <div class="card accent-purple">
+        <div class="card-tag-row">
+          <span class="tag purple">XIAO</span>
+          <span class="tag blue">ESPHome</span>
+          <span class="tag green">Home Assistant</span>
+        </div>
+        <div class="chip-badge">🟣 XIAO ESP32-C5</div>
+        <div class="card-title">XIAO ESP32-C5 + ESPHome — Smart Home ไร้คลื่นรบกวน</div>
+        <div class="card-body">
+          <strong>Seeed Studio XIAO ESP32-C5</strong> บอร์ดขนาดจิ๋ว (21×17.5 mm) ที่รองรับ ESPHome, Matter, HomeKit และ MQTT ครบครัน ใช้ <strong>ESP-IDF framework</strong> เท่านั้น (ไม่ใช่ Arduino) เหมาะกับสภาพแวดล้อม 2.4 GHz แออัดเช่นห้องประชุม คอนโด หรืออาคารสำนักงาน
+          <ul class="feature-list">
+            <li>ย่าน 5 GHz ลดการชนกันของสัญญาณจากอุปกรณ์อื่น</li>
+            <li>Target Wake Time (TWT) ประหยัดพลังงานเครื่องมือ IoT ที่ใช้แบตเตอรี่</li>
+            <li>ESPHome Device Builder package พร้อมใช้บน GitHub (DerekSeaman)</li>
+            <li>รองรับ BLE Proxy สำหรับ Home Assistant Bluetooth scanning</li>
+            <li>IRK Capture สำหรับ tracking อุปกรณ์ Bluetooth</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Card 3: FireBeetle 2 ESP32-C5 Solar -->
+      <div class="card accent-green">
+        <div class="card-tag-row">
+          <span class="tag green">SOLAR</span>
+          <span class="tag orange">IoT BOARD</span>
+          <span class="tag blue">Wi-Fi 6</span>
+        </div>
+        <div class="chip-badge">🟢 FireBeetle 2 ESP32-C5</div>
+        <div class="card-title">FireBeetle 2 ESP32-C5 — บอร์ด IoT Solar Charging ที่สมบูรณ์แบบ</div>
+        <div class="card-body">
+          DFRobot ออกบอร์ด <strong>FireBeetle 2 ESP32-C5</strong> ที่รวม Solar Power Management IC เดียวกับ DFR1075 ไว้ในตัว สามารถต่อ Solar Panel 4.5V–6V โดยตรง เหมาะกับ outdoor sensor ที่ไม่ต้องเข้าไปชาร์จแบตเตอรี่เป็นปีๆ
+          <table class="spec-table">
+            <tr><td>Solar Input</td><td>4.5V – 6V (5V@1A max)</td></tr>
+            <tr><td>Power Input</td><td>USB-C / 5V DC / PH2.0 LiPo</td></tr>
+            <tr><td>Deep Sleep</td><td>21 μA (ต่ำมากสำหรับ dual-band)</td></tr>
+            <tr><td>Form Factor</td><td>FireBeetle compact, castellated</td></tr>
+            <tr><td>ราคา</td><td>~$12–$15 USD</td></tr>
+          </table>
+          <ul class="feature-list">
+            <li>Off-grid environmental sensor: Temperature/Humidity/Pressure ส่งผ่าน 5 GHz</li>
+            <li>ฟาร์มรีโมท: ข้อมูลดิน+อากาศ upload ทุก 15 นาที แบตไม่หมด</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Card 4: Matter 1.5 Energy Management -->
+      <div class="card accent-orange">
+        <div class="card-tag-row">
+          <span class="tag orange">MATTER 1.5</span>
+          <span class="tag blue">ENERGY</span>
+          <span class="tag green">SMART HOME</span>
+        </div>
+        <div class="chip-badge">🟠 Matter 1.5</div>
+        <div class="card-title">Matter 1.5 Enhanced Energy Management — Smart Home ระดับอุตสาหกรรม</div>
+        <div class="card-body">
+          Matter 1.5 (2026) เพิ่ม support สำหรับ <strong>Camera, Closures, Soil Sensors</strong> และ <strong>Enhanced Energy Management</strong> ทำให้ ESP32-C6 กลายเป็น bridge ระหว่างอุปกรณ์ Modbus เก่า กับ ecosystem Smart Home สมัยใหม่
+          <ul class="feature-list">
+            <li><strong>Modbus → Matter Bridge:</strong> ESP32-C6 + MAX485 แปลง SDM120M Energy Meter ให้เป็น Matter Electrical Sensor Device</li>
+            <li><strong>Soil Sensor Node:</strong> ค่า NPK/moisture → Matter HomeKit/Google Home โดยตรง</li>
+            <li><strong>EV Charging:</strong> Matter 1.5 เพิ่ม device type สำหรับ EV Charger integration</li>
+            <li>ใช้ ESP-IDF 5.4 + ESP-Matter SDK (อัปเดต Jul 2026)</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== SECTION 2: ไอเดียโปรเจกต์ ========== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon purple">🛠️</div>
+      <div>
+        <div class="section-title">ไอเดียโปรเจกต์น่าสร้าง</div>
+        <div class="section-desc">Hands-on ideas สำหรับ maker และ developer ปี 2026</div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+
+      <!-- Project 1: Gateway Smartwatch -->
+      <div class="project-card left-blue">
+        <div class="project-info">
+          <div class="card-tag-row">
+            <span class="tag blue">WEARABLE</span>
+            <span class="tag teal">LiDAR</span>
+            <span class="tag purple">ESP-NOW</span>
+            <span class="tag pink">IoT HUB</span>
+          </div>
+          <div class="card-title">ESP32-S3 Gateway Smartwatch — นาฬิกา IoT Hub + LiDAR + WiFi Scanner</div>
+          <div class="card-body">
+            โปรเจกต์ระดับ showcase จาก Hackster.io: สร้างนาฬิกาข้อมือที่ทำหน้าที่เป็น <strong>Gateway ควบคุม IoT ทั้งบ้าน</strong> ด้วยข้อมือเดียว ใช้ ESP32-S3 เป็น core รวม 5 sensors ในกล่องขนาดเท่านาฬิกา พร้อม laser pointer 5 เมตรและ LiDAR วัดระยะ<br><br>
+            <strong>Hardware สำคัญ:</strong><br>
+            <span class="sensor-highlight">ESP32-S3</span>
+            <span class="sensor-highlight">VL53L1X ToF (0–4m)</span>
+            <span class="sensor-highlight">BME688 (Temp/Humidity/Pressure/Gas)</span>
+            <span class="sensor-highlight">MPU-6050 (IMU)</span>
+            <span class="sensor-highlight">LiPo + Charger IC</span><br>
+            <strong>Features:</strong>
+            <ul class="feature-list">
+              <li>LiDAR VL53L1X วัดระยะ 4 cm – 4 m ความแม่นยำ ±1% ผ่าน I2C</li>
+              <li>Dynamic MAC Address Switching เชื่อม ESP device หลายตัวผ่าน ESP-NOW พร้อม Symmetric Encryption</li>
+              <li>Tilt-to-Wake จาก IMU ตื่นขึ้นมาแสดงผลเมื่อยกข้อมือ</li>
+              <li>Wi-Fi Scanning — scan SSIDs รอบข้างและแสดงความแรงสัญญาณ</li>
+              <li>Real-time Temp/Altitude/Humidity/Gas Resistance บน OLED</li>
+              <li>5-meter Laser Pointer module ใช้ชี้และ indicate ทิศทาง</li>
+            </ul>
+          </div>
+        </div>
+        <div class="project-difficulty">
+          <div class="diff-label">ความยาก</div>
+          <div class="diff-value hard">สูง</div>
+        </div>
+      </div>
+
+      <!-- Project 2: Modbus Matter Energy Bridge -->
+      <div class="project-card left-orange">
+        <div class="project-info">
+          <div class="card-tag-row">
+            <span class="tag orange">ENERGY</span>
+            <span class="tag blue">MATTER</span>
+            <span class="tag teal">MODBUS</span>
+            <span class="tag green">HOME ASSISTANT</span>
+          </div>
+          <div class="card-title">ESP32-C6 Modbus-to-Matter Bridge — มิเตอร์ไฟฟ้าเก่าเข้า Smart Home ได้ทันที</div>
+          <div class="card-body">
+            โปรเจกต์ open-source จริงที่ deploy ใช้งานแล้วในปี 2026: ใช้ <strong>ESP32-C6 + MAX485 (HW-519 board)</strong> อ่านข้อมูล Energy Meter แบบ Modbus RTU (RS-485) และส่งต่อเป็น <strong>Matter Electrical Sensor Device</strong> เข้า Home Assistant/Apple Home/Google Home ได้เลย<br><br>
+            <strong>Hardware:</strong>
+            <span class="sensor-highlight">XIAO ESP32-C6</span>
+            <span class="sensor-highlight">MAX485 / HW-519 board</span>
+            <span class="sensor-highlight">Eastron SDM120M Energy Meter</span><br>
+            <strong>Software Stack:</strong>
+            <ul class="feature-list">
+              <li>ESP-IDF 5.4 + NimBLE + ESP-Matter SDK</li>
+              <li>FreeRTOS tasks แยก Modbus polling กับ Matter event handling</li>
+              <li>Expose V, A, W, kWh เป็น Matter Electrical Sensor attributes</li>
+              <li>GitHub: tomasmcguinness/matter-esp32-modbus-serial-adapter</li>
+              <li>Commission ผ่าน Matter QR Code เข้า Home Assistant ได้ใน 1 นาที</li>
+            </ul>
+          </div>
+        </div>
+        <div class="project-difficulty">
+          <div class="diff-label">ความยาก</div>
+          <div class="diff-value medium">กลาง</div>
+        </div>
+      </div>
+
+      <!-- Project 3: AI Voice Pro (MAX98357A) -->
+      <div class="project-card left-purple">
+        <div class="project-info">
+          <div class="card-tag-row">
+            <span class="tag purple">AI VOICE</span>
+            <span class="tag pink">GEMINI API</span>
+            <span class="tag blue">I2S AUDIO</span>
+            <span class="tag orange">WHISPER</span>
+          </div>
+          <div class="card-title">ESP32-S3 AI Voice Assistant Pro — Gemini + Whisper Tiny + MAX98357A I2S</div>
+          <div class="card-body">
+            ยกระดับ Voice Assistant จาก "button press" มาเป็น <strong>end-to-end conversational AI</strong> ด้วย latency ต่ำกว่า 100 ms บน ESP32-S3 เดียว ใช้ WebSocket binary streaming และ Whisper Tiny สำหรับ STT แบบ offline<br><br>
+            <strong>Architecture:</strong>
+            <ul class="feature-list">
+              <li><strong>ESP32-S3</strong> → รับ voice ผ่าน I2S MEMS mic (INMP441 หรือ SPH0645)</li>
+              <li><strong>Whisper Tiny</strong> (offline STT, &lt;80 ms) แปลงเสียงเป็นข้อความบน device</li>
+              <li><strong>Gemini API</strong> รับ text → ประมวลผล NLP → ตอบ text กลับ</li>
+              <li><strong>gTTS / Deepgram</strong> แปลงคำตอบเป็นเสียงพูด</li>
+              <li><strong>MAX98357A</strong> I2S Class-D Amplifier ขับลำโพง 3W ไม่ต้องใช้ analog DAC</li>
+              <li>WebSocket Binary Streaming ลด latency กว่า HTTP 63%</li>
+              <li>OLED SSD1306 แสดง transcript ของคำถาม-คำตอบ</li>
+            </ul>
+          </div>
+        </div>
+        <div class="project-difficulty">
+          <div class="diff-label">ความยาก</div>
+          <div class="diff-value medium">กลาง</div>
+        </div>
+      </div>
+
+      <!-- Project 4: C5 Off-Grid Station -->
+      <div class="project-card left-green">
+        <div class="project-info">
+          <div class="card-tag-row">
+            <span class="tag green">OFF-GRID</span>
+            <span class="tag blue">Wi-Fi 6</span>
+            <span class="tag orange">SOLAR</span>
+            <span class="tag teal">ESPHOME</span>
+          </div>
+          <div class="card-title">FireBeetle ESP32-C5 Off-Grid Station — สถานีตรวจวัดพลังงานแสงอาทิตย์ 5 GHz</div>
+          <div class="card-body">
+            ใช้ <strong>FireBeetle 2 ESP32-C5</strong> สร้างสถานีตรวจวัดสิ่งแวดล้อมที่ไม่ต้องพึ่งสายไฟและ Router 2.4 GHz — ส่งข้อมูลผ่าน <strong>5 GHz Wi-Fi 6</strong> ที่รบกวนน้อยกว่า เหมาะกับสภาพแวดล้อมในเมืองที่ 2.4 GHz อิ่มตัว<br><br>
+            <strong>Sensors แนะนำ:</strong>
+            <span class="sensor-highlight">BME688 (อากาศ + VOC)</span>
+            <span class="sensor-highlight">SEN55 (PM + NOx)</span>
+            <span class="sensor-highlight">VEML7700 (ความสว่าง)</span>
+            <span class="sensor-highlight">INA226 (Solar Power Monitor)</span><br>
+            <ul class="feature-list">
+              <li>Solar Panel 5V@1A → ชาร์จ LiPo ผ่าน integrated solar IC บนบอร์ด</li>
+              <li>Deep sleep 21 μA ตื่นทุก 5 นาที อัปโหลด ESPHome → Home Assistant</li>
+              <li>TWT (Target Wake Time) ของ Wi-Fi 6 ช่วยลดพลังงาน radio ลงอีก ~50%</li>
+              <li>BSS Coloring ลดการชนกันในย่าน 5 GHz สำหรับ deployment หนาแน่น</li>
+            </ul>
+          </div>
+        </div>
+        <div class="project-difficulty">
+          <div class="diff-label">ความยาก</div>
+          <div class="diff-value easy">ง่าย</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== SECTION 3: SENSORS ========== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon green">📡</div>
+      <div>
+        <div class="section-title">Sensors น่าสนใจสำหรับ ESP32</div>
+        <div class="section-desc">เลือก sensor ที่เหมาะกับงานของคุณ — ประจำวันที่ 13 กรกฎาคม 2569</div>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- VL53L1X -->
+      <div class="card accent-blue">
+        <div class="card-tag-row">
+          <span class="tag blue">DISTANCE</span>
+          <span class="tag teal">ToF LiDAR</span>
+          <span class="tag green">I2C</span>
+        </div>
+        <div class="card-title">VL53L1X — Time-of-Flight LiDAR (0.04–4 m)</div>
+        <div class="card-body">
+          เซ็นเซอร์วัดระยะแบบ ToF จาก STMicroelectronics ที่ให้ช่วงวัด <strong>4 cm – 4 m</strong> ด้วยความแม่นยำ ±1% ใช้แสงอินฟราเรดแบบ eye-safe เหมาะกับ wearable, obstacle avoidance, และ presence detection
+          <table class="spec-table">
+            <tr><td>วิธีวัด</td><td>Time-of-Flight (IR Laser)</td></tr>
+            <tr><td>ช่วงวัด</td><td>4 cm – 4 m (±1% accuracy)</td></tr>
+            <tr><td>Interface</td><td>I2C (default addr 0x29)</td></tr>
+            <tr><td>Voltage</td><td>2.6V – 3.5V</td></tr>
+            <tr><td>Update Rate</td><td>สูงสุด 50 Hz</td></tr>
+            <tr><td>Library</td><td>Adafruit_VL53L1X, pololu/vl53l1x</td></tr>
+          </table>
+          <ul class="feature-list">
+            <li>ดีกว่า VL53L0X ตรงที่วัดได้ไกลกว่า 2x (4m vs 2m)</li>
+            <li>Multi-sensor: เปลี่ยน I2C address ได้ด้วย XSHUT pin</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- MAX98357A -->
+      <div class="card accent-purple">
+        <div class="card-tag-row">
+          <span class="tag purple">AUDIO</span>
+          <span class="tag blue">I2S</span>
+          <span class="tag orange">CLASS-D AMP</span>
+        </div>
+        <div class="card-title">MAX98357A — I2S Class-D Amplifier สำหรับ Voice Projects</div>
+        <div class="card-body">
+          IC ขยายเสียงแบบ Class-D ที่รับ <strong>I2S digital audio</strong> โดยตรงจาก ESP32 ไม่ต้องผ่าน DAC ภายนอก เหมาะกับโปรเจกต์ Voice Assistant และ Audio Notification บน IoT devices
+          <table class="spec-table">
+            <tr><td>Input</td><td>I2S Digital Audio (3 สาย: BCLK, LRCLK, DATA)</td></tr>
+            <tr><td>Output Power</td><td>3.2W @ 4Ω / 1.8W @ 8Ω</td></tr>
+            <tr><td>Voltage</td><td>2.5V – 5.5V</td></tr>
+            <tr><td>Efficiency</td><td>~92% (Class-D)</td></tr>
+            <tr><td>THD+N</td><td>0.013% (ชัดใส)</td></tr>
+            <tr><td>ราคา</td><td>~$6–$8 (Adafruit breakout)</td></tr>
+          </table>
+          <ul class="feature-list">
+            <li>ใช้กับ ESP-ADF (Audio Development Framework) ได้ทันที</li>
+            <li>รองรับ sample rate 8–96 kHz, 16–32 bit</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Eastron SDM120M -->
+      <div class="card accent-orange">
+        <div class="card-tag-row">
+          <span class="tag orange">ENERGY METER</span>
+          <span class="tag teal">MODBUS RTU</span>
+          <span class="tag green">RS-485</span>
+        </div>
+        <div class="card-title">Eastron SDM120M — AC Energy Meter Modbus RTU</div>
+        <div class="card-body">
+          มิเตอร์ไฟฟ้า AC ระดับ <strong>DIN rail industrial</strong> ที่วัด V/A/W/kWh และสื่อสารผ่าน Modbus RTU บน RS-485 เหมาะสำหรับ ESP32 Modbus-to-Matter bridge หรือ energy monitoring dashboard
+          <table class="spec-table">
+            <tr><td>Input</td><td>230V AC, สูงสุด 45A</td></tr>
+            <tr><td>วัดได้</td><td>V, A, W, VA, VAr, PF, Hz, kWh</td></tr>
+            <tr><td>Communication</td><td>Modbus RTU @ RS-485</td></tr>
+            <tr><td>Accuracy</td><td>Class 1 (±1%)</td></tr>
+            <tr><td>Display</td><td>LCD 5 หลัก</td></tr>
+            <tr><td>ราคา</td><td>~$25–$40 USD</td></tr>
+          </table>
+          <ul class="feature-list">
+            <li>เชื่อมกับ ESP32-C6 ผ่าน MAX485 breakout (HW-519) โดยตรง</li>
+            <li>Baud rate 1200–9600 bps, configurable</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- BME688 -->
+      <div class="card accent-green">
+        <div class="card-tag-row">
+          <span class="tag green">4-IN-1</span>
+          <span class="tag orange">AI</span>
+          <span class="tag blue">VOC + GAS</span>
+        </div>
+        <div class="card-title">BME688 — 4-in-1 Environmental + AI Pattern Recognition</div>
+        <div class="card-body">
+          เซ็นเซอร์ตรวจสิ่งแวดล้อมระดับสูงสุดจาก Bosch ที่รวม <strong>Gas Scanner (VOC/NOx) + Temp + Humidity + Pressure</strong> ไว้ในชิปเดียว พร้อม AI BSEC library สำหรับ pattern recognition ของคุณภาพอากาศ
+          <table class="spec-table">
+            <tr><td>วัดได้</td><td>Temp, Humidity, Pressure, Gas (VOC/NOx)</td></tr>
+            <tr><td>Interface</td><td>I2C / SPI</td></tr>
+            <tr><td>Gas Sensor</td><td>Metal oxide sensor (MOX), 4 heater profiles</td></tr>
+            <tr><td>IAQ output</td><td>Indoor Air Quality index 0–500</td></tr>
+            <tr><td>AI Feature</td><td>BSEC 2.x: detect smoke, food, VOC patterns</td></tr>
+            <tr><td>ราคา</td><td>~$10–$15 (Pimoroni/Adafruit breakout)</td></tr>
+          </table>
+          <ul class="feature-list">
+            <li>ดีกว่า BME680 ตรงที่มี 4 heater profiles scanning แบบ parallel</li>
+            <li>ใช้ใน Gateway Smartwatch เพื่อวัดคุณภาพอากาศรอบตัวแบบ real-time</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== SECTION 4: RESOURCES ========== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon orange">🔗</div>
+      <div>
+        <div class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง</div>
+        <div class="section-desc">อ่านเพิ่มเติมและ community</div>
+      </div>
+    </div>
+
+    <div class="resource-grid">
+      <div class="resource-card">
+        <div class="resource-name">Espressif ESP32-C5 Official</div>
+        <div class="resource-desc">หน้า product และ datasheet อย่างเป็นทางการของ ESP32-C5</div>
+        <div class="resource-url">espressif.com/en/products/socs/esp32-c5</div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-name">XIAO ESP32-C5 + ESPHome Guide</div>
+        <div class="resource-desc">บทความ Derek Seaman: ตั้งค่า XIAO C5 บน ESPHome พร้อม BLE Proxy</div>
+        <div class="resource-url">derekseaman.com / DerekSeaman GitHub</div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-name">FireBeetle 2 ESP32-C5 Wiki</div>
+        <div class="resource-desc">คู่มือ hardware และ pinout ของ FireBeetle 2 ESP32-C5 พร้อม solar charging</div>
+        <div class="resource-url">wiki.dfrobot.com/dfr1222</div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-name">Matter ESP32 Modbus Adapter</div>
+        <div class="resource-desc">Open-source project: ESP32-C6 + Modbus RTU → Matter Electrical Sensor</div>
+        <div class="resource-url">github.com/tomasmcguinness/matter-esp32-modbus-serial-adapter</div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-name">ESP32 Gateway Smartwatch</div>
+        <div class="resource-desc">Hackster.io: บอร์ด ESP32-S3 + LiDAR + ESP-NOW Hub project พร้อม 3D print case</div>
+        <div class="resource-url">hackster.io/RoboticWorx/esp32-based-wireless-smartwatch</div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-name">ESP-Matter Programming Guide Jul 2026</div>
+        <div class="resource-desc">เอกสาร SDK ล่าสุด (6 กรกฎาคม 2569) สำหรับ ESP32 ทุกรุ่น</div>
+        <div class="resource-url">docs.espressif.com/projects/esp-matter</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <strong>ESP32 & Sensor Innovations</strong> — สร้างโดย AI Researcher Bot อัตโนมัติ<br>
+  วันที่สร้าง: 13 กรกฎาคม 2569 | หัวข้อ: ESP32-C5 Dual-Band Wi-Fi 6, FireBeetle Solar, Gateway Smartwatch LiDAR, Matter 1.5 Modbus Energy Bridge, Gemini AI Voice Pro<br>
+  แหล่งข้อมูล: Espressif Systems · Seeed Studio · DFRobot · Hackster.io · Adafruit · tomasmcguinness.com · derekseaman.com · jrattechworks.com
+</footer>
+
+</body>
+</html>
