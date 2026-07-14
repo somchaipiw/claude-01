@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 14 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ─── Header ─── */
+  header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f2d50 40%, #1a1040 100%);
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(56,189,248,0.25);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(56,189,248,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(56,189,248,0.12);
+    border: 1px solid rgba(56,189,248,0.35);
+    border-radius: 999px;
+    padding: 0.35rem 1.1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #38bdf8;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+  }
+  header h1 {
+    font-size: clamp(1.7rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #38bdf8, #818cf8, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.6rem;
+  }
+  .header-sub {
+    color: #94a3b8;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-number {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #38bdf8;
+  }
+  .stat-label {
+    font-size: 0.78rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ─── Layout ─── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  /* ─── Section ─── */
+  section {}
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .section-icon {
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .section-icon.blue   { background: rgba(56,189,248,0.15);  border: 1px solid rgba(56,189,248,0.3);  }
+  .section-icon.purple { background: rgba(139,92,246,0.15);  border: 1px solid rgba(139,92,246,0.3);  }
+  .section-icon.green  { background: rgba(52,211,153,0.15);  border: 1px solid rgba(52,211,153,0.3);  }
+  .section-icon.orange { background: rgba(251,146,60,0.15);  border: 1px solid rgba(251,146,60,0.3);  }
+  .section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.15rem;
+  }
+  .section-desc {
+    font-size: 0.88rem;
+    color: #64748b;
+  }
+
+  /* ─── Card Grid ─── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card-grid.two-col {
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  }
+
+  /* ─── Card ─── */
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: border-color .2s, transform .2s, box-shadow .2s;
+  }
+  .card:hover {
+    border-color: #475569;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+  }
+  .card.highlight {
+    border-color: rgba(56,189,248,0.4);
+    background: linear-gradient(135deg, #1e293b 0%, #1a2744 100%);
+  }
+  .card.highlight:hover {
+    border-color: rgba(56,189,248,0.7);
+  }
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    margin-bottom: 0.8rem;
+  }
+  .chip-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.65rem;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .chip-badge.new    { background: rgba(52,211,153,0.2);  color: #34d399; border: 1px solid rgba(52,211,153,0.4); }
+  .chip-badge.hot    { background: rgba(251,113,133,0.2); color: #fb7185; border: 1px solid rgba(251,113,133,0.4); }
+  .chip-badge.tip    { background: rgba(251,146,60,0.2);  color: #fb923c; border: 1px solid rgba(251,146,60,0.4); }
+  .chip-badge.pro    { background: rgba(139,92,246,0.2);  color: #a78bfa; border: 1px solid rgba(139,92,246,0.4); }
+  .chip-badge.ai     { background: rgba(56,189,248,0.2);  color: #38bdf8; border: 1px solid rgba(56,189,248,0.4); }
+
+  .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    margin-bottom: 0.6rem;
+  }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* ─── Spec Table inside card ─── */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin-top: 0.8rem;
+  }
+  .spec-table tr {
+    border-bottom: 1px solid #1e293b;
+  }
+  .spec-table td:first-child {
+    color: #64748b;
+    padding: 0.3rem 0.8rem 0.3rem 0;
+    font-weight: 600;
+    white-space: nowrap;
+    width: 38%;
+  }
+  .spec-table td:last-child {
+    color: #cbd5e1;
+    padding: 0.3rem 0;
+  }
+
+  /* ─── Tag Chips ─── */
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.9rem;
+  }
+  .tag {
+    font-size: 0.73rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: #94a3b8;
+  }
+
+  /* ─── Code snippet ─── */
+  .code-block {
+    background: #0f172a;
+    border: 1px solid #1e3a5f;
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #7dd3fc;
+    overflow-x: auto;
+    margin-top: 0.8rem;
+    line-height: 1.6;
+    white-space: pre;
+  }
+  .code-comment { color: #475569; }
+  .code-key    { color: #818cf8; }
+  .code-val    { color: #34d399; }
+  .code-str    { color: #fb923c; }
+
+  /* ─── Alert / Callout ─── */
+  .callout {
+    display: flex;
+    gap: 0.7rem;
+    background: rgba(56,189,248,0.08);
+    border: 1px solid rgba(56,189,248,0.25);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    margin-top: 0.8rem;
+    font-size: 0.87rem;
+    color: #bae6fd;
+  }
+  .callout-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+  /* ─── Step list ─── */
+  .step-list {
+    list-style: none;
+    margin-top: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .step-list li {
+    display: flex;
+    gap: 0.7rem;
+    font-size: 0.87rem;
+    color: #94a3b8;
+  }
+  .step-num {
+    width: 22px; height: 22px;
+    background: rgba(56,189,248,0.2);
+    border: 1px solid rgba(56,189,248,0.4);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #38bdf8;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* ─── Divider ─── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #334155 30%, #334155 70%, transparent);
+    margin: 0.5rem 0;
+  }
+
+  /* ─── Resource link card ─── */
+  .link-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color .2s, transform .2s;
+  }
+  .link-card:hover {
+    border-color: #64748b;
+    transform: translateX(4px);
+  }
+  .link-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    background: #0f172a;
+  }
+  .link-info { flex: 1; min-width: 0; }
+  .link-title { font-weight: 700; font-size: 0.92rem; color: #f1f5f9; margin-bottom: 0.15rem; }
+  .link-desc  { font-size: 0.78rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .link-arrow { color: #475569; font-size: 1rem; }
+
+  .resource-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  /* ─── Footer ─── */
+  footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    border-top: 1px solid #1e293b;
+    color: #475569;
+    font-size: 0.82rem;
+    line-height: 2;
+  }
+  footer a { color: #38bdf8; text-decoration: none; }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 640px) {
+    .card-grid.two-col { grid-template-columns: 1fr; }
+    .stat-row { gap: 1.2rem; }
+    header { padding: 2rem 1.2rem 1.8rem; }
+    main { padding: 1.5rem 1rem; gap: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">🔬 ESP32 &amp; IoT Research</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="header-sub">รายงานประจำวันที่ 14 กรกฎาคม 2569 — ชิปใหม่จาก Espressif · TinyML · mmWave Radar · CO₂ Sensors</p>
+  <div class="stat-row">
+    <div class="stat-item"><span class="stat-number">2</span><span class="stat-label">ชิปใหม่ 2026</span></div>
+    <div class="stat-item"><span class="stat-number">4</span><span class="stat-label">ไอเดียโปรเจกต์</span></div>
+    <div class="stat-item"><span class="stat-number">4</span><span class="stat-label">Sensors น่าใช้</span></div>
+    <div class="stat-item"><span class="stat-number">6</span><span class="stat-label">แหล่งข้อมูล</span></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 1 — นวัตกรรมใหม่
+  ══════════════════════════════════════════ -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon blue">🔬</div>
+      <div>
+        <div class="section-title">นวัตกรรมและชิปใหม่จาก Espressif</div>
+        <div class="section-desc">ESP32-H21 &amp; ESP32-E22 — ประกาศที่ CES 2026 พร้อม Wi-Fi 6E และ Ultra-Low Power</div>
+      </div>
+    </div>
+
+    <div class="card-grid two-col">
+
+      <!-- ESP32-H21 -->
+      <div class="card highlight">
+        <div class="card-header">
+          <div>
+            <div class="chip-badge new">🆕 NEW 2026</div>
+          </div>
+        </div>
+        <div class="card-title">ESP32-H21 — Ultra-Low Power Thread &amp; Zigbee SoC</div>
+        <p>ประกาศอย่างเป็นทางการเดือนมีนาคม 2026 ที่ CES — เป็น upgrade จาก ESP32-H2 โดยเพิ่ม <strong>DC-DC converter แบบ on-chip</strong> ทำให้กินไฟต่ำกว่าเดิมอย่างมีนัยสำคัญ เหมาะกับ sensor node ที่ใช้แบตเตอรี่นาน</p>
+        <table class="spec-table">
+          <tr><td>CPU</td><td>RISC-V 32-bit @ 96 MHz</td></tr>
+          <tr><td>SRAM</td><td>320 KB SRAM + 128 KB ROM</td></tr>
+          <tr><td>Wireless</td><td>IEEE 802.15.4 (Thread 1.3, Zigbee 3.0) + BLE 5.x</td></tr>
+          <tr><td>Deep Sleep</td><td>~5 µA</td></tr>
+          <tr><td>Light Sleep</td><td>~9 µA</td></tr>
+          <tr><td>RX Active</td><td>~8.2 mA (ลดลงจาก H2 ด้วย DC-DC)</td></tr>
+          <tr><td>GPIO</td><td>19 pins + UART, SPI, I2C, I2S, PWM, ADC</td></tr>
+          <tr><td>Flash</td><td>External flash support</td></tr>
+        </table>
+        <div class="callout">
+          <span class="callout-icon">💡</span>
+          <span>เหมาะที่สุดสำหรับ Thread End Device — sensor node ที่ฝังแบตเตอรี่ AA/CR2032 แล้วลืมได้หลายปี ใช้ร่วมกับ ESP32-C6 เป็น Thread Border Router</span>
+        </div>
+        <div class="tag-row">
+          <span class="tag">Thread 1.3</span><span class="tag">Zigbee 3.0</span><span class="tag">BLE 5.x</span>
+          <span class="tag">Matter Ready</span><span class="tag">RISC-V</span><span class="tag">5µA Deep Sleep</span>
+        </div>
+      </div>
+
+      <!-- ESP32-E22 -->
+      <div class="card highlight">
+        <div class="card-header">
+          <div>
+            <div class="chip-badge hot">🔥 CES 2026</div>
+          </div>
+        </div>
+        <div class="card-title">ESP32-E22 — Wi-Fi 6E Tri-Band Co-Processor สุดล้ำ</div>
+        <p>ชิปแรกของ Espressif ที่รองรับ <strong>Wi-Fi 6E แบบ Tri-Band</strong> (2.4 / 5 / 6 GHz) ออกแบบมาเป็น <em>Radio Co-Processor (RCP)</em> เพื่อ offload networking stack ให้ host CPU ไม่ต้องจัดการ protocol เอง</p>
+        <table class="spec-table">
+          <tr><td>CPU</td><td>Dual-core RISC-V @ 500 MHz</td></tr>
+          <tr><td>Memory</td><td>1 MB on-chip</td></tr>
+          <tr><td>Wi-Fi</td><td>6E Tri-Band — 2.4/5/6 GHz, 160 MHz BW</td></tr>
+          <tr><td>Speed</td><td>สูงสุด 2.4 Gbps throughput</td></tr>
+          <tr><td>Bluetooth</td><td>BT 5.4 (Classic BR/EDR + BLE)</td></tr>
+          <tr><td>Host Interface</td><td>PCIe 2.1 + SDIO 3.0</td></tr>
+          <tr><td>Features</td><td>2×2 MU-MIMO, Beamforming</td></tr>
+          <tr><td>Status</td><td>Wi-Fi 6E Certified™, Engineering Samples</td></tr>
+        </table>
+        <div class="callout">
+          <span class="callout-icon">🚀</span>
+          <span>ไม่ใช่ standalone MCU — ต้องใช้คู่กับ host (Linux SBC, ESP32-P4) สำหรับงาน high-bandwidth เช่น video streaming, AR/VR, Smart Home Hub รุ่นถัดไป</span>
+        </div>
+        <div class="tag-row">
+          <span class="tag">Wi-Fi 6E</span><span class="tag">6 GHz Band</span><span class="tag">2.4 Gbps</span>
+          <span class="tag">PCIe 2.1</span><span class="tag">BT 5.4</span><span class="tag">Co-Processor</span>
+        </div>
+      </div>
+
+      <!-- TinyML / LiteRT Update -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="chip-badge ai">🤖 AI/ML 2026</div>
+          </div>
+        </div>
+        <div class="card-title">LiteRT for Microcontrollers — TinyML ยุคใหม่บน ESP32-S3</div>
+        <p>Google รีแบรนด์ TensorFlow Lite Micro เป็น <strong>LiteRT for Microcontrollers</strong> ปี 2024 และในปี 2026 ได้เพิ่ม <strong>INT4 quantization</strong> (แม้ coverage ยังไม่ครบทุก operator) ทำให้ model ขนาดเล็กลงอีก</p>
+        <p>ESP32-S3 ที่มี vector instructions + PSRAM 8 MB รัน quantized CNN model ได้ใน <strong>หลักสิบ milliseconds</strong> กินไฟเฉลี่ยหลักเดียว mA</p>
+        <div class="divider"></div>
+        <p style="font-size:0.83rem; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">Quantization เปรียบเทียบ (2026)</p>
+        <table class="spec-table">
+          <tr><td>INT8</td><td>มาตรฐาน — model เล็ก 4× inference เร็ว 2-4× accuracy ลด 1-3%</td></tr>
+          <tr><td>INT4</td><td>ใหม่ปี 2026 — model เล็กกว่า INT8 อีก 2× เหมาะ model ใหญ่</td></tr>
+          <tr><td>FLOAT32</td><td>ช้า/กินแรม — หลีกเลี่ยงบน MCU</td></tr>
+        </table>
+        <div class="tag-row">
+          <span class="tag">LiteRT</span><span class="tag">TinyML</span><span class="tag">INT4/INT8</span>
+          <span class="tag">ESP32-S3</span><span class="tag">Edge AI</span><span class="tag">No Cloud</span>
+        </div>
+      </div>
+
+      <!-- Thread Mesh Network -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="chip-badge pro">🌐 Protocol</div>
+          </div>
+        </div>
+        <div class="card-title">Thread Border Router ด้วย ESP32-C6 + ESP32-H21</div>
+        <p>Espressif รองรับ <strong>Thread 1.3</strong> บน ESP32-C6 (Border Router) และ ESP32-H21 (End Device) ครบวงจรในระบบเดียว เชื่อมต่อ Zigbee/Thread devices เข้า Matter network ได้โดยตรง ไม่ต้องพึ่ง Hub จากยี่ห้ออื่น</p>
+        <ul class="step-list">
+          <li><span class="step-num">1</span><span>ESP32-C6 ทำหน้าที่ Thread Border Router — เชื่อม Thread network กับ Wi-Fi/IPv6</span></li>
+          <li><span class="step-num">2</span><span>ESP32-H21 เป็น End Device — sensor node กินไฟต่ำมาก (5µA deep sleep)</span></li>
+          <li><span class="step-num">3</span><span>Devices แสดงผลเป็น Matter device ใน Home Assistant / Apple Home / Google Home</span></li>
+          <li><span class="step-num">4</span><span>ไม่ต้องมีอินเทอร์เน็ตก็ทำงานได้ — local mesh network ล้วน</span></li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag">Thread 1.3</span><span class="tag">Matter</span><span class="tag">ESP32-C6</span>
+          <span class="tag">ESP32-H21</span><span class="tag">IPv6 Mesh</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 2 — ไอเดียโปรเจกต์
+  ══════════════════════════════════════════ -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon purple">🛠️</div>
+      <div>
+        <div class="section-title">ไอเดียโปรเจกต์น่าสร้าง</div>
+        <div class="section-desc">Hands-on projects ที่ใช้ชิปและ sensor ที่กล่าวถึงวันนี้</div>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Project 1: mmWave Presence Sensor -->
+      <div class="card">
+        <div class="chip-badge hot" style="margin-bottom:0.7rem;">🔥 Hot Project</div>
+        <div class="card-title">mmWave Presence Sensor — ตรวจจับคน &amp; Breathing ด้วย LD2410</div>
+        <p>PIR sensor จับได้เฉพาะการเคลื่อนไหวขนาดใหญ่ แต่ <strong>HLK-LD2410</strong> (24GHz mmWave radar) จับ micro-motion อย่างการหายใจได้ — เหมาะทำ smart light ที่ไม่ดับตอนนั่งอ่านหนังสือ</p>
+        <table class="spec-table">
+          <tr><td>Sensor</td><td>HLK-LD2410 / LD2410C</td></tr>
+          <tr><td>Range</td><td>0.75 – 6 เมตร (ปรับได้)</td></tr>
+          <tr><td>Angle</td><td>±60° horizontal</td></tr>
+          <tr><td>Detection</td><td>Motion + Micro-motion (breathing)</td></tr>
+          <tr><td>Interface</td><td>UART @ 256000 baud</td></tr>
+          <tr><td>ESPHome</td><td>รองรับ native (ld2410 component)</td></tr>
+        </table>
+        <div class="code-block"><span class="code-comment"># ESPHome config snippet</span>
+<span class="code-key">uart:</span>
+  <span class="code-key">tx_pin:</span> <span class="code-val">GPIO17</span>
+  <span class="code-key">rx_pin:</span> <span class="code-val">GPIO16</span>
+  <span class="code-key">baud_rate:</span> <span class="code-val">256000</span>
+<span class="code-key">ld2410:</span>
+<span class="code-key">binary_sensor:</span>
+  - <span class="code-key">platform:</span> <span class="code-val">ld2410</span>
+    <span class="code-key">has_target:</span>
+      <span class="code-key">name:</span> <span class="code-str">"Presence"</span></div>
+        <div class="tag-row">
+          <span class="tag">24GHz mmWave</span><span class="tag">LD2410</span><span class="tag">ESPHome</span>
+          <span class="tag">Home Assistant</span><span class="tag">Smart Light</span>
+        </div>
+      </div>
+
+      <!-- Project 2: SCD41 CO2 Monitor -->
+      <div class="card">
+        <div class="chip-badge new" style="margin-bottom:0.7rem;">🌿 Air Quality</div>
+        <div class="card-title">CO₂ Monitor แบบ Low-Power — SCD41 + ESP32-C3 + ePaper</div>
+        <p>SCD41 (Sensirion) ใช้เทคนิค NDIR วัด CO₂ จริง (ไม่ใช่ estimate) ความแม่นยำ ±40 ppm มี <strong>single-shot mode</strong> สำหรับ ultra-low-power — วัดแล้วหลับ ทำให้ใช้แบตเตอรี่ได้นานหลายเดือน</p>
+        <ul class="step-list">
+          <li><span class="step-num">1</span><span>SCD41 ต่อ I2C กับ ESP32-C3 (3.3V, GPIO8=SDA, GPIO9=SCL)</span></li>
+          <li><span class="step-num">2</span><span>ตั้งค่า single-shot measurement — ตื่นทุก 5 นาที วัด CO₂+Temp+RH แล้วนอน</span></li>
+          <li><span class="step-num">3</span><span>แสดงผลบน ePaper display 2.13" — ไม่ต้องใช้ไฟตลอดเวลา</span></li>
+          <li><span class="step-num">4</span><span>ส่งข้อมูล MQTT ไป Home Assistant ผ่าน ESPHome (ถ้า Wi-Fi เปิด)</span></li>
+        </ul>
+        <div class="callout">
+          <span class="callout-icon">📊</span>
+          <span>CO₂ ในห้อง &lt;800 ppm = ดี | 800-1200 ppm = เริ่มง่วง | &gt;1200 ppm = ต้องระบายอากาศ!</span>
+        </div>
+        <div class="tag-row">
+          <span class="tag">SCD41</span><span class="tag">NDIR CO₂</span><span class="tag">ESP32-C3</span>
+          <span class="tag">ePaper</span><span class="tag">Single-Shot</span><span class="tag">ESPHome</span>
+        </div>
+      </div>
+
+      <!-- Project 3: TinyML Wake Word -->
+      <div class="card">
+        <div class="chip-badge ai" style="margin-bottom:0.7rem;">🤖 Edge AI</div>
+        <div class="card-title">Wake Word Detection บน ESP32-S3 — ไม่ต้องพึ่ง Cloud เลย</div>
+        <p>ใช้ <strong>Edge Impulse</strong> + LiteRT train model สำหรับ wake word ("เฮ้ บ้าน!") แล้ว deploy บน ESP32-S3 พร้อม INMP441 MEMS microphone — ใช้ INT8 quantization รัน inference ใน &lt;50ms กินไฟเฉลี่ยไม่กี่ mA</p>
+        <table class="spec-table">
+          <tr><td>Hardware</td><td>ESP32-S3 + INMP441 (I2S)</td></tr>
+          <tr><td>Model</td><td>Quantized CNN (INT8) via Edge Impulse</td></tr>
+          <tr><td>Inference</td><td>&lt;50ms per 1-second window</td></tr>
+          <tr><td>PSRAM</td><td>8MB แนะนำสำหรับ MFCC + model buffer</td></tr>
+          <tr><td>Framework</td><td>LiteRT for Microcontrollers (2026)</td></tr>
+        </table>
+        <div class="tag-row">
+          <span class="tag">LiteRT</span><span class="tag">Edge Impulse</span><span class="tag">Wake Word</span>
+          <span class="tag">ESP32-S3</span><span class="tag">INMP441</span><span class="tag">Offline AI</span>
+        </div>
+      </div>
+
+      <!-- Project 4: Thread Sensor Farm -->
+      <div class="card">
+        <div class="chip-badge pro" style="margin-bottom:0.7rem;">🌐 Mesh IoT</div>
+        <div class="card-title">Thread Sensor Farm — ESP32-H21 Network แบตเตอรี่อยู่ปีๆ</div>
+        <p>สร้าง Sensor Farm ในสวน/โรงงาน ด้วย ESP32-H21 nodes เชื่อมกันเป็น <strong>Thread mesh</strong> ข้อมูลไหลผ่าน Border Router (ESP32-C6) เข้า Home Assistant โดยอัตโนมัติ ไม่ต้องเดินสาย</p>
+        <ul class="step-list">
+          <li><span class="step-num">1</span><span>ESP32-H21 + SHT41 (Temp/RH) + CR2032 — ตรวจสอบดิน/อุณหภูมิทุก 10 นาที</span></li>
+          <li><span class="step-num">2</span><span>Thread mesh กระจาย range — node A ถ่ายทอดข้อมูลให้ node ไกลๆ ได้</span></li>
+          <li><span class="step-num">3</span><span>ESP32-C6 (Border Router) รับข้อมูลทั้งหมด ส่งต่อเข้า Home Assistant ผ่าน Wi-Fi</span></li>
+          <li><span class="step-num">4</span><span>แบตเตอรี่ CR2032 อยู่ได้ 1-2+ ปี เพราะ deep sleep 5µA ระหว่าง interval</span></li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag">ESP32-H21</span><span class="tag">Thread Mesh</span><span class="tag">SHT41</span>
+          <span class="tag">CR2032</span><span class="tag">2+ ปี แบตเตอรี่</span><span class="tag">Matter</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 3 — Sensors
+  ══════════════════════════════════════════ -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon green">📡</div>
+      <div>
+        <div class="section-title">Sensors น่าสนใจสำหรับ ESP32</div>
+        <div class="section-desc">4 sensors ที่ไม่ซ้ำกับสัปดาห์ที่ผ่านมา — เหมาะกับงานหลากหลาย</div>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Sensor 1: SCD41 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="chip-badge new">NDIR CO₂</div>
+          <div class="card-title">Sensirion SCD41 — True CO₂ Measurement</div>
+        </div>
+        <table class="spec-table">
+          <tr><td>Range CO₂</td><td>400 – 40,000 ppm</td></tr>
+          <tr><td>Accuracy</td><td>±40 ppm + ±5% reading</td></tr>
+          <tr><td>Temperature</td><td>-40°C to +70°C (±0.8°C)</td></tr>
+          <tr><td>Humidity</td><td>0 – 100% RH (±6% RH)</td></tr>
+          <tr><td>Interface</td><td>I2C @ 100 kHz (addr 0x62)</td></tr>
+          <tr><td>Supply</td><td>2.4V – 5.5V, 3.3V ทำงานได้เลย</td></tr>
+          <tr><td>Low Power</td><td>Single-shot mode 0.5 mA average</td></tr>
+          <tr><td>Self-Cal</td><td>ASC อัตโนมัติ ไม่ต้อง calibrate บ่อย</td></tr>
+        </table>
+        <p style="margin-top:0.7rem;">ต่างจาก SGP40/MQ-135 ตรงที่วัด CO₂ ด้วยแสง IR จริง ไม่ใช่ประมาณ — ค่าแม่นยำกว่ามาก เหมาะห้องเรียน, ออฟฟิศ, โรงงาน</p>
+        <div class="tag-row">
+          <span class="tag">NDIR</span><span class="tag">CO₂ + Temp + RH</span><span class="tag">I2C</span><span class="tag">Single-Shot</span>
+        </div>
+      </div>
+
+      <!-- Sensor 2: HLK-LD2410 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="chip-badge hot">mmWave 24GHz</div>
+          <div class="card-title">Hi-Link HLK-LD2410 — Human Presence Radar</div>
+        </div>
+        <table class="spec-table">
+          <tr><td>Frequency</td><td>24 GHz ISM band</td></tr>
+          <tr><td>Range</td><td>0.75 – 6 m (adjustable)</td></tr>
+          <tr><td>Angle</td><td>±60° horizontal</td></tr>
+          <tr><td>Detect</td><td>Motion + Micro-motion (breathing/heartbeat)</td></tr>
+          <tr><td>Interface</td><td>UART @ 256000 baud</td></tr>
+          <tr><td>Supply</td><td>5V, ~130 mA active</td></tr>
+          <tr><td>Size</td><td>36 × 22 mm</td></tr>
+          <tr><td>ESPHome</td><td>ld2410 component รองรับ native</td></tr>
+        </table>
+        <p style="margin-top:0.7rem;">ตรวจจับคนนั่งอยู่เฉยๆ ได้ (PIR ไม่ทำได้) — smart light จะไม่ดับตอนคุณนั่งอ่านหนังสือ</p>
+        <div class="tag-row">
+          <span class="tag">mmWave</span><span class="tag">ตรวจ Breathing</span><span class="tag">UART</span><span class="tag">ESPHome Ready</span>
+        </div>
+      </div>
+
+      <!-- Sensor 3: INMP441 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="chip-badge ai">MEMS Mic</div>
+          <div class="card-title">INMP441 — I2S MEMS Microphone สำหรับ AI Voice</div>
+        </div>
+        <table class="spec-table">
+          <tr><td>Type</td><td>MEMS Microphone (Omnidirectional)</td></tr>
+          <tr><td>Interface</td><td>I2S (PCM audio)</td></tr>
+          <tr><td>Sample Rate</td><td>สูงสุด 51.6 kHz</td></tr>
+          <tr><td>Resolution</td><td>24-bit</td></tr>
+          <tr><td>SNR</td><td>61 dB</td></tr>
+          <tr><td>Sensitivity</td><td>-26 dBFS @ 1 kHz</td></tr>
+          <tr><td>Supply</td><td>1.8V – 3.3V</td></tr>
+          <tr><td>Use Case</td><td>Wake Word, Speech Recognition, TinyML</td></tr>
+        </table>
+        <p style="margin-top:0.7rem;">คู่ที่ดีที่สุดกับ ESP32-S3 สำหรับงาน Voice AI — ส่ง I2S audio โดยตรง ไม่ต้องผ่าน ADC ทำให้คุณภาพเสียงดีกว่าใช้ microphone analog มาก</p>
+        <div class="tag-row">
+          <span class="tag">I2S</span><span class="tag">24-bit Audio</span><span class="tag">ESP32-S3</span><span class="tag">Wake Word</span>
+        </div>
+      </div>
+
+      <!-- Sensor 4: SHT41 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="chip-badge tip">Temp/RH</div>
+          <div class="card-title">Sensirion SHT41 — High-Accuracy Temp &amp; Humidity</div>
+        </div>
+        <table class="spec-table">
+          <tr><td>Temperature</td><td>-40°C to +125°C, ±0.2°C</td></tr>
+          <tr><td>Humidity</td><td>0 – 100% RH, ±1.8% RH</td></tr>
+          <tr><td>Interface</td><td>I2C @ 400 kHz (addr 0x44 หรือ 0x45)</td></tr>
+          <tr><td>Supply</td><td>1.8V – 3.6V</td></tr>
+          <tr><td>Sleep</td><td>&lt;1 µA idle mode</td></tr>
+          <tr><td>Measure Time</td><td>1.7 ms (low res) – 8.3 ms (high res)</td></tr>
+          <tr><td>Size</td><td>DFN-4L 1.5 × 1.5 mm (เล็กมาก)</td></tr>
+        </table>
+        <p style="margin-top:0.7rem;">รุ่นใหม่กว่า SHT30/SHT31 — ความแม่นยำ ±0.2°C ดีกว่า SHT30 (±0.3°C) เหมาะใส่ใน Thread/Zigbee sensor node กินไฟต่ำมาก</p>
+        <div class="tag-row">
+          <span class="tag">±0.2°C</span><span class="tag">±1.8% RH</span><span class="tag">I2C</span><span class="tag">1µA Idle</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       SECTION 4 — Resources
+  ══════════════════════════════════════════ -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon orange">🔗</div>
+      <div>
+        <div class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง</div>
+        <div class="section-desc">ลิงก์โดยตรงสำหรับ datasheets, announcements และ tutorials</div>
+      </div>
+    </div>
+
+    <div class="resource-grid">
+
+      <a class="link-card" href="https://www.espressif.com/en/news/ESP32_H21" target="_blank" rel="noopener">
+        <div class="link-icon">📢</div>
+        <div class="link-info">
+          <div class="link-title">ESP32-H21 Official Announcement — Espressif</div>
+          <div class="link-desc">ข้อมูลอย่างเป็นทางการเรื่อง ESP32-H21 Ultra-Low Power Thread &amp; BLE SoC ปี 2026</div>
+        </div>
+        <span class="link-arrow">→</span>
+      </a>
+
+      <a class="link-card" href="https://www.espressif.com/en/news/ESP32_E22_Announcement" target="_blank" rel="noopener">
+        <div class="link-icon">📡</div>
+        <div class="link-info">
+          <div class="link-title">ESP32-E22 Wi-Fi 6E Announcement — Espressif</div>
+          <div class="link-desc">ชิป Tri-Band Wi-Fi 6E (2.4/5/6GHz) ตัวแรกของ Espressif — 2.4 Gbps throughput</div>
+        </div>
+        <span class="link-arrow">→</span>
+      </a>
+
+      <a class="link-card" href="https://smarthomescene.com/diy/diy-presence-sensor-with-hi-link-ld2410-and-esp32-for-home-assistant/" target="_blank" rel="noopener">
+        <div class="link-icon">🏠</div>
+        <div class="link-info">
+          <div class="link-title">DIY mmWave Presence Sensor (LD2410 + ESPHome) — SmartHomeScene</div>
+          <div class="link-desc">คู่มือสร้าง presence sensor ราคาถูก ตรวจจับการหายใจ เชื่อม Home Assistant</div>
+        </div>
+        <span class="link-arrow">→</span>
+      </a>
+
+      <a class="link-card" href="https://esp32.co.uk/esp32-co%E2%82%82-monitoring-with-scd30-scd41-esphome-mqtt-complete-2025-guide/" target="_blank" rel="noopener">
+        <div class="link-icon">🌿</div>
+        <div class="link-info">
+          <div class="link-title">ESP32 CO₂ Monitoring (SCD41 + ESPHome + MQTT) — Complete Guide</div>
+          <div class="link-desc">คู่มือครบ setup SCD41 กับ ESPHome ส่ง MQTT ไป Home Assistant พร้อม calibration tips</div>
+        </div>
+        <span class="link-arrow">→</span>
+      </a>
+
+      <a class="link-card" href="https://fss.cc/tinyml-esp32-s3/" target="_blank" rel="noopener">
+        <div class="link-icon">🤖</div>
+        <div class="link-info">
+          <div class="link-title">TinyML on ESP32-S3: LiteRT Micro / TFLite Micro Guide</div>
+          <div class="link-desc">วิธี deploy machine learning model (INT8 quantized) บน ESP32-S3 ทีละขั้นตอน</div>
+        </div>
+        <span class="link-arrow">→</span>
+      </a>
+
+      <a class="link-card" href="https://zbotic.in/esp32-h2-zigbee-and-thread-native-support-guide/" target="_blank" rel="noopener">
+        <div class="link-icon">🔗</div>
+        <div class="link-info">
+          <div class="link-title">ESP32-H2/H21 Zigbee &amp; Thread Native Support Guide — Zbotic</div>
+          <div class="link-desc">คู่มือ setup ESP32-H2 เป็น Zigbee Coordinator / Thread Router ด้วย ESP-IDF</div>
+        </div>
+        <span class="link-arrow">→</span>
+      </a>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Researcher อัตโนมัติ · วันที่ 14 กรกฎาคม 2569 (2026-07-14)</p>
+  <p>แหล่งอ้างอิง: Espressif Systems · CNX Software · SmartHomeScene · zbotic.in · fss.cc · esp32.co.uk</p>
+  <p style="margin-top:0.5rem;"><a href="esp32-ideas-2026-07-13.html">← วันก่อน</a> &nbsp;|&nbsp; <a href="https://www.espressif.com/en/products/socs" target="_blank" rel="noopener">Espressif SoC Lineup</a></p>
+</footer>
+
+</body>
+</html>
