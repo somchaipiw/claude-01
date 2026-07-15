@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 15 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0a0f1e;
+    --bg-secondary: #111827;
+    --bg-card: #1a2235;
+    --bg-card-hover: #1f2d45;
+    --accent-1: #06b6d4;
+    --accent-2: #a855f7;
+    --accent-3: #f59e0b;
+    --accent-4: #10b981;
+    --accent-5: #ef4444;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #2d3748;
+    --gradient-hero: linear-gradient(135deg, #0a0f1e 0%, #1a1040 50%, #0a1628 100%);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--gradient-hero);
+    padding: 60px 24px 50px;
+    text-align: center;
+    border-bottom: 1px solid rgba(6,182,212,0.2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 50%, rgba(6,182,212,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 50% at 80% 50%, rgba(168,85,247,0.08) 0%, transparent 70%);
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: rgba(6,182,212,0.12);
+    border: 1px solid rgba(6,182,212,0.35);
+    color: var(--accent-1);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 5px 16px;
+    border-radius: 99px;
+    margin-bottom: 20px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    position: relative;
+  }
+
+  header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1.3;
+    position: relative;
+    background: linear-gradient(90deg, var(--accent-1) 0%, var(--accent-2) 50%, var(--accent-3) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+
+  .header-sub {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    position: relative;
+    margin-bottom: 28px;
+  }
+
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    position: relative;
+  }
+
+  .stat-pill {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .stat-pill span.dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  /* NAVIGATION */
+  nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav::-webkit-scrollbar { display: none; }
+
+  nav a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 16px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  nav a:hover { color: var(--text-primary); border-color: var(--accent-1); }
+
+  /* MAIN LAYOUT */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+  }
+
+  /* SECTION */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .section-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .section-desc {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* CARD GRID */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 20px;
+  }
+
+  .card-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: transform 0.2s, border-color 0.2s, background 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(6,182,212,0.3);
+    background: var(--bg-card-hover);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .card-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 99px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .tag-cyan   { background: rgba(6,182,212,0.15);  color: var(--accent-1); border: 1px solid rgba(6,182,212,0.3);  }
+  .tag-purple { background: rgba(168,85,247,0.15); color: var(--accent-2); border: 1px solid rgba(168,85,247,0.3); }
+  .tag-amber  { background: rgba(245,158,11,0.15); color: var(--accent-3); border: 1px solid rgba(245,158,11,0.3); }
+  .tag-green  { background: rgba(16,185,129,0.15); color: var(--accent-4); border: 1px solid rgba(16,185,129,0.3); }
+  .tag-red    { background: rgba(239,68,68,0.15);  color: var(--accent-5); border: 1px solid rgba(239,68,68,0.3);  }
+
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+
+  .card-body {
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    flex: 1;
+  }
+
+  /* SPEC TABLE */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4px;
+    font-size: 0.86rem;
+  }
+  .spec-table td {
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    vertical-align: top;
+  }
+  .spec-table td:first-child {
+    color: var(--text-muted);
+    width: 38%;
+    padding-right: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .spec-table td:last-child {
+    color: var(--text-secondary);
+  }
+
+  /* HIGHLIGHT BOX */
+  .highlight-box {
+    background: rgba(6,182,212,0.07);
+    border: 1px solid rgba(6,182,212,0.2);
+    border-left: 3px solid var(--accent-1);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  .highlight-box.amber {
+    background: rgba(245,158,11,0.07);
+    border-color: rgba(245,158,11,0.2);
+    border-left-color: var(--accent-3);
+  }
+
+  .highlight-box.green {
+    background: rgba(16,185,129,0.07);
+    border-color: rgba(16,185,129,0.2);
+    border-left-color: var(--accent-4);
+  }
+
+  /* CODE SNIPPET */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #a9b7d0;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+  .code-block .kw  { color: #79c0ff; }
+  .code-block .fn  { color: #d2a8ff; }
+  .code-block .str { color: #a5d6ff; }
+  .code-block .cmt { color: #8b949e; }
+  .code-block .num { color: #f78166; }
+
+  /* STEP LIST */
+  .step-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .step-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(6,182,212,0.15);
+    border: 1px solid rgba(6,182,212,0.4);
+    color: var(--accent-1);
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-text {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+  }
+
+  /* SENSOR CARD (wide) */
+  .sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 18px;
+  }
+
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .sensor-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(168,85,247,0.35);
+  }
+
+  .sensor-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .sensor-chip {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .sensor-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+  .sensor-model {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  .sensor-body {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .sensor-price {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .price-label { font-size: 0.78rem; color: var(--text-muted); }
+  .price-value { font-size: 0.92rem; font-weight: 700; color: var(--accent-4); }
+
+  /* RESOURCE GRID */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    text-decoration: none;
+    transition: transform 0.2s, border-color 0.2s, background 0.2s;
+  }
+  .resource-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(6,182,212,0.4);
+    background: var(--bg-card-hover);
+  }
+
+  .resource-icon-wrap {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .resource-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .resource-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 32px 24px;
+    text-align: center;
+  }
+
+  .footer-inner {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .footer-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .footer-text {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+
+  .footer-refs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .ref-link {
+    font-size: 0.78rem;
+    color: var(--accent-1);
+    text-decoration: none;
+    background: rgba(6,182,212,0.07);
+    border: 1px solid rgba(6,182,212,0.2);
+    padding: 4px 12px;
+    border-radius: 99px;
+    transition: background 0.2s;
+  }
+  .ref-link:hover { background: rgba(6,182,212,0.15); }
+
+  @media (max-width: 600px) {
+    header { padding: 40px 16px 36px; }
+    main { padding: 32px 16px 60px; gap: 48px; }
+    .card-grid, .card-grid-2, .sensor-grid, .resource-grid {
+      grid-template-columns: 1fr;
+    }
+    nav { padding: 0 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header>
+  <div class="header-badge">🔬 Daily Research · 15 กรกฎาคม 2569</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="header-sub">ESP32-P4 Vision · Meshtastic Off-Grid · Water Quality AI · NFC Access · LVGL HMI</p>
+  <div class="header-stats">
+    <div class="stat-pill"><span class="dot" style="background:#06b6d4"></span>4 นวัตกรรมใหม่</div>
+    <div class="stat-pill"><span class="dot" style="background:#a855f7"></span>4 ไอเดียโปรเจกต์</div>
+    <div class="stat-pill"><span class="dot" style="background:#f59e0b"></span>4 Sensors แนะนำ</div>
+    <div class="stat-pill"><span class="dot" style="background:#10b981"></span>8 แหล่งข้อมูล</div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <a href="#innovations">🚀 นวัตกรรม</a>
+  <a href="#projects">💡 โปรเจกต์</a>
+  <a href="#sensors">🔌 Sensors</a>
+  <a href="#resources">📚 แหล่งข้อมูล</a>
+</nav>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main>
+
+  <!-- ─── SECTION 1: INNOVATIONS ─── -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(6,182,212,0.12);color:var(--accent-1)">🚀</div>
+      <div>
+        <div class="section-title">นวัตกรรมและอัปเดตล่าสุด</div>
+        <div class="section-desc">เทคโนโลยีใหม่จาก Espressif และ ecosystem IoT ที่น่าจับตา</div>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Card 1: ESP32-P4-EYE -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon">📷</div>
+          <div class="card-tags">
+            <span class="tag tag-cyan">ESP32-P4</span>
+            <span class="tag tag-purple">Edge AI</span>
+          </div>
+        </div>
+        <div class="card-title">ESP32-P4-EYE — Vision Dev Kit สำหรับ Edge AI Camera</div>
+        <div class="card-body">
+          Espressif เปิดตัว <strong>ESP32-P4-EYE</strong> บอร์ดพัฒนาสำหรับงาน Computer Vision โดยเฉพาะ ออกแบบมาพร้อม MIPI-CSI Camera, จอ TFT 2.4", ไมโครโฟน, MicroSD Slot และ USB 2.0 High-Speed OTG ในตัวเดียว
+        </div>
+        <table class="spec-table">
+          <tr><td>CPU</td><td>Dual-core RISC-V @ 400 MHz</td></tr>
+          <tr><td>Video Encode</td><td>H.264 Hardware Encoder</td></tr>
+          <tr><td>RAM / PSRAM</td><td>768 KB + 8 MB PSRAM</td></tr>
+          <tr><td>Interface</td><td>USB 2.0 HS OTG, MIPI-CSI</td></tr>
+          <tr><td>AI Features</td><td>Face & Pedestrian Detection, YOLOv11-nano</td></tr>
+        </table>
+        <div class="highlight-box">
+          Factory Demo รองรับ Photo Capture, Video Recording, USB SD Card Mounting และ YOLOv11-nano Object Detection ได้ out-of-the-box
+        </div>
+      </div>
+
+      <!-- Card 2: Meshtastic & TrailMate -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon">📡</div>
+          <div class="card-tags">
+            <span class="tag tag-green">Meshtastic</span>
+            <span class="tag tag-amber">LoRa</span>
+          </div>
+        </div>
+        <div class="card-title">Meshtastic 2026 + TrailMate — Off-Grid Mesh ยุคใหม่</div>
+        <div class="card-body">
+          Meshtastic Firmware เติบโตจนรองรับ <strong>ฮาร์ดแวร์กว่า 100 รุ่น</strong> ในปี 2026 และโปรเจกต์ <strong>TrailMate</strong> นำ Meshtastic + MeshCore มาสร้าง firmware สำหรับ Off-Grid Handheld สำหรับนักท่องเที่ยวและ Emergency Communications
+        </div>
+        <table class="spec-table">
+          <tr><td>Protocol</td><td>LoRa Mesh + AES-256 Encryption</td></tr>
+          <tr><td>ระยะส่ง</td><td>สูงสุด 15+ km (line-of-sight)</td></tr>
+          <tr><td>Chip แนะนำ</td><td>ESP32-S3 + SX1262</td></tr>
+          <tr><td>Features</td><td>Text, GPS Position, Telemetry</td></tr>
+        </table>
+        <div class="highlight-box amber">
+          DIY Meshtastic Node ราคา ~$27 USD ส่งข้อความได้โดยไม่ต้องใช้ Wi-Fi หรือสัญญาณมือถือ
+        </div>
+      </div>
+
+      <!-- Card 3: LVGL 9 HMI -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon">🖥️</div>
+          <div class="card-tags">
+            <span class="tag tag-purple">LVGL</span>
+            <span class="tag tag-cyan">HMI</span>
+          </div>
+        </div>
+        <div class="card-title">LVGL 9.x บน ESP32-S3 — Professional Touchscreen UI</div>
+        <div class="card-body">
+          <strong>LVGL (Light and Versatile Graphics Library)</strong> เวอร์ชัน 9.x พัฒนาการ render และ partial redraw ให้เร็วขึ้นมาก ผสานกับ SquareLine Studio ออกแบบ UI แบบ drag-and-drop แล้ว export code สำหรับ ESP-IDF, Arduino หรือ PlatformIO ได้ในคลิกเดียว
+        </div>
+        <table class="spec-table">
+          <tr><td>Library</td><td>LVGL v9.x (MIT License)</td></tr>
+          <tr><td>Display</td><td>ILI9341, ST7789, RGB LCD</td></tr>
+          <tr><td>Touch</td><td>GT911 Capacitive, XPT2046 Resistive</td></tr>
+          <tr><td>Widgets</td><td>Chart, Gauge, Slider, Button, List...</td></tr>
+        </table>
+        <div class="highlight-box">
+          ESP32-S3 + 7" CrowPanel Display (800×480) สร้าง HMI ระดับอุตสาหกรรมได้ในราคาต่ำกว่า $30
+        </div>
+      </div>
+
+      <!-- Card 4: FireBeetle 2 ESP32-P4 -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon">🤖</div>
+          <div class="card-tags">
+            <span class="tag tag-cyan">ESP32-P4</span>
+            <span class="tag tag-green">DFRobot</span>
+          </div>
+        </div>
+        <div class="card-title">FireBeetle 2 ESP32-P4 — บอร์ด Edge AI ราคา $11.90</div>
+        <div class="card-body">
+          DFRobot ออก <strong>FireBeetle 2 ESP32-P4</strong> บอร์ดขนาดเล็กที่รัน TensorFlow Lite สำหรับ Facial Recognition, Object Detection และ Voice AI ได้ ราคาเพียง $11.90 พร้อม MIPI-CSI Interface และ USB OTG Type-C HS
+        </div>
+        <table class="spec-table">
+          <tr><td>ราคา</td><td>$11.90 USD (DFRobot)</td></tr>
+          <tr><td>Camera I/F</td><td>MIPI-CSI (ต่อ Camera Module)</td></tr>
+          <tr><td>USB</td><td>High-Speed USB OTG Type-C</td></tr>
+          <tr><td>AI Runtime</td><td>TFLite Micro, ESP-WHO, ESP-DL</td></tr>
+        </table>
+        <div class="highlight-box green">
+          เหมาะสำหรับ Prototype AI Vision Project ในงบจำกัด — ถูกกว่า Raspberry Pi CM4 มาก และใช้พลังงานน้อยกว่า
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ─── SECTION 2: PROJECTS ─── -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(168,85,247,0.12);color:var(--accent-2)">💡</div>
+      <div>
+        <div class="section-title">ไอเดียโปรเจกต์น่าสร้าง</div>
+        <div class="section-desc">โปรเจกต์ใหม่ที่ยังไม่เคยทำ พร้อม BOM และแนวทาง implementation</div>
+      </div>
+    </div>
+
+    <div class="card-grid-2">
+
+      <!-- Project 1: Water Quality Monitor -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon">💧</div>
+          <div class="card-tags">
+            <span class="tag tag-cyan">IoT</span>
+            <span class="tag tag-purple">ML on-device</span>
+            <span class="tag tag-green">Water</span>
+          </div>
+        </div>
+        <div class="card-title">Smart Water Quality Monitor + On-Device ML Classifier</div>
+        <div class="card-body">
+          ระบบตรวจวัดคุณภาพน้ำแบบ Real-time ด้วย ESP32 + Sensors หลายตัว พร้อม TFLite Model ที่รันบนชิปโดยตรงเพื่อแยกแยะสภาพน้ำ 3 ประเภท: Normal, Rainwater Runoff และ Chemical Contamination โดยไม่ต้องพึ่ง Cloud
+        </div>
+
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>Sensors:</strong> pH Electrode + DFRobot pH Module, TDS Meter Sensor, Turbidity Sensor, DS18B20 Temperature</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Processing:</strong> ESP32-S3 รันโมเดล TFLite ที่ train จาก dataset น้ำ — Accuracy 99.28%</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>Dashboard:</strong> ส่งข้อมูลไป Firebase + Web Dashboard แจ้งเตือน LINE Notify เมื่อค่าผิดปกติ</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>ต้นทุน:</strong> ฮาร์ดแวร์ทั้งหมด ~$50–$80 USD รวม Calibration Kit</div>
+          </div>
+        </div>
+
+        <div class="code-block">
+<span class="cmt">// อ่านค่า sensor และ classify ด้วย TFLite</span>
+<span class="kw">float</span> ph_val    = <span class="fn">readPH</span>();
+<span class="kw">float</span> tds_val   = <span class="fn">readTDS</span>();
+<span class="kw">float</span> turb_val  = <span class="fn">readTurbidity</span>();
+<span class="kw">float</span> temp_val  = <span class="fn">readTemp</span>();
+
+input-><span class="fn">data</span>.f[<span class="num">0</span>] = ph_val;
+input-><span class="fn">data</span>.f[<span class="num">1</span>] = tds_val;
+input-><span class="fn">data</span>.f[<span class="num">2</span>] = turb_val;
+interpreter-><span class="fn">Invoke</span>();  <span class="cmt">// run model</span></div>
+      </div>
+
+      <!-- Project 2: Meshtastic DIY Node -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon">🌐</div>
+          <div class="card-tags">
+            <span class="tag tag-green">Off-Grid</span>
+            <span class="tag tag-amber">LoRa</span>
+            <span class="tag tag-cyan">Mesh</span>
+          </div>
+        </div>
+        <div class="card-title">DIY Meshtastic Node — เครือข่าย Chat ไร้อินเทอร์เน็ต</div>
+        <div class="card-body">
+          สร้างโหนด Meshtastic ด้วย ESP32-S3 + SX1262 LoRa รับส่งข้อความ, GPS Position และ Telemetry ผ่านเครือข่าย Mesh ส่วนตัว ระยะ 15+ km เหมาะสำหรับค่ายพักแรม, Disaster Recovery หรือ เกษตรพื้นที่ห่างไกล
+        </div>
+
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>ฮาร์ดแวร์:</strong> Heltec WiFi LoRa 32 V3 (ESP32-S3 + SX1262) หรือ LILYGO T-Beam S3</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Flash Firmware:</strong> ใช้ flasher.meshtastic.org ผ่าน Web Browser — ง่ายมาก</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>GPS (optional):</strong> ต่อ NEO-6M UART เพื่อแชร์พิกัดใน Mesh Network</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>App:</strong> ควบคุมผ่าน Meshtastic App (Android/iOS) ผ่าน BLE หรือ Wi-Fi</div>
+          </div>
+        </div>
+
+        <div class="highlight-box">
+          Heltec WiFi LoRa 32 V3 ราคา ~$18 USD เป็น one-board solution ที่ดีที่สุดสำหรับ Meshtastic ใน 2026
+        </div>
+      </div>
+
+      <!-- Project 3: NFC Smart Access -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon">🔐</div>
+          <div class="card-tags">
+            <span class="tag tag-red">NFC/RFID</span>
+            <span class="tag tag-cyan">Security</span>
+            <span class="tag tag-purple">MQTT</span>
+          </div>
+        </div>
+        <div class="card-title">ESP32-S3 + PN532 Smart Access Control พร้อม Cloud Log</div>
+        <div class="card-body">
+          ระบบ Access Control ด้วย NFC/RFID รูปแบบ Professional — PN532 อ่านการ์ด Mifare/NFC, ESP32-S3 ตรวจสอบสิทธิ์ และ Log ประวัติเข้า-ออกไปยัง Firebase พร้อมแจ้งเตือน MQTT และ LINE Notify แบบ Real-time
+        </div>
+
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>Reader:</strong> PN532 NFC/RFID Module (I2C/SPI) รองรับ ISO14443A, Mifare Classic/Ultralight, NTAG</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Lock:</strong> Relay Module ต่อ Electric Door Strike หรือ Solenoid Lock 12V</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>Feedback:</strong> NeoPixel RGB LED + Buzzer บอกสถานะ Granted/Denied</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>Cloud:</strong> Log UID + Timestamp ไป Firebase, ดู Dashboard ผ่าน Web App</div>
+          </div>
+        </div>
+
+        <div class="code-block">
+<span class="cmt">// ตรวจสอบสิทธิ์ NFC card</span>
+<span class="kw">if</span> (nfc.<span class="fn">readPassiveTargetID</span>(PN532_MIFARE_ISO14443A, uid, &uidLength)) {
+  String cardUID = <span class="fn">uidToString</span>(uid, uidLength);
+  <span class="kw">bool</span> granted = authorizedUIDs.<span class="fn">count</span>(cardUID) > <span class="num">0</span>;
+  <span class="fn">setAccessResult</span>(granted);
+  <span class="fn">logToFirebase</span>(cardUID, granted);
+}</div>
+      </div>
+
+      <!-- Project 4: LVGL Smart Dashboard -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-icon">📊</div>
+          <div class="card-tags">
+            <span class="tag tag-purple">LVGL</span>
+            <span class="tag tag-amber">HMI</span>
+            <span class="tag tag-cyan">Home Auto</span>
+          </div>
+        </div>
+        <div class="card-title">ESP32-S3 LVGL Smart Home Dashboard บน 7" Touchscreen</div>
+        <div class="card-body">
+          สร้าง Smart Home Dashboard แบบ Commercial Grade ด้วย LVGL บน ESP32-S3 + CrowPanel 7" Display (800×480) แสดง Live Sensor Data, Toggle Relay ผ่าน MQTT, Gauge พลังงาน และ Chart ประวัติอุณหภูมิ — ออกแบบ UI ด้วย SquareLine Studio
+        </div>
+
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>Design:</strong> ออกแบบ UI ใน SquareLine Studio (drag-and-drop) → Export ESP-IDF Project</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Display:</strong> CrowPanel 7" ESP32-S3 800×480 RGB LCD + GT911 Capacitive Touch</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>Data:</strong> รับค่า Sensor ผ่าน MQTT Broker → แสดงใน Chart Widget แบบ Real-time</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>Control:</strong> กดปุ่มบน Touch Screen ส่ง MQTT Command เปิด/ปิดไฟ, แอร์, ปลั๊ก</div>
+          </div>
+        </div>
+
+        <div class="highlight-box amber">
+          SquareLine Studio ออก Educational License ฟรี — ออกแบบ UI ได้ทันทีโดยไม่ต้อง code LVGL เองทั้งหมด
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ─── SECTION 3: SENSORS ─── -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(245,158,11,0.12);color:var(--accent-3)">🔌</div>
+      <div>
+        <div class="section-title">Sensors น่าสนใจสำหรับ ESP32</div>
+        <div class="section-desc">Sensors ใหม่และ module ที่เหมาะสำหรับ IoT Projects ในปี 2026</div>
+      </div>
+    </div>
+
+    <div class="sensor-grid">
+
+      <!-- Sensor 1: AS7341 -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-chip" style="background:rgba(168,85,247,0.15);color:var(--accent-2)">🌈</div>
+          <div>
+            <div class="sensor-name">AS7341</div>
+            <div class="sensor-model">ams OSRAM — 11-Channel Spectral Color Sensor</div>
+          </div>
+        </div>
+        <div class="sensor-body">
+          Spectrometer ขนาดจิ๋วที่วัดแสงได้ <strong>11 ช่องสเปกตรัม</strong> ครอบคลุม 415–680 nm (Visible) + NIR + Clear Channel ผ่าน I2C ใช้งานได้กับ ESP32, Raspberry Pi, Arduino ใช้ในงาน Plant Health Monitoring, Display Calibration, Color QC
+          <br><br>
+          รองรับ ESPHome โดยตรง — เพิ่ม config ไม่กี่บรรทัดก็ใช้ได้ใน Home Assistant ทันที
+        </div>
+        <div class="sensor-price">
+          <span class="price-label">Adafruit Breakout Board</span>
+          <span class="price-value">~$17.95 USD</span>
+        </div>
+      </div>
+
+      <!-- Sensor 2: pH + TDS Module -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-chip" style="background:rgba(6,182,212,0.15);color:var(--accent-1)">💧</div>
+          <div>
+            <div class="sensor-name">pH + TDS Module</div>
+            <div class="sensor-model">DFRobot / Atlas Scientific — Water Quality Sensors</div>
+          </div>
+        </div>
+        <div class="sensor-body">
+          ชุด Sensor วัดคุณภาพน้ำสำหรับ ESP32 ประกอบด้วย:
+          <br>• <strong>pH Electrode</strong> (0–14 pH, ±0.1 accuracy)
+          <br>• <strong>TDS Sensor</strong> (0–1000 ppm วัด Total Dissolved Solids)
+          <br>• <strong>Turbidity Sensor</strong> (0–3000 NTU)
+          <br>
+          DFRobot Gravity Series ใช้ Analog Output ต่อกับ ADC ของ ESP32 ได้โดยตรง — ติดตั้งง่าย
+        </div>
+        <div class="sensor-price">
+          <span class="price-label">DFRobot Gravity pH Kit</span>
+          <span class="price-value">~$29.90 USD</span>
+        </div>
+      </div>
+
+      <!-- Sensor 3: PN532 NFC -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-chip" style="background:rgba(239,68,68,0.15);color:var(--accent-5)">📳</div>
+          <div>
+            <div class="sensor-name">PN532</div>
+            <div class="sensor-model">NXP — NFC/RFID Reader/Writer Module</div>
+          </div>
+        </div>
+        <div class="sensor-body">
+          Module NFC/RFID ยอดนิยม รองรับหลาย Protocol:
+          <br>• ISO 14443A/B (Mifare Classic, Ultralight, NTAG)
+          <br>• FeliCa, ISO 18092 (NFCIP-1 P2P Mode)
+          <br>• อ่าน/เขียน Card และ Emulate Card ได้
+          <br>
+          เชื่อมต่อผ่าน I2C, SPI หรือ HSU (UART) ตามความต้องการ มี Library ทั้ง Arduino และ ESP-IDF
+        </div>
+        <div class="sensor-price">
+          <span class="price-label">Generic PN532 Module</span>
+          <span class="price-value">~$3–$6 USD</span>
+        </div>
+      </div>
+
+      <!-- Sensor 4: SX1262 LoRa -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-chip" style="background:rgba(16,185,129,0.15);color:var(--accent-4)">📶</div>
+          <div>
+            <div class="sensor-name">SX1262</div>
+            <div class="sensor-model">Semtech — Sub-GHz LoRa / FSK Transceiver</div>
+          </div>
+        </div>
+        <div class="sensor-body">
+          LoRa Transceiver รุ่นใหม่ที่มาแทน SX1276 มีประสิทธิภาพสูงกว่ามาก:
+          <br>• TX Power สูงสุด <strong>+22 dBm</strong>
+          <br>• รองรับ LoRa, LoRaWAN, Long Range FHSS
+          <br>• ใช้พลังงานน้อยกว่า SX1276 ถึง 50%
+          <br>
+          เป็น standard สำหรับ Meshtastic และ LoRaWAN ใน 2026 มาพร้อม Heltec, LILYGO T-Beam S3 และ Waveshare LoRa Hat
+        </div>
+        <div class="sensor-price">
+          <span class="price-label">Wio SX1262 Module</span>
+          <span class="price-value">~$5–$9 USD</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ─── SECTION 4: RESOURCES ─── -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(16,185,129,0.12);color:var(--accent-4)">📚</div>
+      <div>
+        <div class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง</div>
+        <div class="section-desc">แหล่งเรียนรู้ ชุมชน และเอกสารที่ใช้วันนี้</div>
+      </div>
+    </div>
+
+    <div class="resource-grid">
+
+      <a href="https://developer.espressif.com/blog/2025/05/introducing-p4-eye/" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-icon-wrap">📷</div>
+        <div>
+          <div class="resource-title">ESP32-P4-EYE Announcement</div>
+          <div class="resource-desc">บล็อก official จาก Espressif แนะนำ P4-EYE Vision Dev Kit พร้อม AI Features</div>
+        </div>
+      </a>
+
+      <a href="https://www.dfrobot.com/product-2915.html" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-icon-wrap">🤖</div>
+        <div>
+          <div class="resource-title">FireBeetle 2 ESP32-P4</div>
+          <div class="resource-desc">DFRobot Edge AI บอร์ดราคา $11.90 พร้อม MIPI-CSI และ USB HS OTG</div>
+        </div>
+      </a>
+
+      <a href="https://www.cnx-software.com/2026/04/13/trail-mate-open-source-firmware-leverages-meshtastic-and-meshcore-for-esp32-off-grid-handhelds/" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-icon-wrap">🥾</div>
+        <div>
+          <div class="resource-title">TrailMate Off-Grid Firmware</div>
+          <div class="resource-desc">CNX-Software รีวิว TrailMate Firmware สำหรับ ESP32 Off-Grid Handheld Devices</div>
+        </div>
+      </a>
+
+      <a href="https://adrelien.com/meshtastic-the-complete-getting-started-guide/" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-icon-wrap">📡</div>
+        <div>
+          <div class="resource-title">Meshtastic Getting Started 2026</div>
+          <div class="resource-desc">คู่มือเริ่มต้น Meshtastic ฉบับสมบูรณ์ อัปเดตปี 2026</div>
+        </div>
+      </a>
+
+      <a href="https://www.nature.com/articles/s41598-026-37287-3" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-icon-wrap">🔬</div>
+        <div>
+          <div class="resource-title">Water Quality ML System (Nature)</div>
+          <div class="resource-desc">Paper: Low-cost Water Quality Monitoring + On-device ML บน ESP32 Accuracy 99.28%</div>
+        </div>
+      </a>
+
+      <a href="https://picopixel.io/learn/esp32-lvgl-ui-tutorial/" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-icon-wrap">🖥️</div>
+        <div>
+          <div class="resource-title">ESP32 LVGL UI Tutorial</div>
+          <div class="resource-desc">PicoPixel Tutorial สอนสร้าง Touchscreen UI ด้วย LVGL บน ESP32 ทีละขั้นตอน</div>
+        </div>
+      </a>
+
+      <a href="https://github.com/roycuadra/ESP32-S3-with-PN532-" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-icon-wrap">🔐</div>
+        <div>
+          <div class="resource-title">ESP32-S3 + PN532 GitHub</div>
+          <div class="resource-desc">โค้ด Open-source ESP32-S3 RFID Access Control ด้วย PN532 + NeoPixel + Relay</div>
+        </div>
+      </a>
+
+      <a href="https://esphome.io/components/sensor/as7341/" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-icon-wrap">🌈</div>
+        <div>
+          <div class="resource-title">AS7341 ESPHome Integration</div>
+          <div class="resource-desc">Docs การใช้ AS7341 Spectral Sensor กับ ESPHome และ Home Assistant</div>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-title">ESP32 & Sensor Innovations — Daily Research</div>
+    <div class="footer-text">
+      สร้างโดย AI Researcher อัตโนมัติ · วันที่ 15 กรกฎาคม 2569 (2026-07-15)<br>
+      ข้อมูลรวบรวมจาก Espressif Developer Portal, Hackster.io, GitHub, CNX-Software, DFRobot, Nature Scientific Reports และแหล่งอ้างอิงอื่นๆ
+    </div>
+    <div class="footer-refs">
+      <a href="https://developer.espressif.com" class="ref-link" target="_blank">developer.espressif.com</a>
+      <a href="https://hackster.io" class="ref-link" target="_blank">hackster.io</a>
+      <a href="https://meshtastic.org" class="ref-link" target="_blank">meshtastic.org</a>
+      <a href="https://lvgl.io" class="ref-link" target="_blank">lvgl.io</a>
+      <a href="https://randomnerdtutorials.com" class="ref-link" target="_blank">randomnerdtutorials.com</a>
+      <a href="https://cnx-software.com" class="ref-link" target="_blank">cnx-software.com</a>
+      <a href="https://dfrobot.com" class="ref-link" target="_blank">dfrobot.com</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
