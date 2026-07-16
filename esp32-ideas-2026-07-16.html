@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 16 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.8; }
+
+  header {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1a1035 100%);
+    border-bottom: 1px solid #334155;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 500px; height: 200px;
+    background: radial-gradient(ellipse, rgba(139,92,246,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(139,92,246,0.15);
+    border: 1px solid rgba(139,92,246,0.4);
+    border-radius: 999px;
+    padding: 0.3rem 1.1rem;
+    font-size: 0.82rem; color: #a78bfa;
+    margin-bottom: 1rem;
+    letter-spacing: 0.04em;
+  }
+  header h1 { font-size: 2rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.4rem; }
+  header h1 span { color: #a78bfa; }
+  header .subtitle { color: #94a3b8; font-size: 0.95rem; }
+  .header-stats {
+    display: flex; justify-content: center; gap: 2rem; margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-num { font-size: 1.6rem; font-weight: 700; color: #a78bfa; }
+  .stat-label { font-size: 0.78rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.2rem 3rem; }
+
+  .section-title {
+    font-size: 1.25rem; font-weight: 700; color: #f1f5f9;
+    display: flex; align-items: center; gap: 0.7rem;
+    margin-bottom: 1.4rem; padding-bottom: 0.7rem;
+    border-bottom: 1px solid #1e293b;
+  }
+  .section-title .icon {
+    width: 34px; height: 34px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; flex-shrink: 0;
+  }
+  .icon-purple { background: rgba(139,92,246,0.2); }
+  .icon-blue   { background: rgba(59,130,246,0.2); }
+  .icon-green  { background: rgba(34,197,94,0.2); }
+  .icon-orange { background: rgba(249,115,22,0.2); }
+
+  section { margin-bottom: 3rem; }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 1.2rem;
+  }
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: transform 0.18s, border-color 0.18s;
+    position: relative; overflow: hidden;
+  }
+  .card::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 3px; border-radius: 14px 14px 0 0;
+  }
+  .card.purple::after { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+  .card.blue::after   { background: linear-gradient(90deg, #1d4ed8, #60a5fa); }
+  .card.green::after  { background: linear-gradient(90deg, #15803d, #4ade80); }
+  .card.orange::after { background: linear-gradient(90deg, #c2410c, #fb923c); }
+  .card:hover { transform: translateY(-3px); border-color: #475569; }
+
+  .card-tag {
+    display: inline-block;
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em;
+    text-transform: uppercase; border-radius: 6px;
+    padding: 0.2rem 0.6rem; margin-bottom: 0.7rem;
+  }
+  .tag-purple { background: rgba(139,92,246,0.15); color: #a78bfa; }
+  .tag-blue   { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .tag-green  { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .tag-orange { background: rgba(249,115,22,0.15); color: #fb923c; }
+  .tag-red    { background: rgba(239,68,68,0.15); color: #f87171; }
+  .tag-cyan   { background: rgba(6,182,212,0.15); color: #22d3ee; }
+
+  .card-title { font-size: 1rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.5rem; }
+  .card-desc { font-size: 0.88rem; color: #94a3b8; margin-bottom: 0.9rem; }
+
+  .spec-list { list-style: none; display: flex; flex-direction: column; gap: 0.3rem; }
+  .spec-list li {
+    font-size: 0.82rem; color: #cbd5e1;
+    display: flex; align-items: flex-start; gap: 0.4rem;
+  }
+  .spec-list li::before { content: '▸'; color: #6366f1; flex-shrink: 0; margin-top: 0.1rem; }
+
+  .highlight-box {
+    background: rgba(99,102,241,0.08);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 8px; padding: 0.7rem 1rem;
+    margin-top: 0.8rem;
+    font-size: 0.82rem; color: #a5b4fc;
+  }
+
+  .project-card {
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 14px; padding: 1.4rem 1.5rem;
+    margin-bottom: 1.2rem;
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 1rem; align-items: start;
+  }
+  .project-card:hover { border-color: #475569; }
+  .project-title { font-size: 1.05rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.35rem; }
+  .project-desc { font-size: 0.88rem; color: #94a3b8; margin-bottom: 0.75rem; }
+  .project-tech {
+    display: flex; flex-wrap: wrap; gap: 0.4rem;
+  }
+  .tech-chip {
+    background: #0f172a; border: 1px solid #334155;
+    border-radius: 6px; padding: 0.18rem 0.55rem;
+    font-size: 0.75rem; color: #94a3b8;
+  }
+  .difficulty {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 0.3rem; min-width: 70px;
+  }
+  .diff-label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
+  .diff-badge {
+    padding: 0.25rem 0.7rem; border-radius: 8px;
+    font-size: 0.78rem; font-weight: 700; text-align: center; width: 100%;
+  }
+  .diff-medium  { background: rgba(234,179,8,0.15); color: #facc15; }
+  .diff-hard    { background: rgba(239,68,68,0.15); color: #f87171; }
+  .diff-easy    { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .diff-advanced{ background: rgba(139,92,246,0.15); color: #a78bfa; }
+
+  .sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .sensor-card {
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 12px; padding: 1.2rem;
+    transition: border-color 0.18s;
+  }
+  .sensor-card:hover { border-color: #475569; }
+  .sensor-name { font-size: 0.98rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.2rem; }
+  .sensor-role { font-size: 0.78rem; color: #64748b; margin-bottom: 0.7rem; font-style: italic; }
+  .sensor-spec { font-size: 0.82rem; color: #94a3b8; }
+  .sensor-spec span { color: #a78bfa; font-weight: 600; }
+
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 12px; padding: 1.2rem 1.3rem;
+    transition: border-color 0.18s;
+  }
+  .resource-card:hover { border-color: #475569; }
+  .resource-title { font-size: 0.95rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.3rem; }
+  .resource-url { font-size: 0.8rem; color: #60a5fa; word-break: break-all; }
+  .resource-desc { font-size: 0.83rem; color: #94a3b8; margin-top: 0.4rem; }
+
+  footer {
+    text-align: center; padding: 2rem 1rem;
+    border-top: 1px solid #1e293b;
+    color: #475569; font-size: 0.82rem;
+  }
+  footer strong { color: #64748b; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.4rem; }
+    .project-card { grid-template-columns: 1fr; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .sensor-grid { grid-template-columns: 1fr; }
+    .resources-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">&#x26A1; ESP32 &amp; IoT Daily Research</div>
+  <h1>ESP32 <span>&amp; Sensor</span> Innovations</h1>
+  <p class="subtitle">16 กรกฎาคม 2569 &nbsp;|&nbsp; หุ่นยนต์ • LoRa Mesh • Bluetooth Mesh • Energy Harvesting</p>
+  <div class="header-stats">
+    <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">นวัตกรรมใหม่</div></div>
+    <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">ไอเดียโปรเจกต์</div></div>
+    <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">Sensors</div></div>
+    <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">แหล่งข้อมูล</div></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- SECTION 1: นวัตกรรมใหม่ -->
+  <section id="innovations">
+    <h2 class="section-title">
+      <div class="icon icon-purple">&#x1F916;</div>
+      นวัตกรรมและอัปเดตล่าสุด
+    </h2>
+    <div class="cards-grid">
+
+      <div class="card purple">
+        <span class="card-tag tag-purple">NEW CHIP</span>
+        <div class="card-title">ESP32-S31 — Wi-Fi 6 + Bluetooth 5.4 + BLE Mesh 1.1</div>
+        <div class="card-desc">
+          Espressif เปิดตัว ESP32-S31 ชิปตัวใหม่ล่าสุด รองรับ Wi-Fi 6 (802.11ax),
+          Bluetooth 5.4 และ BLE Mesh 1.1 สำหรับระบบ Smart Home และ Industrial IoT
+          ขนาดใหญ่ที่ต้องการ self-healing network หลายร้อย node
+        </div>
+        <ul class="spec-list">
+          <li>Dual-Core RISC-V, Wi-Fi 6 (802.11ax) 2.4 GHz</li>
+          <li>Bluetooth 5.4 + BLE Mesh 1.1 รองรับสูงสุด 32,767 nodes</li>
+          <li>Advanced HMI — เหมาะสร้าง touchscreen panel</li>
+          <li>Fast Provisioning: เพิ่ม 100 nodes ได้ใน 50 วินาที</li>
+        </ul>
+        <div class="highlight-box">&#x2728; เหมาะกับ Smart Factory, Smart Lighting และ Building Automation</div>
+      </div>
+
+      <div class="card blue">
+        <span class="card-tag tag-blue">ROBOTICS</span>
+        <div class="card-title">ESP32-P4 Intelligent Robotic Arm — Kinematics + Vision บนชิปเดียว</div>
+        <div class="card-desc">
+          Espressif สาธิต Robotic Arm อัจฉริยะบน ESP32-P4 ที่รัน Forward &amp; Inverse
+          Kinematics พร้อม Computer Vision บนตัวชิปเดียว ไม่ต้องพึ่ง external computing
+          แสดงให้เห็นที่ Embedded World 2026
+        </div>
+        <ul class="spec-list">
+          <li>คำนวณ Kinematics ด้วย D-H Parameters บนตัวชิป</li>
+          <li>USB Camera + Color-Detect Model จับวัตถุตามสีได้แม่นยำ</li>
+          <li>Calibration Matrix สำหรับ coordinate transform แขนกล</li>
+          <li>Remote Control ผ่าน Wi-Fi — ควบคุมจากทุกที่</li>
+        </ul>
+        <div class="highlight-box">&#x1F3ED; Industrial prototype ที่รันได้ด้วยชิปราคา $10</div>
+      </div>
+
+      <div class="card green">
+        <span class="card-tag tag-green">LORAWAN</span>
+        <div class="card-title">Gateway-Free LoRa Mesh — Self-Healing Network ไร้โครงสร้างพื้นฐาน</div>
+        <div class="card-desc">
+          งานวิจัยใหม่ปี 2026 สร้างเครือข่าย LoRa Mesh บน ESP32 ที่ไม่ต้องพึ่ง Gateway
+          มี self-healing โดย neighbor-based routing, hop-by-hop acknowledgment
+          และ controlled retransmission เหมาะสำหรับพื้นที่ห่างไกล
+        </div>
+        <ul class="spec-list">
+          <li>ไม่ต้องการ Gateway — node ทำหน้าที่ relay ได้ทันที</li>
+          <li>Neighbor-based routing เลือกเส้นทางเองแบบอัตโนมัติ</li>
+          <li>Hop-by-hop ACK ป้องกันข้อมูลสูญหาย</li>
+          <li>รัน Meshtastic mesh routing + Wi-Fi MQTT bridge พร้อมกัน</li>
+        </ul>
+        <div class="highlight-box">&#x1F4D6; Published in MDPI Sensors, Vol. 25, 2025</div>
+      </div>
+
+      <div class="card orange">
+        <span class="card-tag tag-orange">ENERGY</span>
+        <div class="card-title">Solar-Piezo Hybrid Energy Harvesting — IoT Node ไร้แบตเตอรี่</div>
+        <div class="card-desc">
+          เทคโนโลยี Hybrid Energy Harvesting รวม Solar + Piezoelectric ทำให้
+          ESP32 Node ทำงานได้โดยไม่ต้องชาร์จแบตเตอรี่เลย เหมาะกับ Smart Agriculture
+          และ Industrial Vibration Monitoring ในจุดที่สายไฟเข้าไม่ถึง
+        </div>
+        <ul class="spec-list">
+          <li>Perovskite Indoor Solar Cell ประสิทธิภาพ 32–38% ใต้แสง LED</li>
+          <li>TENG (Triboelectric Nanogenerator) จากการสั่นสะเทือน &lt;10 Hz</li>
+          <li>ESP32 Deep Sleep duty-cycle: ตื่น 1 วินาที หลับ 60 วินาที</li>
+          <li>Average Power ~1–2 mW — เพียงพอสำหรับ sensing + transmit</li>
+        </ul>
+        <div class="highlight-box">&#x2600;&#xFE0F; แหล่งพลังงาน 2 แหล่งครอบคลุมกลางวัน (solar) และกลางคืน (vibration)</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 2: ไอเดียโปรเจกต์ -->
+  <section id="projects">
+    <h2 class="section-title">
+      <div class="icon icon-blue">&#x1F4A1;</div>
+      ไอเดียโปรเจกต์น่าสร้าง
+    </h2>
+
+    <div class="project-card">
+      <div>
+        <div class="project-title">ESP32-P4 Industrial Robot Arm พร้อม Computer Vision</div>
+        <div class="project-desc">
+          สร้างแขนกลควบคุมด้วย ESP32-P4 ที่รัน Inverse Kinematics + Color Detection บนชิปเดียว
+          ใช้ USB Camera จับวัตถุตามสี คำนวณ trajectory แล้วส่งคำสั่งไปยัง servo ผ่าน PWM
+          ควบคุมผ่าน Web UI บน Wi-Fi ไม่ต้องเชื่อมต่อ cloud
+        </div>
+        <div class="project-tech">
+          <span class="tech-chip">ESP32-P4</span>
+          <span class="tech-chip">USB Camera</span>
+          <span class="tech-chip">ESP-VISION SDK</span>
+          <span class="tech-chip">Servo PWM</span>
+          <span class="tech-chip">Web Interface</span>
+        </div>
+      </div>
+      <div class="difficulty">
+        <div class="diff-label">ระดับ</div>
+        <div class="diff-badge diff-hard">ยาก</div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div>
+        <div class="project-title">BLE Mesh Smart Factory — ตรวจสอบ Machine 50 จุดไร้สาย</div>
+        <div class="project-desc">
+          ใช้ ESP32-S31 สร้างเครือข่าย BLE Mesh 1.1 ติดตั้งที่เครื่องจักรในโรงงาน
+          Node แต่ละตัวอ่าน temperature, vibration, current draw ส่งเข้า Mesh
+          แล้วรวมที่ Provisioner Node และ MQTT Bridge ไปยัง Home Assistant หรือ Grafana
+        </div>
+        <div class="project-tech">
+          <span class="tech-chip">ESP32-S31</span>
+          <span class="tech-chip">BLE Mesh 1.1</span>
+          <span class="tech-chip">INA3221 Current Sensor</span>
+          <span class="tech-chip">MQTT Bridge</span>
+          <span class="tech-chip">Grafana Dashboard</span>
+        </div>
+      </div>
+      <div class="difficulty">
+        <div class="diff-label">ระดับ</div>
+        <div class="diff-badge diff-advanced">ขั้นสูง</div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div>
+        <div class="project-title">LoRa Mesh Sensor Farm — เครือข่ายตรวจสภาพดินไร้ Gateway</div>
+        <div class="project-desc">
+          วาง ESP32-S3 + SX1262 กระจาย 10–20 จุดในไร่นา แต่ละ node อ่าน soil moisture,
+          temperature, EC (electrical conductivity) ส่งผ่าน LoRa Mesh แบบ self-healing
+          node ปลายทางทำหน้าที่ Wi-Fi Gateway อัปโหลดข้อมูลขึ้น MQTT server
+        </div>
+        <div class="project-tech">
+          <span class="tech-chip">ESP32-S3</span>
+          <span class="tech-chip">SX1262 LoRa</span>
+          <span class="tech-chip">Soil Moisture Sensor</span>
+          <span class="tech-chip">Capacitive EC Sensor</span>
+          <span class="tech-chip">Solar Panel</span>
+        </div>
+      </div>
+      <div class="difficulty">
+        <div class="diff-label">ระดับ</div>
+        <div class="diff-badge diff-medium">ปานกลาง</div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div>
+        <div class="project-title">Battery-Free IoT Vibration Monitor ด้วย Piezo Harvesting</div>
+        <div class="project-desc">
+          ติดตั้ง Piezoelectric Vibration Harvester กับ motor หรือท่อน้ำที่มีการสั่นสะเทือน
+          พลังงานที่เก็บได้ชาร์จ supercapacitor แล้วส่งให้ ESP32-C3 ตื่นขึ้นวัด FFT vibration
+          ส่งข้อมูลผ่าน BLE ทุก 60 วินาที ตรวจจับ bearing failure ก่อนเสียจริง
+        </div>
+        <div class="project-tech">
+          <span class="tech-chip">ESP32-C3</span>
+          <span class="tech-chip">Piezo Harvester</span>
+          <span class="tech-chip">Supercapacitor 1F</span>
+          <span class="tech-chip">ADXL345 Accelerometer</span>
+          <span class="tech-chip">FFT Analysis</span>
+        </div>
+      </div>
+      <div class="difficulty">
+        <div class="diff-label">ระดับ</div>
+        <div class="diff-badge diff-hard">ยาก</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- SECTION 3: Sensors -->
+  <section id="sensors">
+    <h2 class="section-title">
+      <div class="icon icon-green">&#x1F50C;</div>
+      Sensors &amp; Modules น่าสนใจสำหรับ ESP32
+    </h2>
+    <div class="sensor-grid">
+
+      <div class="sensor-card">
+        <div class="sensor-name">Semtech SX1262</div>
+        <div class="sensor-role">LoRa Transceiver Module สำหรับ Long-Range Communication</div>
+        <div class="sensor-spec">
+          ย่านความถี่: <span>863–928 MHz</span><br>
+          ระยะส่ง: <span>5–15 กม.</span> (ชนบท/เปิดโล่ง)<br>
+          ความไว: <span>-148 dBm</span> (SF12, BW125)<br>
+          Interface: <span>SPI</span> — ใช้ได้กับ ESP32 ทุกรุ่น<br>
+          รองรับ: <span>LoRaWAN, Meshtastic, Custom Mesh</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">ADXL345</div>
+        <div class="sensor-role">3-Axis Digital Accelerometer สำหรับ Vibration &amp; Motion</div>
+        <div class="sensor-spec">
+          ช่วงวัด: <span>±2g / ±4g / ±8g / ±16g</span><br>
+          Resolution: <span>13-bit</span><br>
+          Output Rate: <span>สูงสุด 3200 Hz</span><br>
+          Interface: <span>I2C / SPI</span><br>
+          ใช้กับ: <span>Vibration Monitor, Tilt, Free-fall Detection</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">INA3221</div>
+        <div class="sensor-role">Triple-Channel Current &amp; Voltage Monitor</div>
+        <div class="sensor-spec">
+          ช่องวัด: <span>3 channels พร้อมกัน</span><br>
+          ช่วงแรงดัน: <span>0–26 V ต่อช่อง</span><br>
+          ความละเอียด: <span>±1% ทั่วไป</span><br>
+          Interface: <span>I2C (address 0x40–0x43)</span><br>
+          ใช้กับ: <span>Smart Power Meter, Battery Monitor, Solar Tracking</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">RAK11160</div>
+        <div class="sensor-role">Dual-Core LoRaWAN Module (ESP32-C2 + STM32WLE5)</div>
+        <div class="sensor-spec">
+          Core: <span>ESP32-C2 (Wi-Fi/BLE) + STM32WLE5 (LoRa)</span><br>
+          Protocol: <span>LoRaWAN 1.0.x / 1.1</span><br>
+          กินไฟ: <span>Ultra-low power สำหรับ battery node</span><br>
+          Interface: <span>UART / SPI ควบคุม LoRa ด้วย AT command</span><br>
+          ใช้กับ: <span>Long-range Battery-powered Sensor Node</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 4: Resources -->
+  <section id="resources">
+    <h2 class="section-title">
+      <div class="icon icon-orange">&#x1F517;</div>
+      แหล่งข้อมูลและลิงก์อ้างอิง
+    </h2>
+    <div class="resources-grid">
+
+      <div class="resource-card">
+        <div class="resource-title">Intelligent Robotic Arm on ESP32-P4 — Developer Portal</div>
+        <div class="resource-url">developer.espressif.com/blog/2026/01/esp32p4-robotic-arm-design/</div>
+        <div class="resource-desc">
+          บทความจาก Espressif อธิบายการออกแบบแขนกลอัจฉริยะบน ESP32-P4
+          ครอบคลุม Kinematics, Vision Detection และ Remote Control
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-title">Gateway-Free LoRa Mesh Research — MDPI Sensors</div>
+        <div class="resource-url">mdpi.com/1424-8220/25/19/6036</div>
+        <div class="resource-desc">
+          งานวิจัยเกี่ยวกับ ESP32 + LoRa Mesh แบบไม่ต้องใช้ Gateway
+          มีกลไก Self-Healing, Neighbor Routing และ Empirical Performance
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-title">ESP-BLE-MESH Programming Guide — Espressif IDF v6</div>
+        <div class="resource-url">docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/esp-ble-mesh/</div>
+        <div class="resource-desc">
+          เอกสาร official สำหรับสร้าง BLE Mesh network ด้วย ESP32
+          ครอบคลุม Provisioning, Fast Provisioning Model และ Node Configuration
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-title">Energy Harvesting for Industrial IoT Guide 2026 — ByteSnap</div>
+        <div class="resource-url">bytesnap.com/news-blog/energy-harvesting-industrial-iot-guide/</div>
+        <div class="resource-desc">
+          คู่มือ Energy Harvesting สำหรับ IIoT ปี 2026 ครอบคลุม Solar,
+          Piezoelectric, Thermoelectric และ Hybrid approaches
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Research Bot &nbsp;|&nbsp; <strong>16 กรกฎาคม 2569 (2026)</strong></p>
+  <p style="margin-top:0.4rem;">หัวข้อวันนี้: <strong>Robotics • BLE Mesh • LoRa Mesh • Energy Harvesting</strong></p>
+  <p style="margin-top:0.4rem; color:#334155;">ข้อมูลอ้างอิงจาก Espressif Developer Portal, MDPI Sensors, ByteSnap, DFRobot</p>
+</footer>
+
+</body>
+</html>
