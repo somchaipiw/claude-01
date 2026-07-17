@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 &amp; Sensor Innovations - 17 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== Header ===== */
+  header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 40%, #1a1a3e 100%);
+    border-bottom: 1px solid rgba(99,179,237,0.2);
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(59,130,246,0.08) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #63b3ed, #a78bfa, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+  header p.subtitle {
+    color: #94a3b8;
+    font-size: 1rem;
+    position: relative;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 999px;
+    padding: 0.35rem 1rem;
+    font-size: 0.82rem;
+    color: #cbd5e1;
+  }
+  .stat-pill span { color: #63b3ed; font-weight: 600; }
+
+  /* ===== Layout ===== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+  }
+
+  /* ===== Section Titles ===== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 2.5rem 0 1.25rem;
+  }
+  .section-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+  .icon-blue   { background: linear-gradient(135deg, #1d4ed8, #3b82f6); }
+  .icon-purple { background: linear-gradient(135deg, #6d28d9, #8b5cf6); }
+  .icon-green  { background: linear-gradient(135deg, #065f46, #10b981); }
+  .icon-amber  { background: linear-gradient(135deg, #92400e, #f59e0b); }
+
+  .section-title-text h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+  .section-title-text p {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin-top: 0.1rem;
+  }
+
+  /* ===== Card Grid ===== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 1.1rem;
+  }
+  .card-grid.two-col {
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  }
+
+  /* ===== Card ===== */
+  .card {
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+    border-color: rgba(99,179,237,0.25);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+  .card.accent-blue::before   { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
+  .card.accent-purple::before { background: linear-gradient(90deg, #8b5cf6, #ec4899); }
+  .card.accent-green::before  { background: linear-gradient(90deg, #10b981, #34d399); }
+  .card.accent-amber::before  { background: linear-gradient(90deg, #f59e0b, #f97316); }
+  .card.accent-red::before    { background: linear-gradient(90deg, #ef4444, #f97316); }
+  .card.accent-cyan::before   { background: linear-gradient(90deg, #06b6d4, #3b82f6); }
+
+  .chip-badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.18rem 0.6rem;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+  }
+  .badge-new    { background: rgba(16,185,129,0.18); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+  .badge-update { background: rgba(59,130,246,0.18); color: #63b3ed; border: 1px solid rgba(99,179,237,0.3); }
+  .badge-hot    { background: rgba(239,68,68,0.18);  color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
+  .badge-tool   { background: rgba(139,92,246,0.18); color: #a78bfa; border: 1px solid rgba(167,139,250,0.3); }
+  .badge-diy    { background: rgba(245,158,11,0.18); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-bottom: 0.55rem;
+    line-height: 1.4;
+  }
+  .card-body {
+    font-size: 0.88rem;
+    color: #94a3b8;
+    line-height: 1.75;
+  }
+  .card-body strong { color: #cbd5e1; }
+
+  /* ===== Spec Table ===== */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.85rem;
+    font-size: 0.81rem;
+  }
+  .spec-table tr { border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .spec-table tr:last-child { border-bottom: none; }
+  .spec-table td { padding: 0.35rem 0.5rem; color: #94a3b8; }
+  .spec-table td:first-child { color: #64748b; width: 42%; }
+  .spec-table .val { color: #63b3ed; font-weight: 600; }
+
+  /* ===== Tag List ===== */
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.8rem;
+  }
+  .tag {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #94a3b8;
+  }
+
+  /* ===== Highlight Box ===== */
+  .highlight-box {
+    background: rgba(59,130,246,0.08);
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-top: 0.9rem;
+    font-size: 0.83rem;
+    color: #93c5fd;
+  }
+  .highlight-box.green {
+    background: rgba(16,185,129,0.08);
+    border-color: rgba(52,211,153,0.2);
+    color: #6ee7b7;
+  }
+  .highlight-box.amber {
+    background: rgba(245,158,11,0.08);
+    border-color: rgba(251,191,36,0.2);
+    color: #fcd34d;
+  }
+
+  /* ===== Steps ===== */
+  .steps { margin-top: 0.85rem; }
+  .step {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.6rem;
+    align-items: flex-start;
+  }
+  .step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .step-text { font-size: 0.85rem; color: #94a3b8; }
+  .step-text strong { color: #cbd5e1; }
+
+  /* ===== Resource Cards ===== */
+  .resource-card {
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    transition: border-color 0.2s;
+  }
+  .resource-card:hover { border-color: rgba(99,179,237,0.3); }
+  .resource-icon {
+    font-size: 1.75rem;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .resource-info h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.3rem;
+  }
+  .resource-info p { font-size: 0.82rem; color: #64748b; }
+  .resource-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-size: 0.78rem;
+    color: #63b3ed;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(99,179,237,0.4);
+    transition: color 0.2s;
+  }
+  .resource-link:hover { color: #93c5fd; }
+
+  /* ===== Divider ===== */
+  .divider {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    margin: 0.75rem 0;
+  }
+
+  /* ===== Footer ===== */
+  footer {
+    background: #0a0f1e;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: #475569;
+    font-size: 0.82rem;
+  }
+  footer a { color: #4b6cb7; text-decoration: none; }
+  footer a:hover { color: #63b3ed; }
+  footer .footer-sources {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.2rem;
+    justify-content: center;
+    font-size: 0.76rem;
+  }
+
+  @media (max-width: 640px) {
+    .card-grid.two-col { grid-template-columns: 1fr; }
+    .card-grid { grid-template-columns: 1fr; }
+    header { padding: 2rem 1rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">AI Research Daily · ESP32 &amp; IoT</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">17 กรกฎาคม 2569 · รายงานนวัตกรรมและไอเดียโปรเจกต์ประจำวัน</p>
+  <div class="stat-row">
+    <div class="stat-pill"><span>5</span> ชิปใหม่ / อัปเดต</div>
+    <div class="stat-pill"><span>4</span> ไอเดียโปรเจกต์</div>
+    <div class="stat-pill"><span>3</span> Sensors น่าสนใจ</div>
+    <div class="stat-pill"><span>6</span> แหล่งข้อมูล</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: Innovations ===== -->
+  <div class="section-header" id="innovations">
+    <div class="section-icon icon-blue">🔬</div>
+    <div class="section-title-text">
+      <h2>นวัตกรรมชิปและ Framework ใหม่</h2>
+      <p>ESP32-C5, ESP32-P4 v3.x, ESP32-C61, ESP32-H4 และ ESP-IDF v6.0</p>
+    </div>
+  </div>
+
+  <div class="card-grid">
+
+    <!-- ESP32-C5 -->
+    <div class="card accent-blue">
+      <span class="chip-badge badge-new">NEW 2026</span>
+      <div class="card-title">ESP32-C5 — Dual-Band Wi-Fi 6 (2.4 + 5 GHz)</div>
+      <div class="card-body">
+        ชิปตัวแรกในตระกูล ESP32 ที่รองรับ <strong>Wi-Fi 6 ทั้ง 2.4 GHz และ 5 GHz</strong> พร้อมกัน ทำให้สามารถเลือกย่านความถี่ที่ไม่แออัดได้ และยังรองรับ Bluetooth 5 LE, Zigbee 3.0 และ Thread 1.3 ด้วย
+        <table class="spec-table">
+          <tr><td>CPU</td><td class="val">RISC-V single-core @ 240 MHz</td></tr>
+          <tr><td>Wi-Fi</td><td class="val">802.11ax (Wi-Fi 6) — 2.4 + 5 GHz</td></tr>
+          <tr><td>Bluetooth</td><td class="val">BLE 5.0</td></tr>
+          <tr><td>Protocol</td><td class="val">Zigbee 3.0, Thread 1.3, Matter</td></tr>
+          <tr><td>RAM</td><td class="val">384 KB SRAM + 8 MB PSRAM</td></tr>
+          <tr><td>Flash</td><td class="val">16 MB / 32 MB</td></tr>
+        </table>
+        <div class="highlight-box">
+          <strong>ทำไมต้อง 5 GHz?</strong> ในสภาพแวดล้อมที่มี Wi-Fi หลายเครือข่าย ย่าน 5 GHz มีความแออัดน้อยกว่า ทำให้ latency ต่ำลงและ throughput สูงขึ้น เหมาะสำหรับกล้อง IP, สตรีมมิ่ง, และโปรเจกต์ที่ต้องการแบนด์วิดท์สูง
+        </div>
+        <div class="tag-list">
+          <span class="tag">WiFi 6</span><span class="tag">5GHz</span><span class="tag">RISC-V</span>
+          <span class="tag">Thread</span><span class="tag">Zigbee</span><span class="tag">Matter</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESP32-P4 v3.x -->
+    <div class="card accent-purple">
+      <span class="chip-badge badge-update">CHIP REVISION v3.x</span>
+      <div class="card-title">ESP32-P4 Rev 3.x — 400 MHz Performance Upgrade</div>
+      <div class="card-body">
+        Espressif ออก <strong>chip revision v3.0 / v3.1</strong> อย่างเป็นทางการสำหรับ ESP32-P4 พร้อมอัปเกรดสำคัญหลายด้าน ผู้ที่กำลังออกแบบบอร์ดใหม่ควรใช้ revision นี้เท่านั้น (rev 1.0/1.1/1.3 ไม่แนะนำสำหรับดีไซน์ใหม่)
+        <table class="spec-table">
+          <tr><td>CPU speed</td><td class="val">400 MHz (เพิ่มจาก 360 MHz)</td></tr>
+          <tr><td>Hardware encode</td><td class="val">H.264 video encoding</td></tr>
+          <tr><td>ISP / PPA</td><td class="val">อัปเกรดใหม่ทั้งหมด</td></tr>
+          <tr><td>Power pin</td><td class="val">Pin 54 เปลี่ยนเป็น VDD_HP_1</td></tr>
+          <tr><td>USB</td><td class="val">512-byte High-Speed transfer</td></tr>
+          <tr><td>Touch</td><td class="val">14 channels (ใหม่)</td></tr>
+        </table>
+        <div class="highlight-box">
+          <strong>สำคัญ:</strong> Rev 3.x ต้องใช้ PCB design และ firmware ใหม่ที่ต่างจาก rev เก่า — อย่าลืมอัปเดตก่อนส่งผลิต!
+        </div>
+        <div class="tag-list">
+          <span class="tag">400MHz</span><span class="tag">H.264</span><span class="tag">EdgeAI</span>
+          <span class="tag">Multimedia</span><span class="tag">High-Performance</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESP32-C61 -->
+    <div class="card accent-cyan">
+      <span class="chip-badge badge-new">MASS PRODUCTION</span>
+      <div class="card-title">ESP32-C61 — Budget Wi-Fi 6 + Secure TEE</div>
+      <div class="card-body">
+        ชิปที่ออกแบบให้ราคาถูกที่สุดในกลุ่มที่รองรับ Wi-Fi 6 เหมาะสำหรับโปรเจกต์ที่ต้องการ wireless ปลอดภัยในราคาประหยัด มี <strong>Trusted Execution Environment (TEE)</strong> ป้องกัน private key ใน hardware
+        <table class="spec-table">
+          <tr><td>CPU</td><td class="val">RISC-V single-core @ 160 MHz</td></tr>
+          <tr><td>Wi-Fi</td><td class="val">802.11ax (2.4 GHz เท่านั้น)</td></tr>
+          <tr><td>Bluetooth</td><td class="val">BLE 5.0</td></tr>
+          <tr><td>RAM</td><td class="val">320 KB SRAM + in-package PSRAM</td></tr>
+          <tr><td>Security</td><td class="val">Secure Boot + Flash Encryption + TEE</td></tr>
+          <tr><td>ECDSA</td><td class="val">Hardware Digital Signature Peripheral</td></tr>
+        </table>
+        <div class="highlight-box green">
+          <strong>Use case:</strong> Co-processor สำหรับบอร์ดที่ยังไม่มี wireless หรือใช้เป็น MCU หลักในโปรเจกต์ IoT ที่ต้องการความปลอดภัยสูงในราคาต่ำ
+        </div>
+        <div class="tag-list">
+          <span class="tag">WiFi 6</span><span class="tag">TEE</span><span class="tag">Secure Boot</span>
+          <span class="tag">Budget</span><span class="tag">RISC-V</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESP32-H4 -->
+    <div class="card accent-green">
+      <span class="chip-badge badge-new">PREVIEW 2026</span>
+      <div class="card-title">ESP32-H4 — BLE 5.4 Audio + Zigbee/Thread/Matter</div>
+      <div class="card-body">
+        ชิปรุ่นใหม่ล่าสุดในตระกูล H-series ที่ไม่มี Wi-Fi แต่มาพร้อม <strong>Bluetooth 5.4</strong> ซึ่งเป็นเวอร์ชันสูงสุดในตระกูล ESP32 — รองรับ <strong>Bluetooth LE Audio</strong> สำหรับอุปกรณ์เสียงคุณภาพสูง
+        <table class="spec-table">
+          <tr><td>CPU</td><td class="val">RISC-V dual-core @ 96 MHz</td></tr>
+          <tr><td>Wi-Fi</td><td class="val">ไม่มี (ประหยัดพลังงาน)</td></tr>
+          <tr><td>Bluetooth</td><td class="val">BLE 5.4 + LE Audio</td></tr>
+          <tr><td>Protocol</td><td class="val">Zigbee 3.0, Thread 1.3, Matter</td></tr>
+          <tr><td>RAM</td><td class="val">320 KB SRAM</td></tr>
+          <tr><td>สถานะ</td><td class="val">Preview — kit เริ่มวางจำหน่าย</td></tr>
+        </table>
+        <div class="highlight-box amber">
+          <strong>ไอเดียการใช้งาน:</strong> หูฟัง BLE Audio แบบ DIY, Smart Home Hub ไร้ Wi-Fi สำหรับ Thread/Matter, เซนเซอร์ node ที่ใช้แบตนาน
+        </div>
+        <div class="tag-list">
+          <span class="tag">BLE Audio</span><span class="tag">Zigbee</span><span class="tag">Thread</span>
+          <span class="tag">Matter</span><span class="tag">Low-Power</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESP-IDF v6.0 -->
+    <div class="card accent-amber" style="grid-column: 1 / -1; max-width: 700px;">
+      <span class="chip-badge badge-update">FRAMEWORK UPDATE</span>
+      <div class="card-title">ESP-IDF v6.0 — AI Integration, PSA Crypto &amp; OTA Safety</div>
+      <div class="card-body">
+        Framework หลักสำหรับ ESP32 ออกเวอร์ชัน major ใหม่ในเดือนมีนาคม 2026 มาพร้อม breaking changes และฟีเจอร์ที่ developer ต้องรู้
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>MCP Server Built-in</strong> — รองรับ AI development tools (VS Code Copilot, Cursor) ให้ทำงานกับ ESP32 project ได้โดยตรง ผ่าน Model Context Protocol</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Picolibc แทน Newlib</strong> — C library ใหม่ที่เบาและเร็วกว่า ลด memory footprint ของ firmware ลงได้มาก</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>PSA Crypto API + MbedTLS 4.x</strong> — มาตรฐาน cryptographic ใหม่ที่ปลอดภัยและบำรุงรักษาง่ายขึ้น</div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>Recovery Bootloader OTA</strong> — อัปเดต firmware ปลอดภัยขึ้น มีพาร์ติชัน backup ป้องกันบอร์ดเสียหายถ้าไฟดับกลางคัน</div>
+          </div>
+          <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-text"><strong>Wi-Fi USD + WPA3 Mode</strong> — Proximity-based service discovery และ compatibility mode ใหม่สำหรับ WPA3</div>
+          </div>
+        </div>
+        <div class="tag-list">
+          <span class="tag">AI Integration</span><span class="tag">MCP</span><span class="tag">PSA Crypto</span>
+          <span class="tag">OTA Safety</span><span class="tag">Picolibc</span><span class="tag">C5 support</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end card-grid innovations -->
+
+
+  <!-- ===== SECTION 2: Projects ===== -->
+  <div class="section-header" id="projects">
+    <div class="section-icon icon-purple">🛠️</div>
+    <div class="section-title-text">
+      <h2>ไอเดียโปรเจกต์น่าสร้าง</h2>
+      <p>โปรเจกต์ที่น่าสนใจจาก Hackaday, Hackster.io และ GitHub</p>
+    </div>
+  </div>
+
+  <div class="card-grid two-col">
+
+    <!-- ADS-B Plane Radar -->
+    <div class="card accent-blue">
+      <span class="chip-badge badge-hot">TRENDING · Hackaday Jul 2026</span>
+      <div class="card-title">✈️ ESP32 Plane Radar — ติดตามเครื่องบินบน Round Display</div>
+      <div class="card-body">
+        โปรเจกต์ที่กำลังเป็นที่นิยมใน Hackaday (8 กรกฎาคม 2026) ใช้ <strong>ESP32-C3 Super Mini</strong> ดึงข้อมูล ADS-B (Automatic Dependent Surveillance-Broadcast) แบบ real-time จาก OpenSky Network แล้วแสดงผลบนจอกลม <strong>GC9A01 ขนาด 1.28"</strong> ในสไตล์ radar display
+        <div class="highlight-box">
+          <strong>วิธีทำงาน:</strong> เครื่องบินแต่ละลำส่งสัญญาณ ADS-B บอกพิกัด ความสูง และความเร็ว ซึ่ง API ฟรีจาก OpenSky Network จะรวบรวมข้อมูลนี้ให้ ESP32 ดึงผ่าน Wi-Fi
+        </div>
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Hardware:</strong> ESP32-C3 Super Mini + GC9A01 1.28" Round LCD</div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Data:</strong> OpenSky Network API (ฟรี 400 req/day หรือ 4000 req/day ถ้าสมัคร)</div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Display:</strong> วาด sweep line หมุนแบบ radar + จุดเครื่องบินพร้อม callsign</div></div>
+          <div class="step"><div class="step-num">4</div><div class="step-text"><strong>GitHub:</strong> MatixYo/ESP32-Plane-Radar — open source firmware ใช้ได้เลย</div></div>
+        </div>
+        <div class="tag-list">
+          <span class="tag">ADS-B</span><span class="tag">GC9A01</span><span class="tag">OpenSky API</span>
+          <span class="tag">ESP32-C3</span><span class="tag">Flight Tracking</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- $3 Heart Rate Monitor -->
+    <div class="card accent-red">
+      <span class="chip-badge badge-diy">DIY · ราคา ~100 บาท</span>
+      <div class="card-title">❤️ Heart Rate &amp; SpO2 Monitor ราคา $3 ด้วย MAX30102</div>
+      <div class="card-body">
+        โปรเจกต์จาก Adafruit Blog (มีนาคม 2026) แสดงให้เห็นว่าสามารถสร้างเครื่องวัดอัตราการเต้นหัวใจ (Heart Rate) และออกซิเจนในเลือด (SpO2) ที่ทำงานได้จริงด้วยต้นทุน <strong>ต่ำกว่า $3</strong> ด้วย ESP32-C3 และ MAX30102
+        <table class="spec-table">
+          <tr><td>MCU</td><td class="val">ESP32-C3 (RISC-V, Wi-Fi)</td></tr>
+          <tr><td>Sensor</td><td class="val">MAX30102 (Pulse Oximeter + HR)</td></tr>
+          <tr><td>Display</td><td class="val">SSD1306 OLED 0.96"</td></tr>
+          <tr><td>Interface</td><td class="val">I²C (SDA/SCL)</td></tr>
+          <tr><td>ต้นทุนรวม</td><td class="val">~$3 USD (~100 บาท)</td></tr>
+        </table>
+        <div class="highlight-box green">
+          เพิ่ม AD8232 ECG sensor เพื่อวัดคลื่นไฟฟ้าหัวใจ (ECG) ด้วยอีก sensor เดียว ทำให้ได้ <strong>ระบบ Health Monitor แบบครบ</strong> ในราคา ~200 บาท
+        </div>
+        <div class="tag-list">
+          <span class="tag">MAX30102</span><span class="tag">SpO2</span><span class="tag">Heart Rate</span>
+          <span class="tag">AD8232</span><span class="tag">ECG</span><span class="tag">Wearable</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- VL53L1X Gesture -->
+    <div class="card accent-green">
+      <span class="chip-badge badge-tool">Machine Learning + ToF</span>
+      <div class="card-title">👋 Gesture Recognition ด้วย VL53L1X Time-of-Flight Sensor</div>
+      <div class="card-body">
+        ใช้ <strong>VL53L1X Laser ToF sensor</strong> (ความแม่นยำ ±1 mm, range สูงสุด 4 m) ร่วมกับ ESP32-S3 และ TinyML เพื่อจำแนก gesture มือแบบ real-time บน edge device โดยไม่ต้องพึ่ง cloud
+        <div class="steps">
+          <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Collect:</strong> เก็บข้อมูล distance pattern จาก VL53L1X ขณะทำท่าทางมือต่างๆ</div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Train:</strong> ฝึกโมเดล TensorFlow Lite ด้วย Edge Impulse Studio (ฟรี)</div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Deploy:</strong> แปลงเป็น .tflite แล้ว deploy บน ESP32-S3 ผ่าน Arduino หรือ ESP-IDF</div></div>
+          <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Use:</strong> ควบคุมสมาร์ทโฮม, เปิด-ปิดไฟ, ปรับเสียง ด้วยท่ามือ ไม่ต้องสัมผัส</div></div>
+        </div>
+        <div class="tag-list">
+          <span class="tag">VL53L1X</span><span class="tag">ToF</span><span class="tag">TinyML</span>
+          <span class="tag">TensorFlow Lite</span><span class="tag">Edge Impulse</span><span class="tag">Gesture</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Smart Terrarium -->
+    <div class="card accent-amber">
+      <span class="chip-badge badge-diy">DIY · Hackster.io 2026</span>
+      <div class="card-title">🌿 Smart Terrarium — ระบบดูแลสัตว์เลื้อยคลานอัตโนมัติ</div>
+      <div class="card-body">
+        โปรเจกต์จาก Hackster.io ใช้ ESP32 ควบคุมตู้เลี้ยงสัตว์เลื้อยคลาน/พืชแบบอัตโนมัติ ตรวจสอบสภาพแวดล้อมและควบคุมผ่านแอปได้ทุกที่
+        <table class="spec-table">
+          <tr><td>อุณหภูมิ/ความชื้น</td><td class="val">DHT11 / DHT22</td></tr>
+          <tr><td>ความชื้นดิน</td><td class="val">Capacitive Soil Moisture Sensor</td></tr>
+          <tr><td>แสง</td><td class="val">WS2812 RGB LED Ring (Neopixel)</td></tr>
+          <tr><td>Display</td><td class="val">SSD1306 OLED</td></tr>
+          <tr><td>ควบคุม</td><td class="val">Relay Module (ไฟ + หมอก + ปั๊มน้ำ)</td></tr>
+          <tr><td>Remote</td><td class="val">Blynk IoT / MQTT Dashboard</td></tr>
+        </table>
+        <div class="highlight-box amber">
+          ขยายโปรเจกต์ด้วย <strong>BME688 Gas Sensor</strong> เพื่อวัด VOC ในตู้ และ <strong>ESP32-CAM</strong> สำหรับดูภาพ live ผ่าน stream
+        </div>
+        <div class="tag-list">
+          <span class="tag">Automation</span><span class="tag">Smart Farm</span><span class="tag">DHT22</span>
+          <span class="tag">Blynk</span><span class="tag">WS2812</span><span class="tag">MQTT</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end card-grid projects -->
+
+
+  <!-- ===== SECTION 3: Sensors ===== -->
+  <div class="section-header" id="sensors">
+    <div class="section-icon icon-green">📡</div>
+    <div class="section-title-text">
+      <h2>Sensors น่าสนใจประจำสัปดาห์</h2>
+      <p>ToF, Biometric, และ Health Monitoring sensors</p>
+    </div>
+  </div>
+
+  <div class="card-grid">
+
+    <!-- MAX30102 -->
+    <div class="card accent-red">
+      <span class="chip-badge badge-new">Biometric</span>
+      <div class="card-title">MAX30102 — Pulse Oximeter &amp; Heart Rate Sensor</div>
+      <div class="card-body">
+        IC วัด pulse oximetry และ heart rate ในตัวเดียว ใช้ LED อินฟราเรดและแดงส่องผ่านผิวหนังแล้ววัดการดูดซับแสง สื่อสารผ่าน <strong>I²C</strong> ง่ายต่อการต่อกับ ESP32
+        <table class="spec-table">
+          <tr><td>วัดได้</td><td class="val">SpO2 (%), Heart Rate (BPM)</td></tr>
+          <tr><td>Interface</td><td class="val">I²C (400 kHz)</td></tr>
+          <tr><td>Supply</td><td class="val">1.8 V – 3.3 V</td></tr>
+          <tr><td>LED</td><td class="val">Red 660nm + IR 880nm (built-in)</td></tr>
+          <tr><td>Package</td><td class="val">OLGA-14 (ขนาดจิ๋ว)</td></tr>
+          <tr><td>ราคา</td><td class="val">~$0.5–1.5 USD บน AliExpress</td></tr>
+        </table>
+        <div class="highlight-box green">
+          จับคู่กับ <strong>MAX30205</strong> (วัดอุณหภูมิร่างกาย ±0.1°C) เพื่อสร้างระบบ Health Monitor แบบ 3-in-1: SpO2 + HR + Temp
+        </div>
+      </div>
+    </div>
+
+    <!-- VL53L1X -->
+    <div class="card accent-green">
+      <span class="chip-badge badge-new">Time-of-Flight</span>
+      <div class="card-title">VL53L1X — Long Range Laser ToF Distance Sensor</div>
+      <div class="card-body">
+        เซนเซอร์วัดระยะด้วยแสงเลเซอร์รุ่นใหม่จาก ST Microelectronics วัดระยะได้สูงสุด <strong>4 เมตร</strong> ด้วยความแม่นยำ ±1 mm และเร็วพอสำหรับ real-time gesture recognition
+        <table class="spec-table">
+          <tr><td>ช่วงวัด</td><td class="val">4 cm – 4 m</td></tr>
+          <tr><td>ความแม่นยำ</td><td class="val">±1 mm (ใกล้), ±5% (ไกล)</td></tr>
+          <tr><td>อัตราการวัด</td><td class="val">สูงสุด 50 Hz</td></tr>
+          <tr><td>Interface</td><td class="val">I²C (400 kHz)</td></tr>
+          <tr><td>Field of View</td><td class="val">27° (programmable)</td></tr>
+          <tr><td>Supply</td><td class="val">2.6 V – 3.5 V</td></tr>
+        </table>
+        <div class="highlight-box">
+          เหมาะสำหรับ: Gesture Control, People Counting, Robot Obstacle Avoidance, Touchless Button, Liquid Level Detection
+        </div>
+      </div>
+    </div>
+
+    <!-- AD8232 ECG -->
+    <div class="card accent-purple">
+      <span class="chip-badge badge-diy">ECG / Biometric</span>
+      <div class="card-title">AD8232 — Single-Lead ECG Heart Monitor</div>
+      <div class="card-body">
+        IC วัดคลื่นไฟฟ้าหัวใจ (Electrocardiogram) แบบ single-lead ราคาถูก สัญญาณออกเป็น <strong>Analog voltage</strong> อ่านด้วย ADC ของ ESP32 โดยตรง ไม่ต้องมี driver พิเศษ
+        <table class="spec-table">
+          <tr><td>สัญญาณออก</td><td class="val">Analog (0–3.3 V)</td></tr>
+          <tr><td>Leads</td><td class="val">3 electrodes (RA, LA, RL)</td></tr>
+          <tr><td>Filter</td><td class="val">Band-pass 0.5–40 Hz built-in</td></tr>
+          <tr><td>Lead-off detect</td><td class="val">GPIO output (LO+ / LO-)</td></tr>
+          <tr><td>Supply</td><td class="val">3.3 V – 5 V</td></tr>
+          <tr><td>ราคา</td><td class="val">~$2–4 USD (module)</td></tr>
+        </table>
+        <div class="highlight-box">
+          ต่อกับ ESP32 แล้ว stream ข้อมูลผ่าน WebSocket ไปแสดงบน Browser ด้วย Chart.js ได้แบบ real-time — ดูเหมือน oscilloscope จริง!
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end card-grid sensors -->
+
+
+  <!-- ===== SECTION 4: Resources ===== -->
+  <div class="section-header" id="resources">
+    <div class="section-icon icon-amber">🔗</div>
+    <div class="section-title-text">
+      <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+      <p>เอกสาร, บทความ และ GitHub repository ที่มีประโยชน์</p>
+    </div>
+  </div>
+
+  <div class="card-grid">
+
+    <div class="resource-card">
+      <div class="resource-icon">📄</div>
+      <div class="resource-info">
+        <h3>Espressif — ESP32-P4 Chip Revision v3.x User Guide</h3>
+        <p>เอกสาร official สำหรับการอัปเกรดบอร์ดและ firmware ไปยัง ESP32-P4 rev 3.x รวมถึง PCB errata</p>
+        <a class="resource-link" href="https://www.espressif.com/en/news/ESP32_P4_v3.x_Upgrade" target="_blank" rel="noopener">espressif.com · ESP32-P4 v3.x Upgrade</a>
+      </div>
+    </div>
+
+    <div class="resource-card">
+      <div class="resource-icon">🔧</div>
+      <div class="resource-info">
+        <h3>ESP-IDF v6.0 — Release Notes &amp; Migration Guide</h3>
+        <p>สรุปการเปลี่ยนแปลงสำคัญ, breaking changes, และวิธี migrate จาก v5.x สู่ v6.0</p>
+        <a class="resource-link" href="https://developer.espressif.com/blog/2026/03/idf-v6-0-release/" target="_blank" rel="noopener">developer.espressif.com · IDF v6.0 Release</a>
+      </div>
+    </div>
+
+    <div class="resource-card">
+      <div class="resource-icon">🛒</div>
+      <div class="resource-info">
+        <h3>Seeed XIAO ESP32-C5 — Dual-Band Wi-Fi 6 Dev Board</h3>
+        <p>บอร์ด ESP32-C5 ขนาดจิ๋วที่รองรับ 2.4 + 5 GHz Wi-Fi 6 พร้อม wiki และ tutorial ครบชุด</p>
+        <a class="resource-link" href="https://www.seeedstudio.com/blog/2026/01/16/xiao-esp32-c5-5ghz-dual-band-wifi6/" target="_blank" rel="noopener">seeedstudio.com · XIAO ESP32-C5</a>
+      </div>
+    </div>
+
+    <div class="resource-card">
+      <div class="resource-icon">✈️</div>
+      <div class="resource-info">
+        <h3>GitHub — MatixYo/ESP32-Plane-Radar</h3>
+        <p>Firmware open-source สำหรับ ADS-B radar display บน ESP32 + GC9A01 round display แสดงเครื่องบินรอบๆ ในสไตล์ sonar</p>
+        <a class="resource-link" href="https://github.com/MatixYo/ESP32-Plane-Radar" target="_blank" rel="noopener">github.com · ESP32-Plane-Radar</a>
+      </div>
+    </div>
+
+    <div class="resource-card">
+      <div class="resource-icon">❤️</div>
+      <div class="resource-info">
+        <h3>Atomic14 — MAX30102 $3 Heart Rate Monitor Build</h3>
+        <p>บทความและ code สำหรับสร้าง Pulse Oximeter + HR monitor ด้วย ESP32-C3 + MAX30102 ต้นทุนต่ำกว่า $3</p>
+        <a class="resource-link" href="https://www.atomic14.com/2026/03/15/cheap-heart-rate-monitor" target="_blank" rel="noopener">atomic14.com · Cheap Heart Rate Monitor</a>
+      </div>
+    </div>
+
+    <div class="resource-card">
+      <div class="resource-icon">📡</div>
+      <div class="resource-info">
+        <h3>CNX Software — ESP32-C5 LCD Board with 1.47" Color Display</h3>
+        <p>รีวิวบอร์ด Waveshare ESP32-C5-LCD-1.47 — บอร์ดแรกที่มีจอสีในตัวพร้อม dual-band WiFi 6 (กรกฎาคม 2026)</p>
+        <a class="resource-link" href="https://www.cnx-software.com/2026/07/03/esp32-c5-dual-band-wifi-6-and-bluetooth-le-iot-board-features-1-47-inch-color-lcd/" target="_blank" rel="noopener">cnx-software.com · ESP32-C5 LCD Board</a>
+      </div>
+    </div>
+
+  </div><!-- end resource grid -->
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Research Routine · 17 กรกฎาคม 2569 (2026-07-17)</p>
+  <p style="margin-top:0.4rem; color:#334155;">ข้อมูลจากแหล่งข่าวและเอกสาร official ณ วันที่สร้าง</p>
+  <div class="footer-sources">
+    <a href="https://www.espressif.com/en/news/ESP32_P4_v3.x_Upgrade" target="_blank" rel="noopener">Espressif ESP32-P4 v3.x</a>
+    <a href="https://www.espressif.com/en/products/socs/esp32-c5" target="_blank" rel="noopener">Espressif ESP32-C5</a>
+    <a href="https://developer.espressif.com/blog/2026/03/idf-v6-0-release/" target="_blank" rel="noopener">ESP-IDF v6.0 Release</a>
+    <a href="https://hackaday.com/2026/07/08/esp32-keeps-tabs-on-your-local-airspace/" target="_blank" rel="noopener">Hackaday Plane Radar</a>
+    <a href="https://blog.adafruit.com/2026/03/16/a-3-heart-rate-monitor-using-an-esp32-c3-and-a-max30102/" target="_blank" rel="noopener">Adafruit MAX30102 $3 Monitor</a>
+    <a href="https://www.espressif.com/en/news/ESP32_H4_Sample" target="_blank" rel="noopener">Espressif ESP32-H4</a>
+  </div>
+</footer>
+
+</body>
+</html>
