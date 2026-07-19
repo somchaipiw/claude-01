@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 &amp; Sensor Innovations - 19 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-base: #080f1e;
+    --bg-surface: #0d1a2d;
+    --bg-card: #111f35;
+    --bg-card-hover: #162640;
+    --border: rgba(99,179,237,0.12);
+    --text-primary: #e8f4fd;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-teal: #2dd4bf;
+    --accent-blue: #60a5fa;
+    --accent-purple: #c084fc;
+    --accent-amber: #fbbf24;
+    --accent-rose: #fb7185;
+    --accent-green: #34d399;
+    --accent-orange: #fb923c;
+    --gradient-header: linear-gradient(135deg, #0a1628 0%, #0f2545 50%, #0a1628 100%);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: var(--gradient-header);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(45,212,191,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(45,212,191,0.1);
+    border: 1px solid rgba(45,212,191,0.25);
+    border-radius: 100px;
+    padding: 0.3rem 1rem;
+    font-size: 0.78rem;
+    color: var(--accent-teal);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  header h1 span { color: var(--accent-teal); }
+  .header-sub {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin-top: 0.6rem;
+  }
+  .header-meta {
+    margin-top: 1.4rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
+  }
+  .meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 100px;
+    padding: 0.25rem 0.85rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  .meta-chip strong { color: var(--text-primary); }
+
+  /* ─── FOCUS BAR ─── */
+  .focus-bar {
+    background: rgba(45,212,191,0.06);
+    border-top: 1px solid rgba(45,212,191,0.12);
+    border-bottom: 1px solid rgba(45,212,191,0.12);
+    padding: 0.75rem 1rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .focus-bar strong { color: var(--accent-teal); }
+
+  /* ─── LAYOUT ─── */
+  main {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 2.5rem 1rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  /* ─── SECTION ─── */
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .icon-teal { background: rgba(45,212,191,0.12); }
+  .icon-purple { background: rgba(192,132,252,0.12); }
+  .icon-amber { background: rgba(251,191,36,0.12); }
+  .icon-blue { background: rgba(96,165,250,0.12); }
+  .section-title-group h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-title-group p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+  }
+
+  /* ─── GRID ─── */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.2rem; }
+  .grid-links { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.3rem;
+    transition: background 0.2s, transform 0.2s, border-color 0.2s;
+  }
+  .card:hover {
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+    border-color: rgba(99,179,237,0.2);
+  }
+  .card-tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: 100px;
+    padding: 0.2rem 0.65rem;
+    margin-bottom: 0.7rem;
+  }
+  .tag-new { background: rgba(45,212,191,0.12); color: var(--accent-teal); }
+  .tag-hot { background: rgba(251,146,60,0.12); color: var(--accent-orange); }
+  .tag-diy { background: rgba(192,132,252,0.12); color: var(--accent-purple); }
+  .tag-hw { background: rgba(96,165,250,0.12); color: var(--accent-blue); }
+  .tag-city { background: rgba(52,211,153,0.12); color: var(--accent-green); }
+  .tag-pro { background: rgba(251,191,36,0.12); color: var(--accent-amber); }
+
+  .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card-body {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .card-body strong { color: var(--text-primary); }
+
+  /* ─── SPEC LIST ─── */
+  .spec-list {
+    margin-top: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .spec-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .spec-item:last-child { border-bottom: none; }
+  .spec-key { color: var(--text-muted); }
+  .spec-val { color: var(--text-primary); font-weight: 600; text-align: right; }
+
+  /* ─── PROJECT CARD ─── */
+  .project-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .project-card:hover {
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+  }
+  .project-head {
+    padding: 1rem 1.3rem 0.7rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .project-emoji { font-size: 1.6rem; margin-bottom: 0.4rem; }
+  .project-title {
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.35;
+  }
+  .project-body { padding: 1rem 1.3rem; }
+  .project-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 0.9rem;
+  }
+  .bom-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+  .bom-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .bom-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+  .difficulty {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  .diff-dots { display: flex; gap: 3px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.15); }
+  .dot.on { background: var(--accent-teal); }
+
+  /* ─── SENSOR CARD ─── */
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.2rem;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .sensor-card:hover {
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+  }
+  .sensor-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .sensor-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.2rem;
+  }
+  .sensor-role {
+    font-size: 0.78rem;
+    color: var(--accent-teal);
+    margin-bottom: 0.6rem;
+  }
+  .sensor-desc {
+    font-size: 0.83rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+
+  /* ─── LINK CARD ─── */
+  .link-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    transition: background 0.2s, border-color 0.2s;
+    text-decoration: none;
+  }
+  .link-card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(99,179,237,0.25);
+  }
+  .link-source {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .link-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+  .link-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  .link-arrow {
+    font-size: 0.78rem;
+    color: var(--accent-blue);
+    margin-top: 0.2rem;
+    align-self: flex-start;
+  }
+
+  /* ─── HIGHLIGHT BOX ─── */
+  .highlight-box {
+    background: rgba(45,212,191,0.06);
+    border: 1px solid rgba(45,212,191,0.15);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-top: 0.8rem;
+    font-size: 0.83rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+  .highlight-box strong { color: var(--accent-teal); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+  footer a { color: var(--accent-blue); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 640px) {
+    header h1 { font-size: 1.5rem; }
+    .grid-2, .grid-3, .grid-links { grid-template-columns: 1fr; }
+    .section-head { flex-direction: column; align-items: flex-start; gap: 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header>
+  <div class="header-badge">🤖 AI Research Bot · ESP32 &amp; IoT</div>
+  <h1>ESP32 <span>&amp; Sensor</span> Innovations</h1>
+  <p class="header-sub">รวมนวัตกรรมและไอเดียโปรเจกต์ใหม่ล่าสุด — อัปเดตรายวัน</p>
+  <div class="header-meta">
+    <span class="meta-chip">📅 <strong>19 กรกฎาคม 2569 (2026)</strong></span>
+    <span class="meta-chip">💡 <strong>4 นวัตกรรม</strong></span>
+    <span class="meta-chip">🛠️ <strong>4 โปรเจกต์</strong></span>
+    <span class="meta-chip">📡 <strong>4 Sensors</strong></span>
+  </div>
+</header>
+
+<div class="focus-bar">
+  หัวข้อวันนี้: <strong>Audio IoT • Automotive OBD2 • Smart City • LiDAR Robotics</strong>
+</div>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<main>
+
+  <!-- ── SECTION 1: INNOVATIONS ── -->
+  <section id="innovations">
+    <div class="section-head">
+      <div class="section-icon icon-teal">🔊</div>
+      <div class="section-title-group">
+        <h2>นวัตกรรมและอัปเดตล่าสุด</h2>
+        <p>Audio IoT, Automotive platform และ Hardware ใหม่จากชุมชน ESP32 ทั่วโลก</p>
+      </div>
+    </div>
+    <div class="grid-2">
+
+      <!-- Card 1 -->
+      <div class="card">
+        <span class="card-tag tag-new">NEW · Crowdfunding</span>
+        <div class="card-title">Esparagus Audio Brick — ESP32 Hi-Fi Smart Amplifier 65W</div>
+        <div class="card-body">
+          บอร์ด <strong>Esparagus Audio Brick</strong> โดย Sonocotta คือ Class-D Amplifier แบบ DIN-rail ที่ขับกำลังได้ถึง
+          <strong>65W (mono) หรือ 30W×2 (stereo)</strong> บนชิป ESP32 / ESP32-S3 และ DAC <strong>TAS5825M</strong>
+          ผ่าน ESPHome ใช้งานร่วมกับ Home Assistant ได้โดยตรง รองรับ Squeezelite, Snapcast และ Music Assistant
+          สำหรับสร้างระบบเสียงทั่วบ้านแบบ Multi-Room แบบ Open Source ทั้งหมด
+          <div class="spec-list">
+            <div class="spec-item">
+              <span class="spec-key">MCU</span>
+              <span class="spec-val">ESP32 / ESP32-S3 (16MB Flash, 8MB PSRAM)</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-key">DAC + Amp</span>
+              <span class="spec-val">TAS5825M (Class-D, I²S input)</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-key">กำลังไฟ</span>
+              <span class="spec-val">Stereo 30W×2 / Mono 65W</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-key">เชื่อมต่อ</span>
+              <span class="spec-val">Wi-Fi + W5500 SPI Ethernet</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-key">Framework</span>
+              <span class="spec-val">ESPHome / Squeezelite-ESP32</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-key">ราคา Crowd Supply</span>
+              <span class="spec-val">$59 (ส่ง ~24 ก.ค. 2569)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card">
+        <span class="card-tag tag-hot">HOT · Vehicle IoT</span>
+        <div class="card-title">WiCAN Pro + ESPNetLink — ระบบ OBD2 Telematics สำหรับรถยนต์</div>
+        <div class="card-body">
+          <strong>WiCAN Pro</strong> คือ OBD2 dongle รุ่นล่าสุดโดย MeatPi Electronics บน <strong>ESP32-S3</strong>
+          รองรับ OBD-II ทุกโปรโตคอล พร้อม firmware แบบ Open Source รับส่งข้อมูล CAN Bus ผ่าน Wi-Fi/BT
+          และยังมี module ขยาย <strong>ESPNetLink</strong> ที่เพิ่ม <strong>LTE (Quectel BG95)</strong> และ
+          <strong>GPS (Quectel LC76G)</strong> ทำให้กลายเป็น Vehicle Tracking Platform แบบ real-time
+          <div class="spec-list">
+            <div class="spec-item">
+              <span class="spec-key">MCU</span>
+              <span class="spec-val">ESP32-S3 (Open Source FW)</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-key">OBD Protocol</span>
+              <span class="spec-val">CAN 2.0A/B, ISO 15765, SAE J1939</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-key">ESPNetLink Modem</span>
+              <span class="spec-val">Quectel BG95 (LTE-M/NB-IoT)</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-key">GNSS Module</span>
+              <span class="spec-val">Quectel LC76G (GPS/GLONASS)</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-key">Integration</span>
+              <span class="spec-val">Home Assistant, MQTT, REST API</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-key">จัดส่ง</span>
+              <span class="spec-val">17 สิงหาคม 2569</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card">
+        <span class="card-tag tag-new">NEW · Chip</span>
+        <div class="card-title">ESP32-S31 — Dual-Core RISC-V พร้อม Bluetooth LE Audio</div>
+        <div class="card-body">
+          ชิปใหม่จาก Espressif <strong>ESP32-S31</strong> เป็น dual-core RISC-V รองรับ <strong>Wi-Fi 6 (802.11ax)</strong>
+          + <strong>Bluetooth 5.4</strong> ที่มี LE Audio และ Classic BR/EDR ในชิปเดียว
+          เหมาะกับการสร้างลำโพงอัจฉริยะ, Voice-Controlled IoT, Smart Speaker และ Hearing Aid รุ่นใหม่
+          ที่ต้องการคุณภาพเสียง Hi-Fi พร้อม latency ต่ำแบบ Isochronous
+          <div class="highlight-box">
+            🎵 <strong>Bluetooth LE Audio</strong> ใน ESP32-S31 รองรับ LC3 codec ที่ให้คุณภาพเสียงสูงกว่า SBC/AAC
+            ที่ bitrate ต่ำกว่า — สำหรับ hearing aids และ TWS earbuds รุ่นต่อไป
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="card">
+        <span class="card-tag tag-diy">DIY · Voice Comm</span>
+        <div class="card-title">LILYGO T3-S3 MVSR — LoRa Walkie-Talkie Kit พร้อมใช้</div>
+        <div class="card-body">
+          บอร์ด <strong>LILYGO T3-S3 MVSR</strong> รวม ESP32-S3, transceiver <strong>SX1262/SX1280</strong>,
+          ไมโครโฟน และลำโพงในบอร์ดเดียว พร้อม sketch Walkie-Talkie ใช้ <strong>Codec2 3200 bps</strong>
+          ส่งเสียงผ่าน LoRa FSK ที่ 914.6 MHz ได้ระยะ 2–5 กม. ในเมือง เหมาะสำหรับการสื่อสารฉุกเฉิน
+          กิจกรรมกลางแจ้ง หรือ Off-Grid communication network แบบ P2P
+          <div class="spec-list">
+            <div class="spec-item">
+              <span class="spec-key">MCU</span>
+              <span class="spec-val">ESP32-S3</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-key">Radio</span>
+              <span class="spec-val">SX1262 / SX1280 (LoRa FSK)</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-key">Codec</span>
+              <span class="spec-val">Codec2 @ 3200 bps, 8kHz 16-bit</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-key">ความถี่</span>
+              <span class="spec-val">868 / 915 MHz (license-free)</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-key">ราคา</span>
+              <span class="spec-val">~$26.74</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── SECTION 2: PROJECTS ── -->
+  <section id="projects">
+    <div class="section-head">
+      <div class="section-icon icon-purple">🛠️</div>
+      <div class="section-title-group">
+        <h2>ไอเดียโปรเจกต์น่าสร้าง</h2>
+        <p>โปรเจกต์ใหม่ที่ยังไม่เคยทำ — จาก Audio IoT สู่ Automotive และ Robotics</p>
+      </div>
+    </div>
+    <div class="grid-2">
+
+      <!-- Project 1 -->
+      <div class="project-card">
+        <div class="project-head">
+          <div class="project-emoji">🎵</div>
+          <span class="card-tag tag-new">Audio IoT</span>
+          <div class="project-title">Multi-Room Whole-Home Audio System ด้วย ESP32 + ESPHome</div>
+        </div>
+        <div class="project-body">
+          <div class="project-desc">
+            สร้างระบบเสียงทั่วบ้านแบบ Synchronised Multi-Room โดยใช้ ESP32-S3 + <strong>TAS5825M DAC/Amp</strong>
+            หลายตัว เชื่อมต่อผ่าน Wi-Fi และ Snapcast server บน Raspberry Pi
+            ทุกห้องเล่นเพลงเดียวกันแบบ synchronized latency &lt;50ms หรือตั้งโซนแยกได้
+            ควบคุมด้วย Home Assistant + Voice command ผ่าน ESP32-S31 LE Audio node
+          </div>
+          <div class="bom-label">Components ที่ต้องใช้</div>
+          <div class="bom-chips">
+            <span class="bom-chip">ESP32-S3 (×3+)</span>
+            <span class="bom-chip">TAS5825M I2S DAC</span>
+            <span class="bom-chip">I2S MEMS Mic</span>
+            <span class="bom-chip">Snapcast Server</span>
+            <span class="bom-chip">Home Assistant</span>
+            <span class="bom-chip">4–8Ω Speaker</span>
+            <span class="bom-chip">W5500 Ethernet</span>
+          </div>
+          <div class="difficulty">
+            <span>ระดับความยาก:</span>
+            <div class="diff-dots">
+              <div class="dot on"></div><div class="dot on"></div><div class="dot on"></div>
+              <div class="dot"></div><div class="dot"></div>
+            </div>
+            <span>ปานกลาง-สูง</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 2 -->
+      <div class="project-card">
+        <div class="project-head">
+          <div class="project-emoji">🚗</div>
+          <span class="card-tag tag-pro">Automotive</span>
+          <div class="project-title">DIY Vehicle OBD2 Data Logger + Real-Time Dashboard</div>
+        </div>
+        <div class="project-body">
+          <div class="project-desc">
+            สร้าง OBD2 Logger ด้วย ESP32 + <strong>SN65HVD230 CAN Transceiver</strong> เสียบพอร์ต OBD2 ของรถ
+            อ่านค่า RPM, Water Temp, Fuel Level, Throttle Position แบบ real-time
+            แสดงผลบน OLED 1.3" หรือส่งข้อมูลผ่าน Wi-Fi ไปยัง Dashboard Grafana + InfluxDB
+            บันทึก log ลง SD card เพื่อวิเคราะห์ Trip ย้อนหลัง ทำได้ภายใน 1–2 สัปดาห์
+          </div>
+          <div class="bom-label">Components ที่ต้องใช้</div>
+          <div class="bom-chips">
+            <span class="bom-chip">ESP32 DevKit</span>
+            <span class="bom-chip">SN65HVD230 CAN</span>
+            <span class="bom-chip">OBD2 DB9 Connector</span>
+            <span class="bom-chip">OLED 1.3" I2C</span>
+            <span class="bom-chip">MicroSD Module</span>
+            <span class="bom-chip">Grafana + InfluxDB</span>
+          </div>
+          <div class="difficulty">
+            <span>ระดับความยาก:</span>
+            <div class="diff-dots">
+              <div class="dot on"></div><div class="dot on"></div><div class="dot on"></div>
+              <div class="dot"></div><div class="dot"></div>
+            </div>
+            <span>ปานกลาง</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 3 -->
+      <div class="project-card">
+        <div class="project-head">
+          <div class="project-emoji">🗑️</div>
+          <span class="card-tag tag-city">Smart City</span>
+          <div class="project-title">Smart Waste Bin Monitor + Route Optimizer ด้วย ESP32-C3 + LoRa</div>
+        </div>
+        <div class="project-body">
+          <div class="project-desc">
+            ติดตั้ง ESP32-C3 พร้อม <strong>Ultrasonic Sensor HC-SR04</strong> ในถังขยะ ตรวจวัดระดับขยะ
+            ส่งข้อมูลผ่าน <strong>LoRaWAN</strong> ไปยัง TTN ทุก 15 นาที Dashboard บน Node-RED แสดง
+            ระดับถังขยะทุกจุดบน map และคำนวณ route เก็บขยะที่เหมาะสมโดย AI
+            IR Sensor ควบคุมฝาเปิดอัตโนมัติด้วย Servo ไม่ต้องสัมผัส
+          </div>
+          <div class="bom-label">Components ที่ต้องใช้</div>
+          <div class="bom-chips">
+            <span class="bom-chip">ESP32-C3</span>
+            <span class="bom-chip">HC-SR04 Ultrasonic</span>
+            <span class="bom-chip">IR Sensor</span>
+            <span class="bom-chip">SG90 Servo</span>
+            <span class="bom-chip">Ra-01 LoRa Module</span>
+            <span class="bom-chip">Node-RED</span>
+            <span class="bom-chip">Solar Panel 5V</span>
+          </div>
+          <div class="difficulty">
+            <span>ระดับความยาก:</span>
+            <div class="diff-dots">
+              <div class="dot on"></div><div class="dot on"></div>
+              <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+            <span>ปานกลาง-ต่ำ</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 4 -->
+      <div class="project-card">
+        <div class="project-head">
+          <div class="project-emoji">🤖</div>
+          <span class="card-tag tag-diy">Robotics</span>
+          <div class="project-title">DIY 360° LiDAR SLAM Robot ด้วย ESP32 + TF-Luna + ROS2</div>
+        </div>
+        <div class="project-body">
+          <div class="project-desc">
+            สร้าง SLAM Robot โดยใช้ ESP32-S3 ควบคุม <strong>TF-Luna LiDAR</strong> บนแกนหมุน NEMA17 Stepper
+            ผ่าน TMC2209 Driver หมุน 50–80 RPM ให้ได้ Scan ครบ 360° แต่ละรอบ
+            ส่งข้อมูลผ่าน Wi-Fi ไปยัง ROS2 บน Raspberry Pi เพื่อทำ Gmapping / SLAM
+            Robot วิ่งหลบสิ่งกีดขวางได้เองด้วย Occupancy Grid Map ที่อัปเดต real-time
+          </div>
+          <div class="bom-label">Components ที่ต้องใช้</div>
+          <div class="bom-chips">
+            <span class="bom-chip">ESP32-S3 SuperMini</span>
+            <span class="bom-chip">TF-Luna LiDAR</span>
+            <span class="bom-chip">NEMA17 Stepper</span>
+            <span class="bom-chip">TMC2209 Driver</span>
+            <span class="bom-chip">GY-91 IMU (MPU9250)</span>
+            <span class="bom-chip">Raspberry Pi 4</span>
+            <span class="bom-chip">ROS2 Humble</span>
+          </div>
+          <div class="difficulty">
+            <span>ระดับความยาก:</span>
+            <div class="diff-dots">
+              <div class="dot on"></div><div class="dot on"></div><div class="dot on"></div>
+              <div class="dot on"></div><div class="dot"></div>
+            </div>
+            <span>สูง</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── SECTION 3: SENSORS ── -->
+  <section id="sensors">
+    <div class="section-head">
+      <div class="section-icon icon-amber">📡</div>
+      <div class="section-title-group">
+        <h2>Sensors &amp; Modules น่าสนใจ</h2>
+        <p>ชิปและ Module ที่ใช้กับโปรเจกต์วันนี้ — Audio, Automotive, City, Robotics</p>
+      </div>
+    </div>
+    <div class="grid-3">
+
+      <div class="sensor-card">
+        <div class="sensor-icon">🔊</div>
+        <div class="sensor-name">TAS5825M</div>
+        <div class="sensor-role">I²S Class-D DAC + Amplifier</div>
+        <div class="sensor-desc">
+          DAC พร้อม Amplifier ในชิปเดียวจาก Texas Instruments กำลังสูงสุด 32W/4Ω ต่อ channel
+          รับ I²S input โดยตรงจาก ESP32 ควบคุมผ่าน I²C ประหยัดพลังงาน Class-D
+          THD+N น้อยกว่า 0.03% เหมาะกับ Smart Speaker และ Hi-Fi IoT
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">📻</div>
+        <div class="sensor-name">SX1262 / SX1280</div>
+        <div class="sensor-role">LoRa Transceiver (Sub-GHz / 2.4 GHz)</div>
+        <div class="sensor-desc">
+          Semtech SX1262 สำหรับ Sub-GHz LoRa (433/868/915 MHz) และ SX1280 สำหรับ 2.4 GHz LoRa
+          ใช้ FSK mode ส่ง Audio Codec2 Bitstream ได้ระยะ 2–10 กม. ใน LOS
+          เหมาะกับ Walkie-Talkie, Emergency Mesh, Off-Grid Voice Network
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">🎯</div>
+        <div class="sensor-name">Benewake TF-Luna</div>
+        <div class="sensor-role">Micro LiDAR ToF Sensor</div>
+        <div class="sensor-desc">
+          LiDAR ขนาดเล็ก (35×35×21 mm) วัดระยะ 0.2–8 m ความเร็ว 250 Hz
+          Interface: UART หรือ I²C กินกระแส 80 mA ที่ 5V เหมาะกับ SLAM Robot
+          360° Scanner และ Obstacle Detection ราคา ~$20–30
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">🚗</div>
+        <div class="sensor-name">SN65HVD230</div>
+        <div class="sensor-role">CAN Bus Transceiver (3.3V)</div>
+        <div class="sensor-desc">
+          CAN Transceiver 3.3V จาก TI เชื่อมต่อ ESP32 TWAI Controller กับ CAN Bus ของรถได้ทันที
+          รองรับ CAN 2.0A/B, ISO-11898 ป้องกัน ESD ±12kV ทนทาน
+          ใช้ในโปรเจกต์ OBD2 Logger, J1939 Truck Monitor ราคา ~$1–3
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">📡</div>
+        <div class="sensor-name">Quectel BG95-M3</div>
+        <div class="sensor-role">LTE-M / NB-IoT / EGPRS Modem</div>
+        <div class="sensor-desc">
+          Modem IoT แบบ LPWA รองรับ LTE-M, NB-IoT และ GSM Fallback
+          ใช้ใน ESPNetLink เชื่อม WiCAN Pro ส่ง Vehicle Telematics ผ่าน 4G ได้ทุกที่
+          มี Built-in GNSS สำหรับ GPS Tracking ในตัว ขนาด LCC 26×26 mm
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">🔊</div>
+        <div class="sensor-name">INMP441 / MSM261S4030H0</div>
+        <div class="sensor-role">MEMS I²S Microphone</div>
+        <div class="sensor-desc">
+          Omnidirectional MEMS Mic ส่งออกเป็น I²S ดิจิทัลโดยตรงสู่ ESP32
+          SNR 61 dBA, Sensitivity -26 dBFS AOP 120 dBSPL เหมาะกับ Smart Speaker
+          Voice Assistant และ Audio IoT ราคาถูก ~$1–3 ต่อตัว
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── SECTION 4: RESOURCES ── -->
+  <section id="resources">
+    <div class="section-head">
+      <div class="section-icon icon-blue">🔗</div>
+      <div class="section-title-group">
+        <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+        <p>บทความ, GitHub repositories และ Hardware links ที่ใช้ในฉบับนี้</p>
+      </div>
+    </div>
+    <div class="grid-links">
+
+      <a class="link-card" href="https://www.cnx-software.com/2026/03/14/esparagus-audio-brick-esp32-based-din-rail-65w-hi-fi-amplifier-supports-home-assistant-squeezelite/" target="_blank" rel="noopener">
+        <span class="link-source">CNX Software · มีนาคม 2569</span>
+        <span class="link-title">Esparagus Audio Brick — ESP32 DIN-Rail 65W Hi-Fi Amplifier</span>
+        <span class="link-desc">รายละเอียดบอร์ด + Home Assistant integration</span>
+        <span class="link-arrow">→ อ่านต่อ</span>
+      </a>
+
+      <a class="link-card" href="https://www.crowdsupply.com/sonocotta/esparagus-audio-brick" target="_blank" rel="noopener">
+        <span class="link-source">Crowd Supply</span>
+        <span class="link-title">Esparagus Audio Brick — หน้า Crowdfunding</span>
+        <span class="link-desc">สั่งซื้อ + spec ครบถ้วน ราคา $59</span>
+        <span class="link-arrow">→ ดูสินค้า</span>
+      </a>
+
+      <a class="link-card" href="https://www.hackster.io/news/wican-pro-and-espnetlink-unlock-next-level-diy-car-hacking-and-diagnostics-8357fb6a80f0" target="_blank" rel="noopener">
+        <span class="link-source">Hackster.io</span>
+        <span class="link-title">WiCAN Pro + ESPNetLink — DIY Car Hacking Platform</span>
+        <span class="link-desc">OBD2 + LTE + GPS vehicle telematics บน ESP32-S3</span>
+        <span class="link-arrow">→ อ่านต่อ</span>
+      </a>
+
+      <a class="link-card" href="https://www.crowdsupply.com/meatpi-electronics/wican-pro" target="_blank" rel="noopener">
+        <span class="link-source">Crowd Supply · MeatPi</span>
+        <span class="link-title">WiCAN Pro — OBD2 Scanner หน้า Campaign</span>
+        <span class="link-desc">Open source firmware + specs + ราคา</span>
+        <span class="link-arrow">→ ดูสินค้า</span>
+      </a>
+
+      <a class="link-card" href="https://blog.adafruit.com/2026/04/07/espressif-unveils-the-esp32-s31-a-dual-core-risc-v-soc-with-wi-fi-6-bluetooth-5-4/" target="_blank" rel="noopener">
+        <span class="link-source">Adafruit Blog · เมษายน 2569</span>
+        <span class="link-title">ESP32-S31 — Dual-Core RISC-V Wi-Fi 6 + BT 5.4</span>
+        <span class="link-desc">Espressif ประกาศชิปใหม่พร้อม LE Audio</span>
+        <span class="link-arrow">→ อ่านต่อ</span>
+      </a>
+
+      <a class="link-card" href="https://www.cnx-software.com/2025/03/28/a-lora-based-walkie-talkie-meet-lilygo-t3-s3-mvsr-lora-voice-communication-kit/" target="_blank" rel="noopener">
+        <span class="link-source">CNX Software</span>
+        <span class="link-title">LILYGO T3-S3 MVSR — LoRa Walkie-Talkie Kit</span>
+        <span class="link-desc">ESP32-S3 + SX1262 + Codec2 ส่งเสียง LoRa</span>
+        <span class="link-arrow">→ อ่านต่อ</span>
+      </a>
+
+      <a class="link-card" href="https://github.com/sonocotta/esparagus-media-center" target="_blank" rel="noopener">
+        <span class="link-source">GitHub · sonocotta</span>
+        <span class="link-title">esparagus-media-center — ESP32 Streaming Audio</span>
+        <span class="link-desc">Open source firmware สำหรับ Esparagus Audio Brick</span>
+        <span class="link-arrow">→ ดู Repository</span>
+      </a>
+
+      <a class="link-card" href="https://github.com/meatpiHQ/wican-fw" target="_blank" rel="noopener">
+        <span class="link-source">GitHub · meatpiHQ</span>
+        <span class="link-title">wican-fw — Open Source Firmware สำหรับ WiCAN</span>
+        <span class="link-desc">Firmware ESP32-S3 สำหรับ OBD2 CAN Bus</span>
+        <span class="link-arrow">→ ดู Repository</span>
+      </a>
+
+      <a class="link-card" href="https://blueprint.hackclub.com/projects/7482" target="_blank" rel="noopener">
+        <span class="link-source">Hack Club Blueprint</span>
+        <span class="link-title">ESP32 360° LiDAR — DIY SLAM Scanner</span>
+        <span class="link-desc">TF-Luna + NEMA17 + ESP32-S3 SuperMini สำหรับ mapping</span>
+        <span class="link-arrow">→ ดูโปรเจกต์</span>
+      </a>
+
+      <a class="link-card" href="https://github.com/sh123/esp32_loradv" target="_blank" rel="noopener">
+        <span class="link-source">GitHub · sh123</span>
+        <span class="link-title">esp32_loradv — LoRa Digital Voice Transceiver</span>
+        <span class="link-desc">ESP32 + Codec2/OPUS + SX1268 UHF Walkie-Talkie</span>
+        <span class="link-arrow">→ ดู Repository</span>
+      </a>
+
+      <a class="link-card" href="https://zbotic.in/esp32-can-bus-interface-automotive-diagnostics-projects/" target="_blank" rel="noopener">
+        <span class="link-source">Zbotic</span>
+        <span class="link-title">ESP32 CAN Bus Interface — Automotive Diagnostics</span>
+        <span class="link-desc">Tutorial + code ครบ สำหรับ OBD2 CAN reader</span>
+        <span class="link-arrow">→ อ่านต่อ</span>
+      </a>
+
+      <a class="link-card" href="https://www.hackster.io/techgyanset/iot-based-smart-waste-monitoring-system-using-esp32-f03906" target="_blank" rel="noopener">
+        <span class="link-source">Hackster.io</span>
+        <span class="link-title">IoT Smart Waste Monitoring System ด้วย ESP32</span>
+        <span class="link-desc">ถังขยะอัจฉริยะ Ultrasonic + IR + LoRa + Cloud</span>
+        <span class="link-arrow">→ ดูโปรเจกต์</span>
+      </a>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer>
+  <p>สร้างโดย AI Research Bot &nbsp;|&nbsp; <strong>19 กรกฎาคม 2569 (2026)</strong></p>
+  <p style="margin-top:0.3rem;">หัวข้อวันนี้: <strong>Audio IoT • Automotive OBD2 • Smart City • LiDAR Robotics</strong></p>
+  <p style="margin-top:0.5rem; font-size:0.76rem;">
+    ข้อมูลอ้างอิงจาก:
+    <a href="https://www.cnx-software.com" target="_blank">CNX Software</a> ·
+    <a href="https://www.hackster.io" target="_blank">Hackster.io</a> ·
+    <a href="https://www.crowdsupply.com" target="_blank">Crowd Supply</a> ·
+    <a href="https://blog.adafruit.com" target="_blank">Adafruit Blog</a> ·
+    <a href="https://github.com" target="_blank">GitHub</a> ·
+    <a href="https://blueprint.hackclub.com" target="_blank">Hack Club Blueprint</a>
+  </p>
+</footer>
+
+</body>
+</html>
