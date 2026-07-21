@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 &amp; Sensor Innovations - 21 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0a0f1e;
+    --bg-secondary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263349;
+    --accent-blue: #38bdf8;
+    --accent-cyan: #06b6d4;
+    --accent-green: #34d399;
+    --accent-amber: #fbbf24;
+    --accent-purple: #a78bfa;
+    --accent-rose: #fb7185;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: rgba(148,163,184,0.1);
+    --border-bright: rgba(56,189,248,0.3);
+    --glow-blue: rgba(56,189,248,0.15);
+    --glow-green: rgba(52,211,153,0.15);
+    --glow-purple: rgba(167,139,250,0.15);
+    --glow-amber: rgba(251,191,36,0.15);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0c1a3a 100%);
+    border-bottom: 1px solid var(--border-bright);
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(56,189,248,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, #1d4ed8, #0891b2);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+  }
+  header h1 span { color: var(--accent-blue); }
+  .header-subtitle {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.4rem;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+  }
+  .meta-chip {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+  .meta-chip strong { color: var(--accent-blue); }
+  .theme-tag {
+    margin-top: 1rem;
+    font-size: 0.88rem;
+    color: var(--accent-cyan);
+    font-style: italic;
+  }
+
+  /* ─── MAIN LAYOUT ─── */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  section { margin-bottom: 3.5rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 2.4rem; height: 2.4rem;
+    border-radius: 0.6rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-blue  { background: var(--glow-blue);   border: 1px solid rgba(56,189,248,0.3); }
+  .icon-green { background: var(--glow-green);  border: 1px solid rgba(52,211,153,0.3); }
+  .icon-purple{ background: var(--glow-purple); border: 1px solid rgba(167,139,250,0.3); }
+  .icon-amber { background: var(--glow-amber);  border: 1px solid rgba(251,191,36,0.3); }
+
+  .section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-count {
+    margin-left: auto;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.1rem 0.65rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  /* ─── CARD GRID ─── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.4rem;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 1rem 1rem 0 0;
+  }
+  .card.blue::before   { background: linear-gradient(90deg, #38bdf8, #06b6d4); }
+  .card.green::before  { background: linear-gradient(90deg, #34d399, #059669); }
+  .card.purple::before { background: linear-gradient(90deg, #a78bfa, #7c3aed); }
+  .card.amber::before  { background: linear-gradient(90deg, #fbbf24, #d97706); }
+  .card.rose::before   { background: linear-gradient(90deg, #fb7185, #e11d48); }
+  .card.cyan::before   { background: linear-gradient(90deg, #22d3ee, #0891b2); }
+
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(148,163,184,0.2);
+    transform: translateY(-2px);
+  }
+
+  .card-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    margin-bottom: 0.7rem;
+  }
+  .label-blue   { background: rgba(56,189,248,0.12);  color: #38bdf8;  border: 1px solid rgba(56,189,248,0.25); }
+  .label-green  { background: rgba(52,211,153,0.12);  color: #34d399;  border: 1px solid rgba(52,211,153,0.25); }
+  .label-purple { background: rgba(167,139,250,0.12); color: #a78bfa;  border: 1px solid rgba(167,139,250,0.25); }
+  .label-amber  { background: rgba(251,191,36,0.12);  color: #fbbf24;  border: 1px solid rgba(251,191,36,0.25); }
+  .label-rose   { background: rgba(251,113,133,0.12); color: #fb7185;  border: 1px solid rgba(251,113,133,0.25); }
+  .label-cyan   { background: rgba(34,211,238,0.12);  color: #22d3ee;  border: 1px solid rgba(34,211,238,0.25); }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 0.7rem;
+  }
+  .card p:last-child { margin-bottom: 0; }
+
+  .spec-list {
+    list-style: none;
+    margin-top: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .spec-list li {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  .spec-list li::before {
+    content: '▸';
+    color: var(--accent-blue);
+    flex-shrink: 0;
+    margin-top: 0.05em;
+  }
+  .spec-list li strong { color: var(--text-primary); }
+
+  .highlight-box {
+    background: rgba(56,189,248,0.06);
+    border: 1px solid rgba(56,189,248,0.15);
+    border-radius: 0.5rem;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.83rem;
+    color: var(--accent-blue);
+    margin-top: 0.8rem;
+  }
+  .highlight-box.green {
+    background: rgba(52,211,153,0.06);
+    border-color: rgba(52,211,153,0.15);
+    color: var(--accent-green);
+  }
+  .highlight-box.amber {
+    background: rgba(251,191,36,0.06);
+    border-color: rgba(251,191,36,0.15);
+    color: var(--accent-amber);
+  }
+  .highlight-box.purple {
+    background: rgba(167,139,250,0.06);
+    border-color: rgba(167,139,250,0.15);
+    color: var(--accent-purple);
+  }
+
+  /* ─── PROJECT STEPS ─── */
+  .step-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    margin-top: 0.7rem;
+  }
+  .step {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  .step-num {
+    width: 1.5rem; height: 1.5rem;
+    border-radius: 50%;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent-blue);
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .step-text {
+    font-size: 0.83rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .step-text strong { color: var(--text-primary); }
+
+  /* ─── SENSORS SECTION ─── */
+  .sensor-card {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.9rem;
+    padding: 1.1rem 1.3rem;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .sensor-card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(148,163,184,0.2);
+  }
+  .sensor-icon {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    width: 3rem;
+    text-align: center;
+  }
+  .sensor-body h3 {
+    font-size: 0.97rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+  }
+  .sensor-body p {
+    font-size: 0.83rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 0.4rem;
+  }
+  .sensor-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+  }
+  .sensor-tag {
+    font-size: 0.72rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid;
+  }
+
+  /* ─── RESOURCES SECTION ─── */
+  .res-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .res-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.8rem;
+    padding: 1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    transition: border-color 0.2s;
+  }
+  .res-card:hover { border-color: rgba(148,163,184,0.2); }
+  .res-type {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-cyan);
+  }
+  .res-card h4 {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.35;
+  }
+  .res-card p {
+    font-size: 0.81rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .res-link {
+    font-size: 0.78rem;
+    color: var(--accent-blue);
+    text-decoration: none;
+    word-break: break-all;
+    margin-top: auto;
+  }
+  .res-link:hover { text-decoration: underline; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 1.5rem 1rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 2;
+  }
+  footer strong { color: var(--text-secondary); }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 640px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .res-grid  { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="header-badge">⚡ AI Research Bot — Daily Report</div>
+  <h1>ESP32 <span>&amp; Sensor</span> Innovations</h1>
+  <p class="header-subtitle">รายงานนวัตกรรม IoT ประจำวัน | อัปเดตอัตโนมัติทุกวัน</p>
+  <div class="meta-row">
+    <span class="meta-chip">📅 <strong>21 กรกฎาคม 2569 (2026)</strong></span>
+    <span class="meta-chip">💡 <strong>4 นวัตกรรม</strong></span>
+    <span class="meta-chip">🛠️ <strong>4 โปรเจกต์</strong></span>
+    <span class="meta-chip">📡 <strong>4 Sensors &amp; Modules</strong></span>
+    <span class="meta-chip">📚 <strong>6 แหล่งข้อมูล</strong></span>
+  </div>
+  <p class="theme-tag">หัวข้อวันนี้: ESP32-C5 Dual-Band • Water Quality • Smart Agriculture • Industrial IoT</p>
+</header>
+
+<!-- ═══ MAIN ═══ -->
+<main>
+
+  <!-- SECTION 1: นวัตกรรม -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🚀</div>
+      <h2>นวัตกรรมและอัปเดตเด่นประจำวัน</h2>
+      <span class="section-count">4 รายการ</span>
+    </div>
+    <div class="card-grid">
+
+      <!-- Card 1: XIAO ESP32-C5 -->
+      <div class="card blue">
+        <span class="card-label label-blue">🆕 New Board</span>
+        <h3>XIAO ESP32-C5 — Dual-Band Wi-Fi 6 ตัวเล็กที่สุดในโลก</h3>
+        <p>Seeed Studio เปิดตัว <strong>XIAO ESP32-C5</strong> บอร์ด IoT ขนาด <strong>21×17.8 mm</strong> รองรับ <strong>Wi-Fi 6 ทั้ง 2.4 GHz และ 5 GHz</strong>, Bluetooth 5.0 LE, Zigbee 3.0 และ Thread — ทุกอย่างในบอร์ดนิ้วหัวแม่มือเดียว!</p>
+        <ul class="spec-list">
+          <li><strong>Processor:</strong> RISC-V 32-bit @ 240 MHz</li>
+          <li><strong>Memory:</strong> 384 KB SRAM + 8 MB PSRAM + 8 MB Flash</li>
+          <li><strong>Wi-Fi:</strong> 6 (802.11ax) dual-band 2.4/5 GHz</li>
+          <li><strong>Deep Sleep:</strong> เพียง 15 µA (ยอดเยี่ยมสำหรับ battery node)</li>
+          <li><strong>รองรับ:</strong> Arduino, PlatformIO, MicroPython, ESP-IDF</li>
+          <li><strong>Matter/Thread:</strong> ready for smart home standard</li>
+          <li><strong>ราคา:</strong> เพียง $6.90 USD บน Seeed Studio</li>
+        </ul>
+        <div class="highlight-box">💡 เหมาะสำหรับ smart home hub ขนาดเล็ก, Matter sensor node, edge gateway ไร้สาย 5GHz</div>
+      </div>
+
+      <!-- Card 2: PolyCast5 -->
+      <div class="card purple">
+        <span class="card-label label-purple">🎮 Kickstarter</span>
+        <h3>PolyCast5 — รีโมต 5-in-1 บน ESP32-C5 สำหรับ Hacker</h3>
+        <p><strong>PolyCast5</strong> โดย RoboticWorx คือรีโมตอเนกประสงค์ที่รวม <strong>5 wireless technology</strong> ในอุปกรณ์เดียว: Wi-Fi 6, Bluetooth LE, ESP-NOW, LoRa และ Infrared Tx/Rx — ขับเคลื่อนด้วย <strong>ESP32-C5</strong> ชิปล่าสุด</p>
+        <ul class="spec-list">
+          <li><strong>Battery:</strong> 1,400 mAh — ใช้งานต่อเนื่อง 18 ชั่วโมง</li>
+          <li><strong>Sleep mode:</strong> อยู่ได้นาน 6 วัน ต่อการชาร์จหนึ่งครั้ง</li>
+          <li><strong>GPIO:</strong> 4-pin header สำหรับต่ออุปกรณ์ DIY</li>
+          <li><strong>LoRa:</strong> ระยะไกลหลายกิโลเมตรผ่านเครือข่าย LoRa</li>
+          <li><strong>IR:</strong> เรียนรู้และส่งคำสั่ง IR ของรีโมตบ้าน</li>
+          <li><strong>Open source:</strong> firmware จะเปิดใน GitHub หลังระดมทุน</li>
+          <li><strong>ราคา:</strong> เริ่มต้น $129 (Early Bird) บน Kickstarter</li>
+        </ul>
+        <div class="highlight-box purple">🔐 ใช้ได้หลายบทบาท: IR remote, LoRa walkie-talkie, BLE keyboard, Wi-Fi pentesting tool, Robot controller</div>
+      </div>
+
+      <!-- Card 3: Waveshare ESP32-S3-RS485-CAN -->
+      <div class="card amber">
+        <span class="card-label label-amber">🏭 Industrial</span>
+        <h3>Waveshare ESP32-S3-RS485-CAN — Industrial IoT Gateway</h3>
+        <p>บอร์ด <strong>ESP32-S3-RS485-CAN</strong> ของ Waveshare คือ industrial control board ที่ออกแบบมาสำหรับโรงงานโดยเฉพาะ มาพร้อม <strong>isolated RS485</strong> และ <strong>isolated CAN bus</strong> ในบอร์ดเดียวกัน รองรับแรงดันไฟฟ้า <strong>7–36V DC</strong></p>
+        <ul class="spec-list">
+          <li><strong>Processor:</strong> ESP32-S3 dual-core LX7 @ 240 MHz</li>
+          <li><strong>RS485:</strong> isolated, UART up to 5 Mbps — รองรับ Modbus RTU</li>
+          <li><strong>CAN/TWAI:</strong> isolated, up to 1 Mbps — สำหรับ CAN bus devices</li>
+          <li><strong>Power:</strong> 7–36V wide-voltage screw terminal input</li>
+          <li><strong>Wireless:</strong> Wi-Fi + Bluetooth 5 LE dual-mode</li>
+          <li><strong>Protection:</strong> power isolation + optocoupler isolation</li>
+          <li><strong>ราคา:</strong> ~$17.50 USD</li>
+        </ul>
+        <div class="highlight-box amber">⚙️ ใช้เป็น Modbus-to-MQTT gateway เชื่อม PLC/sensor โรงงานเก่าเข้ากับ cloud ได้ทันที</div>
+      </div>
+
+      <!-- Card 4: ESP32-C5 ESPHome 5GHz -->
+      <div class="card cyan">
+        <span class="card-label label-cyan">🏠 Smart Home</span>
+        <h3>ESP32-C5 บน ESPHome — Smart Sensor ไร้สาย 5 GHz</h3>
+        <p>ชุมชน ESPHome เริ่มสนับสนุน <strong>ESP32-C5</strong> อย่างเป็นทางการ ทำให้ผู้ใช้ Home Assistant สามารถสร้าง sensor node บน <strong>Wi-Fi 5 GHz</strong> ได้ครั้งแรก — ลดการแออัดของคลื่น 2.4 GHz ที่บ้านที่มีอุปกรณ์มาก</p>
+        <ul class="spec-list">
+          <li><strong>ข้อดี 5 GHz:</strong> ความหน่วงต่ำกว่า, แออัดน้อยกว่า 2.4 GHz</li>
+          <li><strong>Zigbee/Thread:</strong> รองรับ IEEE 802.15.4 ในชิปเดียวกัน</li>
+          <li><strong>Matter:</strong> native support, เชื่อมกับ Apple HomeKit, Google Home</li>
+          <li><strong>ESPHome config:</strong> ระบุ wifi band: 5ghz เพื่อบังคับใช้ 5 GHz</li>
+          <li><strong>เหมาะกับ:</strong> บ้านที่มีอุปกรณ์ IoT มากกว่า 30 ชิ้น</li>
+        </ul>
+        <div class="highlight-box">📶 Tip: ใช้ XIAO ESP32-C5 ($6.90) + ESPHome เพื่อสร้าง multi-protocol sensor node ราคาถูกที่สุด</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 2: โปรเจกต์ -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-green">🛠️</div>
+      <h2>ไอเดียโปรเจกต์น่าสร้างประจำสัปดาห์</h2>
+      <span class="section-count">4 โปรเจกต์</span>
+    </div>
+    <div class="card-grid">
+
+      <!-- Project 1: Water Quality -->
+      <div class="card green">
+        <span class="card-label label-green">💧 Water IoT</span>
+        <h3>สถานีตรวจคุณภาพน้ำ ESP32 แบบ Real-Time</h3>
+        <p>สร้างระบบตรวจวัดคุณภาพน้ำอัตโนมัติด้วย ESP32 และ sensor หลายชนิด ส่งข้อมูลขึ้น cloud ดูได้จากทั่วโลก เหมาะกับบ่อเลี้ยงปลา, แหล่งน้ำชุมชน หรืองานวิจัย</p>
+        <div class="step-list">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>Hardware:</strong> ESP32 + pH sensor SEN0161 + TDS sensor SEN0244 + Turbidity SEN0189 + DS18B20 temperature</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Communication:</strong> ส่งข้อมูล MQTT ทุก 5 นาที → Node-RED → InfluxDB</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>Dashboard:</strong> Grafana แสดงกราฟ real-time, แจ้งเตือน LINE เมื่อค่าผิดปกติ</div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>Power:</strong> โซลาร์เซลล์ 5W + แบตเตอรี่ 18650 × 2 ทำงานออฟไลน์ได้</div>
+          </div>
+        </div>
+        <div class="highlight-box green">🐟 ประยุกต์: ตรวจ DO (Dissolved Oxygen) สำหรับบ่อเลี้ยงกุ้ง/ปลา แจ้งเตือนทันทีเมื่อออกซิเจนต่ำ</div>
+      </div>
+
+      <!-- Project 2: Solar Node -->
+      <div class="card amber">
+        <span class="card-label label-amber">☀️ Solar IoT</span>
+        <h3>Solar-Powered Field Sensor Node ด้วย ESP32-C5</h3>
+        <p>สร้าง sensor node ทำงานได้เอง 100% ด้วยแสงอาทิตย์ ไม่ต้องเดินสายไฟหรือเปลี่ยนถ่าน เหมาะกับแปลงเกษตร, กล้อง trail cam, สถานีอุตุฯ ห่างไกล</p>
+        <div class="step-list">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>Hardware:</strong> XIAO ESP32-C5 + MPPT charger (CN3791/BQ25570) + แผงโซลาร์ 5W + 18650 × 1</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Sensor:</strong> BME280 (temp/humidity/pressure) + SHT41 + ไฟฟ้าสถิต AHT21</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>Deep Sleep:</strong> ตั้งค่า deep sleep 5 นาที, wake → อ่านค่า → ส่ง MQTT → sleep ใช้ไฟเพียง 15 µA ขณะ sleep</div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>Wi-Fi:</strong> ใช้ band 5 GHz เพื่อส่งข้อมูลเร็วกว่า, ลดเวลา active → ประหยัดพลังงานมากขึ้น</div>
+          </div>
+        </div>
+        <div class="highlight-box amber">⚡ ทำงานอัตโนมัติหลายปีโดยไม่ต้องบำรุงรักษา ติดตั้งได้ทุกที่ที่มีแสงแดด</div>
+      </div>
+
+      <!-- Project 3: Smart Farm NPK -->
+      <div class="card green">
+        <span class="card-label label-green">🌱 Smart Farm</span>
+        <h3>ระบบตรวจดินอัจฉริยะ NPK + pH ด้วย ESP32 + Modbus</h3>
+        <p>วัดธาตุอาหารในดิน <strong>N (ไนโตรเจน), P (ฟอสฟอรัส), K (โพแทสเซียม)</strong> พร้อม pH, EC และอุณหภูมิดิน แนะนำปุ๋ยอัตโนมัติด้วย rule engine ใน Node-RED</p>
+        <div class="step-list">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>Sensor:</strong> RS485 NPK 7-in-1 Soil Sensor (วัด N, P, K, pH, EC, Temp, Moisture) ราคา ~800-1,500 บาท</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Protocol:</strong> Modbus RTU ผ่าน MAX485 chip → ESP32 UART2 อ่านค่าทุก 30 นาที</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>AI Logic:</strong> ตรวจสอบค่าเทียบกับ crop database → แนะนำ "เพิ่มปุ๋ย N 20 kg/ไร่" อัตโนมัติ</div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>Display:</strong> แสดงผล e-Paper 2.9" หรือ TFT ILI9341 ที่หัวแปลง + Line Notify</div>
+          </div>
+        </div>
+        <div class="highlight-box green">🌾 ลดต้นทุนปุ๋ย 20-40% ด้วยการใส่ปุ๋ยตามค่าจริงของดิน ไม่ใส่แบบประมาณ</div>
+      </div>
+
+      <!-- Project 4: Industrial Gateway -->
+      <div class="card blue">
+        <span class="card-label label-blue">🏭 Industry 4.0</span>
+        <h3>Modbus-to-MQTT Gateway สำหรับโรงงาน ด้วย ESP32-S3</h3>
+        <p>แปลงอุปกรณ์ Modbus RTU เก่าในโรงงาน (มิเตอร์, PLC, sensor) ให้ส่งข้อมูลขึ้น MQTT broker แบบ real-time ด้วยต้นทุนต่ำและ config ง่าย</p>
+        <div class="step-list">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>Hardware:</strong> Waveshare ESP32-S3-RS485-CAN (~$17.50) ต่อสาย RS485 Bus กับอุปกรณ์ในโรงงาน</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Firmware:</strong> ใช้ esp-modbus library poll Modbus slave ทุก register ที่ต้องการ ทุก 1 วินาที</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>MQTT:</strong> publish ข้อมูลไปยัง broker (Mosquitto/HiveMQ) → subscribe จาก Node-RED หรือ Home Assistant</div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>Alert:</strong> ตั้ง threshold แจ้งเตือน Telegram/LINE เมื่อ power factor ต่ำ, กระแสเกิน, หรือมอเตอร์หยุด</div>
+          </div>
+        </div>
+        <div class="highlight-box">🔧 Tip: ใส่ termination resistor 120Ω ที่ปลายทั้งสองของ RS485 bus เสมอ เพื่อป้องกัน signal reflection</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 3: Sensors -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-purple">📡</div>
+      <h2>Sensors &amp; Modules น่าสนใจ</h2>
+      <span class="section-count">4 รายการ</span>
+    </div>
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1rem;">
+
+      <!-- Sensor 1: TDS -->
+      <div class="sensor-card">
+        <div class="sensor-icon">💧</div>
+        <div class="sensor-body">
+          <h3>DFRobot SEN0244 — TDS Water Sensor</h3>
+          <p>วัด <strong>Total Dissolved Solids (TDS)</strong> ในน้ำ แสดงผลเป็น ppm บอกได้ว่าน้ำสะอาดหรือมีสารละลายมากเกินไป ใช้ร่วมกับ ESP32 ADC ได้ง่าย</p>
+          <div class="sensor-specs">
+            <span class="sensor-tag" style="color:#38bdf8;border-color:rgba(56,189,248,0.25);background:rgba(56,189,248,0.08)">Range: 0–1000 ppm</span>
+            <span class="sensor-tag" style="color:#34d399;border-color:rgba(52,211,153,0.25);background:rgba(52,211,153,0.08)">3.3/5V</span>
+            <span class="sensor-tag" style="color:#a78bfa;border-color:rgba(167,139,250,0.25);background:rgba(167,139,250,0.08)">Analog Output</span>
+            <span class="sensor-tag" style="color:#fbbf24;border-color:rgba(251,191,36,0.25);background:rgba(251,191,36,0.08)">ราคา ~250 บาท</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sensor 2: NPK RS485 -->
+      <div class="sensor-card">
+        <div class="sensor-icon">🌱</div>
+        <div class="sensor-body">
+          <h3>RS485 NPK Soil Sensor 7-in-1</h3>
+          <p>วัดค่าดินครบสูตรในหัวเดียว: <strong>N, P, K, pH, EC, อุณหภูมิ และความชื้น</strong> สื่อสารผ่าน <strong>Modbus RTU (RS485)</strong> ทนทาน กันน้ำ IP68 เหมาะกับงานไร่นา</p>
+          <div class="sensor-specs">
+            <span class="sensor-tag" style="color:#34d399;border-color:rgba(52,211,153,0.25);background:rgba(52,211,153,0.08)">Modbus RTU</span>
+            <span class="sensor-tag" style="color:#38bdf8;border-color:rgba(56,189,248,0.25);background:rgba(56,189,248,0.08)">RS485</span>
+            <span class="sensor-tag" style="color:#a78bfa;border-color:rgba(167,139,250,0.25);background:rgba(167,139,250,0.08)">IP68 Waterproof</span>
+            <span class="sensor-tag" style="color:#fbbf24;border-color:rgba(251,191,36,0.25);background:rgba(251,191,36,0.08)">ราคา ~800–1,500 บาท</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sensor 3: MAX30102 -->
+      <div class="sensor-card">
+        <div class="sensor-icon">❤️</div>
+        <div class="sensor-body">
+          <h3>MAX30102 — Pulse Oximeter &amp; Heart Rate</h3>
+          <p>เซ็นเซอร์วัด <strong>SpO2 (ออกซิเจนในเลือด)</strong> และ <strong>Heart Rate (BPM)</strong> ด้วยแสง IR และ Red LED ใช้ I2C เชื่อมกับ ESP32 และ library MAX30105 ได้เลย เหมาะกับ wearable health monitor</p>
+          <div class="sensor-specs">
+            <span class="sensor-tag" style="color:#fb7185;border-color:rgba(251,113,133,0.25);background:rgba(251,113,133,0.08)">SpO2 / BPM</span>
+            <span class="sensor-tag" style="color:#38bdf8;border-color:rgba(56,189,248,0.25);background:rgba(56,189,248,0.08)">I2C Interface</span>
+            <span class="sensor-tag" style="color:#34d399;border-color:rgba(52,211,153,0.25);background:rgba(52,211,153,0.08)">1.8V / 3.3V</span>
+            <span class="sensor-tag" style="color:#fbbf24;border-color:rgba(251,191,36,0.25);background:rgba(251,191,36,0.08)">ราคา ~120 บาท</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sensor 4: PowerFeather ESP32-S3 -->
+      <div class="sensor-card">
+        <div class="sensor-icon">🔋</div>
+        <div class="sensor-body">
+          <h3>PowerFeather ESP32-S3 — Solar &amp; BMS in One Board</h3>
+          <p>บอร์ด ESP32-S3 ที่มี <strong>MPPT solar charger</strong> และ <strong>fuel gauge</strong> ในตัว deep sleep ต่ำเพียง <strong>19 µA</strong> รองรับ LiPo/Li-Ion พร้อม health monitoring รายงาน time-to-empty/full อัตโนมัติ</p>
+          <div class="sensor-specs">
+            <span class="sensor-tag" style="color:#fbbf24;border-color:rgba(251,191,36,0.25);background:rgba(251,191,36,0.08)">19 µA Deep Sleep</span>
+            <span class="sensor-tag" style="color:#34d399;border-color:rgba(52,211,153,0.25);background:rgba(52,211,153,0.08)">MPPT Solar</span>
+            <span class="sensor-tag" style="color:#a78bfa;border-color:rgba(167,139,250,0.25);background:rgba(167,139,250,0.08)">Fuel Gauge</span>
+            <span class="sensor-tag" style="color:#38bdf8;border-color:rgba(56,189,248,0.25);background:rgba(56,189,248,0.08)">ESP32-S3</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 4: Resources -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-amber">📚</div>
+      <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+      <span class="section-count">6 แหล่ง</span>
+    </div>
+    <div class="res-grid">
+
+      <div class="res-card">
+        <div class="res-type">📰 News</div>
+        <h4>XIAO ESP32-C5: Dual-Band Wi-Fi 6 Tiny IoT Board</h4>
+        <p>บทความ CNX Software เกี่ยวกับ XIAO ESP32-C5 บอร์ดขนาดเล็กที่รองรับ Wi-Fi 6 ทั้ง 2.4 และ 5 GHz</p>
+        <a class="res-link" href="https://www.cnx-software.com/2026/01/16/xiao-esp32-c5-a-tiny-usb-c-iot-board-with-dual-band-wifi-6-bluetooth-5-0-le-zigbee-and-thread-connectivity/" target="_blank">cnx-software.com</a>
+      </div>
+
+      <div class="res-card">
+        <div class="res-type">🎮 Crowdfunding</div>
+        <h4>PolyCast5 — ESP32-C5 Multi-Tool Remote on Kickstarter</h4>
+        <p>หน้า Kickstarter ของ PolyCast5 รีโมต 5-in-1 บน ESP32-C5 พร้อม Wi-Fi 6, LoRa, BLE, ESP-NOW, IR</p>
+        <a class="res-link" href="https://www.kickstarter.com/projects/roboticworx/polycast5-multi-tool-everything-remote" target="_blank">kickstarter.com</a>
+      </div>
+
+      <div class="res-card">
+        <div class="res-type">🛒 Hardware</div>
+        <h4>Waveshare ESP32-S3-RS485-CAN Wiki</h4>
+        <p>เอกสารและ pinout ของบอร์ด industrial ESP32-S3 พร้อม isolated RS485 และ CAN interface</p>
+        <a class="res-link" href="https://www.waveshare.com/wiki/ESP32-S3-RS485-CAN" target="_blank">waveshare.com/wiki</a>
+      </div>
+
+      <div class="res-card">
+        <div class="res-type">📖 Tutorial</div>
+        <h4>Solar-Powered IoT Sensor Node: ESP32 with Deep Sleep</h4>
+        <p>บทความแนะนำการสร้าง solar-powered IoT node ด้วย ESP32 + deep sleep ประหยัดพลังงานสูงสุด</p>
+        <a class="res-link" href="https://zbotic.in/solar-powered-iot-sensor-node-esp32-with-deep-sleep/" target="_blank">zbotic.in</a>
+      </div>
+
+      <div class="res-card">
+        <div class="res-type">📖 Tutorial</div>
+        <h4>How to Use NPK Soil Sensor with ESP32 via Modbus RTU</h4>
+        <p>คู่มือการเชื่อมต่อ RS485 NPK sensor กับ ESP32 ผ่าน Modbus RTU protocol พร้อม code ตัวอย่าง</p>
+        <a class="res-link" href="https://www.teachmemicro.com/how-to-use-an-npk-soil-sensor-with-esp32/" target="_blank">teachmemicro.com</a>
+      </div>
+
+      <div class="res-card">
+        <div class="res-type">🏭 Docs</div>
+        <h4>ESP-Modbus Official Documentation (ESP-IDF)</h4>
+        <p>เอกสารทางการของ Espressif สำหรับ ESP-Modbus library รองรับ Modbus RTU, TCP, ASCII บน ESP32</p>
+        <a class="res-link" href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/protocols/modbus.html" target="_blank">docs.espressif.com</a>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <p>สร้างโดย AI Research Bot &nbsp;|&nbsp; <strong>21 กรกฎาคม 2569 (2026)</strong></p>
+  <p style="margin-top:0.3rem;">หัวข้อวันนี้: <strong>ESP32-C5 Dual-Band • Water Quality IoT • Smart Agriculture NPK • Industrial Modbus Gateway</strong></p>
+  <p style="margin-top:0.5rem; font-size:0.73rem;">แหล่งข้อมูล: Seeed Studio Blog, CNX Software, Kickstarter, Waveshare Wiki, Zbotic, TeachMeMicro, Espressif Docs</p>
+</footer>
+
+</body>
+</html>
