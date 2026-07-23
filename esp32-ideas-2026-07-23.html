@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 23 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f172a;
+    --bg2: #1e293b;
+    --bg3: #334155;
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --card: #1e293b;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    font-size: 16px;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    border-bottom: 1px solid #312e81;
+    padding: 3rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(56,189,248,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, #38bdf8, #818cf8);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+
+  header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #34d399 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+
+  .header-sub {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-chip {
+    background: rgba(56,189,248,0.1);
+    border: 1px solid rgba(56,189,248,0.25);
+    border-radius: 8px;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    color: var(--accent);
+  }
+
+  /* Layout */
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+  }
+
+  /* Section */
+  section {
+    padding: 3rem 0 1.5rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .section-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .icon-blue  { background: rgba(56,189,248,0.15); }
+  .icon-purple{ background: rgba(129,140,248,0.15); }
+  .icon-green { background: rgba(52,211,153,0.15); }
+  .icon-orange{ background: rgba(251,146,60,0.15); }
+  .icon-pink  { background: rgba(244,114,182,0.15); }
+
+  .section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .section-title span {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-left: 0.5rem;
+  }
+
+  /* Cards */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem 1.5rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover {
+    border-color: rgba(56,189,248,0.4);
+    transform: translateY(-2px);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .card-emoji {
+    font-size: 1.6rem;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.35;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    margin-top: 0.3rem;
+    letter-spacing: 0.05em;
+  }
+
+  .tag-blue   { background: rgba(56,189,248,0.15); color: #38bdf8; }
+  .tag-purple { background: rgba(129,140,248,0.15); color: #818cf8; }
+  .tag-green  { background: rgba(52,211,153,0.15);  color: #34d399; }
+  .tag-orange { background: rgba(251,146,60,0.15);  color: #fb923c; }
+  .tag-pink   { background: rgba(244,114,182,0.15); color: #f472b6; }
+  .tag-red    { background: rgba(248,113,113,0.15); color: #f87171; }
+  .tag-yellow { background: rgba(250,204,21,0.15);  color: #facc15; }
+
+  .card p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 0.85rem;
+  }
+
+  .card p:last-child { margin-bottom: 0; }
+
+  /* Highlight card */
+  .card-highlight {
+    border-color: rgba(56,189,248,0.35);
+    background: linear-gradient(135deg, #1e293b 0%, #1e1b4b 100%);
+  }
+
+  .card-highlight h3 { color: #38bdf8; }
+
+  /* Spec list */
+  .spec-list {
+    list-style: none;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .spec-list li {
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .spec-list li:last-child { border-bottom: none; }
+
+  .spec-list .k {
+    color: var(--accent);
+    font-weight: 600;
+    min-width: 100px;
+    flex-shrink: 0;
+  }
+
+  /* Feature row */
+  .feat-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .feat-pill {
+    background: rgba(51,65,85,0.7);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  /* Project spotlight */
+  .project-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    transition: border-color 0.2s;
+  }
+
+  .project-card:hover { border-color: rgba(52,211,153,0.4); }
+
+  .project-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .project-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .project-header h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .project-body {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  .project-body strong { color: var(--text); }
+
+  .parts-box {
+    background: rgba(51,65,85,0.4);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+
+  .parts-box strong {
+    color: var(--accent3);
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* Resource links */
+  .res-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  .res-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    transition: border-color 0.2s;
+  }
+
+  .res-card:hover { border-color: rgba(129,140,248,0.5); }
+
+  .res-card .r-type {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--accent2);
+    text-transform: uppercase;
+  }
+
+  .res-card .r-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .res-card .r-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* Elektor box */
+  .magazine-box {
+    background: linear-gradient(135deg, #1e293b, #1a1233);
+    border: 1px solid rgba(251,146,60,0.3);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .magazine-box .mag-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #fb923c;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .magazine-box h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+  }
+
+  .article-list {
+    list-style: none;
+  }
+
+  .article-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .article-list li:last-child { border-bottom: none; }
+
+  .article-list li::before {
+    content: '▸';
+    color: #fb923c;
+    flex-shrink: 0;
+  }
+
+  /* CSI big card */
+  .csi-card {
+    background: linear-gradient(135deg, #1e293b 0%, #1e1b4b 100%);
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 16px;
+    padding: 1.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .csi-card .csi-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .csi-badge {
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    border-radius: 10px;
+    padding: 0.5rem 0.75rem;
+    font-size: 1.5rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .csi-card h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #38bdf8;
+    margin-bottom: 0.3rem;
+  }
+
+  .csi-card .sub {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .csi-card .body {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.75;
+  }
+
+  .csi-card .body strong { color: var(--text); }
+
+  .how-it-works {
+    background: rgba(15,23,42,0.7);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .how-it-works strong {
+    color: var(--accent3);
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  .how-steps {
+    counter-reset: steps;
+    list-style: none;
+  }
+
+  .how-steps li {
+    counter-increment: steps;
+    padding: 0.3rem 0 0.3rem 1.8rem;
+    position: relative;
+  }
+
+  .how-steps li::before {
+    content: counter(steps);
+    position: absolute;
+    left: 0;
+    top: 0.4rem;
+    width: 1.2rem;
+    height: 1.2rem;
+    background: rgba(56,189,248,0.2);
+    color: #38bdf8;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Footer */
+  footer {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.25rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  footer .footer-title {
+    color: var(--text);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  footer .sources {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-top: 1rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    header { padding: 2rem 1rem 1.5rem; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .csi-card .csi-top { flex-direction: column; }
+    .header-stats { gap: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="container">
+    <div class="header-badge">Daily ESP32 Research — 23 July 2026</div>
+    <h1>ESP32 & Sensor Innovations</h1>
+    <p class="header-sub">23 กรกฎาคม 2569 · รวบรวมโดย AI Researcher อัตโนมัติ</p>
+    <div class="header-stats">
+      <div class="stat-chip">📡 Wi-Fi CSI Detection</div>
+      <div class="stat-chip">📷 Sony IMX500 + ESP32-P4</div>
+      <div class="stat-chip">🔋 LP Core Arduino</div>
+      <div class="stat-chip">🌾 Smart Agriculture</div>
+      <div class="stat-chip">📰 Elektor Jul/Aug 2026</div>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🚀</div>
+      <div>
+        <div class="section-title">นวัตกรรมและฮาร์ดแวร์เด่นประจำวัน <span>Hardware & Innovation</span></div>
+      </div>
+    </div>
+
+    <!-- Wi-Fi CSI Big Card -->
+    <div class="csi-card">
+      <div class="csi-top">
+        <div class="csi-badge">📡</div>
+        <div>
+          <h3>Wi-Fi CSI ตรวจจับบุคคล — เมื่อ Router กลายเป็น Radar</h3>
+          <div class="sub">WaveSight / ESPectre · ESP32 ทุกรุ่น · ไม่ต้องมีกล้อง ไม่ต้องมี mmWave Radar</div>
+        </div>
+      </div>
+      <div class="body">
+        <p>เทคนิคที่กำลังฮ็อตในชุมชน ESP32 ช่วงนี้คือการใช้ <strong>Channel State Information (CSI)</strong> จากสัญญาณ Wi-Fi เพื่อตรวจจับการเคลื่อนไหวและการมีอยู่ของมนุษย์ โดยไม่ต้องใช้กล้อง ไมโครโฟน หรือเซ็นเซอร์พิเศษใดๆ เลย ทำให้เกิดประโยชน์ด้าน <strong>ความเป็นส่วนตัว</strong> สูงมาก</p>
+        <p>โปรเจกต์ <strong>WaveSight</strong> (GitHub) และ <strong>ESPectre</strong> ใช้ ESP32 ดักจับค่า CSI ซึ่งมี 64 ค่าเชิงซ้อน (amplitude + phase) ต่อ subcarrier OFDM เมื่อมีคนเดินผ่าน multipath reflection เปลี่ยนไปเล็กน้อย — RSSI แทบไม่สังเกตเห็น แต่ CSI ตรวจได้ชัดเจน Espressif ยังมี library อย่างเป็นทางการชื่อ <strong>esp-csi</strong> พร้อม component <code>esp_wifi_sensing</code></p>
+      </div>
+      <div class="how-it-works">
+        <strong>หลักการทำงาน</strong>
+        <ol class="how-steps">
+          <li>ESP32 ส่ง Wi-Fi beacon/probe packets ปกติ และตั้งค่าให้เก็บ CSI จาก ACK response</li>
+          <li>วิเคราะห์ค่า amplitude และ phase ของ 64 subcarriers แต่ละ subcarrier ตลอดเวลา</li>
+          <li>คำนวณ variance / jitter ในช่วงเวลาสั้น — ถ้าสูงผิดปกติ = มีการเคลื่อนไหว</li>
+          <li>ส่งสถานะผ่าน MQTT ไปยัง Home Assistant หรือ dashboard Web UI แบบ real-time</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="grid-2">
+
+      <!-- DFRobot FireBeetle 2 ESP32-P4 -->
+      <div class="card card-highlight">
+        <div class="card-top">
+          <div class="card-emoji">🔥</div>
+          <div>
+            <h3>DFRobot FireBeetle 2 ESP32-P4</h3>
+            <span class="tag tag-blue">Edge AI · HMI · $11.90</span>
+          </div>
+        </div>
+        <p>บอร์ด ESP32-P4 ที่คุ้มค่าที่สุดในตลาดตอนนี้ ราคาเพียง <strong>$11.90</strong> (standalone) หรือ $14.50 พร้อมอุปกรณ์เสริม มาพร้อม ESP32-C6 coprocessor สำหรับ Wi-Fi 6 และ BLE 5 ในตัว</p>
+        <ul class="spec-list">
+          <li><span class="k">CPU</span><span>Dual-core RISC-V 360 MHz + LP Core 40 MHz</span></li>
+          <li><span class="k">RAM/Flash</span><span>32MB PSRAM + 16MB Flash</span></li>
+          <li><span class="k">Video</span><span>1080p@30fps H.264, MIPI-CSI/DSI</span></li>
+          <li><span class="k">Wireless</span><span>Wi-Fi 6, BLE 5 (via C6 coprocessor)</span></li>
+          <li><span class="k">Port</span><span>USB OTG, MicroSD, onboard mic</span></li>
+        </ul>
+        <div class="feat-row">
+          <span class="feat-pill">TinyML</span>
+          <span class="feat-pill">AI Camera</span>
+          <span class="feat-pill">ISP + PPA</span>
+          <span class="feat-pill">Smart HMI</span>
+        </div>
+      </div>
+
+      <!-- Arducam IMX500 -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">👁️</div>
+          <div>
+            <h3>Arducam IMX500 AI Camera Module สำหรับ ESP32-P4</h3>
+            <span class="tag tag-purple">Sony Vision AI · On-Chip Inference</span>
+          </div>
+        </div>
+        <p>Sony IMX500 เป็น Image Sensor ที่รัน Neural Network <strong>บนชิปตัวเดียว</strong> ไม่ต้องส่งภาพออกมาประมวลผล ทำให้ทั้งเร็ว ประหยัดพลังงาน และรักษาความเป็นส่วนตัวได้ดีเยี่ยม</p>
+        <p>Arducam นำ IMX500 มาจับคู่กับ ESP32-P4 ผ่าน MIPI-CSI ได้แล้ว เหมาะสำหรับ <strong>face detection, pedestrian detection, object detection (YOLOv11)</strong> ในงาน production จริง — ประสิทธิภาพสูง latency ต่ำมาก</p>
+        <div class="feat-row">
+          <span class="feat-pill">Privacy-First</span>
+          <span class="feat-pill">Ultra-Low Power</span>
+          <span class="feat-pill">MIPI-CSI</span>
+          <span class="feat-pill">YOLOv11</span>
+        </div>
+      </div>
+
+      <!-- ESP32-P4 LP Core Arduino -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">🔋</div>
+          <div>
+            <h3>ESP32P4_ULP — Arduino Library สำหรับ LP Core ของ ESP32-P4</h3>
+            <span class="tag tag-green">Xorlent · MIT License · Arduino Library Manager</span>
+          </div>
+        </div>
+        <p>ESP32-P4 มี <strong>LP (Low Power) Core</strong> แยกต่างหาก — เป็น RISC-V processor ตัวเต็มที่ทำงานขณะ main CPU หลับอยู่ แต่เดิม Arduino SDK ไม่รองรับ library นี้โดยตรง จนมีคนชื่อ Xorlent ปล่อย library ฟรี MIT license</p>
+        <p><strong>3 โปรแกรมสำเร็จรูปใน library:</strong> (1) <code>gpio_wakeup</code> ตื่นเมื่อ GPIO trigger (2) <code>int_wakeup</code> interrupt-based wakeup (3) <code>soft_i2c_temp_wakeup</code> อ่าน SHT4X sensor แล้วตื่นเมื่ออุณหภูมิ/ความชื้นเกิน threshold — ติดตั้งผ่าน Arduino Library Manager ค้นหา <code>ESP32P4_ULP</code></p>
+        <div class="feat-row">
+          <span class="feat-pill">Deep Sleep</span>
+          <span class="feat-pill">SHT4X Support</span>
+          <span class="feat-pill">LP GPIO</span>
+          <span class="feat-pill">LP I2C/UART/SPI</span>
+        </div>
+      </div>
+
+      <!-- ESP32-C6 Matter Gateway -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">🏠</div>
+          <div>
+            <h3>ESP32-C6 Multi-Protocol Gateway — Zigbee + Thread + Matter + Wi-Fi 6</h3>
+            <span class="tag tag-orange">Matter 1.4 Certified · DIY Smart Home</span>
+          </div>
+        </div>
+        <p>ESP32-C6 คือ SoC ตัวเดียวที่มีครบ: <strong>Wi-Fi 6, BLE 5, Zigbee 3.0 และ Thread 1.3</strong> ใน die เดียว ทำให้สร้าง Matter Gateway ได้โดยไม่ต้องเพิ่มชิปแยก ช่วยประหยัด BOM ลงได้มาก</p>
+        <p>ผ่านการ <strong>Matter 1.4 certification</strong> แล้ว (Q4 2025) เหมาะกับ DIY Thread Border Router ที่ทำหน้าที่เชื่อม Zigbee sensor เก่ากับ Matter ecosystem ใหม่ได้พร้อมกัน ราคาบอร์ดอย่าง XIAO ESP32C6 แค่ $5</p>
+        <div class="feat-row">
+          <span class="feat-pill">Thread Border Router</span>
+          <span class="feat-pill">Zigbee Bridge</span>
+          <span class="feat-pill">Matter Certified</span>
+          <span class="feat-pill">Wi-Fi 6</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-green">🛠️</div>
+      <div>
+        <div class="section-title">ไอเดียโปรเจกต์น่าสร้างประจำวันนี้ <span>Project Ideas</span></div>
+      </div>
+    </div>
+
+    <!-- Project 1 -->
+    <div class="project-card">
+      <div class="project-header">
+        <div class="project-num">1</div>
+        <h3>ระบบตรวจจับบุคคลไร้กล้อง ด้วย Wi-Fi CSI + ESP32 + Home Assistant</h3>
+      </div>
+      <div class="project-body">
+        <p>ประยุกต์ใช้ <strong>Wi-Fi Channel State Information (CSI)</strong> ตรวจจับการมีอยู่ของคนในห้องโดยไม่ต้องพึ่งกล้อง เหมาะสำหรับบ้านที่ต้องการ <strong>Home Security แบบ Privacy-First</strong></p>
+        <p>เชื่อม MQTT กับ Home Assistant เพื่อทริกเกอร์ไฟ แอร์ หรือระบบแจ้งเตือน ความแม่นยำเพิ่มขึ้นด้วย calibration และ machine learning เบื้องต้น</p>
+        <div class="parts-box">
+          <strong>อุปกรณ์ที่ต้องการ</strong>
+          ESP32 (ทุกรุ่น ตั้งแต่ ESP32 classic จนถึง ESP32-C6) · Router Wi-Fi ที่ส่ง signal ไปยัง ESP32 · MQTT Broker (Mosquitto) · Home Assistant · library esp-csi หรือ WaveSight (GitHub: ErfanDL/WaveSight)
+        </div>
+      </div>
+    </div>
+
+    <!-- Project 2 -->
+    <div class="project-card">
+      <div class="project-header">
+        <div class="project-num">2</div>
+        <h3>กล้อง Edge AI Privacy-Safe ด้วย ESP32-P4 + Arducam IMX500</h3>
+      </div>
+      <div class="project-body">
+        <p>สร้างกล้อง Object Detection ที่ <strong>ไม่ส่งภาพออก</strong> ออกมาสู่ภายนอก — ประมวลผลทั้งหมดใน IMX500 แล้วส่งแค่ผลลัพธ์ (เช่น "พบคน 2 คน" หรือ "พบรถยนต์") ผ่าน Wi-Fi ไปยัง server</p>
+        <p>เหมาะสำหรับงาน <strong>Worker Safety Monitoring</strong> ในโรงงาน, ระบบนับคนใน store ขนาดเล็ก, หรือ Smart Parking ที่ต้องการเก็บ privacy ของผู้ใช้</p>
+        <div class="parts-box">
+          <strong>อุปกรณ์ที่ต้องการ</strong>
+          DFRobot FireBeetle 2 ESP32-P4 ($11.90) · Arducam IMX500 MCU AI Camera Module · ESP-IDF v6.x + esp-dl library · MQTT / HTTP endpoint สำหรับรับผลลัพธ์
+        </div>
+      </div>
+    </div>
+
+    <!-- Project 3 -->
+    <div class="project-card">
+      <div class="project-header">
+        <div class="project-num">3</div>
+        <h3>Wearable Health Monitor ด้วย ESP32-S3 + MAX30102 + DS18B20</h3>
+      </div>
+      <div class="project-body">
+        <p>สร้างอุปกรณ์ติดตามสุขภาพแบบสวมใส่ได้ วัด <strong>Heart Rate, SpO2, และอุณหภูมิร่างกาย</strong> แบบ real-time ส่งข้อมูลผ่าน BLE ไปยัง smartphone app หรือ Web Dashboard</p>
+        <p>งานวิจัย 2026 ชี้ให้เห็นว่า ESP32-S3 มี deep sleep ที่ประหยัดพลังงานพอสำหรับใส่แบตเตอรี่ LiPo 400 mAh ได้นานหลายวัน โดยเฉพาะเมื่อส่งข้อมูลผ่าน BLE (ไม่ใช่ Wi-Fi)</p>
+        <div class="parts-box">
+          <strong>อุปกรณ์ที่ต้องการ</strong>
+          XIAO ESP32-S3 (ขนาดเล็กเหมาะสวมใส่) · MAX30102 (Heart Rate + SpO2) · DS18B20 (Body Temperature) · LiPo 400mAh + TP4056 charger · OLED 0.96" SSD1306 สำหรับแสดงผล
+        </div>
+      </div>
+    </div>
+
+    <!-- Project 4 -->
+    <div class="project-card">
+      <div class="project-header">
+        <div class="project-num">4</div>
+        <h3>Ultra Low Power Field Sensor ด้วย ESP32-P4 LP Core + SHT45</h3>
+      </div>
+      <div class="project-body">
+        <p>ใช้ <strong>ESP32P4_ULP library</strong> ใหม่ให้ LP core อ่านค่า SHT45 sensor (อุณหภูมิ/ความชื้น) ทุก 5 นาทีในขณะที่ main CPU หลับอยู่ ตื่นเฉพาะเมื่อค่าเกิน threshold ที่กำหนด</p>
+        <p>เหมาะสำหรับ <strong>โรงเรือนเพาะปลูก, ห้องเก็บของ, หรือ Cold Chain Monitoring</strong> ที่ต้องการแบตเตอรี่อยู่ได้นานเป็นเดือน ไม่ต้องเปลี่ยนบ่อย</p>
+        <div class="parts-box">
+          <strong>อุปกรณ์ที่ต้องการ</strong>
+          DFRobot FireBeetle 2 ESP32-P4 · SHT45 (I2C, ความแม่นยำ ±0.1°C) · LiPo 1000mAh · Arduino IDE + ESP32P4_ULP library (Arduino Library Manager) · MQTT broker สำหรับ data logging
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <hr class="divider">
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-purple">🔬</div>
+      <div>
+        <div class="section-title">Sensors น่าสนใจและเทคนิคใหม่ <span>Sensors & Techniques</span></div>
+      </div>
+    </div>
+
+    <!-- Elektor Magazine Spotlight -->
+    <div class="magazine-box">
+      <div class="mag-label">📰 Elektor Magazine · July/August 2026 — IoT & Sensors Edition</div>
+      <h3>บทความเด่นจาก Elektor ฉบับนี้ที่ ESP32 Maker ควรอ่าน</h3>
+      <ul class="article-list">
+        <li><strong>Wi-Fi-Based Person Detection บน ESP32</strong> — เมื่อ Router กลายเป็น Motion Sensor โดยไม่ต้องมีกล้อง (สอดคล้องกับเทรนด์ CSI ด้านบน)</li>
+        <li><strong>Ecologging</strong> — สถานีตรวจวัดสิ่งแวดล้อมแบบ Modular สำหรับงานวิจัยภาคสนาม ออกแบบให้ขยายเซ็นเซอร์ได้อิสระ</li>
+        <li><strong>3- and 4-Wire RTD Sensors Conditioning</strong> — วงจร conditioning สัญญาณ RTD (Pt100/Pt1000) พร้อม Full-Scale Adjustment และ Cable Compensation สำหรับงาน industrial temperature</li>
+        <li><strong>MultiRF Dev Board Platform</strong> — บอร์ดทดลองระบบ RF หลายย่านความถี่พร้อมกัน</li>
+      </ul>
+    </div>
+
+    <div class="grid-3">
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">🌡️</div>
+          <div>
+            <h3>RTD Sensor (Pt100/Pt1000) — อุณหภูมิ Industrial Grade</h3>
+            <span class="tag tag-orange">4-Wire · ±0.01°C · -200 ถึง +850°C</span>
+          </div>
+        </div>
+        <p>RTD (Resistance Temperature Detector) แบบ <strong>4-Wire</strong> ขจัดความผิดพลาดจากความต้านทานสาย ให้ความแม่นยำ ±0.01°C เหมาะกับงาน industrial, ห้องปฏิบัติการ, HVAC monitoring</p>
+        <p>ต่อกับ ESP32 ผ่าน MAX31865 module (SPI) ราคาประมาณ 120 บาท ใช้ร่วมกับ Pt100 probe ได้ทันที มี Arduino/IDF library พร้อมใช้</p>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">💧</div>
+          <div>
+            <h3>Electrochemical H2S Sensor — Smart Safety Wearable</h3>
+            <span class="tag tag-red">Safety · BLE · Hazardous Environment</span>
+          </div>
+        </div>
+        <p>งานวิจัย 2026 พัฒนา <strong>smart shirt wearable</strong> ที่ฝัง electrochemical H2S sensor ราคาต่ำ ส่งข้อมูล real-time ผ่าน BLE ไปยัง cloud เหมาะกับงานในพื้นที่อันตราย เช่น โรงกำจัดน้ำเสีย เหมือง โรงงานปิโตรเคมี</p>
+        <p>แนวทางนี้ใช้ ESP32 (BLE mode) ร่วมกับ analog electrochemical sensor และ op-amp conditioning circuit</p>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">🌍</div>
+          <div>
+            <h3>Multi-Gas PM2.5/PM10 + NO2 Sensor — Low-Cost Air Quality</h3>
+            <span class="tag tag-green">98% Accuracy · Urban Monitoring</span>
+          </div>
+        </div>
+        <p>งานวิจัย Calibration 2026 พิสูจน์แล้วว่า Low-Cost Sensor รุ่นใหม่ทำ accuracy ได้ <strong>98% สำหรับ PM2.5/PM10</strong> และ 97% สำหรับ NO2 เมื่อเทียบกับอุปกรณ์ราคาหลักแสน</p>
+        <p>ร่วมกับ ESP32 + LoRaWAN หรือ Wi-Fi 6 สร้าง <strong>Dense Urban Air Quality Network</strong> ต้นทุนต่ำได้จริง ใช้ calibration model แบบ ML เพื่อชดเชยความผิดพลาดจากอุณหภูมิ/ความชื้น</p>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">🌱</div>
+          <div>
+            <h3>Smart Agriculture Sensor Stack — ดินครบชุด</h3>
+            <span class="tag tag-yellow">Soil · NPK · pH · Moisture</span>
+          </div>
+        </div>
+        <p>แนวโน้ม 2026 คือการรวม sensor หลายตัวในจุดเดียว: <strong>Soil Moisture + Temperature + NPK + pH + EC</strong> ผ่าน RS485/Modbus protocol เข้า ESP32 ตัวเดียว แล้ว publish ขึ้น MQTT</p>
+        <p>พร้อม Automated Irrigation Control ด้วย solenoid valve ESP32 ประมวลผล scheduling แบบ on-device ลด latency เมื่อ Wi-Fi ขาด เหมาะกับพื้นที่ชนบท</p>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">🏗️</div>
+          <div>
+            <h3>Construction Site IoT Sensor Suite</h3>
+            <span class="tag tag-purple">Safety · Vibration · Dust · Tilt</span>
+          </div>
+        </div>
+        <p>Top-5 Sensors สำหรับไซต์ก่อสร้าง 2026 ประกอบด้วย: <strong>Vibration sensor</strong> ตรวจสั่นสะเทือน, <strong>Dust PM sensor</strong> คุ้มครองสุขภาพคนงาน, <strong>Tilt sensor</strong> ตรวจโครงสร้าง, <strong>Temperature/Humidity</strong> สำหรับ concrete curing, <strong>Gas detector</strong> พื้นที่ confined space</p>
+        <p>ESP32-C6 เหมาะที่สุดเพราะ Wi-Fi 6 ทะลุทะลวง noise ได้ดีกว่า Wi-Fi 4</p>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">💡</div>
+          <div>
+            <h3>DIY Light Pollution Meter ด้วย ESP32-C3</h3>
+            <span class="tag tag-blue">Astronomy · Sky Quality · Environmental</span>
+          </div>
+        </div>
+        <p>โปรเจกต์ที่น่าสนใจ: ใช้ <strong>TSL2591 light sensor</strong> หรือ SQM-compatible sensor ต่อ ESP32-C3 วัด sky brightness (mag/arcsec²) และ Log อุณหภูมิ/ความชื้นควบคู่ เพื่อศึกษามลภาวะแสงในเมือง</p>
+        <p>ส่งข้อมูลผ่าน Wi-Fi ไปยัง database กลางเพื่อสร้าง <strong>Light Pollution Map</strong> ของชุมชน เปิดเผยข้อมูลแบบ Open Data ผ่าน dashboard ออนไลน์</p>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ===== SECTION 4: RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">📚</div>
+      <div>
+        <div class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง <span>Resources & Links</span></div>
+      </div>
+    </div>
+    <div class="res-grid">
+
+      <div class="res-card">
+        <div class="r-type">GitHub</div>
+        <div class="r-title">WaveSight — ESP32 Wi-Fi CSI Radar</div>
+        <div class="r-desc">ErfanDL/WaveSight — Human presence detection ผ่าน Wi-Fi signal jitter พร้อม Web UI dashboard และ auto-calibration</div>
+      </div>
+
+      <div class="res-card">
+        <div class="r-type">GitHub</div>
+        <div class="r-title">esp-csi — Espressif Official CSI Library</div>
+        <div class="r-desc">espressif/esp-csi — Library อย่างเป็นทางการ รองรับ ESP32 ทุกรุ่น ตั้งแต่ classic จนถึง C6/C5</div>
+      </div>
+
+      <div class="res-card">
+        <div class="r-type">Arduino Library</div>
+        <div class="r-title">ESP32P4_ULP by Xorlent</div>
+        <div class="r-desc">ค้นหาใน Arduino Library Manager — ใช้ LP Core ของ ESP32-P4 สำหรับ ultra-low-power wakeup และ sensor polling</div>
+      </div>
+
+      <div class="res-card">
+        <div class="r-type">Product</div>
+        <div class="r-title">DFRobot FireBeetle 2 ESP32-P4</div>
+        <div class="r-desc">dfrobot.com — บอร์ด ESP32-P4 ราคา $11.90 พร้อม MIPI-CSI/DSI, Wi-Fi 6 (via C6 coprocessor), H.264 hardware encoder</div>
+      </div>
+
+      <div class="res-card">
+        <div class="r-type">Product</div>
+        <div class="r-title">Arducam IMX500 AI Camera for ESP32-P4</div>
+        <div class="r-desc">arducam.com — Sony IMX500 + ESP32-P4 ประมวลผล AI บน sensor โดยตรง ไม่ส่งภาพออก รักษา privacy</div>
+      </div>
+
+      <div class="res-card">
+        <div class="r-type">Magazine</div>
+        <div class="r-title">Elektor July/August 2026 — IoT & Sensors</div>
+        <div class="r-desc">elektormagazine.com — บทความ RTD Conditioning, Wi-Fi Person Detection, Ecologging Field Station</div>
+      </div>
+
+      <div class="res-card">
+        <div class="r-type">Hackster.io</div>
+        <div class="r-title">ESP-CSI: DIY WiFi Human Presence Detection</div>
+        <div class="r-desc">hackster.io — Guide เริ่มต้นใช้ esp-csi สำหรับ human presence sensor แบบ privacy-first</div>
+      </div>
+
+      <div class="res-card">
+        <div class="r-type">Arduino Core</div>
+        <div class="r-title">arduino-esp32 v3.3.10 + ESP-IDF v5.5.4</div>
+        <div class="r-desc">github.com/espressif/arduino-esp32 — Release ล่าสุด (5 มิ.ย. 2569) รองรับ ESP32-P4, C5, H2 ครบชุด</div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="container">
+    <div class="footer-title">ESP32 & Sensor Daily Research</div>
+    <p>สร้างอัตโนมัติโดย AI Researcher · 23 กรกฎาคม 2569</p>
+    <div class="sources">
+      แหล่งข้อมูลอ้างอิง: Elektor Magazine Jul/Aug 2026 · Hackster.io · GitHub (espressif/esp-csi, ErfanDL/WaveSight, Xorlent/ESP32P4_ULP) ·
+      Arducam.com · DFRobot.com · Adafruit Blog · ESPHome Docs · Espressif Developer Portal · IEEE Xplore 2026 ·
+      Home Assistant Community Forum · CNX-Software · XDA Developers · Cosolvic.com
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
