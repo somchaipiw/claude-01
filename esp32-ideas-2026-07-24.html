@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 24 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0a0f1e;
+    --bg-secondary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263348;
+    --border: #334155;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-teal: #14b8a6;
+    --accent-blue: #3b82f6;
+    --accent-purple: #a855f7;
+    --accent-orange: #f97316;
+    --accent-green: #22c55e;
+    --accent-rose: #f43f5e;
+    --accent-amber: #f59e0b;
+    --grad-header: linear-gradient(135deg, #0f3460 0%, #16213e 50%, #0a3d62 100%);
+  }
+
+  body {
+    font-family: 'Sarabun', 'Segoe UI', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: var(--grad-header);
+    border-bottom: 1px solid #1e3a5f;
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 60% 0%, rgba(20,184,166,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 80%, rgba(59,130,246,0.1) 0%, transparent 55%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: rgba(20,184,166,0.15);
+    border: 1px solid rgba(20,184,166,0.4);
+    color: var(--accent-teal);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1.2rem;
+  }
+
+  header h1 {
+    font-size: clamp(1.7rem, 4vw, 2.8rem);
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.6rem;
+    letter-spacing: -0.01em;
+  }
+
+  header h1 span {
+    background: linear-gradient(90deg, var(--accent-teal), var(--accent-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-sub {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent-teal);
+    display: block;
+    line-height: 1.2;
+  }
+
+  .stat-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 0.8rem 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.35rem 0.9rem;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+  }
+
+  nav a:hover {
+    color: var(--accent-teal);
+    border-color: rgba(20,184,166,0.3);
+    background: rgba(20,184,166,0.08);
+  }
+
+  /* ===== MAIN ===== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  /* ===== SECTION HEADERS ===== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.8rem;
+    margin-top: 3rem;
+  }
+
+  .section-header:first-child { margin-top: 0; }
+
+  .section-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+
+  .icon-teal { background: rgba(20,184,166,0.15); border: 1px solid rgba(20,184,166,0.3); }
+  .icon-blue { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); }
+  .icon-purple { background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3); }
+  .icon-orange { background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.3); }
+
+  .section-header h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .section-header p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+  }
+
+  /* ===== CARDS GRID ===== */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .cards-grid.wide {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  }
+
+  /* ===== CARD ===== */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(20,184,166,0.35);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .tag {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+    border-radius: 5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .tag-new { background: rgba(34,197,94,0.15); color: var(--accent-green); border: 1px solid rgba(34,197,94,0.3); }
+  .tag-hot { background: rgba(244,63,94,0.15); color: var(--accent-rose); border: 1px solid rgba(244,63,94,0.3); }
+  .tag-sdk { background: rgba(59,130,246,0.15); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.3); }
+  .tag-farm { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+  .tag-ai { background: rgba(168,85,247,0.15); color: var(--accent-purple); border: 1px solid rgba(168,85,247,0.3); }
+  .tag-ble { background: rgba(20,184,166,0.15); color: var(--accent-teal); border: 1px solid rgba(20,184,166,0.3); }
+  .tag-lora { background: rgba(249,115,22,0.15); color: var(--accent-orange); border: 1px solid rgba(249,115,22,0.3); }
+  .tag-sensor { background: rgba(245,158,11,0.15); color: var(--accent-amber); border: 1px solid rgba(245,158,11,0.3); }
+
+  .card p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+  }
+
+  /* highlight row */
+  .card-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: auto;
+  }
+
+  .meta-chip {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    padding: 0.2rem 0.55rem;
+    border-radius: 5px;
+  }
+
+  /* ===== FEATURED CARD (wide) ===== */
+  .card-featured {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1.5rem;
+    align-items: start;
+    background: linear-gradient(135deg, #1e293b 0%, #162032 100%);
+    border-color: rgba(59,130,246,0.35);
+  }
+
+  .card-featured .card-body { display: flex; flex-direction: column; gap: 0.75rem; }
+  .card-featured .card-aside {
+    min-width: 180px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  .card-aside h4 { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .card-aside ul { list-style: none; display: flex; flex-direction: column; gap: 0.35rem; }
+  .card-aside li { font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.4rem; }
+  .card-aside li::before { content: '▸'; color: var(--accent-teal); font-size: 0.7rem; }
+
+  @media (max-width: 600px) {
+    .card-featured { grid-template-columns: 1fr; }
+    .card-featured .card-aside { min-width: unset; }
+  }
+
+  /* ===== PROJECT CARD ===== */
+  .project-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.25rem;
+  }
+
+  .step {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+
+  .step-num {
+    min-width: 20px;
+    height: 20px;
+    background: rgba(20,184,166,0.15);
+    border: 1px solid rgba(20,184,166,0.3);
+    color: var(--accent-teal);
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+
+  /* ===== SENSOR TABLE ===== */
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .sensor-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(245,158,11,0.35);
+  }
+
+  .sensor-header {
+    background: rgba(245,158,11,0.08);
+    border-bottom: 1px solid rgba(245,158,11,0.2);
+    padding: 0.9rem 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .sensor-header h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent-amber); }
+  .sensor-header .tag { margin: 0; }
+
+  .sensor-body { padding: 1rem 1.2rem; display: flex; flex-direction: column; gap: 0.55rem; }
+
+  .spec-row {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+  }
+
+  .spec-key {
+    color: var(--text-muted);
+    min-width: 90px;
+    flex-shrink: 0;
+  }
+
+  .spec-val { color: var(--text-secondary); }
+
+  /* ===== RESOURCE GRID ===== */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.2rem;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    transition: all 0.2s;
+  }
+
+  .resource-card:hover {
+    border-color: rgba(20,184,166,0.4);
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+  }
+
+  .resource-card .res-icon { font-size: 1.4rem; }
+  .resource-card .res-title { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); }
+  .resource-card .res-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+
+  /* ===== HIGHLIGHT BOX ===== */
+  .highlight-box {
+    background: rgba(20,184,166,0.07);
+    border: 1px solid rgba(20,184,166,0.25);
+    border-left: 3px solid var(--accent-teal);
+    border-radius: 0 10px 10px 0;
+    padding: 1rem 1.2rem;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+    line-height: 1.75;
+  }
+
+  .highlight-box strong { color: var(--accent-teal); }
+
+  /* ===== CODE SNIPPET ===== */
+  pre {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    color: #a5f3fc;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    line-height: 1.9;
+  }
+
+  footer strong { color: var(--text-secondary); }
+
+  /* ===== DIVIDER ===== */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 2.5rem 0;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 640px) {
+    .cards-grid, .cards-grid.wide { grid-template-columns: 1fr; }
+    .resource-grid { grid-template-columns: 1fr; }
+    header { padding: 2rem 1rem 1.8rem; }
+    .header-stats { gap: 1.2rem; }
+    main { padding: 1.5rem 1rem 3rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<header>
+  <div class="header-badge">Daily Research Report</div>
+  <h1>ESP32 &amp; Sensor <span>Innovations</span></h1>
+  <p class="header-sub">24 กรกฎาคม 2569 &nbsp;|&nbsp; รายงานวิจัยและไอเดียโปรเจกต์ประจำวัน</p>
+  <div class="header-stats">
+    <div class="stat-item">
+      <span class="stat-num">4</span>
+      <span class="stat-label">นวัตกรรมใหม่</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">4</span>
+      <span class="stat-label">ไอเดียโปรเจกต์</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">4</span>
+      <span class="stat-label">Sensors น่าสนใจ</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">6</span>
+      <span class="stat-label">แหล่งข้อมูล</span>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== NAV ===================== -->
+<nav>
+  <a href="#innovations">🔬 นวัตกรรม</a>
+  <a href="#projects">💡 ไอเดียโปรเจกต์</a>
+  <a href="#sensors">🔌 Sensors</a>
+  <a href="#resources">📚 แหล่งข้อมูล</a>
+</nav>
+
+<!-- ===================== MAIN ===================== -->
+<main>
+
+  <!-- ========== SECTION 1: INNOVATIONS ========== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-teal">🔬</div>
+      <div>
+        <h2>นวัตกรรมและอัปเดตเด่นประจำวัน</h2>
+        <p>ESP-IDF v6.0, LoRaWAN Satellite, TinyML Aquaculture, BLE Mesh Building</p>
+      </div>
+    </div>
+
+    <div class="cards-grid wide">
+
+      <!-- FEATURED: ESP-IDF v6.0 -->
+      <div class="card card-featured">
+        <div class="card-body">
+          <div class="card-top">
+            <h3>ESP-IDF v6.0 — Framework ใหม่รองรับชิปรุ่นถัดไปและ MCP Server</h3>
+            <span class="tag tag-sdk">SDK Major</span>
+          </div>
+          <p>
+            Espressif ปล่อย ESP-IDF v6.0 อย่างเป็นทางการในเดือนมีนาคม 2026 ถือเป็น Major Release ครั้งแรกในรอบหลายปี
+            รองรับ <strong>ESP32-C5</strong> และ <strong>ESP32-C61</strong> แบบ Stable พร้อม Preview สำหรับ
+            <strong>ESP32-H21</strong> และ <strong>ESP32-H4</strong> ไฮไลท์สำคัญคือการเปลี่ยนจาก Newlib มาเป็น
+            <strong>Picolibc</strong> ซึ่งช่วยลด Memory Footprint และเพิ่มประสิทธิภาพ
+            รวมถึงการรองรับ <strong>PSA Crypto API</strong> สำหรับระบบ Cryptography มาตรฐาน
+            และมาพร้อม <strong>MCP Server</strong> สำหรับการ Integrate กับเครื่องมือ AI Development ได้โดยตรง
+          </p>
+          <div class="highlight-box">
+            <strong>Breaking Changes ที่ต้องระวัง:</strong> v6.0 ไม่ได้ Compatible กับ v5.x ทั้งหมด
+            โดยเฉพาะ Deprecated API ที่ถูกลบออก ควรอ่าน Migration Guide ก่อน Upgrade โปรเจกต์
+          </div>
+          <div class="card-meta">
+            <span class="meta-chip">Released: มีนาคม 2026</span>
+            <span class="meta-chip">Picolibc C Library</span>
+            <span class="meta-chip">PSA Crypto API</span>
+            <span class="meta-chip">Recovery Bootloader</span>
+          </div>
+        </div>
+        <div class="card-aside">
+          <h4>ฟีเจอร์ใหม่</h4>
+          <ul>
+            <li>ESP32-C5 Stable Support</li>
+            <li>ESP32-H21 Preview</li>
+            <li>Picolibc (ลด RAM)</li>
+            <li>PSA Crypto API</li>
+            <li>MCP Server ใน SDK</li>
+            <li>Recovery Bootloader</li>
+            <li>WPA3 Compatibility Mode</li>
+            <li>Wi-Fi USD Discovery</li>
+            <li>CMake Presets</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- LoRaWAN + Satellite Agriculture -->
+      <div class="card">
+        <div class="card-top">
+          <h3>LoRaWAN + Satellite — เกษตรอัจฉริยะไร้พรมแดนสัญญาณ</h3>
+          <span class="tag tag-lora">LoRa</span>
+        </div>
+        <p>
+          LoRaWAN กำลัง Push ลึกเข้าสู่ Smart Agriculture ด้วย Satellite-Backed Connectivity
+          ทำให้ Sensor Node ในพื้นที่ห่างไกลหรือไม่มีสัญญาณมือถือสามารถส่งข้อมูลได้
+          ESP32-S3 + SX1262 LoRa สร้าง Node ที่ส่งข้อมูลได้ไกลหลายกิโลเมตรด้วยแบตเตอรี่เพียง ~$10
+          ใช้ได้ทั้ง Soil Moisture, Weather Station, Livestock Tracking, และ Tank Level
+          บนโครงสร้างพื้นฐาน LoRaWAN เดียวกัน
+        </p>
+        <div class="card-meta">
+          <span class="meta-chip">ESP32-S3 + SX1262</span>
+          <span class="meta-chip">Satellite Backhaul</span>
+          <span class="meta-chip">LPWAN</span>
+        </div>
+      </div>
+
+      <!-- TinyML Aquaculture -->
+      <div class="card">
+        <div class="card-top">
+          <h3>TinyML บน ESP32 ตรวจคุณภาพน้ำ Aquaculture แบบ Real-Time</h3>
+          <span class="tag tag-ai">TinyML</span>
+        </div>
+        <p>
+          งานวิจัย 2026 แสดงให้เห็นว่า ML Model (Random Forest / Linear Regression)
+          สามารถ Deploy บน ESP32 เพื่อทำนายคุณภาพน้ำในฟาร์มเลี้ยงปลาแบบ Real-Time
+          โดยไม่ต้องพึ่ง Cloud ได้ โดย <strong>Multiple Linear Regression</strong>
+          เหมาะสมที่สุดสำหรับ ESP32 เนื่องจากประสิทธิภาพการประมวลผล
+          ระบบควบคุม DO (Dissolved Oxygen) และ pH แบบอัตโนมัติ
+          Edge Impulse ยังมี Project สำหรับตรวจ Toxic Air Bubble ใต้น้ำด้วย Neural Network
+        </p>
+        <div class="card-meta">
+          <span class="meta-chip">Arduino Nano ESP32</span>
+          <span class="meta-chip">Edge Impulse</span>
+          <span class="meta-chip">Dissolved Oxygen</span>
+        </div>
+      </div>
+
+      <!-- BLE Mesh Smart Building -->
+      <div class="card">
+        <div class="card-top">
+          <h3>BLE Mesh — เครือข่าย Sensor ครอบคลุมทั้งอาคารโดยไม่ต้องมี Wi-Fi</h3>
+          <span class="tag tag-ble">BLE Mesh</span>
+        </div>
+        <p>
+          Bluetooth Mesh (Bluetooth SIG Mesh Profile 1.0.1) เปลี่ยน ESP32 ทุกตัวให้เป็น
+          Relay Node ที่ส่งต่อ Message หลาย Hop ขยายพื้นที่ครอบคลุมเกินกว่า Bluetooth ปกติ
+          ในอาคารสำนักงาน ราย Node มี Range ~10-30 เมตร ด้วย ESP32-C3 ราคาถูก
+          ติดตั้งทุก 10-15 เมตร ครอบคลุมได้ทั้งชั้น แอปพลิเคชัน: อุณหภูมิ/ความชื้น
+          ทุกห้อง, Smart Lighting, ตรวจจับการเคลื่อนไหว, Building Management Systems
+        </p>
+        <div class="card-meta">
+          <span class="meta-chip">ESP32-C3</span>
+          <span class="meta-chip">Many-to-Many</span>
+          <span class="meta-chip">Self-Healing</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ========== SECTION 2: PROJECTS ========== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-blue">💡</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์น่าสร้างประจำวัน</h2>
+        <p>แนวทางและขั้นตอนการสร้าง Prototype จริงพร้อม Hardware ที่ต้องใช้</p>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- Project 1: Smart Aquaculture -->
+      <div class="card">
+        <div class="card-top">
+          <h3>ระบบ Smart Aquaculture ด้วย ESP32 + ML ทำนายคุณภาพน้ำอัตโนมัติ</h3>
+          <span class="tag tag-ai">AI + IoT</span>
+        </div>
+        <p>สร้าง Node วัดคุณภาพน้ำสำหรับบ่อปลาหรือระบบ Hydroponics ที่ทำนายค่าสุขภาพน้ำด้วย ML ออนบอร์ด</p>
+        <div class="project-steps">
+          <div class="step"><span class="step-num">1</span><span>ติด Sensor DO, pH, Temperature, TDS เข้า ESP32</span></div>
+          <div class="step"><span class="step-num">2</span><span>เก็บข้อมูล 2-4 สัปดาห์ สร้าง Dataset</span></div>
+          <div class="step"><span class="step-num">3</span><span>Train Linear Regression Model ใน Edge Impulse / Scikit-learn</span></div>
+          <div class="step"><span class="step-num">4</span><span>Deploy Model เป็น C Library บน ESP32</span></div>
+          <div class="step"><span class="step-num">5</span><span>ควบคุม Aerator / Pump อัตโนมัติตาม Prediction</span></div>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip">ESP32-S3</span>
+          <span class="meta-chip">Atlas Scientific DO</span>
+          <span class="meta-chip">pH Sensor</span>
+          <span class="meta-chip">MQTT Dashboard</span>
+        </div>
+      </div>
+
+      <!-- Project 2: LoRaWAN Farm Node -->
+      <div class="card">
+        <div class="card-top">
+          <h3>LoRaWAN Smart Farm Node ระยะไกล ด้วย ESP32-S3 + SX1262</h3>
+          <span class="tag tag-lora">LoRa</span>
+        </div>
+        <p>สร้าง Sensor Node พลังงานต่ำสำหรับฟาร์มขนาดใหญ่ ส่งข้อมูลได้ไกลหลาย กม. ด้วยแบตเตอรี่</p>
+        <div class="project-steps">
+          <div class="step"><span class="step-num">1</span><span>ใช้ LILYGO T3-S3 (ESP32-S3 + SX1262 ในบอร์ดเดียว)</span></div>
+          <div class="step"><span class="step-num">2</span><span>เชื่อม Soil Moisture, DHT22, Rain Gauge</span></div>
+          <div class="step"><span class="step-num">3</span><span>ส่งข้อมูลผ่าน LoRaWAN ไปยัง Gateway ทุก 15 นาที</span></div>
+          <div class="step"><span class="step-num">4</span><span>Deep Sleep ระหว่างรอ ใช้พลังงาน &lt;5 μA</span></div>
+          <div class="step"><span class="step-num">5</span><span>แสดงผลบน Grafana หรือ The Things Network Console</span></div>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip">LILYGO T3-S3</span>
+          <span class="meta-chip">SX1262</span>
+          <span class="meta-chip">TTN / Helium</span>
+          <span class="meta-chip">Solar + LiPo</span>
+        </div>
+      </div>
+
+      <!-- Project 3: BLE Mesh Office -->
+      <div class="card">
+        <div class="card-top">
+          <h3>BLE Mesh Office Monitor — วัดสภาพแวดล้อมทุกห้องในอาคาร</h3>
+          <span class="tag tag-ble">BLE Mesh</span>
+        </div>
+        <p>เครือข่าย Sensor ครอบคลุมทั้งอาคารสำนักงาน ไม่ต้องมี Wi-Fi AP ทุกห้อง</p>
+        <div class="project-steps">
+          <div class="step"><span class="step-num">1</span><span>ESP32-C3 แต่ละตัวทำหน้าที่เป็น Mesh Node + Sensor</span></div>
+          <div class="step"><span class="step-num">2</span><span>ติด SHT31 (Temp/Humidity) + ENS160 (VOC/CO₂) ทุกห้อง</span></div>
+          <div class="step"><span class="step-num">3</span><span>Node หนึ่งตัวเป็น Root ที่มี Wi-Fi ส่งข้อมูลออก Cloud</span></div>
+          <div class="step"><span class="step-num">4</span><span>ตั้ง Alert เมื่อ CO₂ เกิน 1000 ppm หรืออุณหภูมิผิดปกติ</span></div>
+          <div class="step"><span class="step-num">5</span><span>เชื่อม Home Assistant หรือ Grafana Dashboard ตาม Floor Map</span></div>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip">ESP32-C3</span>
+          <span class="meta-chip">SHT31</span>
+          <span class="meta-chip">ENS160 VOC</span>
+          <span class="meta-chip">ESP-BLE-MESH SDK</span>
+        </div>
+      </div>
+
+      <!-- Project 4: DIY ECG -->
+      <div class="card">
+        <div class="card-top">
+          <h3>DIY ECG Monitor ด้วย ESP32 + AD8232 ส่งข้อมูลไร้สาย</h3>
+          <span class="tag tag-hot">Biometric</span>
+        </div>
+        <p>สร้างเครื่องวัด ECG แบบ Portable ราคาประหยัด สำหรับติดตาม Heart Rate และตรวจ Arrhythmia</p>
+        <div class="project-steps">
+          <div class="step"><span class="step-num">1</span><span>ต่อ AD8232 ECG Module เข้า ESP32 ผ่าน Analog Input</span></div>
+          <div class="step"><span class="step-num">2</span><span>อ่านสัญญาณที่ 500 Hz ผ่าน ADC 12-bit</span></div>
+          <div class="step"><span class="step-num">3</span><span>ส่งข้อมูล Real-Time ผ่าน BLE ไปยัง Smartphone App</span></div>
+          <div class="step"><span class="step-num">4</span><span>วิเคราะห์ Peak Detection ตรวจ R-R Interval</span></div>
+          <div class="step"><span class="step-num">5</span><span>Alert เมื่อตรวจพบ Heart Rate ผิดปกติ (&lt;50 หรือ &gt;120 bpm)</span></div>
+        </div>
+        <div class="card-meta">
+          <span class="meta-chip">ESP32 + AD8232</span>
+          <span class="meta-chip">BLE Streaming</span>
+          <span class="meta-chip">500 Hz Sampling</span>
+          <span class="meta-chip">Wearable Form</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Code snippet highlight -->
+    <div style="margin-top:1.5rem;">
+      <div class="highlight-box">
+        <strong>ตัวอย่าง: ESP32 Deep Sleep สำหรับ LoRaWAN Farm Node (ESP-IDF / Arduino)</strong>
+        <pre style="margin-top:0.8rem;">
+// ตื่นทุก 15 นาที วัดข้อมูล ส่ง LoRa แล้วนอน
+#define SLEEP_TIME_US (15 * 60 * 1000000ULL)
+
+void setup() {
+  // อ่านค่า Sensor
+  float temp = readDHT22();
+  int moisture = readSoilMoisture();
+
+  // ส่งข้อมูลผ่าน LoRaWAN
+  sendLoRaPacket(temp, moisture);
+
+  // เข้า Deep Sleep
+  esp_sleep_enable_timer_wakeup(SLEEP_TIME_US);
+  esp_deep_sleep_start();
+}
+
+void loop() {} // ไม่มีการ loop — Deep Sleep จัดการทุกอย่าง
+        </pre>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ========== SECTION 3: SENSORS ========== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔌</div>
+      <div>
+        <h2>Sensors &amp; Modules น่าสนใจ</h2>
+        <p>ฮาร์ดแวร์ที่เหมาะกับโปรเจกต์ Aquaculture, Agriculture, Biometric และ Energy Harvesting</p>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- Sensor 1: Atlas Scientific DO -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <h3>Atlas Scientific EZO-DO — Dissolved Oxygen Sensor</h3>
+          <span class="tag tag-sensor">Water</span>
+        </div>
+        <div class="sensor-body">
+          <div class="spec-row"><span class="spec-key">Interface</span><span class="spec-val">UART / I²C</span></div>
+          <div class="spec-row"><span class="spec-key">Range</span><span class="spec-val">0.01 – 100 mg/L</span></div>
+          <div class="spec-row"><span class="spec-key">Accuracy</span><span class="spec-val">±0.05 mg/L</span></div>
+          <div class="spec-row"><span class="spec-key">Voltage</span><span class="spec-val">3.3V / 5V</span></div>
+          <div class="spec-row"><span class="spec-key">ใช้กับ</span><span class="spec-val">ฟาร์มปลา, บ่อกุ้ง, Hydroponics</span></div>
+          <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.3rem;">
+            Sensor คุณภาพระดับ Lab สำหรับวัด DO ใต้น้ำ มี Auto-Calibration ต้องการเพียง UART command ง่ายมาก
+          </p>
+        </div>
+      </div>
+
+      <!-- Sensor 2: BQ25504 Energy Harvesting -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <h3>TI BQ25504 — Ultra Low-Power Energy Harvesting IC</h3>
+          <span class="tag tag-new">Energy</span>
+        </div>
+        <div class="sensor-body">
+          <div class="spec-row"><span class="spec-key">Input</span><span class="spec-val">Solar, RF, Thermal, Kinetic</span></div>
+          <div class="spec-row"><span class="spec-key">Min Input</span><span class="spec-val">100 mV startup</span></div>
+          <div class="spec-row"><span class="spec-key">Output</span><span class="spec-val">ชาร์จ LiPo / Supercap</span></div>
+          <div class="spec-row"><span class="spec-key">Efficiency</span><span class="spec-val">สูงสุด 90%</span></div>
+          <div class="spec-row"><span class="spec-key">ใช้กับ</span><span class="spec-val">ESP32-C3 Solar Node ไม่เปลี่ยนถ่าน</span></div>
+          <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.3rem;">
+            Lifex ESP32-Tux-Mini ใช้ IC นี้กับ ESP32-C3 ทำให้ Node ทำงานได้โดยไม่ต้องเปลี่ยนแบตเตอรี่จาก Solar เพียง 1 นิ้ว
+          </p>
+        </div>
+      </div>
+
+      <!-- Sensor 3: ENS160 -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <h3>ENS160 — Multi-Gas Sensor สำหรับ Indoor Air Quality</h3>
+          <span class="tag tag-new">Air</span>
+        </div>
+        <div class="sensor-body">
+          <div class="spec-row"><span class="spec-key">วัดได้</span><span class="spec-val">eCO₂, TVOC, AQI</span></div>
+          <div class="spec-row"><span class="spec-key">Interface</span><span class="spec-val">I²C / SPI</span></div>
+          <div class="spec-row"><span class="spec-key">Voltage</span><span class="spec-val">1.71V – 1.89V (Core)</span></div>
+          <div class="spec-row"><span class="spec-key">Size</span><span class="spec-val">3.0 × 3.0 mm</span></div>
+          <div class="spec-row"><span class="spec-key">ใช้กับ</span><span class="spec-val">BLE Mesh Office Air Monitor</span></div>
+          <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.3rem;">
+            Sensor คุณภาพสูงจาก ScioSense รองรับ I²C / SPI มี Library สำหรับ Arduino / ESP32 พร้อมใช้งาน
+          </p>
+        </div>
+      </div>
+
+      <!-- Sensor 4: AD8232 ECG -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <h3>AD8232 — Single-Lead Heart Rate Monitor Module</h3>
+          <span class="tag tag-hot">Biometric</span>
+        </div>
+        <div class="sensor-body">
+          <div class="spec-row"><span class="spec-key">Signal</span><span class="spec-val">ECG (Lead I/II)</span></div>
+          <div class="spec-row"><span class="spec-key">Output</span><span class="spec-val">Analog (0-3.3V)</span></div>
+          <div class="spec-row"><span class="spec-key">Supply</span><span class="spec-val">2.0V – 3.5V</span></div>
+          <div class="spec-row"><span class="spec-key">ราคา</span><span class="spec-val">~$5 (SparkFun Module)</span></div>
+          <div class="spec-row"><span class="spec-key">ใช้กับ</span><span class="spec-val">DIY Wearable ECG + ESP32</span></div>
+          <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.3rem;">
+            IC จาก Analog Devices ออกแบบสำหรับ Wearable ECG โดยเฉพาะ มี Lead-Off Detection ในตัว ราคาถูก เหมาะกับ Prototype
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ========== SECTION 4: RESOURCES ========== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-purple">📚</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+        <p>เอกสาร, บทความ, และ Repository ที่เกี่ยวข้องกับหัวข้อวันนี้</p>
+      </div>
+    </div>
+
+    <div class="resource-grid">
+
+      <a class="resource-card" href="https://developer.espressif.com/blog/2026/03/idf-v6-0-release/" target="_blank" rel="noopener">
+        <span class="res-icon">🚀</span>
+        <span class="res-title">ESP-IDF v6.0 Release Notes</span>
+        <span class="res-desc">บล็อกอย่างเป็นทางการจาก Espressif Developer Portal รายละเอียด Features ทั้งหมด</span>
+      </a>
+
+      <a class="resource-card" href="https://www.cnx-software.com/2026/03/24/esp-idf-v6-0-framework-adds-support-for-esp32-c5-and-esp32-c61-preview-for-esp32-h21-and-esp32-h4/" target="_blank" rel="noopener">
+        <span class="res-icon">📰</span>
+        <span class="res-title">CNX Software: ESP-IDF v6.0 Analysis</span>
+        <span class="res-desc">บทความวิเคราะห์ ESP-IDF v6.0 รวมถึง Chip Support และ Breaking Changes</span>
+      </a>
+
+      <a class="resource-card" href="https://iotbusinessnews.com/2026/07/08/lorawan-pushes-deeper-into-smart-agriculture-with-satellite-backed-connectivity/" target="_blank" rel="noopener">
+        <span class="res-icon">🛰️</span>
+        <span class="res-title">LoRaWAN + Satellite Agriculture 2026</span>
+        <span class="res-desc">รายงาน LoRaWAN ผสาน Satellite Connectivity สำหรับ Smart Agriculture</span>
+      </a>
+
+      <a class="resource-card" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12526668/" target="_blank" rel="noopener">
+        <span class="res-icon">🐟</span>
+        <span class="res-title">ML on ESP32 for Tilapia Aquaculture</span>
+        <span class="res-desc">งานวิจัย 2026: Deploy ML บน ESP32 สำหรับทำนายคุณภาพน้ำในฟาร์มปลาทิลาเปีย</span>
+      </a>
+
+      <a class="resource-card" href="https://docs.edgeimpulse.com/projects/expert-network/water-pollution-detection-arduino-nano-esp32" target="_blank" rel="noopener">
+        <span class="res-icon">🌊</span>
+        <span class="res-title">Edge Impulse: Water Pollution Detection</span>
+        <span class="res-desc">โปรเจกต์ตรวจมลพิษน้ำด้วย Arduino Nano ESP32 + Ultrasonic + Neural Network</span>
+      </a>
+
+      <a class="resource-card" href="https://zbotic.in/bluetooth-mesh-networking-with-esp32-scalable-iot-systems/" target="_blank" rel="noopener">
+        <span class="res-icon">📡</span>
+        <span class="res-title">BLE Mesh Networking with ESP32</span>
+        <span class="res-desc">คู่มือสร้าง Scalable BLE Mesh Network ด้วย ESP32 สำหรับ Smart Building</span>
+      </a>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <p><strong>ESP32 &amp; Sensor Daily Innovations</strong></p>
+  <p>สร้างโดยระบบ AI อัตโนมัติ &nbsp;|&nbsp; วันที่ 24 กรกฎาคม 2569</p>
+  <p style="margin-top:0.5rem;">
+    หัวข้อวันนี้: ESP-IDF v6.0 | LoRaWAN + Satellite Agriculture | TinyML Aquaculture | BLE Mesh Building
+  </p>
+  <p style="margin-top:0.4rem;font-size:0.75rem;color:var(--text-muted);">
+    แหล่งอ้างอิง: Espressif Developer Portal, CNX-Software, IoT Business News, NCBI, Edge Impulse, Zbotic
+  </p>
+</footer>
+
+</body>
+</html>
