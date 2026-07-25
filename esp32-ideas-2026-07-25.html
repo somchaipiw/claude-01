@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 25 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card2: #162032;
+    --accent-1: #38bdf8;
+    --accent-2: #818cf8;
+    --accent-3: #34d399;
+    --accent-4: #fb923c;
+    --accent-5: #f472b6;
+    --text-primary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --tag-bg: rgba(56,189,248,0.12);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f2744 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(56,189,248,0.08) 0%, transparent 70%);
+  }
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+    color: #0f172a;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.85rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent-1) 0%, var(--accent-2) 50%, var(--accent-3) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+  header .subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    position: relative;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.8rem;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.5rem 1.2rem;
+    text-align: center;
+  }
+  .stat-pill .num { font-size: 1.4rem; font-weight: 700; color: var(--accent-1); }
+  .stat-pill .label { font-size: 0.75rem; color: var(--text-muted); }
+
+  /* ===== LAYOUT ===== */
+  main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 3rem 0 1.5rem;
+  }
+  .section-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .icon-blue   { background: linear-gradient(135deg, #0369a1, #0ea5e9); }
+  .icon-purple { background: linear-gradient(135deg, #4c1d95, #818cf8); }
+  .icon-green  { background: linear-gradient(135deg, #065f46, #34d399); }
+  .icon-orange { background: linear-gradient(135deg, #92400e, #fb923c); }
+
+  .section-header h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-header p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.15rem; }
+
+  /* ===== CARD GRID ===== */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+  .card-grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 1.25rem; }
+
+  /* ===== BASE CARD ===== */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    border-color: rgba(56,189,248,0.3);
+  }
+
+  /* ===== INNOVATION CARD ===== */
+  .inno-card { position: relative; overflow: hidden; }
+  .inno-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+  }
+  .inno-card.blue::before   { background: linear-gradient(90deg, var(--accent-1), var(--accent-2)); }
+  .inno-card.purple::before { background: linear-gradient(90deg, var(--accent-2), var(--accent-5)); }
+  .inno-card.green::before  { background: linear-gradient(90deg, var(--accent-3), #06b6d4); }
+  .inno-card.orange::before { background: linear-gradient(90deg, var(--accent-4), #facc15); }
+
+  .card-tag {
+    display: inline-block;
+    background: var(--tag-bg);
+    color: var(--accent-1);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    border: 1px solid rgba(56,189,248,0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.6rem;
+  }
+  .card-tag.purple { background: rgba(129,140,248,0.12); color: var(--accent-2); border-color: rgba(129,140,248,0.25); }
+  .card-tag.green  { background: rgba(52,211,153,0.12); color: var(--accent-3); border-color: rgba(52,211,153,0.25); }
+  .card-tag.orange { background: rgba(251,146,60,0.12); color: var(--accent-4); border-color: rgba(251,146,60,0.25); }
+  .card-tag.pink   { background: rgba(244,114,182,0.12); color: var(--accent-5); border-color: rgba(244,114,182,0.25); }
+
+  .card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.6rem; color: var(--text-primary); }
+  .card p  { font-size: 0.9rem; color: var(--text-muted); line-height: 1.75; }
+
+  /* ===== SPEC TABLE ===== */
+  .spec-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
+  .spec-table td { padding: 0.45rem 0.6rem; border-bottom: 1px solid rgba(51,65,85,0.5); }
+  .spec-table td:first-child { color: var(--text-muted); width: 42%; }
+  .spec-table td:last-child { color: var(--text-primary); font-weight: 600; }
+
+  /* ===== PROJECT CARD ===== */
+  .project-card {
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .project-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+  .project-card h3 { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
+  .project-card p  { font-size: 0.88rem; color: var(--text-muted); line-height: 1.75; }
+
+  .parts-list { margin-top: 1rem; }
+  .parts-list h4 { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.5rem; }
+  .parts-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .chip {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .steps-list { counter-reset: step; margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.45rem; }
+  .step {
+    counter-increment: step;
+    display: flex; align-items: flex-start; gap: 0.6rem;
+    font-size: 0.85rem; color: var(--text-muted);
+  }
+  .step::before {
+    content: counter(step);
+    background: var(--accent-1);
+    color: #0f172a;
+    font-size: 0.7rem; font-weight: 800;
+    min-width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* ===== SENSOR CARD ===== */
+  .sensor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+  .sensor-card:hover { transform: translateY(-2px); border-color: rgba(52,211,153,0.3); }
+  .sensor-icon { font-size: 2rem; margin-bottom: 0.6rem; }
+  .sensor-card h3 { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.3rem; }
+  .sensor-card .subtitle { font-size: 0.78rem; color: var(--accent-3); font-weight: 600; margin-bottom: 0.5rem; }
+  .sensor-card p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.65; }
+
+  /* ===== HIGHLIGHT BOX ===== */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(56,189,248,0.07) 0%, rgba(129,140,248,0.05) 100%);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .highlight-box strong { color: var(--accent-1); }
+
+  /* ===== RESOURCE CARD ===== */
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.25rem;
+    display: flex; align-items: flex-start; gap: 0.9rem;
+  }
+  .resource-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.06);
+    border-radius: 10px;
+  }
+  .resource-card h3 { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem; }
+  .resource-card p  { font-size: 0.8rem; color: var(--text-muted); }
+  .resource-card a  { color: var(--accent-1); text-decoration: none; font-size: 0.8rem; display: block; margin-top: 0.3rem; word-break: break-all; }
+  .resource-card a:hover { text-decoration: underline; }
+
+  /* ===== DIVIDER ===== */
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 0.5rem 0; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.83rem;
+  }
+  footer strong { color: var(--accent-1); }
+
+  @media (max-width: 640px) {
+    .card-grid-2 { grid-template-columns: 1fr; }
+    .stats-row { gap: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-badge">Daily Research · 25 July 2026</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">25 กรกฎาคม 2569 · NFC/RFID · Automotive IoT · E-Paper Displays</p>
+  <div class="stats-row">
+    <div class="stat-pill">
+      <div class="num">3</div>
+      <div class="label">นวัตกรรมเด่น</div>
+    </div>
+    <div class="stat-pill">
+      <div class="num">4</div>
+      <div class="label">ไอเดียโปรเจกต์</div>
+    </div>
+    <div class="stat-pill">
+      <div class="num">4</div>
+      <div class="label">Sensors &amp; Modules</div>
+    </div>
+    <div class="stat-pill">
+      <div class="num">5</div>
+      <div class="label">แหล่งข้อมูล</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔬</div>
+      <div>
+        <h2>นวัตกรรมและอัปเดตเด่นประจำวัน</h2>
+        <p>Hardware ใหม่และโมดูลน่าสนใจที่ Maker ควรติดตาม</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- CARD 1: LILYGO T-Embed CC1101 Plus -->
+      <div class="card inno-card blue">
+        <span class="card-tag">Hardware · NFC + Sub-GHz</span>
+        <h3>LILYGO T-Embed CC1101 Plus — Swiss Army Knife สำหรับ RF Hacker</h3>
+        <p>บอร์ด ESP32-S3 ที่รวมเทคโนโลยีไร้สาย 4 ย่านในบอร์ดเดียว: CC1101 Sub-GHz (300–928 MHz), NFC PN532 (13.56 MHz), nRF24L01 (2.4 GHz), และ Wi-Fi/BLE 5 ผ่าน ESP32-S3 ออกแบบมาสำหรับโปรเจกต์ RF Research และ IoT Security</p>
+        <table class="spec-table">
+          <tr><td>MCU</td><td>ESP32-S3 Dual-Core LX7 240MHz</td></tr>
+          <tr><td>Flash / SRAM</td><td>16MB Flash + 8MB SRAM</td></tr>
+          <tr><td>RF Sub-GHz</td><td>CC1101 (300–348, 387–464, 779–928 MHz)</td></tr>
+          <tr><td>NFC</td><td>PN532 13.56 MHz (MIFARE, NTAG, FeliCa)</td></tr>
+          <tr><td>2.4 GHz</td><td>nRF24L01 ISM Transceiver</td></tr>
+          <tr><td>Display</td><td>1.9" ST7789V IPS 320×170</td></tr>
+          <tr><td>LED</td><td>8x WS2812B RGB Programmable</td></tr>
+          <tr><td>แบตเตอรี่</td><td>1300mAh ในตัว + BQ25896 Charger</td></tr>
+        </table>
+        <div class="highlight-box">
+          <strong>ทำไมถึงน่าสนใจ:</strong> บอร์ดนี้เหมาะสำหรับโปรเจกต์ Penetration Testing, RFID Research, และ Smart Home Automation ด้วย Protocol หลากหลายในราคาเพียงบอร์ดเดียว
+        </div>
+      </div>
+
+      <!-- CARD 2: Waveshare ESP32-S3 PhotoPainter -->
+      <div class="card inno-card green">
+        <span class="card-tag green">Hardware · E-Paper · Ultra Low Power</span>
+        <h3>Waveshare ESP32-S3-PhotoPainter — กรอบรูปดิจิทัล E-Ink สี 6 สี พักได้ 30 วัน</h3>
+        <p>กรอบรูปดิจิทัลที่ใช้ E Ink Spectra 6 (E6) รองรับ 6 สีหลัก พร้อม Dithering Technology ทำให้ภาพถ่ายดูสมจริงบนกระดาษอิเล็กทรอนิกส์ กินไฟต่ำมากจนสามารถพักถ่านได้นานถึง 30 วัน ด้วย 18650 เพียงก้อนเดียว</p>
+        <table class="spec-table">
+          <tr><td>Display</td><td>7.3 นิ้ว E Ink Spectra 6 (E6) — 6 สี</td></tr>
+          <tr><td>ความละเอียด</td><td>800 × 480 pixels</td></tr>
+          <tr><td>MCU</td><td>ESP32-S3-WROOM-1-N16R8</td></tr>
+          <tr><td>PSRAM / Flash</td><td>8MB PSRAM + 16MB Flash</td></tr>
+          <tr><td>Sensor ในตัว</td><td>SHTC3 อุณหภูมิ + ความชื้น</td></tr>
+          <tr><td>พักไฟ Idle</td><td>~0.5W (Active); &lt;10µA (Deep Sleep)</td></tr>
+          <tr><td>อายุแบต</td><td>~30 วัน ต่อ 18650 หนึ่งก้อน</td></tr>
+          <tr><td>กรอบ</td><td>ไม้จริง Solid Wood แบบ Premium</td></tr>
+        </table>
+        <div class="highlight-box">
+          <strong>Use Case:</strong> แสดงภาพถ่ายครอบครัว, ข้อมูลสภาพอากาศ, หรือ Artwork บนผนัง โดยไม่ต้องเสียบปลั๊กตลอดเวลา
+        </div>
+      </div>
+
+      <!-- CARD 3: Waveshare 13.3 E6 ePaper -->
+      <div class="card inno-card purple">
+        <span class="card-tag purple">Hardware · E-Ink · Full Color</span>
+        <h3>Waveshare ESP32-S3-ePaper-13.3E6 — จอ E-Ink สี Full Color ขนาดใหญ่ที่สุดสำหรับ Maker</h3>
+        <p>จอ E Ink Spectra 6 ขนาด 13.3 นิ้วความละเอียด 1600×1200 pixels รองรับสีเต็มรูปแบบ ออกแบบมาเพื่อโปรเจกต์ Digital Signage, Smart Dashboard, และงาน Art Installation ที่ต้องการจอขนาดใหญ่กินไฟน้อย</p>
+        <table class="spec-table">
+          <tr><td>Display</td><td>13.3 นิ้ว E Ink Spectra 6 Full Color</td></tr>
+          <tr><td>ความละเอียด</td><td>1600 × 1200 pixels</td></tr>
+          <tr><td>MCU</td><td>ESP32-S3-WROOM-2-N32R16V (240MHz)</td></tr>
+          <tr><td>PSRAM / Flash</td><td>16MB PSRAM + 32MB Flash</td></tr>
+          <tr><td>Audio</td><td>Low-Power Audio Codec (รองรับไมค์ + ลำโพง)</td></tr>
+          <tr><td>Storage</td><td>Slot TF Card</td></tr>
+          <tr><td>แบตเตอรี่</td><td>ETA6098 Charger + MX1.25 Battery Connector</td></tr>
+          <tr><td>Interface</td><td>3-Wire SPI + 4-Wire SPI</td></tr>
+        </table>
+        <div class="highlight-box">
+          <strong>ดีไซน์ที่ไม่เหมือนใคร:</strong> จอ E-Ink สีขนาดนี้หายากมากในตลาด — เหมาะสำหรับ Digital Art Gallery, ป้ายร้านค้า, หรือ Information Board ที่กินไฟน้อยมาก ไม่มีแสง Flicker ทำลายดวงตา
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">💡</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์น่าสร้างประจำวัน</h2>
+        <p>ไอเดียที่นำไปต่อยอดได้จริง พร้อม Component และขั้นตอนคร่าวๆ</p>
+      </div>
+    </div>
+
+    <div class="card-grid-2">
+
+      <!-- PROJECT 1: NullTag RFID Toolkit -->
+      <div class="project-card">
+        <span class="card-tag pink">Security · NFC · Open Source</span>
+        <h3>NullTag RFID Toolkit — อ่าน/โคลน/เขียน Smart Card ด้วย ESP32 + PN532</h3>
+        <p>โปรเจกต์ open-source จาก Hackaday.io ที่สร้าง DIY RFID &amp; NFC Toolkit แบบพกพา ใช้ ESP32 จับคู่กับ PN532 เชื่อมผ่าน SPI รองรับ MIFARE Classic, NTAG, FeliCa และ Tag 13.56 MHz ส่วนใหญ่ใน Radius 2–5 cm Version 2 อัพเกรดเป็น PCB stack 3 ชิ้นพร้อม Antenna แยกเพื่อลด EMI</p>
+        <p style="margin-top:0.6rem">เมนูหลักมี 10 ฟีเจอร์รวมถึง อ่าน Tag, เขียน Tag, โคลน Card, และทดสอบ RFID Reader — แสดงผลบน OLED Display ขนาดเล็ก</p>
+        <div class="parts-list">
+          <h4>อุปกรณ์ที่ใช้</h4>
+          <div class="parts-chips">
+            <span class="chip">ESP32 / ESP32-S3</span>
+            <span class="chip">PN532 NFC Module</span>
+            <span class="chip">OLED 128×64 I2C</span>
+            <span class="chip">LiPo Battery 500mAh</span>
+            <span class="chip">Custom PCB Stack</span>
+          </div>
+        </div>
+        <div class="steps-list" style="margin-top:1rem">
+          <div class="step">เชื่อม PN532 กับ ESP32 ผ่าน SPI (MOSI/MISO/SCK/CS)</div>
+          <div class="step">ใช้ Library elechouse/PN532 สำหรับ Arduino IDE</div>
+          <div class="step">เพิ่ม OLED เพื่อแสดงเมนูและผลการอ่าน Tag</div>
+          <div class="step">เพิ่มฟังก์ชัน Clone: อ่านและบันทึก UID/Data ลง Flash</div>
+          <div class="step">สร้าง PCB กะทัดรัดใส่ใน 3D Printed Case แบบพกพา</div>
+        </div>
+        <div class="highlight-box" style="margin-top:1rem">
+          <strong>แหล่งอ้างอิง:</strong> <a href="https://hackaday.io/project/203196-nulltag-my-accidental-rfid-toolkit-built-on-esp32" target="_blank" style="color:var(--accent-1)">hackaday.io/project/203196</a> — Source Code กำลังจะเผยแพร่
+        </div>
+      </div>
+
+      <!-- PROJECT 2: OBD-II Dashboard -->
+      <div class="project-card">
+        <span class="card-tag orange">Automotive · CAN Bus · IoT</span>
+        <h3>DIY OBD-II Dashboard บน ESP32 + TWAI — ดูข้อมูลรถยนต์ Real-Time ผ่าน Wi-Fi</h3>
+        <p>ESP32 มี Built-in TWAI (Two-Wire Automotive Interface) ที่ Compatible กับ CAN 2.0B รองรับ Standard Frame (11-bit ID) และ Extended Frame (29-bit ID) ทำให้สามารถต่อ OBD-II Connector ของรถได้โดยตรง เพียงเพิ่ม CAN Transceiver ภายนอก (เช่น SN65HVD230) เท่านั้น</p>
+        <p style="margin-top:0.6rem">ใช้ Library <strong>muki01/OBD2_CAN_Bus_Library</strong> (Arduino IDE / PlatformIO) ดึงค่า RPM, ความเร็ว, อุณหภูมิเครื่องยนต์, และ Error Code ผ่าน ISO15765-4 แล้วส่งข้อมูลไป Dashboard ผ่าน MQTT หรือ Web Server</p>
+        <div class="parts-list">
+          <h4>อุปกรณ์ที่ใช้</h4>
+          <div class="parts-chips">
+            <span class="chip">ESP32 / ESP32-S3</span>
+            <span class="chip">SN65HVD230 CAN Transceiver</span>
+            <span class="chip">OBD-II Connector</span>
+            <span class="chip">TFT Display 3.5"</span>
+            <span class="chip">muki01 OBD2 Library</span>
+          </div>
+        </div>
+        <div class="steps-list" style="margin-top:1rem">
+          <div class="step">เชื่อม SN65HVD230 กับขา GPIO ของ ESP32 (TX/RX TWAI)</div>
+          <div class="step">ต่อ OBD-II Connector: Pin 6 (CAN-H) และ Pin 14 (CAN-L)</div>
+          <div class="step">ติดตั้ง muki01/OBD2_CAN_Bus_Library ผ่าน PlatformIO</div>
+          <div class="step">อ่านค่า PIDs ที่ต้องการ เช่น 0x0C (RPM), 0x0D (Speed), 0x05 (Coolant Temp)</div>
+          <div class="step">แสดงผลบน TFT หรือส่งไป Grafana Dashboard ผ่าน MQTT</div>
+        </div>
+        <div class="highlight-box" style="margin-top:1rem">
+          <strong>Library:</strong> <a href="https://github.com/muki01/OBD2_CAN_Bus_Library" target="_blank" style="color:var(--accent-1)">github.com/muki01/OBD2_CAN_Bus_Library</a> — รองรับ ESP32, ESP32-S3, ESP32-C6
+        </div>
+      </div>
+
+      <!-- PROJECT 3: Smart Access Control NFC -->
+      <div class="project-card">
+        <span class="card-tag">Security · NFC · Home Automation</span>
+        <h3>Smart Access Control ด้วย ESP32 + PN532 + Home Assistant — ล็อค/ปลดล็อคด้วยการ์ด NFC</h3>
+        <p>สร้างระบบ Access Control สำหรับบ้านหรือสำนักงานโดยใช้ ESP32 + PN532 อ่านบัตร NFC (MIFARE, NTAG21x, หรือแม้แต่สมาร์ทโฟน Android/iPhone ที่รองรับ NFC) แล้วเปรียบเทียบ UID กับ Whitelist ที่เก็บไว้ใน SPIFFS ถ้าตรงก็สั่งควบคุม Electronic Lock หรือ Relay</p>
+        <p style="margin-top:0.6rem">Integration กับ Home Assistant ผ่าน MQTT หรือ ESPHome ทำให้ดูประวัติการเข้าออกแบบ Real-time และตั้ง Time-Based Access Rule ได้</p>
+        <div class="parts-list">
+          <h4>อุปกรณ์ที่ใช้</h4>
+          <div class="parts-chips">
+            <span class="chip">ESP32 / ESP32-C6</span>
+            <span class="chip">PN532 NFC Module</span>
+            <span class="chip">Electronic Magnetic Lock</span>
+            <span class="chip">Relay Module 5V</span>
+            <span class="chip">MIFARE Classic Card/Fob</span>
+          </div>
+        </div>
+        <div class="steps-list" style="margin-top:1rem">
+          <div class="step">เชื่อม PN532 กับ ESP32 ผ่าน I2C (SDA/SCL)</div>
+          <div class="step">บันทึก Whitelist UID ลงใน SPIFFS หรือ SD Card</div>
+          <div class="step">เมื่ออ่าน Card ได้ — ตรวจสอบ UID กับ Whitelist</div>
+          <div class="step">สั่ง Relay เปิด/ปิด Lock พร้อม Buzzer แจ้งเตือน</div>
+          <div class="step">Log เหตุการณ์ส่งไป Home Assistant ผ่าน MQTT</div>
+        </div>
+      </div>
+
+      <!-- PROJECT 4: Gesture Controller -->
+      <div class="project-card">
+        <span class="card-tag purple">Gesture · Contactless · HCI</span>
+        <h3>Gesture-Controlled Smart Home ด้วย PAJ7620U2 + ESP32 — สั่งงาน 9 ท่ามือไร้สัมผัส</h3>
+        <p>PAJ7620U2 เป็น Gesture Sensor ที่รู้จักท่ามือ 9 แบบ ได้แก่ ขึ้น, ลง, ซ้าย, ขวา, เข้าหา, ออก, วนตามเข็ม, วนทวนเข็ม, และโบกมือ ทำงานผ่าน I2C ง่ายต่อการเชื่อม ESP32 ระยะตอบสนองไม่เกิน 20 cm ใช้สั่งไฟ, พัดลม, ปรับเสียง, หรือ Navigation Menu บน Display ได้โดยไม่ต้องแตะหน้าจอ</p>
+        <p style="margin-top:0.6rem">เหมาะสำหรับ Kitchen Display ที่มือเปื้อน, อุปกรณ์ Medical ที่ต้องการ Hygienic Control, หรือ Presentation Remote แบบสวมใส่</p>
+        <div class="parts-list">
+          <h4>อุปกรณ์ที่ใช้</h4>
+          <div class="parts-chips">
+            <span class="chip">ESP32 / ESP32-S3</span>
+            <span class="chip">PAJ7620U2 Gesture Sensor</span>
+            <span class="chip">Waveshare PAJ7620U2 Module</span>
+            <span class="chip">Smart Home Relay / MQTT</span>
+          </div>
+        </div>
+        <div class="steps-list" style="margin-top:1rem">
+          <div class="step">เชื่อม PAJ7620U2 ผ่าน I2C (SDA GPIO21, SCL GPIO22)</div>
+          <div class="step">ใช้ Library DFRobot_PAJ7620 หรือ acrobotic/PAJ7620 สำหรับ Arduino</div>
+          <div class="step">อ่าน Gesture Register และ Map ท่าแต่ละแบบกับ MQTT Command</div>
+          <div class="step">ทดสอบ Latency ให้ต่ำกว่า 100ms ด้วยการปรับ I2C Clock Speed</div>
+          <div class="step">Integrate กับ Home Assistant ผ่าน MQTT หรือ ESPHome Script</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">📡</div>
+      <div>
+        <h2>Sensors &amp; Modules น่าสนใจ</h2>
+        <p>อุปกรณ์เสริมที่น่านำมาต่อยอดกับ ESP32 ในงาน NFC, Automotive และ Gesture</p>
+      </div>
+    </div>
+
+    <div class="sensor-grid">
+
+      <div class="sensor-card">
+        <div class="sensor-icon">📶</div>
+        <h3>PN532 NFC/RFID Module</h3>
+        <div class="subtitle">13.56 MHz NFC Reader/Writer</div>
+        <p>รองรับ MIFARE Classic 1K/4K, MIFARE Ultralight, NTAG213/215/216, ISO14443A/B, FeliCa เชื่อมได้ทั้ง SPI, I2C, UART รัศมีอ่านประมาณ 2–5 cm ราคาประมาณ 80–150 บาท ถือเป็น NFC Module มาตรฐานของ Maker Community</p>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">👋</div>
+        <h3>PAJ7620U2</h3>
+        <div class="subtitle">9-Gesture IR Sensor — ระยะ 20cm</div>
+        <p>รู้จักท่ามือ 9 แบบ ด้วย IR Imaging Array 60×60 pixels ที่ 240fps เชื่อมผ่าน I2C ทำงานที่ 3.3V กินไฟต่ำ เหมาะสำหรับ Contactless Control ในทุก Application ราคาประมาณ 150–250 บาท</p>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">🌈</div>
+        <h3>APDS-9960</h3>
+        <div class="subtitle">4-in-1: Gesture + Light + RGB + Proximity</div>
+        <p>Sensor ขนาดเล็กที่รวม Proximity Detection, Ambient Light, Color (RGB), และ Gesture (ขึ้น/ลง/ซ้าย/ขวา) ในชิปเดียว ราคาถูกกว่า PAJ7620 แต่จำนวนท่ามือน้อยกว่า เหมาะสำหรับงาน Smart Phone Interaction</p>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">🚗</div>
+        <h3>SN65HVD230 CAN Transceiver</h3>
+        <div class="subtitle">CAN Bus Driver สำหรับ ESP32 TWAI</div>
+        <p>CAN Bus Transceiver 3.3V ที่จำเป็นต้องใช้คู่กับ ESP32 TWAI Controller รองรับ CAN 2.0B, ทำงานที่ 3.3V โดยตรง ไม่ต้องใช้ Level Shifter ราคาประมาณ 30–60 บาท ซื้อได้ในรูปแบบ Module หรือ IC เดี่ยว</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔗</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+        <p>Libraries, Projects และ Documentation ที่เกี่ยวข้องกับหัวข้อวันนี้</p>
+      </div>
+    </div>
+
+    <div class="resource-grid">
+
+      <div class="resource-card">
+        <div class="resource-icon">📦</div>
+        <div>
+          <h3>muki01/OBD2_CAN_Bus_Library</h3>
+          <p>OBD2 CAN Bus Library สำหรับ ESP32 TWAI — Arduino IDE &amp; PlatformIO Compatible รองรับ ISO15765-4, ISO11898</p>
+          <a href="https://github.com/muki01/OBD2_CAN_Bus_Library" target="_blank">github.com/muki01/OBD2_CAN_Bus_Library</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🛠️</div>
+        <div>
+          <h3>NullTag — RFID Toolkit บน ESP32</h3>
+          <p>โปรเจกต์ DIY RFID/NFC Toolkit แบบพกพา จาก Hackaday.io — อ่าน, โคลน, เขียน Smart Card 13.56 MHz</p>
+          <a href="https://hackaday.io/project/203196-nulltag-my-accidental-rfid-toolkit-built-on-esp32" target="_blank">hackaday.io/project/203196</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🖼️</div>
+        <div>
+          <h3>Waveshare ESP32-S3-PhotoPainter</h3>
+          <p>กรอบรูปดิจิทัล E-Ink สี 6 สี 7.3 นิ้ว พร้อม GitHub Example Code และ Wiki ครบถ้วน</p>
+          <a href="https://www.waveshare.com/wiki/ESP32-S3-PhotoPainter" target="_blank">waveshare.com/wiki/ESP32-S3-PhotoPainter</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">📖</div>
+        <div>
+          <h3>ESP32 TWAI Programming Guide</h3>
+          <p>Copperhill Tech คู่มือ TWAI Driver ของ ESP32 แบบละเอียด พร้อมตัวอย่าง FreeRTOS Task</p>
+          <a href="https://copperhilltech.com/blog/esp32-twai-driver-explained-a-practical-guide-to-can-bus-programming/" target="_blank">copperhilltech.com/blog/esp32-twai-driver...</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🎓</div>
+        <div>
+          <h3>APDS9960 &amp; PAJ7620 บน ESP32 — Tutorial</h3>
+          <p>Random Nerd Tutorials สอนใช้ APDS9960 บน ESP32 ครบถ้วน พร้อม Schematic และ Code</p>
+          <a href="https://randomnerdtutorials.com/esp32-apds9960-sensor-arduino/" target="_blank">randomnerdtutorials.com/esp32-apds9960...</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p>สร้างโดย <strong>AI ESP32 Research Bot</strong> · วันที่ <strong>25 กรกฎาคม 2569 (2026)</strong></p>
+  <p style="margin-top:0.5rem">แหล่งข้อมูล: Hackaday.io · Waveshare Wiki · GitHub · Random Nerd Tutorials · Copperhill Tech · LILYGO Official</p>
+  <p style="margin-top:0.5rem; font-size:0.75rem">เนื้อหามีจุดประสงค์เพื่อการศึกษาและแบ่งปันความรู้ในชุมชน Maker Thailand</p>
+</footer>
+
+</body>
+</html>
