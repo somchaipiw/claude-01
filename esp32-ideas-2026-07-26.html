@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 &amp; Sensor Innovations - 26 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1a2540;
+    --bg-card-hover: #1e2d4d;
+    --accent-blue: #38bdf8;
+    --accent-purple: #a78bfa;
+    --accent-green: #34d399;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --accent-yellow: #fbbf24;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --badge-bg: rgba(56, 189, 248, 0.12);
+    --badge-border: rgba(56, 189, 248, 0.3);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0c1a3d 0%, #0f172a 40%, #0c2340 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%; transform: translateX(-50%);
+    width: 700px; height: 300px;
+    background: radial-gradient(ellipse, rgba(56,189,248,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--badge-bg);
+    border: 1px solid var(--badge-border);
+    color: var(--accent-blue);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.25rem 0.85rem;
+    border-radius: 999px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.7rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #38bdf8, #a78bfa, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.6rem;
+    line-height: 1.25;
+  }
+  header p.subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.6rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.3rem 1rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+  .stat-pill span {
+    color: var(--accent-green);
+    font-weight: 700;
+  }
+
+  /* Nav tabs */
+  nav.section-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(15,23,42,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+    overflow-x: auto;
+  }
+  nav.section-nav a {
+    display: inline-block;
+    padding: 0.85rem 1.1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  nav.section-nav a:hover {
+    color: var(--accent-blue);
+    border-bottom-color: var(--accent-blue);
+  }
+
+  /* Main layout */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+  }
+
+  /* Section headings */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+  .section-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-title small {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: var(--text-secondary);
+    margin-top: 0.1rem;
+  }
+
+  /* Cards grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+
+  /* Card */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    border-color: rgba(56, 189, 248, 0.35);
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    border-radius: 14px 14px 0 0;
+    background: linear-gradient(90deg, var(--card-accent, #38bdf8), transparent);
+  }
+
+  /* Card accent colors */
+  .card.accent-blue  { --card-accent: #38bdf8; }
+  .card.accent-purple{ --card-accent: #a78bfa; }
+  .card.accent-green { --card-accent: #34d399; }
+  .card.accent-orange{ --card-accent: #fb923c; }
+  .card.accent-pink  { --card-accent: #f472b6; }
+  .card.accent-yellow{ --card-accent: #fbbf24; }
+
+  .card-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+  }
+  .tag-new     { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+  .tag-project { background: rgba(167, 139, 250, 0.15); color: #a78bfa; }
+  .tag-sensor  { background: rgba(251, 146, 60, 0.15); color: #fb923c; }
+  .tag-library { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+  .tag-tip     { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+  }
+
+  /* Key-value list inside cards */
+  .kv-list {
+    list-style: none;
+    margin-top: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .kv-list li {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+  .kv-list li strong {
+    color: var(--text-primary);
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 90px;
+  }
+
+  /* Code block inline */
+  code {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8em;
+    color: #7dd3fc;
+  }
+
+  /* Code snippet block */
+  .code-block {
+    background: #0a1628;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin-top: 1rem;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: #94a3b8;
+    line-height: 1.7;
+  }
+  .code-block .kw  { color: #c084fc; }
+  .code-block .fn  { color: #38bdf8; }
+  .code-block .str { color: #4ade80; }
+  .code-block .cm  { color: #475569; font-style: italic; }
+  .code-block .num { color: #fb923c; }
+
+  /* Wide card */
+  .card.card-wide {
+    grid-column: 1 / -1;
+  }
+
+  /* Feature list (numbered) */
+  .feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-top: 0.9rem;
+  }
+  .feature-list li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+  .feature-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(56, 189, 248, 0.15);
+    color: var(--accent-blue);
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  /* Spec table */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.9rem;
+    font-size: 0.82rem;
+  }
+  .spec-table th, .spec-table td {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .spec-table th {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .spec-table td { color: var(--text-secondary); }
+  .spec-table td:first-child { color: var(--text-primary); font-weight: 600; }
+  .spec-table tr:last-child td { border-bottom: none; }
+
+  /* Highlight box */
+  .highlight-box {
+    background: rgba(52, 211, 153, 0.07);
+    border: 1px solid rgba(52, 211, 153, 0.2);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-top: 0.9rem;
+    font-size: 0.85rem;
+    color: #6ee7b7;
+  }
+  .highlight-box.blue {
+    background: rgba(56, 189, 248, 0.07);
+    border-color: rgba(56, 189, 248, 0.2);
+    color: #7dd3fc;
+  }
+  .highlight-box.orange {
+    background: rgba(251, 146, 60, 0.07);
+    border-color: rgba(251, 146, 60, 0.2);
+    color: #fdba74;
+  }
+  .highlight-box strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+  }
+
+  /* Resources list */
+  .resource-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 0.75rem;
+  }
+  .resource-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.85rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .resource-list li:hover {
+    border-color: rgba(56,189,248,0.3);
+    background: rgba(56,189,248,0.05);
+  }
+  .resource-list a {
+    color: var(--accent-blue);
+    text-decoration: none;
+    flex: 1;
+    font-weight: 500;
+  }
+  .resource-list a:hover { text-decoration: underline; }
+  .resource-type {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .rt-github  { background: rgba(167,139,250,0.15); color: #a78bfa; }
+  .rt-article { background: rgba(56,189,248,0.15); color: #38bdf8; }
+  .rt-hackster{ background: rgba(251,146,60,0.15); color: #fb923c; }
+  .rt-docs    { background: rgba(52,211,153,0.15); color: #34d399; }
+  .rt-blog    { background: rgba(244,114,182,0.15); color: #f472b6; }
+
+  /* Power comparison chart (CSS bars) */
+  .power-chart { margin-top: 0.9rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .power-row { display: flex; align-items: center; gap: 0.75rem; font-size: 0.8rem; }
+  .power-label { color: var(--text-secondary); min-width: 165px; }
+  .power-bar-wrap { flex: 1; background: rgba(255,255,255,0.05); border-radius: 4px; height: 8px; overflow: hidden; }
+  .power-bar { height: 100%; border-radius: 4px; }
+  .power-value { color: var(--text-primary); font-weight: 700; min-width: 55px; text-align: right; font-size: 0.78rem; }
+
+  /* Footer */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+  }
+  footer p {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    line-height: 1.9;
+  }
+  footer a { color: var(--accent-blue); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .footer-tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .footer-tag {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 640px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    header { padding: 2rem 1rem 1.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-chip">📡 Daily ESP32 Research • 26 Jul 2026</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">26 กรกฎาคม 2569 — UWB Positioning · Zigbee Coordinator · USB Host · Deep Sleep Mastery</p>
+  <div class="stats-row">
+    <div class="stat-pill"><span>4</span> นวัตกรรมเด่น</div>
+    <div class="stat-pill"><span>4</span> ไอเดียโปรเจกต์</div>
+    <div class="stat-pill"><span>4</span> Sensors &amp; Modules</div>
+    <div class="stat-pill"><span>10</span> แหล่งข้อมูล</div>
+  </div>
+</header>
+
+<!-- ===== NAV ===== -->
+<nav class="section-nav" aria-label="Section navigation">
+  <a href="#innovations">นวัตกรรม</a>
+  <a href="#projects">โปรเจกต์</a>
+  <a href="#sensors">Sensors</a>
+  <a href="#resources">แหล่งข้อมูล</a>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<main>
+
+  <!-- ===================== SECTION 1: INNOVATIONS ===================== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(56,189,248,0.12);">💡</div>
+      <div>
+        <div class="section-title">นวัตกรรมและอัปเดตเด่นประจำวัน
+          <small>เทคโนโลยีล่าสุดที่ Maker ควรรู้วันนี้</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- Card 1: UWB Indoor Positioning -->
+      <div class="card accent-blue">
+        <span class="card-tag tag-new">New Capability</span>
+        <h3>UWB Indoor Positioning ด้วย ESP32 + Qorvo DWM3000 — แม่นยำระดับ 10 cm</h3>
+        <p>
+          Ultra-Wideband (UWB) เป็นเทคโนโลยี Radio ที่ให้ความแม่นยำสูงกว่า Wi-Fi, Bluetooth, และ GPS ภายในอาคาร
+          เมื่อจับคู่กับ ESP32 และโมดูล Qorvo DWM3000 (IEEE 802.15.4z) จะสามารถสร้างระบบ Real-Time Location System (RTLS)
+          ที่แม่นยำถึง <strong style="color:#38bdf8">10 เซนติเมตร</strong> ได้ในงบประมาณ DIY
+        </p>
+        <ul class="kv-list">
+          <li><strong>เทคนิค:</strong> Double-Sided Two-Way Ranging (DS-TWR)</li>
+          <li><strong>โปรโตคอล:</strong> IEEE 802.15.4z HRP UWB</li>
+          <li><strong>Interface:</strong> SPI ระหว่าง DWM3000 ↔ ESP32</li>
+          <li><strong>สถาปัตยกรรม:</strong> ≥3 Anchor (ตำแหน่งคงที่) + 1 Tag (เคลื่อนที่)</li>
+          <li><strong>ข้อมูล:</strong> ส่งผ่าน Wi-Fi ไปยัง Dashboard แบบ Real-Time</li>
+        </ul>
+        <div class="highlight-box blue">
+          <strong>ทำไมดีกว่า BLE / Wi-Fi?</strong>
+          BLE ให้ความแม่นยำ ±1–3 เมตร, Wi-Fi RSSI ±3–5 เมตร — แต่ UWB ให้ ±10 ซม.
+          เหมาะมากสำหรับระบบ Robot Navigation, Warehouse Tracking, และ AR/VR ภายในอาคาร
+        </div>
+      </div>
+
+      <!-- Card 2: Zigbee Native Coordinator -->
+      <div class="card accent-purple">
+        <span class="card-tag tag-new">Native Zigbee</span>
+        <h3>ESP32-C6/H2 เป็น Zigbee Coordinator โดยตรง — ไม่ต้องใช้ Gateway ภายนอก</h3>
+        <p>
+          ด้วย ESP32-C6 หรือ ESP32-H2 ที่มีวิทยุ IEEE 802.15.4 ในตัว เราสามารถตั้งค่าให้เป็น
+          <strong style="color:#a78bfa">Zigbee Coordinator</strong> และสื่อสารกับ End Device ต่างๆ
+          (เซ็นเซอร์, หลอดไฟ, ปลั๊ก) ได้โดยตรงผ่าน Arduino หรือ ESP-IDF โดยไม่ต้องมีฮาร์ดแวร์ Coordinator ภายนอก
+        </p>
+        <ul class="kv-list">
+          <li><strong>SDK:</strong> esp-arduino ≥ v3.0.6 มี Zigbee built-in</li>
+          <li><strong>รองรับ:</strong> Thermometer, Switch, Light, Thermostat, Plug</li>
+          <li><strong>Library:</strong> AndroidCrypto/ESP32_C6_Zigbee_Coordinator</li>
+          <li><strong>ต้องการ:</strong> XIAO ESP32C6 หรือบอร์ด ESP32-C6/H2 ใดก็ได้</li>
+        </ul>
+        <div class="code-block">
+<span class="cm">// ตัวอย่าง Zigbee Coordinator บน ESP32-C6</span>
+<span class="kw">#include</span> <span class="str">"ZigbeeCore.h"</span>
+<span class="kw">#include</span> <span class="str">"ep/ZigbeeColorDimmableLight.h"</span>
+
+ZigbeeColorDimmableLight zbLight = ZigbeeColorDimmableLight(<span class="num">10</span>);
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  Zigbee.addEndpoint(&amp;zbLight);
+  Zigbee.<span class="fn">begin</span>(ZIGBEE_COORDINATOR);
+}
+        </div>
+      </div>
+
+      <!-- Card 3: ESP32-C6 Thread Border Router -->
+      <div class="card accent-green">
+        <span class="card-tag tag-new">OpenThread</span>
+        <h3>ESP32-C6 Native Thread Border Router — Single Chip ไม่ต้องใช้ Add-on</h3>
+        <p>
+          ESP32-C6 สามารถทำงานเป็น Thread Border Router ได้บน Single Chip ด้วย ESP-IDF v5.4.1+
+          โดยใช้วิทยุ Wi-Fi 6 (2.4 GHz) และ IEEE 802.15.4 (Thread) พร้อมกัน ไม่ต้องซื้อ
+          Home Assistant Connect ZBT-2 หรือ OTBR add-on แยกต่างหาก
+        </p>
+        <ul class="kv-list">
+          <li><strong>Wi-Fi:</strong> Wi-Fi 6 (2.4 GHz) ↔ อินเทอร์เน็ต/LAN</li>
+          <li><strong>Thread:</strong> IEEE 802.15.4 ↔ Matter over Thread Devices</li>
+          <li><strong>Firmware:</strong> ot_br example ใน ESP-IDF</li>
+          <li><strong>Matter:</strong> รองรับ Matter 1.x device บน Thread network</li>
+          <li><strong>GitHub:</strong> techo35/esp32-c6-native-thread-border-router</li>
+        </ul>
+        <div class="highlight-box">
+          <strong>ประหยัดกว่า!</strong>
+          ESP32-C6 ราคา ~$5 ทำงานเป็น Thread Border Router ได้ดีเทียบเท่า
+          Home Assistant Connect ZBT-2 ราคา $49 — เหมาะมากสำหรับ DIY Smart Home
+        </div>
+      </div>
+
+      <!-- Card 4: Sensirion UPT -->
+      <div class="card accent-orange">
+        <span class="card-tag tag-new">Modular IoT</span>
+        <h3>Sensirion Unified Prototyping Toolkit (UPT) — Multi-Sensor Auto-Discovery บน ESP32</h3>
+        <p>
+          Sensirion UPT เป็น Framework ที่ทำให้ ESP32 สามารถ <strong style="color:#fb923c">สแกน I2C Bus อัตโนมัติ</strong>
+          และเริ่มอ่านข้อมูลจาก Sensirion Sensor ที่ต่ออยู่ทุกตัวโดยไม่ต้องเขียน Code ใหม่สำหรับแต่ละ Sensor
+          รองรับ SCD4x (CO₂), SHT4x (RH/T), SEN5x (PM/VOC), SGP4x และอื่นๆ
+        </p>
+        <ul class="kv-list">
+          <li><strong>สแกน:</strong> I2C Auto-detection ทุก Sensirion Sensor</li>
+          <li><strong>ข้อมูล:</strong> JSON output พร้อม unit และ timestamp</li>
+          <li><strong>Platform:</strong> ESP32, Arduino Uno R4, Raspberry Pi Pico</li>
+          <li><strong>Protocol:</strong> JSON over Serial หรือ MQTT</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== SECTION 2: PROJECTS ===================== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(167,139,250,0.12);">🔧</div>
+      <div>
+        <div class="section-title">ไอเดียโปรเจกต์น่าสร้าง
+          <small>แนวคิดและแบบแผนที่สามารถนำไปสร้างได้จริง</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- Project 1: UWB Asset Tracker -->
+      <div class="card accent-blue">
+        <span class="card-tag tag-project">IoT Tracking</span>
+        <h3>ระบบติดตามสินทรัพย์ภายในโรงงาน ด้วย ESP32 + DWM3000 UWB</h3>
+        <p>สร้างระบบ RTLS (Real-Time Location System) ในโรงงานหรือโกดัง โดยติด Tag ESP32+DWM3000 บนสินค้า,
+          เครื่องมือ, หรือยานพาหนะ และใช้ Anchor ที่ติดตั้งคงที่บนเพดาน คำนวณตำแหน่งด้วย Trilateration
+          แล้วแสดง Floor Plan แบบ Real-Time บน Web Dashboard</p>
+        <ul class="feature-list">
+          <li><div class="feature-num">1</div><div>ติดตั้ง Anchor (ESP32 + DWM3000) ≥3 จุดบนเพดาน</div></li>
+          <li><div class="feature-num">2</div><div>Tag ส่ง UWB pulse ไปยัง Anchor ทุก 100ms (DS-TWR)</div></li>
+          <li><div class="feature-num">3</div><div>ESP32 คำนวณระยะทาง → ส่งผ่าน Wi-Fi ไปยัง Server</div></li>
+          <li><div class="feature-num">4</div><div>Server คำนวณ Trilateration → แสดงบน Map Web App (Node.js)</div></li>
+          <li><div class="feature-num">5</div><div>แจ้งเตือนผ่าน LINE Notify เมื่อสินทรัพย์ออกนอกพื้นที่กำหนด</div></li>
+        </ul>
+        <div class="highlight-box orange">
+          <strong>ต้นทุนประมาณ:</strong>
+          DWM3000 Module ราคา ~$15–25/ชิ้น, ESP32 ~$3–5 — ระบบ 4 Anchor + 5 Tag
+          ต้นทุนรวม ~$200–300 แต่ความแม่นยำระดับ 10 ซม. ทั้งอาคาร
+        </div>
+      </div>
+
+      <!-- Project 2: Zigbee Smart Home Hub -->
+      <div class="card accent-purple">
+        <span class="card-tag tag-project">Smart Home</span>
+        <h3>DIY Zigbee + Thread + Matter Hub บน ESP32-C6 — รวมโปรโตคอลในบอร์ดเดียว</h3>
+        <p>ใช้ ESP32-C6 บอร์ดเดียวทำงานเป็นทั้ง <strong style="color:#a78bfa">Zigbee Coordinator</strong>
+          (ควบคุมอุปกรณ์เก่า) และ <strong style="color:#a78bfa">Thread Border Router</strong> (รองรับอุปกรณ์ Matter ใหม่)
+          ในเวลาเดียวกัน โดยสลับ Mode ผ่าน Web UI ที่อยู่ใน ESP32-C6 เอง</p>
+        <ul class="kv-list">
+          <li><strong>บอร์ดแนะนำ:</strong> XIAO ESP32C6, M5Stamp C6, ESP32-C6-DevKitC-1</li>
+          <li><strong>Zigbee Mode:</strong> Coordinator — ควบคุม Light, Sensor, Plug</li>
+          <li><strong>Thread Mode:</strong> Border Router — สะพาน IPv6 ↔ Thread</li>
+          <li><strong>UI:</strong> ESPHome + Home Assistant Integration</li>
+          <li><strong>Storage:</strong> เก็บ Device List ใน LittleFS บน Flash</li>
+        </ul>
+      </div>
+
+      <!-- Project 3: USB Host UVC Camera -->
+      <div class="card accent-green">
+        <span class="card-tag tag-project">USB Host</span>
+        <h3>ESP32-S3/P4 USB Host — เชื่อมต่อกล้อง USB UVC, Keyboard, และ Flash Drive</h3>
+        <p>ESP32-S3 และ ESP32-P4 มีวงจร USB-OTG ในตัว สามารถทำงานเป็น USB Host ได้ รองรับ
+          UVC Camera (จับภาพวิดีโอ), HID Keyboard/Mouse, และ Mass Storage (Flash Drive)
+          โดยใช้ ESP-IDF USB Host Stack ที่รวมอยู่ใน esp-iot-solution</p>
+        <ul class="kv-list">
+          <li><strong>UVC Driver:</strong> จับภาพจากกล้อง USB และส่งผ่าน Wi-Fi</li>
+          <li><strong>HID Driver:</strong> รับ Input จาก Keyboard/Mouse USB</li>
+          <li><strong>MSC Driver:</strong> อ่าน/เขียน USB Flash Drive ได้</li>
+          <li><strong>Library:</strong> tanakamasayuki/EspUsbHost (Arduino)</li>
+        </ul>
+        <div class="highlight-box blue">
+          <strong>ไอเดียโปรเจกต์:</strong>
+          ต่อกล้อง USB เว็บแคมธรรมดาราคาถูก (~200 บาท) กับ ESP32-S3 แล้วสร้าง
+          Security Camera ส่ง Stream ผ่าน Wi-Fi ไปยัง Home Assistant — ไม่ต้องซื้อกล้อง ESP32-CAM
+        </div>
+        <div class="code-block">
+<span class="cm">// ESP32-S3 USB Host: รับ Input จาก Keyboard</span>
+<span class="kw">#include</span> <span class="str">"EspUsbHost.h"</span>
+EspUsbHost usbHost;
+
+<span class="kw">void</span> <span class="fn">onKeyboard</span>(hid_keyboard_report_t report, ...) {
+  Serial.<span class="fn">printf</span>(<span class="str">"Key: %d\n"</span>, report.keycode[<span class="num">0</span>]);
+}
+<span class="kw">void</span> <span class="fn">setup</span>() { usbHost.<span class="fn">begin</span>(); }
+<span class="kw">void</span> <span class="fn">loop</span>()  { usbHost.<span class="fn">task</span>(); }
+        </div>
+      </div>
+
+      <!-- Project 4: Deep Sleep 1-Year Battery Sensor -->
+      <div class="card accent-yellow">
+        <span class="card-tag tag-tip">Power Tips</span>
+        <h3>Sensor Node อายุแบตเตอรี่ 1 ปี — เทคนิค Deep Sleep ที่ครบครันที่สุดสำหรับ ESP32</h3>
+        <p>ด้วย Deep Sleep ที่ปรับแต่งอย่างดี ESP32 สามารถส่งข้อมูล Sensor ทุก 10 นาที โดยใช้แบตเตอรี่
+          18650 (2000 mAh) ได้นานกว่า <strong style="color:#fbbf24">1 ปี</strong>
+          เทียบกับปกติที่ไม่มี Deep Sleep จะหมดใน &lt;24 ชั่วโมง</p>
+
+        <div class="power-chart">
+          <div class="power-row">
+            <div class="power-label">Wi-Fi Active Mode</div>
+            <div class="power-bar-wrap"><div class="power-bar" style="width:100%;background:linear-gradient(90deg,#ef4444,#dc2626);"></div></div>
+            <div class="power-value">80–240 mA</div>
+          </div>
+          <div class="power-row">
+            <div class="power-label">Light Sleep</div>
+            <div class="power-bar-wrap"><div class="power-bar" style="width:40%;background:#fb923c;"></div></div>
+            <div class="power-value">~0.8 mA</div>
+          </div>
+          <div class="power-row">
+            <div class="power-label">Deep Sleep (RTC On)</div>
+            <div class="power-bar-wrap"><div class="power-bar" style="width:15%;background:#fbbf24;"></div></div>
+            <div class="power-value">~10–20 µA</div>
+          </div>
+          <div class="power-row">
+            <div class="power-label">Deep Sleep + Low-Q LDO</div>
+            <div class="power-bar-wrap"><div class="power-bar" style="width:4%;background:#34d399;"></div></div>
+            <div class="power-value">~2–3 µA</div>
+          </div>
+        </div>
+
+        <ul class="feature-list">
+          <li><div class="feature-num">1</div><div><strong>เก็บ Wi-Fi Channel + BSSID ใน RTC Memory</strong> — ลด Reconnect จาก 3s → 500ms</div></li>
+          <li><div class="feature-num">2</div><div><strong>ใช้ MOSFET ตัดไฟเซ็นเซอร์</strong> ระหว่าง Sleep — ไม่ให้เซ็นเซอร์กินไฟสูญเปล่า</div></li>
+          <li><div class="feature-num">3</div><div><strong>เปลี่ยน LDO เป็น TI TPS7A02</strong> — Quiescent Current &lt;25 nA (จาก 50 µA ปกติ)</div></li>
+          <li><div class="feature-num">4</div><div><strong>ใช้ ULP Coprocessor</strong> อ่านเซ็นเซอร์ใน Sleep โดยไม่ปลุก Main CPU</div></li>
+          <li><div class="feature-num">5</div><div><strong>ปิด Wi-Fi + Bluetooth</strong> ทันทีหลังส่งข้อมูล ก่อน Deep Sleep</div></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== SECTION 3: SENSORS ===================== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,146,60,0.12);">📟</div>
+      <div>
+        <div class="section-title">Sensors &amp; Modules น่าสนใจ
+          <small>ฮาร์ดแวร์ที่คู่ควรกับโปรเจกต์ ESP32 ของคุณ</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- Sensor 1: DWM3000 -->
+      <div class="card accent-blue">
+        <span class="card-tag tag-sensor">UWB Module</span>
+        <h3>Qorvo DWM3000 — UWB RF Module IEEE 802.15.4z พร้อม Antenna ในตัว</h3>
+        <table class="spec-table">
+          <tr><th>Spec</th><th>ค่า</th></tr>
+          <tr><td>Standard</td><td>IEEE 802.15.4z HRP UWB</td></tr>
+          <tr><td>Chip</td><td>DW3110 (Qorvo)</td></tr>
+          <tr><td>ช่อง RF</td><td>CH5 (6.5 GHz) &amp; CH9 (8 GHz)</td></tr>
+          <tr><td>Interface</td><td>SPI ความเร็วสูงสุด 38 MHz</td></tr>
+          <tr><td>ความแม่นยำ</td><td>±10 ซม. (DS-TWR)</td></tr>
+          <tr><td>ราคาโดยประมาณ</td><td>$15–25 (ขึ้นกับผู้ผลิต PCB)</td></tr>
+          <tr><td>รูปแบบ</td><td>SMD Module + PCB Antenna ในตัว</td></tr>
+        </table>
+        <div class="highlight-box blue">
+          รองรับ <strong>TWR, TDOA, AoA</strong> — ทั้งการวัดระยะทางและมุมทิศทาง
+          เหมาะสำหรับ Indoor Navigation, Robot Docking, และ AR Overlay
+        </div>
+      </div>
+
+      <!-- Sensor 2: SEN66 -->
+      <div class="card accent-green">
+        <span class="card-tag tag-sensor">Multi-Sensor</span>
+        <h3>Sensirion SEN66 — เซ็นเซอร์คุณภาพอากาศ 6-in-1 บน I2C ตัวเดียว</h3>
+        <p>SEN66 รวมเซ็นเซอร์คุณภาพอากาศครบในโมดูลเดียว ขนาดเล็กกว่า SEN55 และเพิ่ม CO₂ สำหรับ Indoor Air Quality</p>
+        <table class="spec-table">
+          <tr><th>พารามิเตอร์</th><th>ช่วงวัด</th></tr>
+          <tr><td>PM1.0 / PM2.5 / PM4 / PM10</td><td>0–1000 µg/m³</td></tr>
+          <tr><td>VOC Index</td><td>1–500 (Srawing Scale)</td></tr>
+          <tr><td>NOx Index</td><td>1–500</td></tr>
+          <tr><td>CO₂ (NDIR)</td><td>400–5000 ppm</td></tr>
+          <tr><td>RH</td><td>0–100 %RH</td></tr>
+          <tr><td>Temperature</td><td>-10 ถึง +60 °C</td></tr>
+          <tr><td>Interface</td><td>I2C (0x6B default)</td></tr>
+        </table>
+        <div class="highlight-box">
+          <strong>ใช้กับ ESP32 ได้เลย!</strong>
+          Sensirion มี Arduino Library (arduino-core) รองรับ SEN66
+          และ ESPHome มี Component สำหรับ SEN5x/SEN6x ครบถ้วน
+        </div>
+      </div>
+
+      <!-- Sensor 3: LVGL 9 Display -->
+      <div class="card accent-pink">
+        <span class="card-tag tag-library">GUI Library</span>
+        <h3>LVGL 9.x บน ESP32-S3 — GUI Framework ที่สวยที่สุดสำหรับ Embedded Display</h3>
+        <p>LVGL (Light and Versatile Graphics Library) v9.x เป็น Library GUI ที่ได้รับความนิยมสูงสุดสำหรับ
+          Embedded Display บน ESP32-S3 รองรับ Touch, Animation, Widget ครบ และใช้ได้กับ ESPHome ได้โดยตรง</p>
+        <ul class="kv-list">
+          <li><strong>บอร์ดแนะนำ:</strong> ESP32-S3-Touch-LCD-2.1 (480×480)</li>
+          <li><strong>Display:</strong> ILI9488, ST7789, GC9A01, ILI9341</li>
+          <li><strong>Render:</strong> ใช้ DMA + Double Buffering</li>
+          <li><strong>ESPHome:</strong> รองรับ LVGL v9 โดยตรงใน 2025.6+</li>
+          <li><strong>Widgets:</strong> Button, Slider, Chart, Calendar, Roller</li>
+        </ul>
+        <div class="highlight-box">
+          <strong>เทคนิคสำคัญ:</strong>
+          ใช้ <code>LovyanGFX</code> เป็น Display Driver แทน Adafruit GFX
+          เพื่อให้ได้ความเร็วสูงสุดบน ESP32-S3 กับ LVGL v9
+        </div>
+      </div>
+
+      <!-- Sensor 4: Meshtastic Detection Sensor -->
+      <div class="card accent-orange">
+        <span class="card-tag tag-sensor">LoRa / Mesh</span>
+        <h3>Meshtastic Detection Sensor Module — เปลี่ยน Mesh Node เป็น Remote Monitor</h3>
+        <p>Meshtastic รองรับ "Detection Sensor Module" ที่ทำให้ Node ในเครือข่าย Mesh
+          สามารถส่ง Event แจ้งเตือนเมื่อมีการตรวจจับ (เช่น PIR, ประตูเปิด, น้ำท่วม)
+          ผ่าน LoRa Mesh โดยไม่ต้องมี Wi-Fi หรือ Cellular Coverage</p>
+        <ul class="kv-list">
+          <li><strong>บอร์ด:</strong> Heltec LoRa32, T-Beam, RAK4631 + ESP32</li>
+          <li><strong>การตั้งค่า:</strong> ผ่าน Meshtastic App (iOS/Android)</li>
+          <li><strong>Trigger:</strong> GPIO input จาก PIR, Reed Switch, Flood Sensor</li>
+          <li><strong>Range:</strong> 1–10 กม. (LoRa) ผ่าน Mesh หลาย Hop</li>
+          <li><strong>Notify:</strong> Push ไปยัง MQTT, Telegram, HA webhook</li>
+        </ul>
+        <div class="highlight-box orange">
+          <strong>Use Case เด่น:</strong>
+          ระบบแจ้งเตือนบ้านนอกเมือง, สถานีเตือนภัยน้ำท่วม,
+          หรือ Security Alert พื้นที่ห่างไกลที่ไม่มีสัญญาณมือถือ
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== SECTION 4: RESOURCES ===================== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,0.12);">🔗</div>
+      <div>
+        <div class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง
+          <small>GitHub, บทความ, และ Docs ที่คัดเลือกมาสำหรับวันนี้</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <div class="card card-wide accent-green">
+        <h3 style="margin-bottom:1rem; font-size:0.95rem; color:var(--text-secondary); font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">GitHub Repositories</h3>
+        <ul class="resource-list">
+          <li>
+            <span class="resource-type rt-github">GitHub</span>
+            <a href="https://github.com/AndroidCrypto/ESP32_C6_Zigbee_Coordinator" target="_blank" rel="noopener">AndroidCrypto/ESP32_C6_Zigbee_Coordinator — ESP32-C6 Zigbee Coordinator with examples</a>
+          </li>
+          <li>
+            <span class="resource-type rt-github">GitHub</span>
+            <a href="https://github.com/KunYi/esp32-uwb-positioning-system" target="_blank" rel="noopener">KunYi/esp32-uwb-positioning-system — ESP32 UWB Indoor Positioning System</a>
+          </li>
+          <li>
+            <span class="resource-type rt-github">GitHub</span>
+            <a href="https://github.com/techo35/esp32-c6-native-thread-border-router" target="_blank" rel="noopener">techo35/esp32-c6-native-thread-border-router — Native Single-Chip Thread Border Router บน ESP32-C6</a>
+          </li>
+          <li>
+            <span class="resource-type rt-github">GitHub</span>
+            <a href="https://github.com/tanakamasayuki/EspUsbHost" target="_blank" rel="noopener">tanakamasayuki/EspUsbHost — Arduino USB Host Library สำหรับ ESP32-S2/S3</a>
+          </li>
+          <li>
+            <span class="resource-type rt-github">GitHub</span>
+            <a href="https://github.com/lvgl/lv_port_esp32" target="_blank" rel="noopener">lvgl/lv_port_esp32 — LVGL Official Port สำหรับ ESP32 ทุกรุ่น</a>
+          </li>
+        </ul>
+
+        <h3 style="margin:1.5rem 0 1rem; font-size:0.95rem; color:var(--text-secondary); font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">บทความและ Tutorial</h3>
+        <ul class="resource-list">
+          <li>
+            <span class="resource-type rt-article">Medium</span>
+            <a href="https://medium.com/@androidcrypto/how-to-use-an-esp32-c6-as-zigbee-coordinator-or-end-device-overview-e70cfa7f45f9" target="_blank" rel="noopener">How to use ESP32-C6 as Zigbee Coordinator or End Device (Overview) — AndroidCrypto</a>
+          </li>
+          <li>
+            <span class="resource-type rt-hackster">Hackster</span>
+            <a href="https://www.hackster.io/etolocka/meshtastic-detection-sensor-module-a-complete-guide-95ecf6" target="_blank" rel="noopener">Meshtastic Detection Sensor Module: A Complete Guide — Hackster.io</a>
+          </li>
+          <li>
+            <span class="resource-type rt-article">CircuitDigest</span>
+            <a href="https://circuitdigest.com/microcontrollers-projects/diy-indoor-uwb-positioning-system-using-esp32-and-qorvo-dwm3000" target="_blank" rel="noopener">DIY Indoor UWB Positioning System using ESP32 and Qorvo DWM3000</a>
+          </li>
+          <li>
+            <span class="resource-type rt-blog">esp32.co.uk</span>
+            <a href="https://esp32.co.uk/esp32-battery-powered-sensors-deep-sleep-low-power-design-guide/" target="_blank" rel="noopener">ESP32 Deep Sleep Battery Sensors — 2026 Guide ครบครันสุดๆ</a>
+          </li>
+          <li>
+            <span class="resource-type rt-docs">ESP-IDF Docs</span>
+            <a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32s3/api-reference/peripherals/usb_host.html" target="_blank" rel="noopener">USB Host API Reference — ESP32-S3 (ESP-IDF v6.0.2)</a>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p>
+    สร้างเมื่อ <strong>26 กรกฎาคม 2569</strong> (2026-07-26) · ESP32 Daily Research<br>
+    ข้อมูลอ้างอิงจาก: Espressif ESP-IDF Docs, GitHub, Hackster.io, CircuitDigest, Medium, esp32.co.uk, Sensirion<br>
+    Repository: <a href="https://github.com/somchaipiw/claude-01" target="_blank" rel="noopener">github.com/somchaipiw/claude-01</a>
+  </p>
+  <div class="footer-tags">
+    <span class="footer-tag">ESP32</span>
+    <span class="footer-tag">UWB</span>
+    <span class="footer-tag">DWM3000</span>
+    <span class="footer-tag">Zigbee</span>
+    <span class="footer-tag">Thread</span>
+    <span class="footer-tag">Matter</span>
+    <span class="footer-tag">USB Host</span>
+    <span class="footer-tag">Deep Sleep</span>
+    <span class="footer-tag">LVGL</span>
+    <span class="footer-tag">Sensirion UPT</span>
+    <span class="footer-tag">Meshtastic</span>
+    <span class="footer-tag">IoT</span>
+  </div>
+</footer>
+
+</body>
+</html>
