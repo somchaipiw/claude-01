@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 &amp; Sensor Innovations - 27 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary:   #0f172a;
+    --bg-card:      #1e293b;
+    --bg-card-alt:  #172035;
+    --border:       #334155;
+    --accent-blue:  #38bdf8;
+    --accent-green: #34d399;
+    --accent-amber: #fbbf24;
+    --accent-rose:  #f87171;
+    --accent-purple:#a78bfa;
+    --text-primary: #e2e8f0;
+    --text-muted:   #94a3b8;
+    --text-dim:     #64748b;
+    --grad-header:  linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #a855f7 100%);
+    --grad-solar:   linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+    --grad-vibration: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%);
+    --grad-tof:     linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+    --grad-cam:     linear-gradient(135deg, #f97316 0%, #eab308 100%);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: var(--grad-header);
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 20%, rgba(255,255,255,.06) 0%, transparent 50%);
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 999px;
+    padding: .25rem 1rem;
+    font-size: .8rem;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    color: #fff;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 12px rgba(0,0,0,.3);
+    line-height: 1.3;
+    margin-bottom: .5rem;
+  }
+  header p {
+    color: rgba(255,255,255,.85);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 12px;
+    padding: .4rem 1.1rem;
+    font-size: .85rem;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: .75rem 2rem;
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: .88rem;
+    font-weight: 600;
+    padding: .25rem .5rem;
+    border-radius: 6px;
+    transition: all .2s;
+  }
+  nav a:hover { color: var(--accent-blue); background: rgba(56,189,248,.08); }
+
+  /* ─── MAIN ─── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 4rem;
+  }
+
+  /* ─── SECTION TITLE ─── */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: .75rem;
+    border-bottom: 2px solid var(--border);
+  }
+  .section-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .section-title h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-title p {
+    font-size: .85rem;
+    color: var(--text-muted);
+    margin-top: .1rem;
+  }
+
+  section { margin-bottom: 3.5rem; }
+
+  /* ─── CARD GRID ─── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+    gap: 1.25rem;
+  }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform .25s, box-shadow .25s, border-color .25s;
+    display: flex;
+    flex-direction: column;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,.4);
+    border-color: rgba(56,189,248,.35);
+  }
+  .card-stripe {
+    height: 5px;
+  }
+  .card-body { padding: 1.35rem; flex: 1; display: flex; flex-direction: column; }
+  .card-tag {
+    display: inline-block;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    border-radius: 6px;
+    padding: .18rem .7rem;
+    margin-bottom: .75rem;
+    width: fit-content;
+  }
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: .6rem;
+    line-height: 1.45;
+  }
+  .card p {
+    font-size: .88rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    flex: 1;
+  }
+
+  /* ─── SPEC TABLE ─── */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: .75rem;
+    font-size: .83rem;
+  }
+  .spec-table tr { border-bottom: 1px solid var(--border); }
+  .spec-table tr:last-child { border-bottom: none; }
+  .spec-table td { padding: .4rem .5rem; }
+  .spec-table td:first-child { color: var(--text-muted); width: 42%; }
+  .spec-table td:last-child { color: var(--accent-blue); font-weight: 600; }
+
+  /* ─── HIGHLIGHT BOX ─── */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(56,189,248,.08), rgba(99,102,241,.06));
+    border: 1px solid rgba(56,189,248,.2);
+    border-radius: 12px;
+    padding: 1.1rem 1.35rem;
+    margin-top: .9rem;
+    font-size: .85rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .highlight-box strong { color: var(--accent-blue); }
+
+  /* ─── STEP LIST ─── */
+  .step-list { list-style: none; margin-top: .75rem; }
+  .step-list li {
+    display: flex;
+    gap: .75rem;
+    padding: .45rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: .86rem;
+    color: var(--text-muted);
+  }
+  .step-list li:last-child { border-bottom: none; }
+  .step-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(56,189,248,.15);
+    color: var(--accent-blue);
+    font-size: .75rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ─── BADGE ROW ─── */
+  .badge-row { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .85rem; }
+  .badge {
+    font-size: .75rem;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: .2rem .65rem;
+    background: rgba(56,189,248,.1);
+    color: var(--accent-blue);
+    border: 1px solid rgba(56,189,248,.2);
+  }
+  .badge.green { background: rgba(52,211,153,.1); color: var(--accent-green); border-color: rgba(52,211,153,.2); }
+  .badge.amber { background: rgba(251,191,36,.1); color: var(--accent-amber); border-color: rgba(251,191,36,.2); }
+  .badge.purple { background: rgba(167,139,250,.1); color: var(--accent-purple); border-color: rgba(167,139,250,.2); }
+  .badge.rose { background: rgba(248,113,113,.1); color: var(--accent-rose); border-color: rgba(248,113,113,.2); }
+
+  /* ─── COLOR CLASSES ─── */
+  .stripe-solar  { background: var(--grad-solar); }
+  .stripe-vibr   { background: var(--grad-vibration); }
+  .stripe-tof    { background: var(--grad-tof); }
+  .stripe-cam    { background: var(--grad-cam); }
+  .stripe-blue   { background: linear-gradient(90deg, #38bdf8, #6366f1); }
+  .stripe-green  { background: linear-gradient(90deg, #34d399, #10b981); }
+  .stripe-amber  { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+  .stripe-purple { background: linear-gradient(90deg, #a78bfa, #8b5cf6); }
+  .stripe-rose   { background: linear-gradient(90deg, #f87171, #ec4899); }
+  .stripe-teal   { background: linear-gradient(90deg, #2dd4bf, #0ea5e9); }
+
+  .tag-solar  { background: rgba(251,191,36,.15); color: #fbbf24; }
+  .tag-vibr   { background: rgba(52,211,153,.15); color: #34d399; }
+  .tag-tof    { background: rgba(167,139,250,.15); color: #a78bfa; }
+  .tag-cam    { background: rgba(249,115,22,.15); color: #f97316; }
+  .tag-blue   { background: rgba(56,189,248,.15); color: #38bdf8; }
+  .tag-rose   { background: rgba(248,113,113,.15); color: #f87171; }
+  .tag-green  { background: rgba(52,211,153,.15); color: #34d399; }
+  .tag-teal   { background: rgba(45,212,191,.15); color: #2dd4bf; }
+
+  .icon-solar  { background: rgba(251,191,36,.15); }
+  .icon-vibr   { background: rgba(52,211,153,.15); }
+  .icon-tof    { background: rgba(167,139,250,.15); }
+  .icon-cam    { background: rgba(249,115,22,.15); }
+  .icon-blue   { background: rgba(56,189,248,.15); }
+  .icon-teal   { background: rgba(45,212,191,.15); }
+
+  /* ─── SENSOR CARD ─── */
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.35rem;
+    transition: transform .25s, box-shadow .25s;
+  }
+  .sensor-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,.35);
+  }
+  .sensor-header {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    margin-bottom: .85rem;
+  }
+  .sensor-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+  .sensor-meta h3 { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+  .sensor-meta p { font-size: .78rem; color: var(--text-muted); margin-top: .1rem; }
+  .sensor-desc { font-size: .86rem; color: var(--text-muted); line-height: 1.7; margin-bottom: .75rem; }
+
+  /* ─── RESOURCE CARD ─── */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.25rem;
+    transition: border-color .2s, transform .2s;
+    display: flex;
+    gap: .85rem;
+    align-items: flex-start;
+  }
+  .resource-card:hover { border-color: rgba(56,189,248,.35); transform: translateY(-2px); }
+  .resource-icon {
+    width: 38px; height: 38px;
+    border-radius: 8px;
+    background: rgba(56,189,248,.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .resource-card h4 { font-size: .9rem; font-weight: 700; color: var(--text-primary); margin-bottom: .25rem; }
+  .resource-card p { font-size: .78rem; color: var(--text-muted); line-height: 1.6; }
+  .resource-card a {
+    font-size: .75rem;
+    color: var(--accent-blue);
+    text-decoration: none;
+    font-weight: 600;
+    margin-top: .35rem;
+    display: inline-block;
+  }
+  .resource-card a:hover { text-decoration: underline; }
+
+  /* ─── FEATURED BANNER ─── */
+  .featured-banner {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent-amber);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.75rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .featured-banner .banner-icon { font-size: 1.6rem; flex-shrink: 0; }
+  .featured-banner h3 { font-size: 1rem; font-weight: 700; color: var(--accent-amber); margin-bottom: .35rem; }
+  .featured-banner p { font-size: .87rem; color: var(--text-muted); line-height: 1.7; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+  }
+  footer p { font-size: .82rem; color: var(--text-dim); line-height: 1.8; }
+  footer strong { color: var(--text-muted); }
+
+  @media (max-width: 600px) {
+    header { padding: 2rem 1rem 1.5rem; }
+    .card-grid-2 { grid-template-columns: 1fr; }
+    nav { gap: .75rem; padding: .5rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header>
+  <div class="header-badge">🛰️ Daily ESP32 Research</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p>27 กรกฎาคม 2569 · ฉบับพลังงานสะอาด, ซ่อมบำรุงเชิงพยากรณ์ และ 3D Sensing</p>
+  <div class="stats-row">
+    <div class="stat-chip">☀️ 4 นวัตกรรม</div>
+    <div class="stat-chip">🔧 4 ไอเดียโปรเจกต์</div>
+    <div class="stat-chip">📡 5 Sensors</div>
+    <div class="stat-chip">🔗 6 แหล่งอ้างอิง</div>
+  </div>
+</header>
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<nav>
+  <a href="#innovations">🚀 นวัตกรรม</a>
+  <a href="#projects">⚡ โปรเจกต์</a>
+  <a href="#sensors">📡 Sensors</a>
+  <a href="#resources">🔗 แหล่งข้อมูล</a>
+</nav>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main>
+
+  <!-- ── FEATURED ── -->
+  <div class="featured-banner">
+    <div class="banner-icon">🏭</div>
+    <div>
+      <h3>ธีมประจำวัน: Energy + Predictive + 3D Sensing</h3>
+      <p>วันนี้เจาะ 3 ทิศทางหลักที่กำลังร้อนแรงในโลก IoT ปี 2026 ได้แก่ (1) การจัดการพลังงานแสงอาทิตย์แบบอัจฉริยะด้วย ESP32 + MPPT, (2) ระบบซ่อมบำรุงเชิงพยากรณ์ (Predictive Maintenance) ด้วย TinyML วิเคราะห์การสั่นสะเทือน, และ (3) การทำ 3D Room Mapping แบบ Real-time ด้วย ToF Sensor Array ราคาประหยัด รวมถึงความสามารถ Video Streaming คุณภาพสูงบน ESP32-P4</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SECTION 1: INNOVATIONS
+  ═══════════════════════════════════════ -->
+  <section id="innovations">
+    <div class="section-title">
+      <div class="section-icon icon-cam">🚀</div>
+      <div>
+        <h2>นวัตกรรมและอัปเดตเด่นประจำวัน</h2>
+        <p>โปรเจกต์โอเพนซอร์สและงานวิจัยใหม่จากชุมชน ESP32 ทั่วโลก</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Card 1: ESP32-P4 UVC Video Streaming -->
+      <div class="card">
+        <div class="card-stripe stripe-cam"></div>
+        <div class="card-body">
+          <span class="card-tag tag-cam">ESP32-P4 · Video</span>
+          <h3>ESP32-P4 UVC 1.5 Webcam — 1080p H.264 ผ่าน USB และ Ethernet พร้อมกัน</h3>
+          <p>โปรเจกต์ <code>r4d10n/esp32p4-uvc-video</code> บน GitHub เปิดตัวการ Streaming วิดีโอคุณภาพ 1080p ด้วย OV5647 MIPI CSI บน ESP32-P4 โดยรองรับ USB Video Class (UVC) 1.5 และ RTSP/RTP IP Camera พร้อมกันในตัวเดียว ใช้ Hardware H.264 Encoder ที่อยู่ในชิปทำให้ CPU เหลือสำหรับ AI Inference</p>
+          <div class="badge-row">
+            <span class="badge">OV5647 MIPI CSI</span>
+            <span class="badge amber">H.264 HW Encoder</span>
+            <span class="badge green">UVC 1.5 + RTSP</span>
+            <span class="badge purple">Dual Output</span>
+          </div>
+          <div class="highlight-box">
+            <strong>จุดเด่น:</strong> ESP32-P4 มี Hardware ISP และ H.264 Encoder ทำให้ Stream วิดีโอ 1080p@30fps ได้พร้อมรัน AI Inference บน LP Core โดยแทบไม่กระทบ Performance หลัก — ต่างจาก ESP32-S3 ที่ทำ MJPEG ได้อย่างเดียว
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: TinyML Predictive Maintenance -->
+      <div class="card">
+        <div class="card-stripe stripe-vibr"></div>
+        <div class="card-body">
+          <span class="card-tag tag-vibr">TinyML · Maintenance</span>
+          <h3>TinyML Predictive Maintenance บน ESP32-S3 — แม่นยำ 92% ตรวจ Bearing Fault ภายใน 45ms</h3>
+          <p>งานวิจัยจาก ResearchGate (มีนาคม 2026) พิสูจน์ว่า ESP32-S3 รัน Vibration Analysis Model ด้วย Transfer Learning สำเร็จ โดยใช้ ADXL345 Triaxial Accelerometer Sample ที่ 3200 samples/s แล้วทำ FFT แยก Frequency Component เพื่อวินิจฉัยความเสีย เช่น Bearing Fault, Shaft Imbalance, Misalignment ได้ถูกต้องถึง 92%</p>
+          <div class="badge-row">
+            <span class="badge green">92% Accuracy</span>
+            <span class="badge">45ms Inference</span>
+            <span class="badge amber">17.7 mJ/inference</span>
+            <span class="badge purple">Transfer Learning</span>
+          </div>
+          <div class="highlight-box">
+            <strong>ข้อดี:</strong> ทำนาย Fault ก่อนเครื่องจักรพัง ลดค่าซ่อม 30-70% เทียบกับการซ่อมตามรอบ (Preventive Maintenance) แบบดั้งเดิม — ไม่ต้องส่งข้อมูลไปคลาวด์ทุกครั้ง
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: 3D Room Mapping -->
+      <div class="card">
+        <div class="card-stripe stripe-tof"></div>
+        <div class="card-body">
+          <span class="card-tag tag-tof">VL53L5CX · 3D Mapping</span>
+          <h3>Real-time 3D Room Mapping ด้วย ESP32 + VL53L5CX + IMU — Hackaday กุมภาพันธ์ 2026</h3>
+          <p>บทความฮิตบน Hackaday สาธิตการสร้าง 3D Point Cloud Map ของห้องในเวลาจริงโดยใช้ ESP32 เชื่อมกับ VL53L5CX (8×8 ToF Array 64 Zones) บวกกับ IMU ติดตาม Orientation แผนที่ 3D ถูกอัปเดตทุก 33ms ตาม Frame Rate 30fps ของ Sensor เหมาะสำหรับหุ่นยนต์หลีกเลี่ยงสิ่งกีดขวาง และ Smart Home Presence Detection</p>
+          <div class="badge-row">
+            <span class="badge purple">8×8 ToF = 64 Zones</span>
+            <span class="badge">30 fps</span>
+            <span class="badge green">ระยะ 400 cm</span>
+            <span class="badge amber">SLAM ราคาถูก</span>
+          </div>
+          <div class="highlight-box">
+            <strong>ต่อยอดได้:</strong> เพิ่ม VL53L8CX (รุ่นใหม่กว่า) ที่มี FoV กว้าง 65° พร้อม Hand Posture Recognition ในตัว เพื่อทำ Gesture UI สำหรับ Smart Appliance ควบคุมด้วยมือ
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Smart MPPT Solar Controller -->
+      <div class="card">
+        <div class="card-stripe stripe-solar"></div>
+        <div class="card-body">
+          <span class="card-tag tag-solar">MPPT · Solar · ESP32</span>
+          <h3>ESP32 Smart MPPT Solar Controller — Web Dashboard + Weather-Adaptive Cutoff + Coulomb Counting</h3>
+          <p>โปรเจกต์ Open Source <code>akgang-rgb/ESP32-Smart-Solar-Controller-MPPT-Firmware-Web-Dashboard</code> แปลง MPPT Charge Controller 12V ทั่วไปให้กลายเป็น Smart Controller ด้วยการต่อโมดูล ESP32 เข้าไป ฟีเจอร์ครอบคลุม Real-time Web Dashboard, Weather-Adaptive Charging Cutoff, Coulomb Counting วัด State of Charge แม่นยำ, Deep Sleep ประหยัดไฟ และ Remote Access ผ่าน Wi-Fi</p>
+          <div class="badge-row">
+            <span class="badge amber">Weather-Adaptive</span>
+            <span class="badge green">Coulomb Counting</span>
+            <span class="badge">Web Dashboard</span>
+            <span class="badge rose">Deep Sleep</span>
+          </div>
+          <div class="highlight-box">
+            <strong>รองรับหลายภาษา</strong> รวมถึงภาษาไทย — ติดตั้งได้กับ MPPT Controller ยี่ห้อใดก็ได้ที่มี Serial Port (ส่วนใหญ่ใช้ RS-485 Modbus)
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /card-grid -->
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SECTION 2: PROJECTS
+  ═══════════════════════════════════════ -->
+  <section id="projects">
+    <div class="section-title">
+      <div class="section-icon icon-solar">⚡</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์น่าสร้างประจำวัน</h2>
+        <p>ต่อยอดจากงานวิจัยและชุมชน เป็นโปรเจกต์ที่ทำได้จริงในเวลาสั้น</p>
+      </div>
+    </div>
+
+    <div class="card-grid-2">
+
+      <!-- Project 1: Solar Tracker Dual Axis -->
+      <div class="card">
+        <div class="card-stripe stripe-solar"></div>
+        <div class="card-body">
+          <span class="card-tag tag-solar">☀️ Energy · Solar</span>
+          <h3>Dual-Axis Solar Tracker พร้อม MPPT ด้วย ESP32 + LDR Array + PID + Kalman Filter</h3>
+          <p>สร้างระบบติดตามดวงอาทิตย์ 2 แกน (Azimuth + Elevation) ด้วย LDR Sensor 4 ตัวในรูปแบบ Quad-Cell เพื่อตรวจจับทิศของแสง ส่งสัญญาณให้ ESP32 คำนวณแกนด้วย PID Controller พร้อม Kalman Filter ลดสัญญาณรบกวน ขับ Servo หรือ Stepper Motor หมุนแผงโซลาร์ให้ตั้งฉากกับดวงอาทิตย์ตลอดเวลา</p>
+          <ul class="step-list">
+            <li><div class="step-num">1</div><span>ประกอบ LDR Quad-Cell บน 3D-Printed Housing และต่อกับ ADC ของ ESP32</span></li>
+            <li><div class="step-num">2</div><span>ตั้งค่า PID Controller บน ESP32 Arduino — ปรับ Kp, Ki, Kd ด้วย Wi-Fi OTA</span></li>
+            <li><div class="step-num">3</div><span>เพิ่ม INA226 วัดกระแส/แรงดันของแผงโซลาร์ส่งไป InfluxDB + Grafana</span></li>
+            <li><div class="step-num">4</div><span>เปรียบเทียบ Power Output กับแผงแบบ Fixed — คาดว่าเพิ่มขึ้น 25-40%</span></li>
+          </ul>
+          <div class="badge-row">
+            <span class="badge amber">LDR Quad-Cell</span>
+            <span class="badge">PID + Kalman</span>
+            <span class="badge green">INA226 Monitoring</span>
+            <span class="badge purple">Grafana Dashboard</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 2: Vibration Predictive Maintenance -->
+      <div class="card">
+        <div class="card-stripe stripe-vibr"></div>
+        <div class="card-body">
+          <span class="card-tag tag-vibr">🏭 Industry · TinyML</span>
+          <h3>Industrial Vibration Monitor ด้วย ESP32-S3 + ADXL345 + FFT + Edge Impulse Model</h3>
+          <p>ระบบ Predictive Maintenance สำหรับมอเตอร์และปั๊มในโรงงาน โดยติด ADXL345 บน Housing ของมอเตอร์ ESP32-S3 เก็บข้อมูลความเร่ง 3 แกนที่ 3200 sps ทำ FFT แยก Frequency Spectrum แล้วให้ TinyML Model (ฝึกด้วย Edge Impulse) วินิจฉัยสภาพเครื่อง เมื่อพบ Anomaly แจ้งเตือนผ่าน MQTT → Home Assistant → LINE Notify ทันที</p>
+          <ul class="step-list">
+            <li><div class="step-num">1</div><span>เก็บ Baseline Data ในสภาพปกติ 24 ชั่วโมงด้วย Edge Impulse Studio</span></li>
+            <li><div class="step-num">2</div><span>Train Model ด้วย Spectral Features (FFT) + Neural Network บน Edge Impulse</span></li>
+            <li><div class="step-num">3</div><span>Export TFLite Model → Flash ลง ESP32-S3 ด้วย Arduino</span></li>
+            <li><div class="step-num">4</div><span>ตั้ง Threshold Alert และ Dashboard แสดง Frequency Heatmap Real-time</span></li>
+          </ul>
+          <div class="badge-row">
+            <span class="badge green">ADXL345 3-Axis</span>
+            <span class="badge">3200 sps FFT</span>
+            <span class="badge purple">Edge Impulse</span>
+            <span class="badge amber">MQTT Alert</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 3: 3D Room Mapping -->
+      <div class="card">
+        <div class="card-stripe stripe-tof"></div>
+        <div class="card-body">
+          <span class="card-tag tag-tof">🤖 Robotics · Sensing</span>
+          <h3>3D Obstacle Map สำหรับหุ่นยนต์ด้วย ESP32 + VL53L8CX + MPU6050</h3>
+          <p>ติด VL53L8CX (8×8 = 64 Zone ToF Sensor) หน้าหุ่นยนต์ บวกกับ MPU6050 IMU ติดตาม Yaw/Pitch/Roll ESP32 อ่านค่า Distance Map ทุก 33ms แล้วแปลงเป็น Point Cloud ส่งผ่าน Wi-Fi UDP ไปยัง Python Script (Matplotlib 3D) บน PC แสดงผล Obstacle Map แบบ Real-time ให้หุ่นยนต์หลีกเลี่ยงสิ่งกีดขวางอัตโนมัติ</p>
+          <ul class="step-list">
+            <li><div class="step-num">1</div><span>ต่อ VL53L8CX + MPU6050 ผ่าน I2C — ใช้ Library <code>stm32duino/VL53L8CX</code> พอร์ตมาใช้บน ESP32</span></li>
+            <li><div class="step-num">2</div><span>สร้าง UDP Server บน ESP32 ส่ง JSON Distance Map + Quaternion ทุก 33ms</span></li>
+            <li><div class="step-num">3</div><span>เขียน Python Client รับข้อมูลแปลง Polar → Cartesian แสดง 3D Scatter Plot</span></li>
+            <li><div class="step-num">4</div><span>เพิ่ม Hand Gesture Recognition ด้วย 64-Zone Depth Data เพื่อควบคุมหุ่นยนต์</span></li>
+          </ul>
+          <div class="badge-row">
+            <span class="badge purple">64 ToF Zones</span>
+            <span class="badge">MPU6050 IMU</span>
+            <span class="badge green">UDP Streaming</span>
+            <span class="badge amber">Python 3D Viz</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 4: Smart Plant Watering -->
+      <div class="card">
+        <div class="card-stripe stripe-teal"></div>
+        <div class="card-body">
+          <span class="card-tag tag-teal">🌱 Agriculture · IoT</span>
+          <h3>Smart Plant Watering ด้วย ESP32-C3 + Capacitive Soil Sensor + Energy Harvesting</h3>
+          <p>ระบบรดน้ำต้นไม้อัตโนมัติพลังงานแสงอาทิตย์ 100% โดยใช้ ESP32-C3 ที่ประหยัดพลังงาน ร่วมกับ Capacitive Soil Moisture Sensor (ไม่ขึ้นสนิม), DHT22 วัดอุณหภูมิ-ความชื้น และ BQ25504 IC เพื่อ Harvest พลังงานจากแผงโซลาร์เล็ก 1W เก็บลง LiPo ขนาด 1000mAh ทำงานต่อเนื่องได้ไม่ต้องชาร์จด้วยไฟบ้าน</p>
+          <ul class="step-list">
+            <li><div class="step-num">1</div><span>ออกแบบ PCB หรือใช้ Lifex ESP32-Tux-Mini ที่มีวงจร BQ25504 สำเร็จในตัว</span></li>
+            <li><div class="step-num">2</div><span>ตั้งค่า Deep Sleep 15 นาที ตื่นวัด Soil Moisture ตัดสินใจรดน้ำแล้วหลับต่อ</span></li>
+            <li><div class="step-num">3</div><span>เชื่อม ESPHome + Home Assistant — แสดงกราฟความชื้นดินย้อนหลัง 7 วัน</span></li>
+            <li><div class="step-num">4</div><span>เพิ่ม AUTO Mode: หยุดรดน้ำอัตโนมัติเมื่อฝนตกตาม API สภาพอากาศ</span></li>
+          </ul>
+          <div class="badge-row">
+            <span class="badge">Capacitive Sensor</span>
+            <span class="badge green">Solar + BQ25504</span>
+            <span class="badge amber">Deep Sleep 15min</span>
+            <span class="badge purple">ESPHome</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /card-grid-2 -->
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SECTION 3: SENSORS
+  ═══════════════════════════════════════ -->
+  <section id="sensors">
+    <div class="section-title">
+      <div class="section-icon icon-tof">📡</div>
+      <div>
+        <h2>Sensors &amp; ICs น่าสนใจประจำวัน</h2>
+        <p>ชิปและโมดูลที่เหมาะกับโปรเจกต์ ESP32 ในธีมวันนี้</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Sensor 1: VL53L8CX -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-icon" style="background:rgba(167,139,250,.15);">🟣</div>
+          <div class="sensor-meta">
+            <h3>STMicro VL53L8CX</h3>
+            <p>8×8 Multizone ToF Ranging Sensor</p>
+          </div>
+        </div>
+        <p class="sensor-desc">ToF Sensor ที่ทรงพลังที่สุดในซีรีส์ VL53L ของ ST โดยให้ Distance Map ขนาด 8×8 = 64 Zones พร้อมกันที่ 60fps FoV กว้าง 65° รองรับ Hand Posture Recognition ผ่าน STM32 AI Library เหมาะสำหรับ Robotics, Gesture UI, Liquid Level, และ Smart Lighting</p>
+        <table class="spec-table">
+          <tr><td>Resolution</td><td>8×8 = 64 Zones</td></tr>
+          <tr><td>Max Range</td><td>400 cm</td></tr>
+          <tr><td>Frame Rate</td><td>60 fps</td></tr>
+          <tr><td>FoV</td><td>65° Diagonal</td></tr>
+          <tr><td>Interface</td><td>I2C (400 kHz / 1 MHz)</td></tr>
+        </table>
+        <div class="badge-row">
+          <span class="badge purple">Gesture Recognition</span>
+          <span class="badge">SLAM</span>
+          <span class="badge green">60fps</span>
+        </div>
+      </div>
+
+      <!-- Sensor 2: ADXL345 -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-icon" style="background:rgba(52,211,153,.15);">🟢</div>
+          <div class="sensor-meta">
+            <h3>Analog Devices ADXL345</h3>
+            <p>3-Axis Digital Accelerometer</p>
+          </div>
+        </div>
+        <p class="sensor-desc">Accelerometer ยอดนิยมสำหรับงาน Vibration Analysis ใน Predictive Maintenance รองรับ Sample Rate สูงถึง 3200 Hz ผ่าน SPI/I2C มี Activity/Inactivity Interrupt ในตัว ช่วยให้ Wake-on-Motion ได้ก่อนส่งข้อมูลให้ ESP32 ประหยัดพลังงานได้มาก</p>
+        <table class="spec-table">
+          <tr><td>ช่วงวัด</td><td>±2g / ±4g / ±8g / ±16g</td></tr>
+          <tr><td>Sample Rate</td><td>ถึง 3200 Hz</td></tr>
+          <tr><td>Resolution</td><td>13-bit @ ±16g</td></tr>
+          <tr><td>Interface</td><td>I2C / SPI</td></tr>
+          <tr><td>ไฟเลี้ยง</td><td>2.0–3.6 V, 23–145 µA</td></tr>
+        </table>
+        <div class="badge-row">
+          <span class="badge green">3200 sps</span>
+          <span class="badge">Wake-on-Motion</span>
+          <span class="badge amber">Tap Detection</span>
+        </div>
+      </div>
+
+      <!-- Sensor 3: INA226 -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-icon" style="background:rgba(251,191,36,.15);">🟡</div>
+          <div class="sensor-meta">
+            <h3>Texas Instruments INA226</h3>
+            <p>I2C Current / Power Monitor</p>
+          </div>
+        </div>
+        <p class="sensor-desc">Power Monitor ที่แม่นยำที่สุดตัวหนึ่งในระดับราคาต่ำ วัดกระแส แรงดัน และพลังงานผ่าน I2C ในตัวเดียว รองรับ Bus Voltage 0–36V มี Alert Pin สำหรับแจ้งเตือนเมื่อกระแสเกิน Threshold เหมาะสำหรับ Solar Power Monitoring, Battery Tracker และระบบ Smart Grid ขนาดเล็ก</p>
+        <table class="spec-table">
+          <tr><td>Bus Voltage</td><td>0–36 V</td></tr>
+          <tr><td>Shunt Voltage</td><td>±81.9 mV (Max)</td></tr>
+          <tr><td>Resolution</td><td>16-bit ADC</td></tr>
+          <tr><td>Interface</td><td>I2C (16 Address)</td></tr>
+          <tr><td>Alert</td><td>Over/Under Current Pin</td></tr>
+        </table>
+        <div class="badge-row">
+          <span class="badge amber">36V Bus Voltage</span>
+          <span class="badge">16-bit ADC</span>
+          <span class="badge green">I2C 16 Address</span>
+        </div>
+      </div>
+
+      <!-- Sensor 4: BQ25504 -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-icon" style="background:rgba(249,115,22,.15);">🟠</div>
+          <div class="sensor-meta">
+            <h3>Texas Instruments BQ25504</h3>
+            <p>Ultra Low-Power Energy Harvesting IC</p>
+          </div>
+        </div>
+        <p class="sensor-desc">Energy Harvesting IC ที่ออกแบบมาสำหรับ IoT Sensor Node ที่ต้องการไม่พึ่งพาถ่านไฟ Start ทำงานได้ตั้งแต่แรงดันต่ำเพียง 80mV รองรับ Source: Solar, Thermal, Piezo รวมถึง RF (Wireless Power) Boost Converter ในตัวชาร์จ LiPo/Supercapacitor ด้วย MPPT ประสิทธิภาพ >80%</p>
+        <table class="spec-table">
+          <tr><td>Cold-Start Voltage</td><td>330 mV (Solar)</td></tr>
+          <tr><td>Operating Input</td><td>80 mV Minimum</td></tr>
+          <tr><td>MPPT Efficiency</td><td>&gt;80%</td></tr>
+          <tr><td>Storage</td><td>LiPo / Supercap</td></tr>
+          <tr><td>Sources</td><td>Solar, Thermal, Piezo, RF</td></tr>
+        </table>
+        <div class="badge-row">
+          <span class="badge rose">80mV Min Input</span>
+          <span class="badge amber">MPPT Built-in</span>
+          <span class="badge">Multi-Source</span>
+        </div>
+      </div>
+
+      <!-- Sensor 5: CN3791 MPPT -->
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-icon" style="background:rgba(56,189,248,.15);">🔵</div>
+          <div class="sensor-meta">
+            <h3>CONSONANCE CN3791</h3>
+            <p>MPPT Li-Ion/LiPo Solar Charger IC</p>
+          </div>
+        </div>
+        <p class="sensor-desc">MPPT Solar Charger IC ราคาประหยัดที่รวม Maximum Power Point Tracking, Charging Regulation และ Overcharge Protection ไว้ในชิปเดียว เป็นทางเลือกยอดนิยมในชุมชน Maker สำหรับ Solar-Powered ESP32 Node ที่ไม่ต้องการความซับซ้อนของ BQ25504 แต่ต้องการ MPPT ที่ทำงานได้จริง</p>
+        <table class="spec-table">
+          <tr><td>Topology</td><td>Buck-Boost MPPT</td></tr>
+          <tr><td>Input</td><td>4.5–28 V (Solar Panel)</td></tr>
+          <tr><td>Output</td><td>4.2 V LiPo Float</td></tr>
+          <tr><td>Max Current</td><td>3 A</td></tr>
+          <tr><td>ราคาโดยประมาณ</td><td>&lt;$1 USD</td></tr>
+        </table>
+        <div class="badge-row">
+          <span class="badge">MPPT</span>
+          <span class="badge green">3A Output</span>
+          <span class="badge amber">ราคาต่ำมาก</span>
+        </div>
+      </div>
+
+    </div><!-- /card-grid -->
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SECTION 4: RESOURCES
+  ═══════════════════════════════════════ -->
+  <section id="resources">
+    <div class="section-title">
+      <div class="section-icon icon-blue">🔗</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+        <p>GitHub, บทความวิจัย, และชุมชน ESP32 ที่ควรติดตาม</p>
+      </div>
+    </div>
+
+    <div class="resource-grid">
+
+      <div class="resource-card">
+        <div class="resource-icon">🐙</div>
+        <div>
+          <h4>esp32p4-uvc-video</h4>
+          <p>ESP32-P4 UVC 1.5 Webcam + RTSP Stream ด้วย OV5647 MIPI CSI — โปรเจกต์ Open Source</p>
+          <a href="https://github.com/r4d10n/esp32p4-uvc-video" target="_blank">github.com/r4d10n/esp32p4-uvc-video</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🐙</div>
+        <div>
+          <h4>ESP32 Smart MPPT Controller</h4>
+          <p>Firmware + Web Dashboard สำหรับ Smart Solar Charging — Weather-Adaptive, Coulomb Counting</p>
+          <a href="https://github.com/akgang-rgb/ESP32-Smart-Solar-Controller-MPPT-Firmware-Web-Dashboard" target="_blank">github.com/akgang-rgb/ESP32-Smart-Solar-Controller</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🐙</div>
+        <div>
+          <h4>OSPController — Open Solar Project</h4>
+          <p>ESP32 Smart Solar Charger โอเพนซอร์สสมบูรณ์แบบ รองรับ Victron, PZEM, และ BMS</p>
+          <a href="https://github.com/opensolarproject/OSPController" target="_blank">github.com/opensolarproject/OSPController</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🐙</div>
+        <div>
+          <h4>ESPGI — Grid-Tied Inverter</h4>
+          <p>ESP32-based Grid-Tied Inverter พร้อม MPPT Solar + Battery — ป้อนไฟเกินกลับสู่กริด</p>
+          <a href="https://github.com/bartpleiter/ESPGI" target="_blank">github.com/bartpleiter/ESPGI</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">⚡</div>
+        <div>
+          <h4>Hackaday: 3D Room Mapping</h4>
+          <p>Real-time 3D Room Mapping with ESP32, VL53L5CX &amp; IMU — บทความกุมภาพันธ์ 2026</p>
+          <a href="https://hackaday.com/2026/02/14/real-time-3d-room-mapping-with-esp32-vl53l5cx-sensor-and-imu/" target="_blank">hackaday.com · กุมภาพันธ์ 2026</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">📄</div>
+        <div>
+          <h4>TinyML Predictive Maintenance Paper</h4>
+          <p>Embedded TinyML for Predictive Maintenance: Vibration Analysis on ESP32 — ResearchGate 2026</p>
+          <a href="https://www.researchgate.net/publication/395334243_Embedded_TinyML_for_Predictive_Maintenance_Vibration_Analysis_on_ESP32_with_Real-Time_Fault_Detection_in_Industrial_Equipment" target="_blank">ResearchGate · มีนาคม 2026</a>
+        </div>
+      </div>
+
+    </div><!-- /resource-grid -->
+  </section>
+
+</main>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  <p>
+    <strong>ESP32 &amp; Sensor Innovations</strong> · สร้างอัตโนมัติโดย AI Researcher<br>
+    วันที่สร้าง: 27 กรกฎาคม 2569 (27 July 2026)<br>
+    แหล่งอ้างอิง: GitHub, Hackaday, ResearchGate, STMicroelectronics, Texas Instruments, DFRobot, Zbotic, Seeed Studio<br>
+    <span style="color:var(--text-dim);font-size:.78rem;">ข้อมูลนี้รวบรวมเพื่อการศึกษาและสร้างแรงบันดาลใจ ตรวจสอบแหล่งต้นฉบับก่อนนำไปใช้งานจริง</span>
+  </p>
+</footer>
+
+</body>
+</html>
