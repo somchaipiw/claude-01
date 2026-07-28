@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 28 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #1e0a3c 0%, #0d1b3e 40%, #0a2a1f 100%);
+    border-bottom: 1px solid #334155;
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(139,92,246,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: rgba(139,92,246,0.15);
+    border: 1px solid rgba(139,92,246,0.4);
+    border-radius: 999px;
+    padding: .3rem 1.1rem;
+    font-size: .8rem;
+    color: #c4b5fd;
+    letter-spacing: .08em;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #c4b5fd 0%, #38bdf8 50%, #34d399 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: .5rem;
+  }
+  .header-sub {
+    color: #94a3b8;
+    font-size: .95rem;
+    margin-bottom: 1.2rem;
+  }
+  .header-theme {
+    display: inline-block;
+    background: linear-gradient(90deg, rgba(139,92,246,0.2), rgba(56,189,248,0.2));
+    border: 1px solid rgba(56,189,248,0.35);
+    border-radius: 8px;
+    padding: .45rem 1.2rem;
+    font-size: .9rem;
+    color: #bae6fd;
+    font-style: italic;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1.4rem;
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: rgba(30,41,59,0.7);
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: .35rem .9rem;
+    font-size: .82rem;
+    color: #94a3b8;
+  }
+  .stat-chip span { color: #e2e8f0; font-weight: 600; }
+
+  /* ── Layout ── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  /* ── Section titles ── */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1.6rem;
+  }
+  .section-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-purple { background: linear-gradient(135deg,#7c3aed,#4f46e5); }
+  .icon-cyan   { background: linear-gradient(135deg,#0891b2,#0284c7); }
+  .icon-green  { background: linear-gradient(135deg,#059669,#0d9488); }
+  .icon-amber  { background: linear-gradient(135deg,#d97706,#b45309); }
+
+  .section-title h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+  .section-title p {
+    font-size: .82rem;
+    color: #64748b;
+    margin-top: .1rem;
+  }
+
+  /* ── Cards grid ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 1.2rem;
+  }
+
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+    transition: border-color .2s, transform .2s;
+  }
+  .card:hover {
+    border-color: #475569;
+    transform: translateY(-2px);
+  }
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+  }
+  .card-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: .45rem;
+    flex-shrink: 0;
+  }
+  .dot-purple { background: #a78bfa; box-shadow: 0 0 6px rgba(167,139,250,.6); }
+  .dot-cyan   { background: #38bdf8; box-shadow: 0 0 6px rgba(56,189,248,.6); }
+  .dot-green  { background: #34d399; box-shadow: 0 0 6px rgba(52,211,153,.6); }
+  .dot-amber  { background: #fbbf24; box-shadow: 0 0 6px rgba(251,191,36,.6); }
+  .dot-rose   { background: #fb7185; box-shadow: 0 0 6px rgba(251,113,133,.6); }
+
+  .card-title { font-size: 1rem; font-weight: 700; color: #f1f5f9; line-height: 1.4; }
+  .card-desc  { font-size: .875rem; color: #94a3b8; line-height: 1.7; }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin-top: .2rem;
+  }
+  .tag {
+    border-radius: 6px;
+    padding: .18rem .6rem;
+    font-size: .73rem;
+    font-weight: 600;
+    letter-spacing: .03em;
+  }
+  .tag-purple { background: rgba(139,92,246,.15); color: #c4b5fd; border: 1px solid rgba(139,92,246,.3); }
+  .tag-cyan   { background: rgba(56,189,248,.12); color: #7dd3fc;  border: 1px solid rgba(56,189,248,.3); }
+  .tag-green  { background: rgba(52,211,153,.12); color: #6ee7b7;  border: 1px solid rgba(52,211,153,.3); }
+  .tag-amber  { background: rgba(251,191,36,.12); color: #fde68a;  border: 1px solid rgba(251,191,36,.3); }
+  .tag-rose   { background: rgba(251,113,133,.12); color: #fda4af; border: 1px solid rgba(251,113,133,.3); }
+  .tag-slate  { background: rgba(100,116,139,.15); color: #cbd5e1;  border: 1px solid rgba(100,116,139,.3); }
+
+  .card-highlight {
+    background: rgba(139,92,246,.07);
+    border: 1px solid rgba(139,92,246,.2);
+    border-radius: 8px;
+    padding: .6rem .85rem;
+    font-size: .82rem;
+    color: #c4b5fd;
+    line-height: 1.6;
+  }
+
+  /* ── Highlight card (featured) ── */
+  .card.featured {
+    background: linear-gradient(135deg, #1a1040 0%, #0d2035 100%);
+    border-color: rgba(139,92,246,.4);
+    grid-column: span 2;
+  }
+  @media (max-width:700px) { .card.featured { grid-column: span 1; } }
+
+  /* ── Sensor table ── */
+  .sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .sensor-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+  }
+  .sensor-card:hover { border-color: #475569; }
+  .sensor-name {
+    font-size: .98rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .sensor-chip {
+    font-size: .7rem;
+    background: rgba(56,189,248,.12);
+    color: #7dd3fc;
+    border: 1px solid rgba(56,189,248,.25);
+    border-radius: 5px;
+    padding: .1rem .45rem;
+    font-weight: 600;
+  }
+  .sensor-desc { font-size: .82rem; color: #94a3b8; line-height: 1.65; }
+  .sensor-spec {
+    font-size: .78rem;
+    color: #64748b;
+    padding-top: .35rem;
+    border-top: 1px solid #334155;
+  }
+  .sensor-spec b { color: #94a3b8; }
+
+  /* ── Resources ── */
+  .resource-list {
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+  }
+  .resource-item {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: .9rem 1.1rem;
+    display: flex;
+    align-items: flex-start;
+    gap: .9rem;
+  }
+  .resource-item:hover { border-color: #475569; }
+  .resource-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .9rem;
+    flex-shrink: 0;
+  }
+  .ri-purple { background: rgba(139,92,246,.2); }
+  .ri-cyan   { background: rgba(56,189,248,.15); }
+  .ri-green  { background: rgba(52,211,153,.12); }
+  .ri-amber  { background: rgba(251,191,36,.12); }
+  .ri-rose   { background: rgba(251,113,133,.12); }
+  .resource-title { font-size: .9rem; font-weight: 700; color: #e2e8f0; }
+  .resource-sub   { font-size: .8rem; color: #64748b; margin-top: .1rem; line-height: 1.5; }
+  .resource-url   { font-size: .78rem; color: #38bdf8; margin-top: .3rem; word-break: break-all; }
+
+  /* ── Divider ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg,transparent,#334155,transparent);
+  }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid #1e293b;
+    background: #0a101f;
+    padding: 1.8rem 1.5rem;
+    text-align: center;
+    font-size: .82rem;
+    color: #475569;
+    line-height: 1.9;
+  }
+  footer b { color: #64748b; }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .sensor-grid { grid-template-columns: 1fr; }
+    header { padding: 2rem 1rem 1.5rem; }
+    .stats-row { gap: .7rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">🔬 Daily ESP32 Research</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="header-sub">28 กรกฎาคม 2569 &nbsp;|&nbsp; อัปเดตอัตโนมัติทุกวัน</p>
+  <div class="header-theme">ธีมประจำวัน: Audio AI &middot; IIoT Protocols &middot; Hybrid Mesh Networking</div>
+  <div class="stats-row">
+    <div class="stat-chip"><span>4</span> นวัตกรรม</div>
+    <div class="stat-chip"><span>4</span> ไอเดียโปรเจกต์</div>
+    <div class="stat-chip"><span>4</span> Sensors/ICs</div>
+    <div class="stat-chip"><span>6</span> แหล่งข้อมูล</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ═══ INNOVATIONS ═══ -->
+  <section id="innovations">
+    <div class="section-title">
+      <div class="section-icon icon-purple">⚡</div>
+      <div>
+        <h2>นวัตกรรมและอัปเดตเด่นประจำวัน</h2>
+        <p>ข่าว ไลบรารี และฮาร์ดแวร์ใหม่ที่น่าสนใจสำหรับ ESP32 Maker</p>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- ESPHome 2026.7 -->
+      <div class="card featured">
+        <div class="card-header">
+          <div class="card-dot dot-purple"></div>
+          <div>
+            <div class="card-title">ESPHome 2026.7.0 — Major Release: Native ESP-IDF, ESP-NOW v2, Modbus Overhaul &amp; Security Suite</div>
+          </div>
+        </div>
+        <div class="card-desc">
+          ESPHome เดือนกรกฎาคม 2026 เป็น release ที่ใหญ่ที่สุดในปีนี้ มีการเปลี่ยนแปลงระดับ infrastructure หลายอย่าง รวมถึง security feature ใหม่ที่ตอบโจทย์มาตรฐาน EN18031 และ hardware รุ่นใหม่
+        </div>
+        <div class="card-highlight">
+          🔧 <b>Toolchain:</b> เปลี่ยน Default จาก PlatformIO เป็น Native ESP-IDF สำหรับ ESP32 platform ทั้งหมด &mdash; compile เร็วขึ้น, ccache ทำงาน by default<br>
+          🔒 <b>Security Suite:</b> NVS Encryption, OTA Downgrade Protection, Transport-Agnostic Provisioning Component (EN18031 compliance)<br>
+          📡 <b>ESP-NOW v2 Payloads:</b> รองรับ payload format ใหม่ในโปรโตคอล ESP-NOW<br>
+          🏭 <b>Modbus Overhaul:</b> Parser เขียนใหม่ทั้งหมด + heap-free send path — ประสิทธิภาพสูงกว่าเดิมมาก<br>
+          🖥️ <b>LVGL Expansion:</b> รองรับ Animations, Dynamic Rotation, Boot Pausing<br>
+          🌐 <b>Gigabit Ethernet:</b> รองรับบน ESP32-S31 (รุ่นใหม่ล่าสุด)<br>
+          📦 <b>11 New Components:</b> ครอบคลุม touch controllers, e-paper panels, IMUs, Divoom Pixoo 64<br>
+          🔷 <b>Zigbee 2.0.2 SDK:</b> รองรับ Endpoint Merging ในโปรโตคอล Zigbee ใหม่
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-purple">ESPHome 2026.7</span>
+          <span class="tag tag-cyan">ESP-IDF Native</span>
+          <span class="tag tag-green">Security</span>
+          <span class="tag tag-amber">Modbus</span>
+          <span class="tag tag-rose">ESP-NOW v2</span>
+          <span class="tag tag-slate">Zigbee</span>
+        </div>
+      </div>
+
+      <!-- MeshCore ESP-NOW + LoRa Bridge -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot dot-cyan"></div>
+          <div class="card-title">MeshCore บน ESP32 — Bridge ESP-NOW (เร็ว) กับ LoRa (ไกล) ในบอร์ดเดียว</div>
+        </div>
+        <div class="card-desc">
+          MeshCore รองรับการสร้าง Hybrid Mesh Network ที่ผสม ESP-NOW (2.4 GHz, เร็ว ~600–1200 ฟุต) กับ LoRa (915/868 MHz, ไกลหลายกิโลเมตร) ผ่าน Bridge node เดียว ทำให้อุปกรณ์ ESP32 ราคาถูกสื่อสารกันในระยะใกล้ผ่าน ESP-NOW แล้ว Bridge ไปยัง LoRa Mesh Network กว้างไกลได้
+        </div>
+        <div class="card-highlight">
+          ข้อดี: ใช้ ESP32 ธรรมดาที่ไม่มี LoRa Radio เป็น ESP-NOW Node ได้ &bull; ลดค่าใช้จ่ายต่อ node &bull; Flash ผ่าน MeshCore Web Flasher บนเบราว์เซอร์ได้เลย
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-cyan">ESP-NOW</span>
+          <span class="tag tag-purple">LoRa Mesh</span>
+          <span class="tag tag-green">MeshCore</span>
+          <span class="tag tag-slate">Hybrid Network</span>
+        </div>
+      </div>
+
+      <!-- I2S Microphone Server ESP32-S3 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot dot-green"></div>
+          <div class="card-title">ESP32-S3 + INMP441 — Standalone I2S Audio Streaming Server พร้อม WebSocket</div>
+        </div>
+        <div class="card-desc">
+          โปรเจกต์ปี 2026 สาธิตการสร้าง WebSocket Audio Server ทำงานบน ESP32-S3 โดยตรง โดยไม่ต้องพึ่งเซิร์ฟเวอร์ภายนอก รับเสียงจาก INMP441 I2S microphone ประมวลผล FFT แบบ real-time และสตรีมสเปกตรัมผ่าน WebSocket ด้วย latency ต่ำกว่า 50ms
+        </div>
+        <div class="card-highlight">
+          Spec: FFT 100 Hz resolution &bull; WebSocket 30 packets/s &bull; LED ring update 60 FPS &bull; I2S DMA transfer ไม่บล็อก CPU
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-green">I2S Audio</span>
+          <span class="tag tag-cyan">WebSocket</span>
+          <span class="tag tag-purple">FFT</span>
+          <span class="tag tag-amber">ESP32-S3</span>
+        </div>
+      </div>
+
+      <!-- Offline Wake Word -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot dot-amber"></div>
+          <div class="card-title">Offline Wake Word &amp; Voice Command ด้วย ESP32 + Edge Impulse — ไม่ต้องมี Cloud</div>
+        </div>
+        <div class="card-desc">
+          สร้าง Voice Assistant บนบอร์ด ESP32 ที่รู้จำ Wake Word และคำสั่งเสียงได้ทั้งหมด Offline โดยใช้ Edge Impulse ฝึก neural network จากเสียงที่บันทึกเอง export เป็น Arduino library แล้ว deploy ลงบนชิปตรงๆ ด้วยหลักการ TinyML ทำให้ระบบทำงานได้แม้ไม่มี Internet
+        </div>
+        <div class="card-highlight">
+          ข้อดี: Privacy-First (เสียงไม่ออกนอกอุปกรณ์) &bull; Latency ต่ำมาก (ไม่มี Network Round-trip) &bull; ใช้ INMP441 + ESP32-S3 ราคาต่ำกว่า 300 บาท
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-amber">TinyML</span>
+          <span class="tag tag-purple">Edge Impulse</span>
+          <span class="tag tag-green">Offline AI</span>
+          <span class="tag tag-cyan">Wake Word</span>
+          <span class="tag tag-slate">INMP441</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═══ PROJECTS ═══ -->
+  <section id="projects">
+    <div class="section-title">
+      <div class="section-icon icon-cyan">🛠️</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์น่าสร้างประจำวัน</h2>
+        <p>Concept พร้อม Stack ที่ใช้จริง สร้างได้จริงในเวลาไม่นาน</p>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- Biometric Attendance -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot dot-rose"></div>
+          <div class="card-title">Smart Biometric Attendance System ด้วย ESP32 + R503 Fingerprint + MQTT + Web Dashboard</div>
+        </div>
+        <div class="card-desc">
+          ระบบบันทึกเวลาเข้า-ออกงานด้วยลายนิ้วมือ Capacitive R503 เก็บ Template ได้ 120 นิ้ว ความแม่นยำสูงกว่า Optical รุ่นเก่า เชื่อมต่อ ESP32 ผ่าน UART สื่อสาร MQTT ไปยัง Home Assistant หรือ Node-RED Dashboard แสดงประวัติแบบ Real-time ผ่าน Web UI ที่ Host บนบอร์ดโดยตรง
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-rose">R503 Fingerprint</span>
+          <span class="tag tag-purple">MQTT</span>
+          <span class="tag tag-cyan">Web Dashboard</span>
+          <span class="tag tag-green">Home Assistant</span>
+          <span class="tag tag-slate">UART</span>
+        </div>
+        <div class="card-desc" style="margin-top:.3rem;">
+          <b style="color:#e2e8f0;">Stack:</b> ESP32 + R503 + OLED SSD1306 + MQTT Broker + Node-RED / HA Dashboard
+        </div>
+      </div>
+
+      <!-- IIoT Modbus Gateway -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot dot-amber"></div>
+          <div class="card-title">IIoT Modbus RTU/TCP Gateway ด้วย ESP32 — เชื่อม PLC, Meter, Sensor กับ Cloud</div>
+        </div>
+        <div class="card-desc">
+          ใช้ ESP32 เป็น Protocol Bridge เชื่อม Modbus RTU (RS-485) จากอุปกรณ์ Industrial เช่น PLC, Energy Meter, VFD ผ่าน MAX485 แปลงเป็น Modbus TCP/IP ส่งไปยัง MQTT Broker หรือ ThingsBoard / AWS IoT Core ได้โดยตรง รองรับทั้ง Master และ Slave mode
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-amber">Modbus RTU</span>
+          <span class="tag tag-cyan">Modbus TCP</span>
+          <span class="tag tag-purple">RS-485</span>
+          <span class="tag tag-green">IIoT Gateway</span>
+          <span class="tag tag-slate">ThingsBoard</span>
+        </div>
+        <div class="card-desc" style="margin-top:.3rem;">
+          <b style="color:#e2e8f0;">Stack:</b> ESP32 + MAX3485 Transceiver + RS-485 Bus + MQTT + Grafana Dashboard
+        </div>
+      </div>
+
+      <!-- Audio Spectrum Visualizer -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot dot-green"></div>
+          <div class="card-title">Audio Spectrum Visualizer ด้วย ESP32-S3 + INMP441 + WS2812B LED Matrix 8×32</div>
+        </div>
+        <div class="card-desc">
+          จับเสียงจาก INMP441 I2S microphone คำนวณ FFT แบบ Real-time แล้วแสดงผล Spectrum บน LED Matrix WS2812B 8×32 LED แต่ละคอลัมน์แทนแถบความถี่ เปลี่ยนสีตามแอมพลิจูด ทำงานด้วย DMA ทำให้ไม่กิน CPU มาก เพิ่ม Beat Detection ได้ไม่ยาก
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-green">Audio Viz</span>
+          <span class="tag tag-cyan">FFT Real-time</span>
+          <span class="tag tag-purple">WS2812B</span>
+          <span class="tag tag-amber">I2S DMA</span>
+          <span class="tag tag-slate">ESP32-S3</span>
+        </div>
+        <div class="card-desc" style="margin-top:.3rem;">
+          <b style="color:#e2e8f0;">Stack:</b> ESP32-S3 DevKit + INMP441 + WS2812B Matrix + Library FastLED + arduinoFFT
+        </div>
+      </div>
+
+      <!-- Offline Smart Speaker -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot dot-purple"></div>
+          <div class="card-title">DIY Offline Smart Speaker ด้วย ESP32-S3 + INMP441 + MAX98357A — ฉลาดไม่ต้องพึ่ง Internet</div>
+        </div>
+        <div class="card-desc">
+          ลำโพงอัจฉริยะ DIY ที่รับเสียงผ่าน INMP441 I2S microphone รู้จำ Wake Word และคำสั่งด้วย Edge Impulse model บน ESP32-S3 แล้วเล่น Response เสียงผ่าน MAX98357A Class-D Amplifier (3W, I2S) ควบคุมอุปกรณ์ภายในบ้านผ่าน MQTT โดยไม่ต้องส่งเสียงออกนอก Local Network เลย
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-purple">Smart Speaker</span>
+          <span class="tag tag-amber">MAX98357A</span>
+          <span class="tag tag-green">Edge Impulse</span>
+          <span class="tag tag-cyan">Offline AI</span>
+          <span class="tag tag-rose">Privacy</span>
+        </div>
+        <div class="card-desc" style="margin-top:.3rem;">
+          <b style="color:#e2e8f0;">Stack:</b> ESP32-S3 + INMP441 + MAX98357A + Edge Impulse + MQTT + HA Automations
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═══ SENSORS ═══ -->
+  <section id="sensors">
+    <div class="section-title">
+      <div class="section-icon icon-green">🔌</div>
+      <div>
+        <h2>Sensors &amp; ICs น่าสนใจประจำวัน</h2>
+        <p>โมดูลและชิปที่ Maker ควรรู้จักและพิจารณาใช้กับ ESP32</p>
+      </div>
+    </div>
+
+    <div class="sensor-grid">
+
+      <div class="sensor-card">
+        <div class="sensor-name">
+          INMP441
+          <span class="sensor-chip">MEMS I2S Mic</span>
+        </div>
+        <div class="sensor-desc">
+          ไมโครโฟน MEMS ดิจิทัลที่ได้รับความนิยมสูงสุดสำหรับ ESP32 ส่งข้อมูลเสียงผ่าน I2S โดยตรง ไม่ต้องมี ADC ภายนอก ให้คุณภาพเสียงสูงกว่า Analog microphone มาก เหมาะสำหรับโปรเจกต์ Voice Assistant, Spectrum Analyzer และ Noise Monitoring
+        </div>
+        <div class="sensor-spec">
+          <b>Sensitivity:</b> -26 dBFS ± 1 dB &nbsp;&bull;&nbsp;
+          <b>SNR:</b> 61 dB &nbsp;&bull;&nbsp;
+          <b>Interface:</b> I2S (24-bit) &nbsp;&bull;&nbsp;
+          <b>Supply:</b> 1.8–3.3 V &nbsp;&bull;&nbsp;
+          <b>Direction:</b> Omnidirectional
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">
+          R503
+          <span class="sensor-chip">Fingerprint</span>
+        </div>
+        <div class="sensor-desc">
+          Sensor ลายนิ้วมือ Capacitive รุ่นใหม่จาก GROW Technology เร็วกว่าและแม่นกว่า Optical รุ่นเก่าอย่าง AS608 รองรับ RGB LED Indicator แสดงสถานะ มี Aura LED รอบตัว Sensor ดูดีมาก เหมาะสำหรับโปรเจกต์ Door Lock และ Attendance System
+        </div>
+        <div class="sensor-spec">
+          <b>Resolution:</b> 400 dpi &nbsp;&bull;&nbsp;
+          <b>Templates:</b> 200 (expandable) &nbsp;&bull;&nbsp;
+          <b>Recognition:</b> &lt;1 s &nbsp;&bull;&nbsp;
+          <b>FAR:</b> &lt;0.001% &nbsp;&bull;&nbsp;
+          <b>Interface:</b> UART 57600 baud
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">
+          MAX98357A
+          <span class="sensor-chip">I2S Amplifier</span>
+        </div>
+        <div class="sensor-desc">
+          Class-D Audio Amplifier ดิจิทัล รับสัญญาณ I2S โดยตรงจาก ESP32 โดยไม่ต้องมี DAC ภายนอก ขับ Speaker ได้ถึง 3.2W ที่ 4Ω เหมาะสำหรับ DIY Smart Speaker, Intercom, และ Audio Notification System บน ESP32-S3 ราคาถูก (โมดูล ~50 บาท)
+        </div>
+        <div class="sensor-spec">
+          <b>Output:</b> 3.2 W @ 4Ω &nbsp;&bull;&nbsp;
+          <b>Interface:</b> I2S (16/32-bit) &nbsp;&bull;&nbsp;
+          <b>THD:</b> 0.015% &nbsp;&bull;&nbsp;
+          <b>Efficiency:</b> 92% &nbsp;&bull;&nbsp;
+          <b>Supply:</b> 2.7–5.5 V
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">
+          MAX3485 / RS-485
+          <span class="sensor-chip">IIoT Protocol</span>
+        </div>
+        <div class="sensor-desc">
+          IC Transceiver สำหรับ RS-485 Bus ที่ใช้กับ Modbus RTU บนสภาพแวดล้อม Industrial ต่อกับ ESP32 ผ่าน UART เพียงแค่ 3 ขา (RX, TX, DE/RE) ทนทานต่อ ESD และ Noise สูง รองรับการต่อ Node ได้ถึง 32 ตัวบน Bus เดียว ส่งข้อมูลได้ไกลถึง 1,200 เมตร
+        </div>
+        <div class="sensor-spec">
+          <b>Bus:</b> RS-485 Half-Duplex &nbsp;&bull;&nbsp;
+          <b>Speed:</b> 10 Mbps &nbsp;&bull;&nbsp;
+          <b>Nodes:</b> 32/bus &nbsp;&bull;&nbsp;
+          <b>Range:</b> 1,200 m &nbsp;&bull;&nbsp;
+          <b>Supply:</b> 3.3 V
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ═══ RESOURCES ═══ -->
+  <section id="resources">
+    <div class="section-title">
+      <div class="section-icon icon-amber">📚</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+        <p>Repository, บทความ และ Tutorial ที่คัดมาเฉพาะหัวข้อวันนี้</p>
+      </div>
+    </div>
+
+    <div class="resource-list">
+
+      <div class="resource-item">
+        <div class="resource-icon ri-purple">📋</div>
+        <div>
+          <div class="resource-title">ESPHome 2026.7.0 Changelog</div>
+          <div class="resource-sub">รายละเอียด feature ทั้งหมดของ release กรกฎาคม 2026 — toolchain, security, Modbus, ESP-NOW v2, LVGL, Zigbee 2.0.2</div>
+          <div class="resource-url">https://esphome.io/changelog/2026.7.0/</div>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <div class="resource-icon ri-cyan">🌐</div>
+        <div>
+          <div class="resource-title">MeshCore on ESP32: Build a Fast ESP-NOW + LoRa Bridge</div>
+          <div class="resource-sub">คู่มือสร้าง Hybrid Mesh ผสม ESP-NOW กับ LoRa บน Heltec V3 พร้อม Web Flasher</div>
+          <div class="resource-url">https://www.lorameshdevices.com/blog/meshcore/meshcore-on-esp32-build-a-fast-esp-now-private-network-and-bridge-it-to-lora.html</div>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <div class="resource-icon ri-green">🎵</div>
+        <div>
+          <div class="resource-title">Standalone I2S Microphone Server with ESP32-S3 (Jan 2026)</div>
+          <div class="resource-sub">บทความแสดงวิธีสร้าง WebSocket audio server ทำงานบน ESP32-S3 โดยตรง พร้อม Source Code</div>
+          <div class="resource-url">https://arduinodiy.wordpress.com/2026/01/05/standalone-i2s-microphone-server-with-an-esp32s3/</div>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <div class="resource-icon ri-amber">🎤</div>
+        <div>
+          <div class="resource-title">Build a Voice-Activated Assistant on ESP32: Offline Speech Recognition with Edge Impulse</div>
+          <div class="resource-sub">Tutorial ครบวงจรจาก Circuit Digest — บันทึกเสียง, ฝึก Model, Deploy ลง ESP32 ทั้งหมด Offline</div>
+          <div class="resource-url">https://circuitdigest2.wordpress.com/2025/11/18/build-a-voice-activated-assistant-on-esp32-offline-speech-recognition-with-edge-impulse/</div>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <div class="resource-icon ri-rose">☝️</div>
+        <div>
+          <div class="resource-title">FingerprintDoorbell — MQTT Enabled Fingerprint Reader + Doorbell (GitHub)</div>
+          <div class="resource-sub">Open-source project รวม R503 fingerprint + Doorbell บน ESP32 เชื่อมต่อ Home Assistant ผ่าน MQTT</div>
+          <div class="resource-url">https://github.com/frickelzeugs/FingerprintDoorbell</div>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <div class="resource-icon ri-cyan">🏭</div>
+        <div>
+          <div class="resource-title">ESP32 Modbus RTU/TCP Guide — NORVI Blog</div>
+          <div class="resource-sub">บทความอธิบาย Modbus RTU ผ่าน RS-485 และ Modbus TCP ผ่าน Wi-Fi บน ESP32 พร้อม Code ตัวอย่าง</div>
+          <div class="resource-url">https://norvi.io/modbus-devices-with-esp32/</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <b>ESP32 &amp; Sensor Innovations</b> — สร้างอัตโนมัติด้วย AI Research Agent<br>
+  วันที่สร้าง: 28 กรกฎาคม 2569 (2026-07-28) &nbsp;|&nbsp; ธีม: Audio AI · IIoT Protocols · Hybrid Mesh<br>
+  แหล่งอ้างอิง: ESPHome · LoRaMeshDevices · Arduino DIY · Circuit Digest · NORVI · GitHub · How2Electronics
+</footer>
+
+</body>
+</html>
