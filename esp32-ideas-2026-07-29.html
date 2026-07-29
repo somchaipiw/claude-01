@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 29 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263348;
+    --accent-blue: #38bdf8;
+    --accent-purple: #a78bfa;
+    --accent-green: #34d399;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --accent-yellow: #fbbf24;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --tag-bg: #1e3a5f;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1a1060 40%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(99,102,241,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.1);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent-blue);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 0.9rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #38bdf8, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+  }
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+  .stat-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.45rem 1.1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .stat-item span { color: var(--accent-blue); font-weight: 700; }
+
+  /* ===== THEME BANNER ===== */
+  .theme-banner {
+    background: linear-gradient(135deg, #0c1a40, #1a0c3a);
+    border: 1px solid rgba(167,139,250,0.25);
+    border-radius: 14px;
+    padding: 1.1rem 1.6rem;
+    margin: 1.5rem auto 0;
+    max-width: 860px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .theme-banner .theme-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent-purple);
+    font-weight: 700;
+  }
+  .theme-banner .theme-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .theme-tags {
+    display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.35rem;
+  }
+  .theme-tag {
+    background: rgba(167,139,250,0.12);
+    border: 1px solid rgba(167,139,250,0.25);
+    color: var(--accent-purple);
+    font-size: 0.75rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+
+  /* ===== LAYOUT ===== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem 3rem;
+  }
+
+  section { margin-bottom: 3rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.4rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .section-icon.blue { background: rgba(56,189,248,0.15); }
+  .section-icon.purple { background: rgba(167,139,250,0.15); }
+  .section-icon.green { background: rgba(52,211,153,0.15); }
+  .section-icon.orange { background: rgba(251,146,60,0.15); }
+
+  .section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-header .count-badge {
+    margin-left: auto;
+    background: rgba(56,189,248,0.1);
+    color: var(--accent-blue);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid rgba(56,189,248,0.2);
+  }
+
+  /* ===== INNOVATION CARDS ===== */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.2rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(56,189,248,0.35);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    border-radius: 14px 14px 0 0;
+  }
+  .card.blue::before { background: linear-gradient(90deg, #38bdf8, #6366f1); }
+  .card.purple::before { background: linear-gradient(90deg, #a78bfa, #f472b6); }
+  .card.green::before { background: linear-gradient(90deg, #34d399, #059669); }
+  .card.orange::before { background: linear-gradient(90deg, #fb923c, #ef4444); }
+  .card.pink::before { background: linear-gradient(90deg, #f472b6, #a78bfa); }
+  .card.yellow::before { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+
+  .card-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    margin-bottom: 0.8rem;
+  }
+  .chip-blue { background: rgba(56,189,248,0.12); color: var(--accent-blue); border: 1px solid rgba(56,189,248,0.25); }
+  .chip-purple { background: rgba(167,139,250,0.12); color: var(--accent-purple); border: 1px solid rgba(167,139,250,0.25); }
+  .chip-green { background: rgba(52,211,153,0.12); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.25); }
+  .chip-orange { background: rgba(251,146,60,0.12); color: var(--accent-orange); border: 1px solid rgba(251,146,60,0.25); }
+  .chip-pink { background: rgba(244,114,182,0.12); color: var(--accent-pink); border: 1px solid rgba(244,114,182,0.25); }
+  .chip-yellow { background: rgba(251,191,36,0.12); color: var(--accent-yellow); border: 1px solid rgba(251,191,36,0.25); }
+
+  .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    line-height: 1.4;
+    margin-bottom: 0.6rem;
+  }
+  .card-desc {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    margin-bottom: 0.85rem;
+  }
+  .card-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: auto;
+  }
+  .meta-tag {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+  }
+
+  /* ===== HIGHLIGHT CARD (full width) ===== */
+  .card-wide {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 640px) {
+    .card-wide { grid-template-columns: 1fr; }
+  }
+  .card-wide .card-body { }
+  .card-wide .card-detail { }
+  .detail-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-top: 0.5rem;
+  }
+  .detail-list li {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    line-height: 1.5;
+  }
+  .detail-list li::before {
+    content: '›';
+    color: var(--accent-blue);
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+
+  /* ===== PROJECT CARDS ===== */
+  .project-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.2rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.2rem;
+    transition: border-color 0.2s;
+  }
+  .project-card:hover { border-color: rgba(52,211,153,0.35); }
+  .project-num {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .project-num.blue { background: rgba(56,189,248,0.12); color: var(--accent-blue); }
+  .project-num.green { background: rgba(52,211,153,0.12); color: var(--accent-green); }
+  .project-num.purple { background: rgba(167,139,250,0.12); color: var(--accent-purple); }
+  .project-num.orange { background: rgba(251,146,60,0.12); color: var(--accent-orange); }
+  .project-num.pink { background: rgba(244,114,182,0.12); color: var(--accent-pink); }
+
+  .project-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.4rem;
+    line-height: 1.35;
+  }
+  .project-desc {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    line-height: 1.7;
+  }
+  .project-specs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+  }
+  .spec-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.77rem;
+    color: var(--text-muted);
+  }
+  .spec-item strong { color: var(--text-secondary); display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.1rem; }
+  .difficulty-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+  }
+  .bar-dots {
+    display: flex; gap: 3px;
+  }
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--border);
+  }
+  .dot.filled { background: var(--accent-green); }
+  .dot.filled.med { background: var(--accent-yellow); }
+  .dot.filled.hard { background: var(--accent-orange); }
+
+  /* ===== SENSOR TABLE ===== */
+  .sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    transition: border-color 0.2s;
+  }
+  .sensor-card:hover { border-color: rgba(251,191,36,0.35); }
+  .sensor-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+  }
+  .sensor-name {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #f1f5f9;
+    line-height: 1.3;
+  }
+  .sensor-mfr {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+  }
+  .sensor-badge {
+    flex-shrink: 0;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+  }
+  .badge-ecg { background: rgba(244,114,182,0.15); color: var(--accent-pink); border: 1px solid rgba(244,114,182,0.25); }
+  .badge-bio { background: rgba(52,211,153,0.15); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.25); }
+  .badge-can { background: rgba(251,191,36,0.15); color: var(--accent-yellow); border: 1px solid rgba(251,191,36,0.25); }
+  .badge-nfc { background: rgba(167,139,250,0.15); color: var(--accent-purple); border: 1px solid rgba(167,139,250,0.25); }
+  .badge-water { background: rgba(56,189,248,0.15); color: var(--accent-blue); border: 1px solid rgba(56,189,248,0.25); }
+
+  .sensor-params {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+  }
+  .param-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .param-row:last-child { border-bottom: none; }
+  .param-label { color: var(--text-muted); }
+  .param-val { color: var(--text-secondary); font-weight: 600; text-align: right; max-width: 60%; }
+  .sensor-desc { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.7; margin-top: 0.7rem; }
+
+  /* ===== RESOURCES ===== */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.9rem;
+  }
+  .resource-link {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .resource-link:hover {
+    border-color: rgba(56,189,248,0.4);
+    transform: translateY(-2px);
+  }
+  .resource-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.06);
+  }
+  .resource-info { min-width: 0; }
+  .resource-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .resource-desc {
+    font-size: 0.73rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ===== INFO BOX ===== */
+  .info-box {
+    background: rgba(56,189,248,0.06);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    margin-top: 1rem;
+  }
+  .info-box strong { color: var(--accent-blue); }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: rgba(0,0,0,0.3);
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.9;
+  }
+  footer a { color: var(--accent-blue); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .footer-sources { margin-top: 0.5rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">🤖 AI Research — Daily ESP32 & IoT Digest</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">29 กรกฎาคม 2569 · อัปเดตรายวันโดย AI Researcher</p>
+  <div class="stats-row">
+    <div class="stat-item"><span>4</span> นวัตกรรมเด่น</div>
+    <div class="stat-item"><span>5</span> ไอเดียโปรเจกต์</div>
+    <div class="stat-item"><span>5</span> เซ็นเซอร์น่าสนใจ</div>
+    <div class="stat-item"><span>8</span> แหล่งข้อมูล</div>
+  </div>
+  <div class="theme-banner">
+    <div>
+      <div class="theme-label">ธีมประจำวัน</div>
+      <div class="theme-title">Automotive IoT + Smart Access + Medical Wearables + Vision AI</div>
+      <div class="theme-tags">
+        <span class="theme-tag">ESP32 TWAI / CAN Bus</span>
+        <span class="theme-tag">Aliro Smart Lock</span>
+        <span class="theme-tag">ECG + SpO2 Wearable</span>
+        <span class="theme-tag">ESP32-P4 Vision</span>
+        <span class="theme-tag">Water Quality</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===================== SECTION 1: INNOVATIONS ===================== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon blue">💡</div>
+      <h2>นวัตกรรมและอัปเดตเด่นประจำวัน</h2>
+      <span class="count-badge">4 รายการ</span>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- CARD 1: Aliro SDK - WIDE -->
+      <div class="card blue card-wide">
+        <div class="card-body">
+          <div class="card-chip chip-blue">🔐 ข่าวร้อน · กรกฎาคม 2569</div>
+          <div class="card-title">Espressif ปล่อย ESP-Aliro SDK — มาตรฐานล็อคดิจิทัลรุ่นใหม่ สำหรับ ESP32-C/H ผ่าน NFC + BLE</div>
+          <div class="card-desc">
+            Espressif ประกาศ <strong>ESP-Aliro SDK</strong> เมื่อ 17 กรกฎาคม 2569 ซึ่งเป็น SDK ตัวแรกสำหรับมาตรฐาน <strong>Aliro</strong> บน microcontroller ราคาถูก
+            Aliro คือโปรโตคอล digital access control ที่พัฒนาโดย Connectivity Standards Alliance (CSA) — ผู้ดูแล Matter —
+            ออกแบบให้ smartphone และ smartwatch กลายเป็น "กุญแจดิจิทัล" ที่ใช้ได้กับล็อคทุกแบรนด์ที่รองรับ
+            (Apple Wallet, Google Wallet, Samsung Wallet) โดยไม่ต้องผูกกับแอปของผู้ผลิตล็อคนั้น ๆ
+          </div>
+          <div class="card-meta">
+            <span class="meta-tag">ESP32-C Series</span>
+            <span class="meta-tag">ESP32-H Series</span>
+            <span class="meta-tag">NFC (PN532)</span>
+            <span class="meta-tag">BLE (planned)</span>
+            <span class="meta-tag">Matter Compatible</span>
+          </div>
+        </div>
+        <div class="card-detail">
+          <ul class="detail-list">
+            <li>รองรับ ESP32-C2, C3, C5, C6 (WiFi) และ ESP32-H2 (Thread/Zigbee) — ราคาถูกกว่า MCU เชิงพาณิชย์มาก</li>
+            <li>ตอนนี้รองรับ <strong>Aliro NFC tap-to-unlock</strong> แล้ว — แค่แตะโทรศัพท์ที่ล็อค</li>
+            <li>Bluetooth LE และ BLE+UWB (สำหรับ proximity unlock) อยู่ใน roadmap</li>
+            <li>เป้าหมาย: ล้างปัญหาความแตกกระจาย — ผู้ใช้ใช้ wallet เดิม ไม่ต้องลงแอปแยกสำหรับล็อคแต่ละแบรนด์</li>
+            <li>ใช้ร่วมกับ NFC chip ภายนอก เช่น PN532 เพราะ ESP32-C/H ไม่มี NFC hardware ในตัว</li>
+            <li>รองรับ residential, enterprise, hospitality, campus ในมาตรฐานเดียวกัน</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- CARD 2: ESP32-P4-EYE Vision AI -->
+      <div class="card purple">
+        <div class="card-chip chip-purple">📷 Vision AI · ESP32-P4</div>
+        <div class="card-title">ESP32-P4-EYE + ESP-VISION — กล้อง Edge AI ต้นทุนต่ำ รัน YOLOv11-nano ได้ทันที</div>
+        <div class="card-desc">
+          Espressif เปิดตัว <strong>ESP32-P4-EYE</strong> dev board รูปร่างเหมือนกล้องจิ๋ว
+          พร้อม framework <strong>ESP-VISION</strong> ที่ให้ Python API สำหรับ camera + AI inference
+          แบบ low-code — เพียงไม่กี่บรรทัดก็รัน face detection, pedestrian detection
+          หรือ object detection ด้วย YOLOv11-nano ได้บน edge ไม่ต้องพึ่ง cloud
+        </div>
+        <div class="card-meta">
+          <span class="meta-tag">Dual-core 400 MHz RISC-V</span>
+          <span class="meta-tag">MIPI-CSI 2MP</span>
+          <span class="meta-tag">H.264 encoder</span>
+          <span class="meta-tag">YOLOv11-nano</span>
+          <span class="meta-tag">32MB PSRAM</span>
+        </div>
+      </div>
+
+      <!-- CARD 3: ESP32 TWAI CAN Bus -->
+      <div class="card orange">
+        <div class="card-chip chip-orange">🚗 Automotive IoT</div>
+        <div class="card-title">ESP32 TWAI Controller + OBD2 Library — วินิจฉัยรถยนต์และ Fleet Tracking ด้วย MCU ราคาไม่ถึง 100 บาท</div>
+        <div class="card-desc">
+          ESP32 มี <strong>TWAI (Two-Wire Automotive Interface)</strong> controller ในตัว รองรับ CAN 2.0B
+          ทำงานร่วมกับ transceiver ราคาถูก เช่น TJA1050 ได้เลย
+          Library <code>OBD2_CAN_Bus_Library</code> รองรับ ISO15765-4 และ ISO11898
+          ใช้ Arduino IDE ได้ทันที — อ่าน PIDs มาตรฐาน เช่น RPM, Speed, Engine Temp, Fuel, DTC
+        </div>
+        <div class="card-meta">
+          <span class="meta-tag">CAN 2.0B</span>
+          <span class="meta-tag">ISO15765-4 OBD2</span>
+          <span class="meta-tag">TJA1050 transceiver</span>
+          <span class="meta-tag">Arduino IDE</span>
+        </div>
+      </div>
+
+      <!-- CARD 4: Wearable Health Research 2026 -->
+      <div class="card pink">
+        <div class="card-chip chip-pink">💗 Medical IoT · 2026</div>
+        <div class="card-title">ESP32 + AD8232 + MAX30102 — งานวิจัย 2026 ยืนยัน Wearable ECG/SpO2 ต้นทุนต่ำกว่า INR 1,500 (~600 บาท)</div>
+        <div class="card-desc">
+          งานวิจัยล่าสุด (มกราคม 2569) ใน ResearchGate ยืนยันว่า ESP32 + <strong>AD8232</strong> (ECG analog front-end)
+          + <strong>MAX30102</strong> (SpO2 + Heart Rate) สามารถสร้าง portable cardiac monitor
+          ราคาต่ำกว่า 600 บาท โดยส่งข้อมูลผ่าน WiFi ไปยัง Firebase realtime database
+          แพทย์ดูข้อมูล ECG และ SpO2 ได้จากทุกที่ — เหมาะสำหรับ remote healthcare
+        </div>
+        <div class="card-meta">
+          <span class="meta-tag">AD8232 ECG</span>
+          <span class="meta-tag">MAX30102 SpO2</span>
+          <span class="meta-tag">Firebase Realtime DB</span>
+          <span class="meta-tag">~600 บาท</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="info-box">
+      <strong>สรุปเทรนด์วันนี้:</strong> สองธีมใหญ่ที่ชัดเจนมาก คือ (1) <strong>การทำ ESP32 ให้เป็น gateway สำหรับ protocol เฉพาะทาง</strong>
+      เช่น CAN bus ในรถยนต์และ Aliro ในล็อคดิจิทัล — ลดต้นทุนจากอุปกรณ์เฉพาะทางราคาแพงลงเหลือ MCU ราคาไม่กี่สิบบาท
+      และ (2) <strong>Edge AI ที่เข้าถึงง่ายขึ้น</strong> ผ่าน ESP32-P4 + framework อย่าง ESP-VISION
+      ที่ให้ Python API แบบ low-code รัน YOLOv11 ได้โดยไม่ต้องมีความรู้ ML ลึก
+    </div>
+  </section>
+
+  <!-- ===================== SECTION 2: PROJECTS ===================== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon green">🔨</div>
+      <h2>ไอเดียโปรเจกต์น่าสร้างประจำวัน</h2>
+      <span class="count-badge">5 โปรเจกต์</span>
+    </div>
+
+    <!-- Project 1: Vehicle Telematics -->
+    <div class="project-card">
+      <div class="project-num blue">01</div>
+      <div>
+        <div class="project-title">DIY Vehicle Telematics Box — ESP32 TWAI + GPS + Cloud Dashboard สำหรับ Fleet / มอเตอร์ไซค์ / รถส่วนตัว</div>
+        <div class="project-desc">
+          สร้างกล่อง OBD2 telemetry แบบ DIY เสียบเข้า port OBD2 ใต้พวงมาลัยรถ อ่านค่า RPM, ความเร็ว, อุณหภูมิเครื่องยนต์,
+          fuel trim, DTC (Diagnostic Trouble Codes) ผ่าน ESP32 TWAI — พร้อม GPS module (NEO-6M/8M)
+          บันทึก route และส่งขึ้น MQTT broker → Grafana dashboard บน cloud แบบ realtime
+          เหมาะสำหรับเจ้าของรถที่อยากรู้สุขภาพเครื่องยนต์, fleet manager ที่ต้องติดตามรถหลายคัน
+          หรือนักแข่งที่อยากวิเคราะห์ data log
+        </div>
+        <div class="project-specs">
+          <div class="spec-item"><strong>MCU</strong>ESP32 หรือ ESP32-S3</div>
+          <div class="spec-item"><strong>CAN Transceiver</strong>TJA1050 หรือ MCP2562FD</div>
+          <div class="spec-item"><strong>GPS</strong>NEO-6M / NEO-8M</div>
+          <div class="spec-item"><strong>Storage</strong>MicroSD card</div>
+          <div class="spec-item"><strong>Protocol</strong>OBD2 ISO15765-4</div>
+          <div class="spec-item"><strong>Cloud</strong>MQTT + Grafana / InfluxDB</div>
+          <div class="spec-item"><strong>ต้นทุนประมาณ</strong>~500–800 บาท</div>
+          <div class="spec-item"><strong>Power</strong>12V OBD2 port (auto sleep)</div>
+        </div>
+        <div class="difficulty-bar">
+          ความยาก:
+          <div class="bar-dots">
+            <div class="dot filled med"></div>
+            <div class="dot filled med"></div>
+            <div class="dot filled med"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+          <span>ปานกลาง</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project 2: Smart Aliro Lock -->
+    <div class="project-card">
+      <div class="project-num purple">02</div>
+      <div>
+        <div class="project-title">DIY Aliro Smart Lock ด้วย ESP32-C6 + PN532 NFC — ปลดล็อคด้วย iPhone / Android Wallet ไม่ต้องแอปพิเศษ</div>
+        <div class="project-desc">
+          สร้างล็อคประตูอัจฉริยะที่รองรับมาตรฐาน Aliro โดยใช้ ESP32-C6 (WiFi 6 + BLE 5.3 + 802.15.4) + PN532 NFC module
+          ผู้ใช้เพิ่มกุญแจดิจิทัลลงใน Apple Wallet หรือ Google Wallet แค่แตะโทรศัพท์ที่ผู้อ่าน NFC
+          ก็ปลดล็อคได้ทันที — ไม่ต้องติดตั้งแอปเพิ่มเติม, ไม่ต้องเชื่อม Bluetooth ก่อน
+          บริหารสิทธิ์เปิดล็อคได้จาก Matter app (Home/Google Home) — กำหนดช่วงเวลา, เพิ่ม/ลบสิทธิ์ guest ได้จากระยะไกล
+        </div>
+        <div class="project-specs">
+          <div class="spec-item"><strong>MCU</strong>ESP32-C6</div>
+          <div class="spec-item"><strong>NFC</strong>PN532 (I2C/SPI)</div>
+          <div class="spec-item"><strong>Actuator</strong>Solenoid lock / Servo</div>
+          <div class="spec-item"><strong>Protocol</strong>Aliro NFC + Matter</div>
+          <div class="spec-item"><strong>SDK</strong>ESP-Aliro (Espressif 2026)</div>
+          <div class="spec-item"><strong>Wallet</strong>Apple / Google / Samsung</div>
+          <div class="spec-item"><strong>ต้นทุนประมาณ</strong>~700–1,200 บาท</div>
+          <div class="spec-item"><strong>ไฟ backup</strong>แบตลิเธียม + ชาร์จ USB-C</div>
+        </div>
+        <div class="difficulty-bar">
+          ความยาก:
+          <div class="bar-dots">
+            <div class="dot filled hard"></div>
+            <div class="dot filled hard"></div>
+            <div class="dot filled hard"></div>
+            <div class="dot filled hard"></div>
+            <div class="dot"></div>
+          </div>
+          <span>ยาก (ต้องใช้ ESP-Aliro SDK)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project 3: Wearable Health Band -->
+    <div class="project-card">
+      <div class="project-num pink">03</div>
+      <div>
+        <div class="project-title">Wearable Cardiac Monitor — ESP32-S3 + AD8232 ECG + MAX30102 SpO2 + BLE → มือถือ / Web Dashboard</div>
+        <div class="project-desc">
+          สร้างอุปกรณ์สวมใส่ขนาดเล็กสำหรับวัดสัญญาณ ECG และ SpO2 แบบ real-time
+          AD8232 รับสัญญาณไฟฟ้าหัวใจ 1-lead ผ่าน electrode pad ที่ข้อมือ/หน้าอก
+          MAX30102 วัด SpO2 (ออกซิเจนในเลือด) และ heart rate ด้วย PPG ที่ปลายนิ้ว
+          ส่งข้อมูลผ่าน BLE ไปยังแอปมือถือ (หรือ WiFi ไป Firebase) แสดง waveform ECG แบบ live
+          ระบบแจ้งเตือนเมื่อ heart rate ผิดปกติ หรือ SpO2 ต่ำกว่าเกณฑ์
+        </div>
+        <div class="project-specs">
+          <div class="spec-item"><strong>MCU</strong>ESP32-S3 Mini</div>
+          <div class="spec-item"><strong>ECG</strong>AD8232 (Analog)</div>
+          <div class="spec-item"><strong>SpO2+HR</strong>MAX30102 (I2C)</div>
+          <div class="spec-item"><strong>Temp</strong>MLX90614 (contactless)</div>
+          <div class="spec-item"><strong>Cloud</strong>Firebase Realtime DB</div>
+          <div class="spec-item"><strong>Display</strong>SSD1306 OLED 0.96"</div>
+          <div class="spec-item"><strong>Power</strong>Li-Po 400mAh + TP4056</div>
+          <div class="spec-item"><strong>ต้นทุนประมาณ</strong>~500–700 บาท</div>
+        </div>
+        <div class="difficulty-bar">
+          ความยาก:
+          <div class="bar-dots">
+            <div class="dot filled med"></div>
+            <div class="dot filled med"></div>
+            <div class="dot filled med"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+          <span>ปานกลาง</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project 4: Smart Camera Surveillance -->
+    <div class="project-card">
+      <div class="project-num green">04</div>
+      <div>
+        <div class="project-title">ESP32-P4-EYE Smart Security Camera — YOLOv11 Object Detection + MQTT Alert + RTSP Stream แบบ All-in-One</div>
+        <div class="project-desc">
+          ใช้ ESP32-P4-EYE dev board เป็นกล้องรักษาความปลอดภัยอัจฉริยะ รัน <strong>YOLOv11-nano</strong>
+          สำหรับตรวจจับคน, รถ หรือสัตว์เลี้ยง บน edge โดยไม่ต้องส่งภาพขึ้น cloud
+          เมื่อตรวจพบบุคคลส่ง notification ผ่าน MQTT → Home Assistant / Telegram Bot
+          พร้อม stream ภาพ RTSP ให้ดูผ่าน VLC หรือ NVR เช่น Frigate
+          บันทึกวิดีโอ H.264 ลง MicroSD เฉพาะเมื่อ trigger เท่านั้น (event-based recording)
+        </div>
+        <div class="project-specs">
+          <div class="spec-item"><strong>Board</strong>ESP32-P4-EYE</div>
+          <div class="spec-item"><strong>AI Model</strong>YOLOv11-nano</div>
+          <div class="spec-item"><strong>Video</strong>1080p H.264, RTSP</div>
+          <div class="spec-item"><strong>Storage</strong>MicroSD (event-based)</div>
+          <div class="spec-item"><strong>Protocol</strong>MQTT + WiFi 6</div>
+          <div class="spec-item"><strong>Inference</strong>ESP-VISION Python API</div>
+          <div class="spec-item"><strong>ต้นทุนประมาณ</strong>~1,200–1,800 บาท</div>
+          <div class="spec-item"><strong>Resolution</strong>2MP MIPI-CSI</div>
+        </div>
+        <div class="difficulty-bar">
+          ความยาก:
+          <div class="bar-dots">
+            <div class="dot filled med"></div>
+            <div class="dot filled med"></div>
+            <div class="dot filled med"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+          <span>ปานกลาง (ใช้ ESP-VISION)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project 5: Water Quality -->
+    <div class="project-card">
+      <div class="project-num orange">05</div>
+      <div>
+        <div class="project-title">Smart Water Quality Station — ESP32 + pH + TDS + Turbidity + DO + Temperature → InfluxDB Dashboard</div>
+        <div class="project-desc">
+          สร้าง station ตรวจคุณภาพน้ำครบวงจรสำหรับบ่อเลี้ยงปลา, แหล่งน้ำชุมชน หรือระบบน้ำดื่ม
+          วัด: pH (E-201C probe), TDS/EC (SEN0244 Gravity), Turbidity (SEN0189), Dissolved Oxygen (DO),
+          และอุณหภูมิ (DS18B20) ส่งค่าทุก 5 นาทีผ่าน WiFi ไปยัง InfluxDB + Grafana
+          แจ้งเตือน LINE Notify หรือ Telegram เมื่อค่า pH หรือ DO ออกนอกช่วงปกติ
+          สามารถเพิ่ม LoRa module เพื่อส่งสัญญาณจากจุดที่ไม่มี WiFi ได้
+        </div>
+        <div class="project-specs">
+          <div class="spec-item"><strong>MCU</strong>ESP32 / ESP32-S3</div>
+          <div class="spec-item"><strong>pH</strong>E-201C probe + ADS1115 ADC</div>
+          <div class="spec-item"><strong>TDS/EC</strong>DFRobot SEN0244</div>
+          <div class="spec-item"><strong>Turbidity</strong>DFRobot SEN0189</div>
+          <div class="spec-item"><strong>Temp</strong>DS18B20 (waterproof)</div>
+          <div class="spec-item"><strong>Cloud</strong>InfluxDB + Grafana</div>
+          <div class="spec-item"><strong>Alert</strong>LINE Notify / Telegram</div>
+          <div class="spec-item"><strong>ต้นทุนประมาณ</strong>~1,500–2,500 บาท</div>
+        </div>
+        <div class="difficulty-bar">
+          ความยาก:
+          <div class="bar-dots">
+            <div class="dot filled med"></div>
+            <div class="dot filled med"></div>
+            <div class="dot filled med"></div>
+            <div class="dot filled med"></div>
+            <div class="dot"></div>
+          </div>
+          <span>ปานกลาง–ยาก (calibration สำคัญมาก)</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ===================== SECTION 3: SENSORS ===================== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon orange">🔬</div>
+      <h2>Sensors &amp; ICs น่าสนใจประจำวัน</h2>
+      <span class="count-badge">5 รายการ</span>
+    </div>
+
+    <div class="sensor-grid">
+
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div>
+            <div class="sensor-name">AD8232</div>
+            <div class="sensor-mfr">Analog Devices</div>
+          </div>
+          <span class="sensor-badge badge-ecg">ECG</span>
+        </div>
+        <div class="sensor-params">
+          <div class="param-row"><span class="param-label">Interface</span><span class="param-val">Analog Output</span></div>
+          <div class="param-row"><span class="param-label">Supply</span><span class="param-val">2.0V – 3.5V</span></div>
+          <div class="param-row"><span class="param-label">Bandwidth</span><span class="param-val">0.5Hz – 40Hz (ECG)</span></div>
+          <div class="param-row"><span class="param-label">Current</span><span class="param-val">170µA (ultralow power)</span></div>
+          <div class="param-row"><span class="param-label">Features</span><span class="param-val">Lead-off detection, RLD buffer</span></div>
+          <div class="param-row"><span class="param-label">ราคาประมาณ</span><span class="param-val">~80–150 บาท (module)</span></div>
+        </div>
+        <div class="sensor-desc">
+          IC ECG analog front-end สำหรับ 1-lead และ 3-lead electrocardiogram ใช้งานง่ายมาก
+          แค่ต่อ electrode 3 จุดแล้วอ่านค่า analog ผ่าน ADC ของ ESP32
+          มี lead-off detection circuit ช่วยตรวจสอบว่า electrode หลุดออกจากผิวหนังหรือไม่
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div>
+            <div class="sensor-name">MAX30102</div>
+            <div class="sensor-mfr">Analog Devices (Maxim)</div>
+          </div>
+          <span class="sensor-badge badge-bio">Bio</span>
+        </div>
+        <div class="sensor-params">
+          <div class="param-row"><span class="param-label">Interface</span><span class="param-val">I2C (400kHz)</span></div>
+          <div class="param-row"><span class="param-label">Supply</span><span class="param-val">1.8V logic / 3.3V LED</span></div>
+          <div class="param-row"><span class="param-label">Measurement</span><span class="param-val">SpO2, Heart Rate, Temp</span></div>
+          <div class="param-row"><span class="param-label">LED</span><span class="param-val">Red 660nm + IR 880nm</span></div>
+          <div class="param-row"><span class="param-label">ADC</span><span class="param-val">18-bit, 200Hz max</span></div>
+          <div class="param-row"><span class="param-label">ราคาประมาณ</span><span class="param-val">~50–120 บาท (module)</span></div>
+        </div>
+        <div class="sensor-desc">
+          เซ็นเซอร์ PPG (Photoplethysmography) ที่นิยมมากที่สุดสำหรับ wearable DIY
+          วัด SpO2 (ค่าปกติ 95–100%), heart rate และอุณหภูมิผ่าน LED สองสีในตัว
+          ใช้ algorithm ในโปรแกรมคำนวณค่า SpO2 จาก ratio ของสัญญาณ Red/IR
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div>
+            <div class="sensor-name">TJA1050 / MCP2562FD</div>
+            <div class="sensor-mfr">NXP / Microchip</div>
+          </div>
+          <span class="sensor-badge badge-can">CAN</span>
+        </div>
+        <div class="sensor-params">
+          <div class="param-row"><span class="param-label">Type</span><span class="param-val">CAN Bus Transceiver</span></div>
+          <div class="param-row"><span class="param-label">Standard</span><span class="param-val">CAN 2.0A/B, ISO 11898</span></div>
+          <div class="param-row"><span class="param-label">Speed (MCP2562FD)</span><span class="param-val">Up to 8 Mbps (CAN FD)</span></div>
+          <div class="param-row"><span class="param-label">Supply</span><span class="param-val">4.5V – 5.5V (bus side)</span></div>
+          <div class="param-row"><span class="param-label">Logic</span><span class="param-val">3.3V compatible (MCP2562)</span></div>
+          <div class="param-row"><span class="param-label">ราคาประมาณ</span><span class="param-val">~15–60 บาท</span></div>
+        </div>
+        <div class="sensor-desc">
+          IC แปลงสัญญาณระหว่าง ESP32 TWAI controller (TTL 3.3V) กับสาย CAN bus (differential ±12V)
+          TJA1050 ราคาถูก เหมาะสำหรับ OBD2 DIY สำหรับ CAN FD (เร็วกว่า 10x) ใช้ MCP2562FD
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div>
+            <div class="sensor-name">PN532</div>
+            <div class="sensor-mfr">NXP Semiconductors</div>
+          </div>
+          <span class="sensor-badge badge-nfc">NFC</span>
+        </div>
+        <div class="sensor-params">
+          <div class="param-row"><span class="param-label">Interface</span><span class="param-val">I2C / SPI / UART</span></div>
+          <div class="param-row"><span class="param-label">Frequency</span><span class="param-val">13.56 MHz</span></div>
+          <div class="param-row"><span class="param-label">Standards</span><span class="param-val">ISO14443A/B, MIFARE, FeliCa</span></div>
+          <div class="param-row"><span class="param-label">Range</span><span class="param-val">~5–10 cm</span></div>
+          <div class="param-row"><span class="param-label">Supply</span><span class="param-val">3.3V</span></div>
+          <div class="param-row"><span class="param-label">ราคาประมาณ</span><span class="param-val">~120–250 บาท (module)</span></div>
+        </div>
+        <div class="sensor-desc">
+          NFC controller ที่ใช้ร่วมกับ ESP-Aliro SDK สำหรับสร้างล็อคดิจิทัล Aliro compliant
+          รองรับ card emulation mode ที่ทำให้อุปกรณ์ทำตัวเป็น NFC tag ได้
+          และ peer-to-peer mode สำหรับ HCE (Host Card Emulation) ของ smartphone
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div>
+            <div class="sensor-name">SEN0244 (Gravity TDS)</div>
+            <div class="sensor-mfr">DFRobot</div>
+          </div>
+          <span class="sensor-badge badge-water">Water</span>
+        </div>
+        <div class="sensor-params">
+          <div class="param-row"><span class="param-label">Interface</span><span class="param-val">Analog Output</span></div>
+          <div class="param-row"><span class="param-label">Range</span><span class="param-val">0–1000 ppm TDS</span></div>
+          <div class="param-row"><span class="param-label">Accuracy</span><span class="param-val">±10% F.S.</span></div>
+          <div class="param-row"><span class="param-label">Temp. Comp.</span><span class="param-val">Software (DS18B20)</span></div>
+          <div class="param-row"><span class="param-label">Supply</span><span class="param-val">3.3V – 5V</span></div>
+          <div class="param-row"><span class="param-label">ราคาประมาณ</span><span class="param-val">~350–500 บาท</span></div>
+        </div>
+        <div class="sensor-desc">
+          เซ็นเซอร์วัด TDS (Total Dissolved Solids) สำหรับคุณภาพน้ำดื่มและบ่อเลี้ยงสัตว์น้ำ
+          ค่า TDS น้ำดื่มควรต่ำกว่า 500 ppm (WHO), บ่อปลาสวยงาม 100–250 ppm
+          ต้องทำ temperature compensation ร่วมกับ DS18B20 เพื่อความแม่นยำ
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== SECTION 4: RESOURCES ===================== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon purple">🔗</div>
+      <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+      <span class="count-badge">8 ลิงก์</span>
+    </div>
+
+    <div class="resource-grid">
+      <a class="resource-link" href="https://developer.espressif.com/blog/2026/07/espressif-aliro-solution/" target="_blank">
+        <div class="resource-icon">🔐</div>
+        <div class="resource-info">
+          <div class="resource-name">ESP-Aliro SDK Announcement</div>
+          <div class="resource-desc">Espressif Developer Portal · กรกฎาคม 2569</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4-eye/user_guide.html" target="_blank">
+        <div class="resource-icon">📷</div>
+        <div class="resource-info">
+          <div class="resource-name">ESP32-P4-EYE User Guide</div>
+          <div class="resource-desc">Espressif Docs · MIPI Camera + AI Dev Board</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://github.com/espressif/esp-vision" target="_blank">
+        <div class="resource-icon">🤖</div>
+        <div class="resource-info">
+          <div class="resource-name">esp-vision GitHub</div>
+          <div class="resource-desc">Low-Code Edge AI Framework สำหรับ ESP32</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://github.com/muki01/OBD2_CAN_Bus_Library" target="_blank">
+        <div class="resource-icon">🚗</div>
+        <div class="resource-info">
+          <div class="resource-name">OBD2_CAN_Bus_Library</div>
+          <div class="resource-desc">GitHub · ISO15765-4 สำหรับ ESP32 TWAI</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://github.com/MagnusThome/RejsaCAN-ESP32" target="_blank">
+        <div class="resource-icon">🏎️</div>
+        <div class="resource-info">
+          <div class="resource-name">RejsaCAN-ESP32</div>
+          <div class="resource-desc">ESP32/S3 board พร้อม CAN interface, 12V power</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://www.instructables.com/ESP32-Vehicle-Telematics-OBD2-CAN-and-GPS-Reportin/" target="_blank">
+        <div class="resource-icon">📡</div>
+        <div class="resource-info">
+          <div class="resource-name">ESP32 Vehicle Telematics Guide</div>
+          <div class="resource-desc">Instructables · OBD2 + GPS + Cloud ครบวงจร</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://how2electronics.com/iot-ecg-monitoring-ad8232-sensor-esp32/" target="_blank">
+        <div class="resource-icon">💗</div>
+        <div class="resource-info">
+          <div class="resource-name">IoT ECG Monitoring Tutorial</div>
+          <div class="resource-desc">how2electronics · AD8232 + ESP32 ทีละขั้นตอน</div>
+        </div>
+      </a>
+      <a class="resource-link" href="https://how2electronics.com/iot-based-drinking-water-quality-monitoring-with-esp32/" target="_blank">
+        <div class="resource-icon">💧</div>
+        <div class="resource-info">
+          <div class="resource-name">Water Quality Monitoring ESP32</div>
+          <div class="resource-desc">how2electronics · pH + TDS + Turbidity + Cloud</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div>
+    สร้างโดย AI Researcher อัตโนมัติ · วันที่ 29 กรกฎาคม 2569
+    &nbsp;|&nbsp; ธีมวันนี้: <strong>Automotive IoT · Smart Access · Medical Wearables · Vision AI</strong>
+  </div>
+  <div class="footer-sources">
+    แหล่งอ้างอิง:
+    <a href="https://developer.espressif.com/" target="_blank">Espressif Developer Portal</a> ·
+    <a href="https://github.com/espressif" target="_blank">Espressif GitHub</a> ·
+    <a href="https://www.hackster.io/" target="_blank">Hackster.io</a> ·
+    <a href="https://how2electronics.com/" target="_blank">How2Electronics</a> ·
+    <a href="https://www.instructables.com/" target="_blank">Instructables</a> ·
+    <a href="https://www.researchgate.net/" target="_blank">ResearchGate</a>
+  </div>
+</footer>
+
+</body>
+</html>
