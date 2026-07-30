@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 30 กรกฎาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263347;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-blue: #38bdf8;
+    --accent-purple: #a78bfa;
+    --accent-green: #4ade80;
+    --accent-orange: #fb923c;
+    --accent-red: #f87171;
+    --accent-yellow: #fbbf24;
+    --accent-pink: #f472b6;
+    --border: #334155;
+    --tag-bg: #1e3a5f;
+    --tag-text: #7dd3fc;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1a1040 40%, #0c1f3d 70%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(99,102,241,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 50%, rgba(56,189,248,0.10) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 999px;
+    padding: 0.3rem 1rem;
+    font-size: 0.8rem;
+    color: var(--accent-blue);
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.05em;
+  }
+
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #38bdf8, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .header-theme {
+    display: inline-block;
+    background: linear-gradient(135deg, #1e3a5f, #2d1f5e);
+    border: 1px solid rgba(167,139,250,0.4);
+    border-radius: 8px;
+    padding: 0.5rem 1.2rem;
+    color: var(--accent-purple);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 1.8rem;
+  }
+
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .stat-chip span { color: var(--text-primary); font-weight: 600; }
+
+  /* ── Layout ── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  /* ── Section ── */
+  section { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border);
+  }
+  .section-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .icon-blue  { background: rgba(56,189,248,0.15);  border: 1px solid rgba(56,189,248,0.3); }
+  .icon-purple{ background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3); }
+  .icon-green { background: rgba(74,222,128,0.15);  border: 1px solid rgba(74,222,128,0.3); }
+  .icon-orange{ background: rgba(251,146,60,0.15);  border: 1px solid rgba(251,146,60,0.3); }
+
+  .section-title { font-size: 1.3rem; font-weight: 700; }
+  .section-title small { display: block; font-size: 0.85rem; font-weight: 400; color: var(--text-muted); margin-top: 0.1rem; }
+
+  /* ── Cards ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .card.blue::before   { background: linear-gradient(90deg, #38bdf8, #6366f1); }
+  .card.purple::before { background: linear-gradient(90deg, #a78bfa, #f472b6); }
+  .card.green::before  { background: linear-gradient(90deg, #4ade80, #22d3ee); }
+  .card.orange::before { background: linear-gradient(90deg, #fb923c, #f59e0b); }
+  .card.red::before    { background: linear-gradient(90deg, #f87171, #f472b6); }
+  .card.yellow::before { background: linear-gradient(90deg, #fbbf24, #4ade80); }
+
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: #475569;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+  }
+
+  .card-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    margin-bottom: 0.8rem;
+  }
+  .badge-new     { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+  .badge-hot     { background: rgba(251,146,60,0.15); color: #fb923c; border: 1px solid rgba(251,146,60,0.3); }
+  .badge-project { background: rgba(167,139,250,0.15); color: #a78bfa; border: 1px solid rgba(167,139,250,0.3); }
+  .badge-tool    { background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); }
+  .badge-sensor  { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
+  .badge-ai      { background: rgba(244,114,182,0.15); color: #f472b6; border: 1px solid rgba(244,114,182,0.3); }
+
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    color: var(--text-primary);
+  }
+  .card h3 .chip-name {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent-blue);
+    margin-bottom: 0.2rem;
+  }
+
+  .card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.9rem;
+    line-height: 1.7;
+  }
+
+  .card-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.9rem;
+  }
+  .spec-tag {
+    background: rgba(51,65,85,0.7);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.15rem 0.55rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  .card-highlight {
+    background: rgba(15,23,42,0.7);
+    border-left: 3px solid var(--accent-blue);
+    border-radius: 0 8px 8px 0;
+    padding: 0.7rem 0.9rem;
+    margin-bottom: 0.9rem;
+  }
+  .card-highlight.purple { border-left-color: var(--accent-purple); }
+  .card-highlight.green  { border-left-color: var(--accent-green); }
+  .card-highlight.orange { border-left-color: var(--accent-orange); }
+
+  .card-highlight p {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-bottom: 0;
+  }
+
+  .why-build {
+    background: rgba(74,222,128,0.07);
+    border: 1px solid rgba(74,222,128,0.2);
+    border-radius: 8px;
+    padding: 0.65rem 0.9rem;
+    font-size: 0.82rem;
+    color: #86efac;
+  }
+  .why-build::before { content: '💡 ทำไมน่าสร้าง: '; font-weight: 600; }
+
+  /* ── Feature list ── */
+  .feature-list { list-style: none; margin: 0 0 0.9rem; padding: 0; }
+  .feature-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    padding: 0.2rem 0;
+  }
+  .feature-list li::before {
+    content: '▸';
+    color: var(--accent-blue);
+    flex-shrink: 0;
+    margin-top: 0.05em;
+  }
+
+  /* ── Wide card (full width) ── */
+  .card-wide {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.6rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-wide::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #38bdf8, #a78bfa, #f472b6, #fb923c);
+  }
+
+  .card-wide h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+
+  .col-block h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    margin-bottom: 0.5rem;
+  }
+  .col-block h4.purple { color: var(--accent-purple); }
+  .col-block h4.green  { color: var(--accent-green); }
+  .col-block h4.orange { color: var(--accent-orange); }
+
+  /* ── Sensor table ── */
+  .sensor-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .sensor-table th {
+    background: rgba(30,42,60,0.9);
+    color: var(--accent-blue);
+    font-weight: 600;
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+  .sensor-table td {
+    padding: 0.65rem 0.8rem;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  .sensor-table tr:hover td { background: rgba(30,42,60,0.4); }
+  .sensor-table td:first-child { color: var(--text-primary); font-weight: 600; }
+  .sensor-table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+
+  /* ── Resources ── */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .resource-card:hover { border-color: #475569; transform: translateY(-2px); }
+  .resource-card h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--text-primary); }
+  .resource-card p  { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.7rem; line-height: 1.5; }
+  .resource-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    color: var(--accent-blue);
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(56,189,248,0.4);
+    padding-bottom: 1px;
+    transition: color 0.2s;
+  }
+  .resource-link:hover { color: #7dd3fc; }
+
+  /* ── Code block ── */
+  pre {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: #c9d1d9;
+    margin: 0.8rem 0;
+  }
+  code { font-family: 'Consolas', 'Monaco', monospace; }
+  .code-comment { color: #8b949e; }
+  .code-kw { color: #ff7b72; }
+  .code-fn { color: #d2a8ff; }
+  .code-str { color: #a5d6ff; }
+  .code-num { color: #79c0ff; }
+
+  /* ── Footer ── */
+  footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  footer strong { color: var(--text-secondary); }
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  .footer-links a { color: var(--accent-blue); text-decoration: none; font-size: 0.82rem; }
+  .footer-links a:hover { text-decoration: underline; }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    header { padding: 2rem 1rem 2rem; }
+    main { padding: 1.5rem 1rem 3rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">🤖 ESP32 Daily Research • AI-Assisted</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">30 กรกฎาคม 2569 | รวมไอเดียและนวัตกรรม ESP32 ประจำวัน</p>
+  <div class="header-theme">🎮 ธีมวันนี้: Gaming Emulation · Wireless Security · Edge AI Vision · Smart Access</div>
+  <div class="stats-row">
+    <div class="stat-chip">🔥 โปรเจกต์เด่น <span>6 รายการ</span></div>
+    <div class="stat-chip">🧩 Sensor/Module <span>4 ตัว</span></div>
+    <div class="stat-chip">🔗 แหล่งข้อมูล <span>7 ลิงก์</span></div>
+    <div class="stat-chip">🗓️ อัปเดต <span>30 ก.ค. 2569</span></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 1: นวัตกรรมและอัปเดตเด่น
+       ══════════════════════════════════════════════ -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🚀</div>
+      <div class="section-title">
+        นวัตกรรมและอัปเดตเด่นประจำวัน
+        <small>Innovations &amp; Breaking News</small>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- Card 1: NES Emulator -->
+      <div class="card blue">
+        <span class="card-badge badge-hot">🔥 Viral</span>
+        <h3>
+          <span class="chip-name">ESP32-WROOM · ESP32-S3</span>
+          Anemoia-ESP32 — เล่นเกม NES ได้ 60 FPS บน ESP32 ราคาไม่กี่ร้อยบาท
+        </h3>
+        <p>
+          Shim Manaloto พอร์ตและ rewrite โปรเจกต์ NES emulator ชื่อ Anemoia ลงบน ESP32 ได้สำเร็จ
+          โดยรันที่ <strong>~60.098 FPS (NTSC)</strong> พร้อม audio emulation ครบถ้วน
+          Hackaday รายงานเมื่อ 22 กรกฎาคม 2569 ว่าโปรเจกต์นี้ "น่าทึ่งมาก"
+        </p>
+        <div class="card-specs">
+          <span class="spec-tag">60 FPS</span>
+          <span class="spec-tag">I2S Audio</span>
+          <span class="spec-tag">Save States</span>
+          <span class="spec-tag">6 Mappers</span>
+          <span class="spec-tag">79% Game Library</span>
+          <span class="spec-tag">Web Flasher</span>
+        </div>
+        <ul class="feature-list">
+          <li>รันได้บน ESP32-WROOM ธรรมดา (4MB Flash, ไม่ต้องมี PSRAM)</li>
+          <li>รองรับ Super Mario Bros., Zelda, Metroid และอีกหลายร้อยเกม</li>
+          <li>ติดตั้งง่าย — flash ผ่าน browser โดยตรง (Web Flasher)</li>
+          <li>DSN Industries ทำ rebuild บน ESP-IDF แยกต่างหากเพื่อประสิทธิภาพสูงสุด</li>
+          <li>ราคาฮาร์ดแวร์ทั้งหมดต่ำกว่า $20 (ประมาณ 700 บาท)</li>
+        </ul>
+        <div class="card-highlight">
+          <p>🎯 ความสำเร็จที่ยิ่งใหญ่: ชิป RISC-V / Xtensa ราคาไม่กี่ดอลลาร์สามารถรันเกม NES ได้ลื่นเท่า console จริง แสดงให้เห็นว่า ESP32 มีพลังซ่อนอยู่มากกว่าที่ใช้กันในงาน IoT ทั่วไป</p>
+        </div>
+        <div class="why-build">เครื่องเกมพกพา retro ราคาถูก เหมาะทำของขวัญ DIY หรือสอนเด็กเรื่อง embedded programming</div>
+      </div>
+
+      <!-- Card 2: ESP32-DIV V2 -->
+      <div class="card purple">
+        <span class="card-badge badge-new">🔐 Security</span>
+        <h3>
+          <span class="chip-name">ESP32-S3 · Multi-Radio</span>
+          ESP32-DIV V2 — Flipper Zero Open Source สร้างเองได้ สเปคครบกว่า
+        </h3>
+        <p>
+          CiferTech เปิดตัว ESP32-DIV V2 บน Hackster.io — toolkit wireless security ที่รวมโปรโตคอลหลายตัวในบอร์ดเดียว
+          เปิด source ทั้ง PCB schematics, firmware และ case 3D print ทุกอย่าง
+        </p>
+        <div class="card-specs">
+          <span class="spec-tag">Wi-Fi</span>
+          <span class="spec-tag">Bluetooth BLE</span>
+          <span class="spec-tag">Sub-GHz RF</span>
+          <span class="spec-tag">IR</span>
+          <span class="spec-tag">RFID</span>
+          <span class="spec-tag">GPS</span>
+        </div>
+        <ul class="feature-list">
+          <li>Wi-Fi: Packet Monitor บันทึก traffic ลง SD Card + Captive Portal</li>
+          <li>BLE: "Rubber Ducky" mode (ทำตัวเป็น keyboard) + Sour Apple สำหรับ Apple devices</li>
+          <li>Sub-GHz: ส่ง/รับสัญญาณ 433/868/915 MHz</li>
+          <li>Design modular: main board (ESP32-S3) + plug-on shield (radios เพิ่มเติม)</li>
+          <li>เปิด PCB schematics, 3D case files, firmware ทั้งหมดบน GitHub</li>
+        </ul>
+        <div class="card-highlight purple">
+          <p>⚠️ ใช้เพื่อการศึกษา pentesting และ authorized security testing เท่านั้น — ห้ามใช้โจมตีระบบที่ไม่ได้รับอนุญาต</p>
+        </div>
+        <div class="why-build">ศึกษาความปลอดภัย wireless ได้ครบทุกโปรโตคอล ราคาถูกกว่า Flipper Zero และ customize ได้เต็มที่</div>
+      </div>
+
+      <!-- Card 3: ESP-DL Update -->
+      <div class="card green">
+        <span class="card-badge badge-ai">🧠 AI Update</span>
+        <h3>
+          <span class="chip-name">ESP32-S3 · ESP32-P4</span>
+          ESP-DL อัปเดตใหม่ — Per-Channel Quantization &amp; PIE SIMD Acceleration
+        </h3>
+        <p>
+          Espressif อัปเดต esp-dl (deep-learning library) รองรับ per-channel quantization บน ESP32-P4
+          เพิ่มความแม่นยำของ model AI อย่างมีนัยสำคัญ พร้อม SIMD skills สำหรับ PIE (Processor Instruction Extension)
+        </p>
+        <div class="card-specs">
+          <span class="spec-tag">ONNX Support</span>
+          <span class="spec-tag">Per-Channel Quant</span>
+          <span class="spec-tag">ESP-PPQ</span>
+          <span class="spec-tag">PIE SIMD</span>
+          <span class="spec-tag">Conv/Gemm/Add/Mul</span>
+        </div>
+        <ul class="feature-list">
+          <li>Conv และ Gemm operators บน ESP32-P4 อัปเกรดเป็น per-channel quantization</li>
+          <li>ESP-PPQ อ่านไฟล์ ONNX โดยตรง — quantize model จาก PyTorch/TensorFlow ได้เลย</li>
+          <li>Skills ใหม่: <code>esp32s3-pie-simd</code> และ <code>esp32p4-pie-simd</code> เร่ง AI operators</li>
+          <li>ESP-Brasia สำหรับ UI development + ESDL สำหรับ AI inference pipeline</li>
+          <li>Arduino-ESP32 สำหรับ P4 อยู่ในสถานะ beta (เมษายน 2569)</li>
+        </ul>
+        <div class="card-highlight green">
+          <p>📈 ผลลัพธ์: model accuracy บน ESP32-P4 สูงขึ้นอย่างเห็นได้ชัด เมื่อเทียบกับ per-tensor quantization แบบเดิม</p>
+        </div>
+        <div class="why-build">Deploy ONNX model จาก PC มาบน ESP32-P4 ได้โดยตรง — เหมาะงาน edge AI เช่น defect detection, face recognition</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 2: ไอเดียโปรเจกต์
+       ══════════════════════════════════════════════ -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">💡</div>
+      <div class="section-title">
+        ไอเดียโปรเจกต์น่าสร้างประจำวัน
+        <small>Project Ideas — Build It This Week</small>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- Card 4: DoorCTL -->
+      <div class="card orange">
+        <span class="card-badge badge-project">🏭 Production-Ready</span>
+        <h3>
+          <span class="chip-name">ESP32 · Supabase · PWA</span>
+          DoorCTL — ระบบควบคุมประตูโกดังระดับ Production ด้วย JWT + WebAuthn
+        </h3>
+        <p>
+          lnodari97 บน Hackster.io (24 ก.ค. 2569) เปิดเผยโปรเจกต์ควบคุมประตู loading dock
+          ในโรงซักผ้าเชิงพาณิชย์จริงๆ ที่ Brooklyn, NY — ไม่ใช่แค่ prototype แต่ใช้งานจริงทุกวัน
+        </p>
+        <div class="card-specs">
+          <span class="spec-tag">JWT Auth</span>
+          <span class="spec-tag">WebAuthn Biometric</span>
+          <span class="spec-tag">RBAC</span>
+          <span class="spec-tag">Blynk Cloud</span>
+          <span class="spec-tag">Supabase RLS</span>
+          <span class="spec-tag">433 MHz RF</span>
+        </div>
+        <ul class="feature-list">
+          <li>PWA (Progressive Web App) — vanilla JS บน Netlify, login ด้วย password หรือ biometrics</li>
+          <li>Blynk Cloud ทำหน้าที่ pass-through คำสั่ง (Virtual Pins V1/V2/V3)</li>
+          <li>ESP32 ขับ relay 2 channel (GPIO26=OPEN, GPIO27=CLOSE) + อ่าน RF remote QIACHIP RX480E</li>
+          <li>Supabase จัดการ user identity + Row-Level Security ป้องกัน SQL injection</li>
+          <li>Activity log ทุก action — ใครเปิด/ปิดประตูเมื่อไหร่บันทึกครบ</li>
+        </ul>
+        <div class="card-highlight orange">
+          <p>🏗️ สถาปัตยกรรม: PWA → Supabase (auth + db) → Blynk (pass-through) → ESP32 → Relay → ประตู</p>
+        </div>
+        <div class="why-build">ใช้แทนระบบ access control ราคาแพง เหมาะสำหรับโรงงาน คลังสินค้า หรืออาคารสำนักงานขนาดเล็ก</div>
+      </div>
+
+      <!-- Card 5: AI ANPR -->
+      <div class="card red">
+        <span class="card-badge badge-ai">🎥 Edge AI + Cloud</span>
+        <h3>
+          <span class="chip-name">ESP32-S3 AI Cam · Gemini Vision API</span>
+          AI-Powered ANPR — จดจำป้ายทะเบียนรถด้วย Gemini Vision API
+        </h3>
+        <p>
+          maheshyadav216 บน Hackster.io สร้างระบบ Automatic Number Plate Recognition (ANPR)
+          โดยให้ ESP32-S3 AI Camera ถ่ายรูป → encode เป็น Base64 → ส่งให้ Gemini Vision API วิเคราะห์
+          → ส่งผลลัพธ์ไปเก็บใน Firebase
+        </p>
+        <div class="card-specs">
+          <span class="spec-tag">OV3660 3MP</span>
+          <span class="spec-tag">Night Vision</span>
+          <span class="spec-tag">8MB PSRAM</span>
+          <span class="spec-tag">ArduinoJson</span>
+          <span class="spec-tag">Firebase</span>
+          <span class="spec-tag">HTTP POST</span>
+        </div>
+        <ul class="feature-list">
+          <li>DFRobot ESP32-S3 AI Camera Module: OV3660 3MP + IR night vision + onboard mic+speaker</li>
+          <li>ถ่ายภาพ → แปลงเป็น Base64 → ฝังใน JSON payload พร้อม prompt ภาษาธรรมชาติ</li>
+          <li>Gemini API ตอบกลับ JSON → ArduinoJson parse → ได้ตัวเลขทะเบียนออกมา</li>
+          <li>บันทึก timestamp + Base64 image + plate number ลง Firebase Realtime Database</li>
+          <li>รูปแบบ: Edge Camera + Cloud AI — สมดุลระหว่าง cost และ accuracy</li>
+        </ul>
+
+        <div style="margin: 0.8rem 0;">
+          <pre><code><span class="code-comment">// ตัวอย่าง JSON payload ส่งไป Gemini API</span>
+{
+  <span class="code-str">"contents"</span>: [{
+    <span class="code-str">"parts"</span>: [
+      { <span class="code-str">"text"</span>: <span class="code-str">"Extract the license plate number from this image"</span> },
+      { <span class="code-str">"inline_data"</span>: { <span class="code-str">"mime_type"</span>: <span class="code-str">"image/jpeg"</span>, <span class="code-str">"data"</span>: <span class="code-str">"[BASE64]"</span> } }
+    ]
+  }]
+}</code></pre>
+        </div>
+
+        <div class="why-build">ระบบ parking, ประตูอัตโนมัติ หรือ security checkpoint ที่ไม่ต้องเสียเงินซื้อ ANPR เชิงพาณิชย์</div>
+      </div>
+
+      <!-- Card 6: PS5 DualSense Robot -->
+      <div class="card yellow">
+        <span class="card-badge badge-project">🎮 Robotics</span>
+        <h3>
+          <span class="chip-name">ESP32 · BLE · PS5 DualSense</span>
+          DualSense Teleoperated Robot — บังคับหุ่นยนต์ด้วย PS5 Controller ผ่าน Bluetooth
+        </h3>
+        <p>
+          ademosuoluwatobi บน Hackster.io (27 ก.ค. 2569) แสดงวิธีเชื่อม PS5 DualSense controller
+          เข้า ESP32 ผ่าน Bluetooth โดยตรง แล้วขับ robot chassis 2 มอเตอร์ — ไม่ต้องมี app, ไม่ต้องมี router
+        </p>
+        <div class="card-specs">
+          <span class="spec-tag">BLE HID</span>
+          <span class="spec-tag">PS5 DualSense</span>
+          <span class="spec-tag">L298N / Motor Driver</span>
+          <span class="spec-tag">Differential Drive</span>
+          <span class="spec-tag">esp-ps5 lib</span>
+        </div>
+        <ul class="feature-list">
+          <li>D-pad Up/Down = ไปข้างหน้า/ถอยหลัง, Left/Right = หมุนที่อยู่กับที่</li>
+          <li>D-pad diagonal = เลี้ยวโค้งขณะเคลื่อนที่ (differential steering)</li>
+          <li>ใช้ library <code>esp-ps5</code> (HamzaYslmn) อ่าน button, สั่น rumble, ควบคุม LED bar</li>
+          <li>ไม่ต้องมี companion app หรือ router — pair โดยตรง ESP32 ↔ DualSense</li>
+          <li>สามารถต่อยอดใส่กล้อง, IMU, LIDAR ได้ทันที</li>
+        </ul>
+        <div class="card-highlight orange">
+          <p>🔌 Library: github.com/HamzaYslmn/esp-ps5 — รองรับ buttons, analog sticks, touchpad, rumble, LEDs</p>
+        </div>
+        <div class="why-build">Controller PS5 มีในบ้านหลายคนอยู่แล้ว — ประหยัดกว่าซื้อ RC transmitter แยก และเพิ่ม haptic feedback ได้ด้วย</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 3: ESP32-P4 AI Deep Dive
+       ══════════════════════════════════════════════ -->
+  <section id="deepdive">
+    <div class="section-header">
+      <div class="section-icon icon-green">🧠</div>
+      <div class="section-title">
+        ESP32-P4 Edge AI — เจาะลึกความสามารถปี 2569
+        <small>Deep Dive: High-Performance AI SoC</small>
+      </div>
+    </div>
+
+    <div class="card-wide">
+      <h3>📊 ESP32-P4 vs ESP32-S3 — เลือกตัวไหนสำหรับงาน AI ในปี 2569?</h3>
+      <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:1rem;">
+        หลังจาก ESP32-P4 วางจำหน่ายได้กว่าปีครึ่ง ระบบ ecosystem เริ่มสมบูรณ์ขึ้นมาก
+        WizzDev สรุปเปรียบเทียบสำหรับ IoT roadmap ปี 2569:
+      </p>
+      <div class="two-col">
+        <div class="col-block">
+          <h4>🔵 ESP32-S3 — "AI Generalist"</h4>
+          <ul class="feature-list">
+            <li>Dual-core Xtensa LX7 @ 240 MHz</li>
+            <li>PIE SIMD extensions — CNN inference ดี</li>
+            <li>Wi-Fi + BLE built-in — IoT ครบในตัว</li>
+            <li>FOMO object detection &lt;200ms</li>
+            <li>Arduino + ESPHome support เต็มรูปแบบ</li>
+            <li><strong>เหมาะ:</strong> Smart camera, voice assistant, sensor+AI</li>
+          </ul>
+        </div>
+        <div class="col-block">
+          <h4 class="purple">🟣 ESP32-P4 — "Edge Computing Beast"</h4>
+          <ul class="feature-list">
+            <li>Dual-core RISC-V @ 400 MHz + LP Core 40 MHz</li>
+            <li>32MB PSRAM — รัน model ขนาดใหญ่ได้</li>
+            <li>H.264 encoder, MIPI camera/display</li>
+            <li>Per-channel quantization — accuracy สูงกว่า</li>
+            <li><strong>ไม่มี</strong> Wi-Fi/BLE — ต้องต่อ ESP32-C6 หรือ module แยก</li>
+            <li><strong>เหมาะ:</strong> 1080p AI video, ANPR, display HMI, industrial</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:1rem; background:rgba(15,23,42,0.6); border-radius:8px; padding:1rem; font-size:0.85rem; color:var(--text-secondary);">
+        💡 <strong style="color:var(--text-primary)">สูตรใช้งานจริง:</strong>
+        ถ้าต้องการ AI + Wireless ในบอร์ดเดียว → <span style="color:#7dd3fc">ESP32-S3</span> |
+        ถ้าต้องการ AI ประสิทธิภาพสูงสุดแบบ wired → <span style="color:#c084fc">ESP32-P4 + ESP32-C6 (wireless add-on)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 4: Sensors & Modules
+       ══════════════════════════════════════════════ -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔬</div>
+      <div class="section-title">
+        Sensors &amp; Modules น่าสนใจ
+        <small>Components Worth Adding to Your Project</small>
+      </div>
+    </div>
+
+    <div class="sensor-table-wrap">
+      <table class="sensor-table">
+        <thead>
+          <tr>
+            <th>Module / IC</th>
+            <th>ประเภท</th>
+            <th>Interface</th>
+            <th>ไฮไลต์</th>
+            <th>ราคาโดยประมาณ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>DFRobot ESP32-S3 AI Camera</td>
+            <td>AI Camera Module</td>
+            <td>USB-C / UART</td>
+            <td>OV3660 3MP, Night Vision IR, 8MB PSRAM, Mic+Speaker, ChatGPT Voice</td>
+            <td>~$35–45</td>
+          </tr>
+          <tr>
+            <td>QIACHIP RX480E</td>
+            <td>433 MHz RF Receiver</td>
+            <td>GPIO Digital</td>
+            <td>Super-heterodyne, เรียน code RF remote อัตโนมัติ, ใช้กับ relay/access control</td>
+            <td>~$2–5</td>
+          </tr>
+          <tr>
+            <td>MAX30102</td>
+            <td>Pulse Oximeter &amp; Heart Rate</td>
+            <td>I2C</td>
+            <td>SpO2 + BPM, ultra-low power 600µA, เหมาะ wearable, แก้ bug pull-up จาก MAX30100</td>
+            <td>~$3–8</td>
+          </tr>
+          <tr>
+            <td>DS18B20</td>
+            <td>Digital Temperature Sensor</td>
+            <td>1-Wire</td>
+            <td>±0.5°C accuracy, ต่อสายยาวได้, multiple sensors บนสายเดียว, กันน้ำ (waterproof version)</td>
+            <td>~$1–4</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cards-grid">
+
+      <div class="card blue">
+        <span class="card-badge badge-sensor">📷 Camera + AI</span>
+        <h3>DFRobot ESP32-S3 AI Camera Module</h3>
+        <p>
+          กล้องอัจฉริยะที่รวม ESP32-S3 + OV3660 + night vision IR + microphone + speaker + 8MB PSRAM
+          ไว้ในโมดูลเดียว ออกแบบมาสำหรับงาน edge AI โดยเฉพาะ
+        </p>
+        <ul class="feature-list">
+          <li>OV3660 3MP wide-angle + IR night vision</li>
+          <li>8MB PSRAM รองรับ model AI ขนาดใหญ่</li>
+          <li>Onboard microphone + speaker สำหรับ voice AI</li>
+          <li>รองรับ ChatGPT voice interaction</li>
+          <li>ใช้งานผ่าน USB-C หรือ UART</li>
+        </ul>
+        <div class="why-build">Base hardware สำหรับโปรเจกต์ ANPR, face detection, pet recognition หรือ voice assistant ในบ้าน</div>
+      </div>
+
+      <div class="card purple">
+        <span class="card-badge badge-sensor">❤️ Biometric</span>
+        <h3>MAX30102 — Pulse Oximeter &amp; Heart Rate</h3>
+        <p>
+          IC ตรวจวัด SpO2 และ BPM ราคาถูกที่สุดในตลาด ultra-low power เหมาะ wearable
+          ไม่มีบัค pull-up resistor ของ MAX30100 รุ่นเก่า
+        </p>
+        <ul class="feature-list">
+          <li>วัด SpO2 (Blood Oxygen) และ Heart Rate (BPM)</li>
+          <li>600µA ขณะวัด, 0.7µA ขณะ standby</li>
+          <li>I2C interface — ต่อง่ายกับ ESP32 ทุกรุ่น</li>
+          <li>ใช้งานกับ library MAX30105 ของ SparkFun</li>
+          <li>เหมาะสำหรับ smartwatch DIY หรือ health station</li>
+        </ul>
+        <div class="why-build">ส่วนประกอบหลักสำหรับ wearable health monitor, patient monitoring หรือ fitness tracker ราคาประหยัด</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 5: Resources
+       ══════════════════════════════════════════════ -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔗</div>
+      <div class="section-title">
+        แหล่งข้อมูลและลิงก์อ้างอิง
+        <small>Resources &amp; References</small>
+      </div>
+    </div>
+
+    <div class="resource-grid">
+
+      <div class="resource-card">
+        <h4>🎮 Anemoia-ESP32 NES Emulator</h4>
+        <p>GitHub repo หลักของ NES emulator สำหรับ ESP32 รัน 60 FPS พร้อม audio</p>
+        <a href="https://github.com/Shim06/Anemoia-ESP32" class="resource-link" target="_blank" rel="noopener">
+          github.com/Shim06/Anemoia-ESP32 ↗
+        </a>
+      </div>
+
+      <div class="resource-card">
+        <h4>📰 Hackaday: 60 FPS NES Emulator</h4>
+        <p>บทความ Hackaday วิเคราะห์โปรเจกต์ Anemoia-ESP32 เผยแพร่ 22 กรกฎาคม 2569</p>
+        <a href="https://hackaday.com/2026/07/22/60-fps-nes-emulator-on-esp32/" class="resource-link" target="_blank" rel="noopener">
+          hackaday.com — 60 FPS NES on ESP32 ↗
+        </a>
+      </div>
+
+      <div class="resource-card">
+        <h4>🔐 ESP32-DIV V2 Full Guide</h4>
+        <p>Hackster.io — คู่มือครบ ESP32-DIV Flipper Zero alternative รวม firmware + PCB files</p>
+        <a href="https://www.hackster.io/CiferTech/esp32-div-full-guide-open-source-flipper-zero-alternative-472066" class="resource-link" target="_blank" rel="noopener">
+          hackster.io/CiferTech/esp32-div ↗
+        </a>
+      </div>
+
+      <div class="resource-card">
+        <h4>🏭 DoorCTL — Secure Door Control</h4>
+        <p>Hackster.io — โปรเจกต์ production-grade door control ด้วย ESP32 + JWT + WebAuthn</p>
+        <a href="https://www.hackster.io/lnodari97/doorctl-secure-warehouse-door-control-with-esp32-0e208b" class="resource-link" target="_blank" rel="noopener">
+          hackster.io/lnodari97/doorctl ↗
+        </a>
+      </div>
+
+      <div class="resource-card">
+        <h4>🎥 AI ANPR with Gemini API</h4>
+        <p>GitHub: code และ circuit diagram สำหรับโปรเจกต์ ANPR ด้วย DFRobot ESP32-S3 AI Cam</p>
+        <a href="https://github.com/maheshyadav216/ANPR-using-DFRobot-ESP32S3-AI-Camera-Module" class="resource-link" target="_blank" rel="noopener">
+          github.com/maheshyadav216/ANPR ↗
+        </a>
+      </div>
+
+      <div class="resource-card">
+        <h4>🎮 esp-ps5 Library</h4>
+        <p>Library เชื่อม PS5 DualSense Controller กับ ESP32 ผ่าน BLE — buttons, rumble, LEDs</p>
+        <a href="https://github.com/HamzaYslmn/esp-ps5" class="resource-link" target="_blank" rel="noopener">
+          github.com/HamzaYslmn/esp-ps5 ↗
+        </a>
+      </div>
+
+      <div class="resource-card">
+        <h4>🧠 ESP-DL Deep Learning Library</h4>
+        <p>Espressif official library สำหรับ AI inference บน ESP32-S3 และ ESP32-P4 รองรับ ONNX</p>
+        <a href="https://github.com/espressif/esp-dl" class="resource-link" target="_blank" rel="noopener">
+          github.com/espressif/esp-dl ↗
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>
+    <strong>ESP32 &amp; Sensor Innovations</strong> — สร้างโดย AI Research Bot อัตโนมัติ
+  </p>
+  <p style="margin-top:0.4rem; font-size:0.8rem;">
+    📅 วันที่สร้าง: 30 กรกฎาคม 2569 |
+    🔍 แหล่งข้อมูล: Hackaday, Hackster.io, GitHub, DFRobot, WizzDev, Zbotic, Elektor
+  </p>
+  <div class="footer-links">
+    <a href="https://hackaday.com/tag/esp32/" target="_blank" rel="noopener">Hackaday ESP32</a>
+    <a href="https://www.hackster.io/esp32" target="_blank" rel="noopener">Hackster.io ESP32</a>
+    <a href="https://github.com/espressif" target="_blank" rel="noopener">Espressif GitHub</a>
+    <a href="https://www.espressif.com/en/products/socs/esp32-p4" target="_blank" rel="noopener">ESP32-P4 Official</a>
+  </div>
+  <p style="margin-top:1.2rem; font-size:0.75rem; color:var(--text-muted);">
+    ข้อมูลอาจมีการเปลี่ยนแปลง — ตรวจสอบจากแหล่งอ้างอิงก่อนนำไปใช้งานจริงเสมอ
+  </p>
+</footer>
+
+</body>
+</html>
