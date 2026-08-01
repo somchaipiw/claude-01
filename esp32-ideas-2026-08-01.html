@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 &amp; Sensor Innovations - 1 สิงหาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.8; min-height: 100vh; }
+
+  /* ---- Header ---- */
+  header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 40%, #1a1035 100%);
+    border-bottom: 1px solid #334155;
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 60% 40%, rgba(99,102,241,0.15) 0%, transparent 70%);
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(99,102,241,0.2);
+    border: 1px solid rgba(99,102,241,0.5);
+    color: #a5b4fc;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.4rem;
+    position: relative;
+  }
+  header h1 span { color: #818cf8; }
+  .header-sub { color: #94a3b8; font-size: 0.95rem; margin-bottom: 1.2rem; }
+  .header-stats {
+    display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+    position: relative;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #334155;
+    border-radius: 999px;
+    padding: 0.3rem 1rem;
+    font-size: 0.82rem;
+    color: #cbd5e1;
+  }
+  .stat-chip strong { color: #818cf8; }
+
+  /* ---- Layout ---- */
+  main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+  /* ---- Section ---- */
+  section { margin-bottom: 3rem; }
+  .section-header {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #1e293b;
+  }
+  .section-icon {
+    width: 2.25rem; height: 2.25rem; border-radius: 0.6rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+  }
+  .icon-inno { background: rgba(99,102,241,0.2); }
+  .icon-proj { background: rgba(16,185,129,0.2); }
+  .icon-sens { background: rgba(245,158,11,0.2); }
+  .icon-res  { background: rgba(236,72,153,0.2); }
+
+  .section-title { font-size: 1.25rem; font-weight: 700; color: #f1f5f9; }
+  .section-count {
+    margin-left: auto;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.3);
+    color: #818cf8;
+    font-size: 0.72rem;
+    padding: 0.15rem 0.65rem;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+
+  /* ---- Card Grid ---- */
+  .card-grid { display: grid; gap: 1.25rem; }
+  .card-grid-2 { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+  .card-grid-3 { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+
+  .card {
+    background: #131c2e;
+    border: 1px solid #1e293b;
+    border-radius: 1rem;
+    padding: 1.4rem;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    border-color: #334155;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+  .card-featured {
+    border-color: rgba(99,102,241,0.35);
+    background: linear-gradient(135deg, #131c2e 60%, rgba(99,102,241,0.07) 100%);
+  }
+  .card-tag {
+    display: inline-block;
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; padding: 0.2rem 0.6rem;
+    border-radius: 999px; margin-bottom: 0.75rem;
+  }
+  .tag-new     { background: rgba(99,102,241,0.2); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.4); }
+  .tag-chip    { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+  .tag-project { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+  .tag-sensor  { background: rgba(236,72,153,0.15); color: #f9a8d4; border: 1px solid rgba(236,72,153,0.3); }
+  .tag-matter  { background: rgba(14,165,233,0.15); color: #7dd3fc; border: 1px solid rgba(14,165,233,0.3); }
+
+  .card-title { font-size: 1rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.6rem; line-height: 1.5; }
+  .card-body  { font-size: 0.88rem; color: #94a3b8; line-height: 1.75; }
+  .card-body strong { color: #cbd5e1; }
+  .card-body em     { color: #818cf8; font-style: normal; }
+
+  /* ---- Spec Table ---- */
+  .spec-table { width: 100%; border-collapse: collapse; margin-top: 0.85rem; font-size: 0.82rem; }
+  .spec-table th {
+    background: rgba(99,102,241,0.12);
+    color: #a5b4fc; font-weight: 600;
+    padding: 0.4rem 0.7rem; text-align: left;
+    border: 1px solid #1e293b;
+  }
+  .spec-table td {
+    padding: 0.4rem 0.7rem;
+    border: 1px solid #1e293b;
+    color: #94a3b8;
+    vertical-align: top;
+  }
+  .spec-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .spec-table td:first-child { color: #cbd5e1; font-weight: 600; white-space: nowrap; }
+
+  /* ---- Chip Comparison ---- */
+  .chip-compare {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.85rem;
+  }
+  .chip-col {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #1e293b;
+    border-radius: 0.6rem;
+    padding: 0.75rem;
+  }
+  .chip-col h4 { font-size: 0.82rem; color: #818cf8; font-weight: 700; margin-bottom: 0.4rem; }
+  .chip-col p  { font-size: 0.78rem; color: #64748b; line-height: 1.6; }
+
+  /* ---- Parts List ---- */
+  .parts-list {
+    margin-top: 0.85rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.5rem;
+  }
+  .part-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #1e293b;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.78rem;
+  }
+  .part-item .part-role { color: #64748b; display: block; font-size: 0.72rem; margin-bottom: 0.15rem; }
+  .part-item .part-name { color: #cbd5e1; font-weight: 600; }
+  .part-item .part-note { color: #818cf8; font-size: 0.7rem; }
+
+  /* ---- Highlight Box ---- */
+  .highlight {
+    background: rgba(99,102,241,0.08);
+    border-left: 3px solid #6366f1;
+    border-radius: 0 0.5rem 0.5rem 0;
+    padding: 0.6rem 0.85rem;
+    margin-top: 0.75rem;
+    font-size: 0.83rem;
+    color: #a5b4fc;
+  }
+
+  /* ---- Sensor Card Detail ---- */
+  .sensor-detail { margin-top: 0.75rem; }
+  .sensor-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1px solid #1e293b;
+    padding: 0.3rem 0;
+    font-size: 0.82rem;
+  }
+  .sensor-row:last-child { border-bottom: none; }
+  .sensor-label { color: #64748b; }
+  .sensor-value { color: #e2e8f0; font-weight: 600; text-align: right; }
+
+  /* ---- Resource Grid ---- */
+  .res-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); }
+  .res-card {
+    background: #131c2e;
+    border: 1px solid #1e293b;
+    border-radius: 0.75rem;
+    padding: 1rem 1.2rem;
+    display: flex; gap: 0.85rem; align-items: flex-start;
+    transition: border-color 0.2s;
+    text-decoration: none;
+  }
+  .res-card:hover { border-color: #334155; }
+  .res-icon {
+    font-size: 1.4rem; flex-shrink: 0;
+    width: 2.5rem; height: 2.5rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 0.5rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .res-info h4 { font-size: 0.88rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.2rem; }
+  .res-info p  { font-size: 0.78rem; color: #64748b; line-height: 1.5; }
+  .res-url { font-size: 0.7rem; color: #818cf8; margin-top: 0.25rem; word-break: break-all; }
+
+  /* ---- Summary Banner ---- */
+  .summary-banner {
+    background: linear-gradient(90deg, rgba(99,102,241,0.12) 0%, rgba(16,185,129,0.08) 100%);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 0.85rem;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+  .summary-banner h3 { color: #a5b4fc; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+  .summary-banner p  { color: #94a3b8; font-size: 0.9rem; line-height: 1.8; }
+  .summary-banner strong { color: #e2e8f0; }
+
+  /* ---- Footer ---- */
+  footer {
+    background: #080f1c;
+    border-top: 1px solid #1e293b;
+    padding: 1.75rem 1.25rem;
+    text-align: center;
+    color: #475569;
+    font-size: 0.8rem;
+  }
+  footer a { color: #6366f1; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .footer-refs { margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+  .ref-link {
+    display: inline-block;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid #1e293b;
+    color: #64748b;
+    border-radius: 999px;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.72rem;
+    text-decoration: none;
+  }
+  .ref-link:hover { color: #818cf8; border-color: #334155; }
+
+  @media (max-width: 600px) {
+    .chip-compare { grid-template-columns: 1fr; }
+    .parts-list    { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ======== HEADER ======== -->
+<header>
+  <div class="header-badge">AI Research Daily — ESP32 &amp; IoT</div>
+  <h1>ESP32 &amp; Sensor <span>Innovations</span></h1>
+  <p class="header-sub">1 สิงหาคม 2569 &nbsp;|&nbsp; ข้อมูลใหม่ล่าสุด ไม่ซ้ำกับฉบับก่อนหน้า</p>
+  <div class="header-stats">
+    <span class="stat-chip"><strong>3</strong> ชิปใหม่ ESP32-E22 / H21 / S31</span>
+    <span class="stat-chip"><strong>3</strong> ไอเดียโปรเจกต์</span>
+    <span class="stat-chip"><strong>4</strong> Sensors น่าสนใจ</span>
+    <span class="stat-chip"><strong>Matter 1.5.1</strong> Camera Update</span>
+  </div>
+</header>
+
+<!-- ======== MAIN ======== -->
+<main>
+
+  <!-- Summary -->
+  <div class="summary-banner">
+    <h3>สรุปประจำวันนี้</h3>
+    <p>
+      วันนี้โฟกัสที่ <strong>ชิป Espressif รุ่นใหม่ล่าสุด</strong> ที่เปิดตัวปี 2569 — ทั้ง <strong>ESP32-E22</strong> (Tri-Band Wi-Fi 6E),
+      <strong>ESP32-H21</strong> (Ultra-Low-Power 5 µA sleep) และ <strong>ESP32-S31</strong> (RISC-V + Wi-Fi 6 + Ethernet ในตัว)
+      พร้อมไอเดียโปรเจกต์ที่น่าสร้าง เช่น <strong>DIY Light Pollution Meter</strong> สำหรับวิทยาศาสตร์ภาคประชาชน
+      และ <strong>Water Quality Monitor</strong> แบบครบชุด ที่ต้นทุนต่ำกว่า 1,000 บาท
+    </p>
+  </div>
+
+  <!-- ======== SECTION 1: INNOVATIONS ======== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-inno">⚡</div>
+      <h2 class="section-title">นวัตกรรมและอัปเดตเด่นประจำวัน</h2>
+      <span class="section-count">4 รายการ</span>
+    </div>
+
+    <div class="card-grid card-grid-2">
+
+      <!-- Card 1: ESP32-E22 -->
+      <div class="card card-featured">
+        <span class="card-tag tag-new">ใหม่ 2569 · CES</span>
+        <h3 class="card-title">ESP32-E22 — ชิป Tri-Band Wi-Fi 6E ตัวแรกของ Espressif</h3>
+        <div class="card-body">
+          <p>เปิดตัวที่ <strong>CES 2026</strong> (มกราคม 2569) และได้รับ Wi-Fi CERTIFIED 6E™ เดือนมิถุนายน 2569
+          เป็นชิป <em>Radio Co-Processor (RCP)</em> ตัวแรกของ Espressif ที่รองรับ Wi-Fi บนสามย่านความถี่พร้อมกัน
+          ออกแบบมาให้เป็น "ตัวช่วยด้านไวร์เลส" สำหรับ host processor (Linux/RTOS) ผ่านอินเทอร์เฟซความเร็วสูง</p>
+
+          <table class="spec-table">
+            <tr><th>Spec</th><th>ESP32-E22</th></tr>
+            <tr><td>Core</td><td>Dual-core RISC-V @ 500 MHz</td></tr>
+            <tr><td>RAM</td><td>1 MB on-chip SRAM</td></tr>
+            <tr><td>Wi-Fi</td><td>6E Tri-Band (2.4 / 5 / 6 GHz), 160 MHz BW, 2×2 MU-MIMO</td></tr>
+            <tr><td>Throughput</td><td>สูงสุด ~2.1 Gbps (iperf)</td></tr>
+            <tr><td>Bluetooth</td><td>BT Classic (BR/EDR) + BLE 5.4</td></tr>
+            <tr><td>Interface</td><td>PCIe 2.1 / SDIO 3.0 / USB 2.0</td></tr>
+            <tr><td>Architecture</td><td>RCP — ต้องใช้คู่กับ host MCU/SBC</td></tr>
+          </table>
+
+          <div class="highlight">
+            เหมาะสำหรับ: Smart Home Hub, AR/VR accessories, กล้อง 4K/8K ไร้สาย, Industrial Wi-Fi bridge, Multimedia gateway
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: ESP32-H21 -->
+      <div class="card card-featured">
+        <span class="card-tag tag-new">ใหม่ 2569 · CES</span>
+        <h3 class="card-title">ESP32-H21 — Ultra-Low-Power 5 µA สำหรับ Mesh IoT</h3>
+        <div class="card-body">
+          <p>เปิดตัวพร้อมกับ E22 ที่ CES 2026 ออกแบบเน้น <em>ประหยัดพลังงานสูงสุด</em>
+          มีออนชิป DC-DC converter และ deep sleep ที่ดึงเพียง <strong>5 µA</strong>
+          เหมาะกับเซ็นเซอร์แบตเตอรี่อายุยาว, wearables, และ sensor node ใน Zigbee/Thread mesh</p>
+
+          <table class="spec-table">
+            <tr><th>Spec</th><th>ESP32-H21</th></tr>
+            <tr><td>Core</td><td>Single-core RISC-V @ 96 MHz</td></tr>
+            <tr><td>RAM</td><td>320 KB SRAM</td></tr>
+            <tr><td>Wireless</td><td>BLE 5.0 + IEEE 802.15.4 (Zigbee/Thread/Matter)</td></tr>
+            <tr><td>TX Power</td><td>20 dBm (สูงกว่า H2 เดิม)</td></tr>
+            <tr><td>Deep Sleep</td><td><strong>5 µA</strong> (มีออนชิป DC-DC)</td></tr>
+            <tr><td>SDK</td><td>ESP-Matter-SDK, ESP-BLE-MESH compatible</td></tr>
+            <tr><td>ไม่มี</td><td>Wi-Fi (ใช้เฉพาะ BLE + 802.15.4)</td></tr>
+          </table>
+
+          <div class="highlight">
+            เหมาะสำหรับ: Battery-powered sensor node, Smart home end device (Matter over Thread), Presence sensor, Wearable health tracker
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: ESP32-S31 -->
+      <div class="card">
+        <span class="card-tag tag-chip">ประกาศ มีนาคม 2569</span>
+        <h3 class="card-title">ESP32-S31 — RISC-V Dual-Core รองรับ Wi-Fi 6 + BT 5.4 + Ethernet ในตัว</h3>
+        <div class="card-body">
+          <p>ประกาศเดือนมีนาคม 2569 เป็น <em>ตัวต่อจาก S3</em> ที่เปลี่ยนมาใช้ RISC-V
+          และเพิ่มความสามารถสำคัญหลายอย่างไว้ในชิปเดียว — โดยเฉพาะ <strong>Gigabit Ethernet</strong> ในตัว
+          พร้อม AI acceleration ผ่าน 128-bit SIMD data path</p>
+
+          <div class="chip-compare">
+            <div class="chip-col">
+              <h4>การเชื่อมต่อ</h4>
+              <p>Wi-Fi 6 + BT 5.4 (LE + Classic) + 802.15.4 + Gigabit Ethernet — ครบในชิปเดียว</p>
+            </div>
+            <div class="chip-col">
+              <h4>ประมวลผล</h4>
+              <p>Dual-core RISC-V @ 320 MHz, 128-bit SIMD สำหรับ AI inference ขั้นพื้นฐาน</p>
+            </div>
+            <div class="chip-col">
+              <h4>HMI</h4>
+              <p>DVP Camera, 24-bit Parallel LCD, 14× Touch sensors, JPEG Codec ในตัว</p>
+            </div>
+            <div class="chip-col">
+              <h4>Security</h4>
+              <p>Trusted Execution Environment (TEE), APM, RAM-based PUF สำหรับ secure key storage</p>
+            </div>
+          </div>
+
+          <div class="highlight">
+            60 GPIOs — ยืดหยุ่นสูงสุดในซีรีส์ S | spec เต็มคาดเปิดเผยปลายปี 2569
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Matter 1.5.1 -->
+      <div class="card">
+        <span class="card-tag tag-matter">Matter 1.5.1 · มีนาคม 2569</span>
+        <h3 class="card-title">Matter 1.5.1 เพิ่ม Camera Support — ESP32 รองรับด้วย ESP-IDF 6.x</h3>
+        <div class="card-body">
+          <p>Matter 1.5.1 released 31 มีนาคม 2569 เป็น maintenance update ที่เน้น <em>camera device support</em>
+          เต็มรูปแบบ ทำให้กล้อง IP ที่ใช้ ESP32-S3 หรือ ESP32-P4 สามารถเชื่อมต่อกับ Apple Home, Google Home,
+          Amazon Alexa ได้โดยตรงผ่าน Matter โดยไม่ต้องมี proprietary hub</p>
+
+          <table class="spec-table">
+            <tr><th>Matter Version</th><th>สิ่งที่เพิ่ม</th><th>ESP32 ที่เหมาะ</th></tr>
+            <tr><td>1.4</td><td>Energy management, EV charging</td><td>C6, H2</td></tr>
+            <tr><td>1.5</td><td>Video camera, soil sensor, closure (garage)</td><td>S3, P4</td></tr>
+            <tr><td>1.5.1</td><td>Camera bug fixes, security hardening</td><td>S3, P4 + C6</td></tr>
+          </table>
+
+          <div class="highlight">
+            เลือกชิปตามโปรโตคอล: <strong>ESP32-C6</strong> → Matter over Thread | <strong>ESP32-H2</strong> → Zigbee + Thread สำหรับแบตเตอรี่ | <strong>ESP32-S3/P4</strong> → Matter Camera + Edge AI
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /card-grid -->
+  </section>
+
+  <!-- ======== SECTION 2: PROJECTS ======== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-proj">🔧</div>
+      <h2 class="section-title">ไอเดียโปรเจกต์น่าสร้างประจำวัน</h2>
+      <span class="section-count">3 โปรเจกต์</span>
+    </div>
+
+    <div class="card-grid card-grid-2">
+
+      <!-- Project 1: Light Pollution Meter -->
+      <div class="card card-featured">
+        <span class="card-tag tag-project">Citizen Science · กลางแจ้ง</span>
+        <h3 class="card-title">DIY Light Pollution Meter — วัดความสว่างท้องฟ้าด้วย ESP32-C3 + TSL237</h3>
+        <div class="card-body">
+          <p>โปรเจกต์วิทยาศาสตร์ภาคประชาชนที่น่าสนใจมาก: วัด <strong>night sky brightness</strong> (ความสว่างท้องฟ้ากลางคืน)
+          เพื่อ monitor มลพิษทางแสงในพื้นที่ของคุณ ข้อมูลที่ได้ถูก validate แล้วว่าใกล้เคียงกับข้อมูลจากดาวเทียม ESA Gaia
+          ต้นทุนรวมต่ำกว่า <em>~2,000 บาท</em> (เทียบกับเครื่องมือมาตรฐาน 30,000+ บาท)</p>
+
+          <div class="parts-list">
+            <div class="part-item">
+              <span class="part-role">MCU</span>
+              <span class="part-name">ESP32-C3</span>
+              <span class="part-note">Wi-Fi + BLE, ไฟต่ำ</span>
+            </div>
+            <div class="part-item">
+              <span class="part-role">Light Sensor</span>
+              <span class="part-name">TSL237</span>
+              <span class="part-note">Light-to-Frequency</span>
+            </div>
+            <div class="part-item">
+              <span class="part-role">Env Sensor</span>
+              <span class="part-name">BME280</span>
+              <span class="part-note">Temp + Humid + Press</span>
+            </div>
+            <div class="part-item">
+              <span class="part-role">Protocol</span>
+              <span class="part-name">MQTT</span>
+              <span class="part-note">→ Remote Server</span>
+            </div>
+            <div class="part-item">
+              <span class="part-role">Enclosure</span>
+              <span class="part-name">3D Print</span>
+              <span class="part-note">กันน้ำ Open-source</span>
+            </div>
+            <div class="part-item">
+              <span class="part-role">Power</span>
+              <span class="part-name">Li-Po + Solar</span>
+              <span class="part-note">ทำงาน 24/7</span>
+            </div>
+          </div>
+
+          <div class="highlight">
+            หน่วยวัด: mag/arcsec² (magnitudes per square arcsecond) — ยิ่งค่าสูง ยิ่งมืด ยิ่งดี!
+            เชื่อมต่อกับเครือข่าย Globe at Night เพื่อส่งข้อมูลเข้า Database ระดับโลก
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 2: Water Quality Monitor -->
+      <div class="card">
+        <span class="card-tag tag-project">Environmental · IoT Cloud</span>
+        <h3 class="card-title">ESP32 Water Quality Monitor — pH + TDS + Turbidity + Temp ครบ 4 ค่า</h3>
+        <div class="card-body">
+          <p>ระบบ IoT ตรวจสอบคุณภาพน้ำแบบ Real-time ส่งข้อมูลขึ้น <strong>ThingSpeak</strong> และส่ง SMS แจ้งเตือน
+          ผ่าน Twilio เมื่อค่าเกินเกณฑ์ที่ตั้งไว้ ใช้ได้กับ น้ำประปา/บ่อปลา/สวนไฮโดรโปนิกส์/
+          น้ำอุตสาหกรรม ต้นทุนทั้งชุดประมาณ <em>800–1,200 บาท</em></p>
+
+          <div class="parts-list">
+            <div class="part-item">
+              <span class="part-role">MCU</span>
+              <span class="part-name">ESP32</span>
+              <span class="part-note">Wi-Fi built-in</span>
+            </div>
+            <div class="part-item">
+              <span class="part-role">pH</span>
+              <span class="part-name">pH Probe + Board</span>
+              <span class="part-note">0–14 pH</span>
+            </div>
+            <div class="part-item">
+              <span class="part-role">TDS</span>
+              <span class="part-name">TDS Sensor</span>
+              <span class="part-note">0–1000 ppm</span>
+            </div>
+            <div class="part-item">
+              <span class="part-role">Turbidity</span>
+              <span class="part-name">SEN0189</span>
+              <span class="part-note">Optical NTU</span>
+            </div>
+            <div class="part-item">
+              <span class="part-role">Temp</span>
+              <span class="part-name">DS18B20</span>
+              <span class="part-note">OneWire, ±0.5°C</span>
+            </div>
+            <div class="part-item">
+              <span class="part-role">Cloud</span>
+              <span class="part-name">ThingSpeak</span>
+              <span class="part-note">+ Twilio SMS</span>
+            </div>
+          </div>
+
+          <div class="highlight">
+            ใช้ขั้นตอน multi-point calibration สำหรับ pH probe (ค่า 4.0, 7.0, 10.0) เพื่อความแม่นยำ
+            อ่านทุก 30 วินาที → log ทุก 5 นาที → alert ทันทีถ้าเกินเกณฑ์
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 3: Incident Light Meter -->
+      <div class="card">
+        <span class="card-tag tag-project">Photography · Portable</span>
+        <h3 class="card-title">ESP32 Incident Light Meter — วัดแสงสำหรับถ่ายภาพและถ่ายหนัง</h3>
+        <div class="card-body">
+          <p>โปรเจกต์จาก QuadMeUp (มกราคม 2569) สร้าง <strong>light meter แบบ incident</strong>
+          (วัดแสงที่ตกกระทบวัตถุ ไม่ใช่แสงสะท้อน) ด้วย ESP32 และ sensor วัดความสว่าง แสดงผล EV, f-stop, shutter speed
+          คำนวณ exposure settings ในตัวเครื่อง <em>ออฟไลน์ 100%</em> ใส่ถ่าน AAA 2 ก้อน</p>
+
+          <div class="parts-list">
+            <div class="part-item">
+              <span class="part-role">MCU</span>
+              <span class="part-name">ESP32-C3</span>
+              <span class="part-note">หรือ ESP32 mini</span>
+            </div>
+            <div class="part-item">
+              <span class="part-role">Light</span>
+              <span class="part-name">BH1750</span>
+              <span class="part-note">Digital Lux, I2C</span>
+            </div>
+            <div class="part-item">
+              <span class="part-role">Display</span>
+              <span class="part-name">SSD1306 OLED</span>
+              <span class="part-note">0.96" 128×64</span>
+            </div>
+            <div class="part-item">
+              <span class="part-role">Input</span>
+              <span class="part-name">Rotary Encoder</span>
+              <span class="part-note">เลือก ISO / Mode</span>
+            </div>
+            <div class="part-item">
+              <span class="part-role">Power</span>
+              <span class="part-name">AAA × 2</span>
+              <span class="part-note">3V → LDO 3.3V</span>
+            </div>
+            <div class="part-item">
+              <span class="part-role">Case</span>
+              <span class="part-name">3D Printed</span>
+              <span class="part-note">Diffuser dome</span>
+            </div>
+          </div>
+
+          <div class="highlight">
+            ช่วง ISO: 50–6400 | Aperture: f/1.0–f/22 | Shutter: 1/8000s–30s
+            เหมาะสำหรับช่างภาพที่ใช้กล้องฟิล์มหรือกล้อง manual ที่ไม่มี meter ในตัว
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /card-grid -->
+  </section>
+
+  <!-- ======== SECTION 3: SENSORS ======== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-sens">📡</div>
+      <h2 class="section-title">Sensors น่าสนใจประจำวัน</h2>
+      <span class="section-count">4 ตัว</span>
+    </div>
+
+    <div class="card-grid card-grid-3">
+
+      <!-- Sensor 1: TSL237 -->
+      <div class="card">
+        <span class="card-tag tag-sensor">Light Sensor</span>
+        <h3 class="card-title">TSL237 — Light-to-Frequency Converter</h3>
+        <div class="card-body">
+          <p>Sensor ที่เปลี่ยนความเข้มแสงเป็น <em>สัญญาณ frequency</em> แทนแรงดันไฟฟ้า
+          ทำให้วัดได้แม่นยำสูงในสภาพแสงน้อย เหมาะมากสำหรับ sky brightness และ dark sky monitoring</p>
+          <div class="sensor-detail">
+            <div class="sensor-row"><span class="sensor-label">Interface</span><span class="sensor-value">Digital (Frequency out)</span></div>
+            <div class="sensor-row"><span class="sensor-label">Range</span><span class="sensor-value">1 Hz – 800 kHz</span></div>
+            <div class="sensor-row"><span class="sensor-label">Irradiance</span><span class="sensor-value">0 – 1 mW/cm²</span></div>
+            <div class="sensor-row"><span class="sensor-label">Sensitivity</span><span class="sensor-value">2.3 kHz / (µW/cm²)</span></div>
+            <div class="sensor-row"><span class="sensor-label">ราคาประมาณ</span><span class="sensor-value">~150 บาท</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sensor 2: SEN0189 Turbidity -->
+      <div class="card">
+        <span class="card-tag tag-sensor">Water Sensor</span>
+        <h3 class="card-title">SEN0189 — Turbidity Sensor (DFRobot)</h3>
+        <div class="card-body">
+          <p>Sensor วัดความขุ่นของน้ำด้วย optical emitter-detector คู่ ส่งสัญญาณ <em>analog voltage</em>
+          หรือ digital (NTU threshold) ใช้ร่วมกับ ESP32 ADC ได้ทันที เหมาะสำหรับ
+          ระบบกรองน้ำ บ่อเลี้ยงปลา ไฮโดรโปนิกส์</p>
+          <div class="sensor-detail">
+            <div class="sensor-row"><span class="sensor-label">Output</span><span class="sensor-value">Analog 0–4.5V / Digital</span></div>
+            <div class="sensor-row"><span class="sensor-label">Range</span><span class="sensor-value">0–3000 NTU</span></div>
+            <div class="sensor-row"><span class="sensor-label">Voltage</span><span class="sensor-value">5V DC</span></div>
+            <div class="sensor-row"><span class="sensor-label">Response</span><span class="sensor-value">&lt; 500 ms</span></div>
+            <div class="sensor-row"><span class="sensor-label">ราคาประมาณ</span><span class="sensor-value">~350 บาท</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sensor 3: BH1750 -->
+      <div class="card">
+        <span class="card-tag tag-sensor">Ambient Light</span>
+        <h3 class="card-title">BH1750 — Digital Ambient Light Sensor (I2C)</h3>
+        <div class="card-body">
+          <p>Sensor วัดแสงดิจิทัลที่ดีที่สุดสำหรับ <em>ESP32 projects</em> เพราะส่งค่า Lux โดยตรงผ่าน I2C
+          ไม่ต้องแปลง ADC เอง resolution สูง และไม่ sensitive กับ IR radiation ทำให้ได้ค่า visible light ที่แม่นยำ</p>
+          <div class="sensor-detail">
+            <div class="sensor-row"><span class="sensor-label">Interface</span><span class="sensor-value">I2C (400 kHz)</span></div>
+            <div class="sensor-row"><span class="sensor-label">Range</span><span class="sensor-value">1 – 65535 lux</span></div>
+            <div class="sensor-row"><span class="sensor-label">Resolution</span><span class="sensor-value">1 lux (high res mode)</span></div>
+            <div class="sensor-row"><span class="sensor-label">Voltage</span><span class="sensor-value">2.4V – 3.6V</span></div>
+            <div class="sensor-row"><span class="sensor-label">ราคาประมาณ</span><span class="sensor-value">~80–120 บาท</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sensor 4: PMS5003 -->
+      <div class="card">
+        <span class="card-tag tag-sensor">Air Quality</span>
+        <h3 class="card-title">PMS5003 — Laser PM2.5 / PM10 Particle Sensor</h3>
+        <div class="card-body">
+          <p>Sensor วัดฝุ่นละอองด้วย Laser Scattering ที่ใช้มากที่สุดในงาน <em>air quality monitor</em>
+          ด้วย ESP32 วัดทั้ง PM1.0, PM2.5, PM10 พร้อมส่งข้อมูลดิจิทัลผ่าน UART
+          ค่าหน่วยเป็น µg/m³ ตามมาตรฐาน WHO</p>
+          <div class="sensor-detail">
+            <div class="sensor-row"><span class="sensor-label">Interface</span><span class="sensor-value">UART (9600 baud)</span></div>
+            <div class="sensor-row"><span class="sensor-label">วัดได้</span><span class="sensor-value">PM1.0 / PM2.5 / PM10</span></div>
+            <div class="sensor-row"><span class="sensor-label">Range</span><span class="sensor-value">0.3 – 1.0 µm (particle)</span></div>
+            <div class="sensor-row"><span class="sensor-label">Accuracy</span><span class="sensor-value">±10 µg/m³ ถึง ±15%</span></div>
+            <div class="sensor-row"><span class="sensor-label">ราคาประมาณ</span><span class="sensor-value">~450–600 บาท</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /card-grid -->
+  </section>
+
+  <!-- ======== SECTION 4: RESOURCES ======== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-res">🔗</div>
+      <h2 class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+      <span class="section-count">6 แหล่ง</span>
+    </div>
+
+    <div class="res-grid">
+
+      <div class="res-card">
+        <div class="res-icon">🔷</div>
+        <div class="res-info">
+          <h4>Espressif — ESP32-E22 Official</h4>
+          <p>หน้าผลิตภัณฑ์ ESP32-E22 และข่าว Wi-Fi 6E Certification</p>
+          <div class="res-url">espressif.com/en/products/socs/esp32-e22</div>
+        </div>
+      </div>
+
+      <div class="res-card">
+        <div class="res-icon">📰</div>
+        <div class="res-info">
+          <h4>CNX-Software — ESP32-E22 &amp; H21 CES 2026</h4>
+          <p>บทความวิเคราะห์ spec ละเอียดของสองชิปใหม่พร้อมรูปเปรียบเทียบ</p>
+          <div class="res-url">cnx-software.com/2026/01/07/espressif-esp32-e22-h21/</div>
+        </div>
+      </div>
+
+      <div class="res-card">
+        <div class="res-icon">🐙</div>
+        <div class="res-info">
+          <h4>GitHub — artkeller/ESP32Features</h4>
+          <p>ตาราง spec ครบทุกรุ่น ESP32 ถึง E22, H21, S31 อ้างอิงจาก Datasheet ล่าสุด (กรกฎาคม 2569)</p>
+          <div class="res-url">github.com/artkeller/ESP32Features</div>
+        </div>
+      </div>
+
+      <div class="res-card">
+        <div class="res-icon">⚙️</div>
+        <div class="res-info">
+          <h4>Hackster.io — DIY TESS-W Photometer</h4>
+          <p>บทความ DIY Light Pollution Meter ที่ใช้ ESP32 วัดท้องฟ้ากลางคืน</p>
+          <div class="res-url">hackster.io/news/the-diy-tess-w-photometer-measures-light-pollution</div>
+        </div>
+      </div>
+
+      <div class="res-card">
+        <div class="res-icon">📖</div>
+        <div class="res-info">
+          <h4>Random Nerd Tutorials — ESP32 TDS Sensor</h4>
+          <p>Tutorial อ่านค่า TDS sensor ด้วย ESP32 พร้อม code ตัวอย่างและวิธี calibrate</p>
+          <div class="res-url">randomnerdtutorials.com/esp32-tds-water-quality-sensor/</div>
+        </div>
+      </div>
+
+      <div class="res-card">
+        <div class="res-icon">🏠</div>
+        <div class="res-info">
+          <h4>Home Assistant — Matter &amp; Thread 2026 Guide</h4>
+          <p>คู่มือ integrate ESP32-C6 / H2 กับ Home Assistant ผ่าน Matter และ Thread mesh</p>
+          <div class="res-url">daniele-messi.com/en/blog/home-assistant-matter-thread-2026</div>
+        </div>
+      </div>
+
+    </div><!-- /res-grid -->
+  </section>
+
+</main>
+
+<!-- ======== FOOTER ======== -->
+<footer>
+  <p>สร้างโดย AI Researcher อัตโนมัติ &nbsp;·&nbsp; <strong>1 สิงหาคม 2569</strong> &nbsp;·&nbsp; เนื้อหาไม่ซ้ำกับฉบับก่อนหน้า</p>
+  <p style="margin-top:0.35rem;">แหล่งอ้างอิง: Espressif Systems · CNX-Software · Hackster.io · Random Nerd Tutorials · GitHub artkeller/ESP32Features · Home Assistant Blog</p>
+  <div class="footer-refs" style="margin-top:0.75rem;">
+    <span class="ref-link">ESP32-E22 Tri-Band Wi-Fi 6E</span>
+    <span class="ref-link">ESP32-H21 Ultra-Low-Power</span>
+    <span class="ref-link">ESP32-S31 RISC-V + Ethernet</span>
+    <span class="ref-link">Matter 1.5.1 Camera</span>
+    <span class="ref-link">TSL237 Sky Brightness</span>
+    <span class="ref-link">Water Quality IoT</span>
+    <span class="ref-link">BH1750 Lux Sensor</span>
+    <span class="ref-link">PMS5003 PM2.5</span>
+  </div>
+</footer>
+
+</body>
+</html>
