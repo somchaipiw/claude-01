@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations — 4 สิงหาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1a2744;
+    --accent-blue: #3b82f6;
+    --accent-cyan: #06b6d4;
+    --accent-purple: #8b5cf6;
+    --accent-green: #10b981;
+    --accent-orange: #f59e0b;
+    --accent-pink: #ec4899;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: rgba(255,255,255,0.08);
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  body {
+    font-family: 'Sarabun', 'Segoe UI', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+    border-bottom: 1px solid rgba(59,130,246,0.3);
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(59,130,246,0.15), transparent);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.4);
+    color: #93c5fd;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    font-weight: 700;
+    background: linear-gradient(120deg, #93c5fd, #67e8f9, #a5b4fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.25;
+    margin-bottom: 0.5rem;
+  }
+  .header-sub {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #60a5fa;
+    display: block;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+  }
+
+  /* ─── LAYOUT ─── */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  /* ─── SECTION ─── */
+  section { margin-bottom: 3rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-count {
+    margin-left: auto;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+  }
+
+  /* ─── GRID ─── */
+  .grid { display: grid; gap: 1.25rem; }
+  .grid-2 { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.4rem 1.5rem;
+    position: relative;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover {
+    border-color: rgba(59,130,246,0.4);
+    transform: translateY(-2px);
+  }
+  .card-accent {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    border-radius: 1rem 1rem 0 0;
+  }
+  .card-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+  }
+  .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+  }
+  .card-body {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+  }
+  .card-body strong { color: var(--text-primary); font-weight: 600; }
+
+  /* chip spec table inside card */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.85rem;
+    font-size: 0.8rem;
+  }
+  .spec-table tr:not(:last-child) td { border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .spec-table td { padding: 0.3rem 0; }
+  .spec-table td:first-child { color: var(--text-muted); width: 45%; }
+  .spec-table td:last-child { color: var(--text-primary); font-weight: 600; }
+
+  /* step list */
+  .steps { list-style: none; margin-top: 0.85rem; }
+  .steps li {
+    display: flex;
+    gap: 0.65rem;
+    margin-bottom: 0.45rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    align-items: flex-start;
+  }
+  .step-num {
+    background: rgba(59,130,246,0.2);
+    color: #60a5fa;
+    font-size: 0.65rem;
+    font-weight: 700;
+    min-width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+
+  /* pill tags */
+  .pill-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-family: 'Courier New', monospace;
+  }
+
+  /* code block */
+  .code-block {
+    background: #0a1020;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0.5rem;
+    padding: 0.85rem 1rem;
+    margin-top: 0.85rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: #7dd3fc;
+    line-height: 1.7;
+    overflow-x: auto;
+  }
+  .code-block .comment { color: #475569; }
+  .code-block .kw { color: #c084fc; }
+  .code-block .str { color: #86efac; }
+  .code-block .num { color: #fbbf24; }
+
+  /* chip release badge */
+  .new-badge {
+    background: linear-gradient(90deg, #10b981, #059669);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+    letter-spacing: 0.04em;
+  }
+
+  /* resource link cards */
+  .res-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s;
+  }
+  .res-card:hover { border-color: rgba(59,130,246,0.4); }
+  .res-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .res-title { font-size: 0.875rem; font-weight: 700; color: var(--text-primary); }
+  .res-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.1rem; }
+  .res-url { font-size: 0.72rem; color: #3b82f6; font-family: monospace; margin-top: 0.2rem; word-break: break-all; }
+
+  /* color helpers */
+  .blue   { --c: #3b82f6; }
+  .cyan   { --c: #06b6d4; }
+  .purple { --c: #8b5cf6; }
+  .green  { --c: #10b981; }
+  .orange { --c: #f59e0b; }
+  .pink   { --c: #ec4899; }
+
+  .card-accent.blue   { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
+  .card-accent.cyan   { background: linear-gradient(90deg, #06b6d4, #22d3ee); }
+  .card-accent.purple { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+  .card-accent.green  { background: linear-gradient(90deg, #10b981, #34d399); }
+  .card-accent.orange { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .card-accent.pink   { background: linear-gradient(90deg, #ec4899, #f472b6); }
+
+  .section-icon.blue   { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .section-icon.cyan   { background: rgba(6,182,212,0.15);  color: #22d3ee; }
+  .section-icon.purple { background: rgba(139,92,246,0.15); color: #a78bfa; }
+  .section-icon.green  { background: rgba(16,185,129,0.15); color: #34d399; }
+
+  .card-tag.blue   { background: rgba(59,130,246,0.12);  color: #60a5fa;  border: 1px solid rgba(59,130,246,0.25); }
+  .card-tag.cyan   { background: rgba(6,182,212,0.12);   color: #22d3ee;  border: 1px solid rgba(6,182,212,0.25); }
+  .card-tag.purple { background: rgba(139,92,246,0.12);  color: #a78bfa;  border: 1px solid rgba(139,92,246,0.25); }
+  .card-tag.green  { background: rgba(16,185,129,0.12);  color: #34d399;  border: 1px solid rgba(16,185,129,0.25); }
+  .card-tag.orange { background: rgba(245,158,11,0.12);  color: #fbbf24;  border: 1px solid rgba(245,158,11,0.25); }
+  .card-tag.pink   { background: rgba(236,72,153,0.12);  color: #f472b6;  border: 1px solid rgba(236,72,153,0.25); }
+
+  /* footer */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1.9;
+  }
+  footer strong { color: var(--text-secondary); }
+
+  @media (max-width: 640px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .header-stats { gap: 1.25rem; }
+    .stat-num { font-size: 1.4rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="header-badge">&#x1F916; Daily ESP32 Research — อัตโนมัติ</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <div class="header-sub">4 สิงหาคม 2569 &nbsp;|&nbsp; ESP32-C61 · ESP32-H4 · mmWave Radar · TinyML · Sensirion</div>
+  <div class="header-stats">
+    <div class="stat-item">
+      <span class="stat-num">2</span>
+      <div class="stat-label">ชิปใหม่</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">3</span>
+      <div class="stat-label">ไอเดียโปรเจกต์</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">4</span>
+      <div class="stat-label">Sensors ใหม่</div>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">2</span>
+      <div class="stat-label">อัปเดต SDK</div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ MAIN ═══ -->
+<main>
+
+  <!-- ═ SECTION 1: INNOVATIONS ═ -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon blue">&#x26A1;</div>
+      <span class="section-title">นวัตกรรมและอัปเดตเด่นประจำวัน</span>
+      <span class="section-count">4 รายการ</span>
+    </div>
+    <div class="grid grid-2">
+
+      <!-- Card 1: ESP32-C61 -->
+      <div class="card">
+        <div class="card-accent blue"></div>
+        <div class="card-tag blue">&#x1F4E6; ชิปใหม่ — Mass Production</div>
+        <div class="card-title">ESP32-C61 — Wi-Fi 6 ราคาประหยัด เข้าสู่การผลิตจริงแล้ว <span class="new-badge">NEW</span></div>
+        <div class="card-body">
+          Espressif ประกาศ <strong>ESP32-C61</strong> เข้าสู่ Mass Production อย่างเป็นทางการแล้วในปี 2026
+          เป็นน้องใหม่ของ C6 ที่ตัดราคาให้ต่ำลงอีก เหมาะกับ IoT Node ที่ต้องการ Wi-Fi 6 แต่
+          งบประมาณจำกัด รองรับ OFDMA, MU-MIMO, Target Wake Time (TWT) ครบ
+        </div>
+        <table class="spec-table">
+          <tr><td>Core</td><td>RISC-V Single-Core 160 MHz</td></tr>
+          <tr><td>RAM</td><td>320 KB SRAM + 256 KB ROM</td></tr>
+          <tr><td>Wi-Fi</td><td>2.4 GHz Wi-Fi 6 (802.11ax)</td></tr>
+          <tr><td>Bluetooth</td><td>BLE 5 + Mesh 1.1</td></tr>
+          <tr><td>Interfaces</td><td>SPI, I2C, UART, I2S, ADC</td></tr>
+          <tr><td>สถานะ</td><td>&#x2705; Mass Production 2026</td></tr>
+        </table>
+        <div class="pill-row">
+          <span class="pill">Wi-Fi 6</span>
+          <span class="pill">BLE 5</span>
+          <span class="pill">Budget IoT</span>
+          <span class="pill">RISC-V</span>
+        </div>
+      </div>
+
+      <!-- Card 2: ESP32-H4 -->
+      <div class="card">
+        <div class="card-accent purple"></div>
+        <div class="card-tag purple">&#x1F4F1; ชิปใหม่ — Sampling</div>
+        <div class="card-title">ESP32-H4 — Dual-Core BLE 5.4 + IEEE 802.15.4 Ultra-Low-Power <span class="new-badge">NEW</span></div>
+        <div class="card-body">
+          <strong>ESP32-H4</strong> เป็น SoC รุ่นใหม่ล่าสุดของ Espressif ที่เน้นประหยัดพลังงานสูง
+          รองรับ BLE 5.4 และ IEEE 802.15.4 (Zigbee + Thread) ในชิปเดียว
+          มี DC-DC converter ในตัวช่วยลดการสูญเสียพลังงาน เหมาะกับ Smart Home
+          และ Industrial Mesh Networks ที่ใช้แบตเตอรี่หลายปี
+        </div>
+        <table class="spec-table">
+          <tr><td>Core</td><td>RISC-V Dual-Core 96 MHz</td></tr>
+          <tr><td>RAM</td><td>384 KB SRAM + 128 KB ROM</td></tr>
+          <tr><td>BT</td><td>BLE 5.4 (LE)</td></tr>
+          <tr><td>IEEE 802.15.4</td><td>Zigbee + Thread + Matter</td></tr>
+          <tr><td>DC-DC</td><td>Built-in converter ในตัว</td></tr>
+          <tr><td>สถานะ</td><td>&#x1F539; Sampling 2026</td></tr>
+        </table>
+        <div class="pill-row">
+          <span class="pill">BLE 5.4</span>
+          <span class="pill">Zigbee</span>
+          <span class="pill">Thread</span>
+          <span class="pill">Ultra-Low-Power</span>
+        </div>
+      </div>
+
+      <!-- Card 3: ESP-IDF v6.1 -->
+      <div class="card">
+        <div class="card-accent green"></div>
+        <div class="card-tag green">&#x1F527; Framework Release</div>
+        <div class="card-title">ESP-IDF v6.1 — Released 31 กรกฎาคม 2026</div>
+        <div class="card-body">
+          <strong>ESP-IDF v6.1</strong> ออกอย่างเป็นทางการเมื่อ 31 ก.ค. 2026 ต่อยอดจาก v6.0
+          ที่เพิ่ม ESP32-C5, C61, H21, H4 รุ่นนี้ปรับ PSRAM config สำหรับ S31 และ H4
+          เพิ่ม PSA Crypto เป็น default แทน legacy MbedTLS และปรับ bootloader
+          recovery partition ให้เสถียรขึ้นบน C5 และ C61
+        </div>
+        <ul class="steps">
+          <li><span class="step-num">1</span> Picolibc C library แทน newlib — ROM footprint เล็กลง</li>
+          <li><span class="step-num">2</span> OTA Bootloader update ผ่านเครือข่ายได้โดยตรง</li>
+          <li><span class="step-num">3</span> PSA Crypto เป็น default + deprecated legacy MbedTLS</li>
+          <li><span class="step-num">4</span> PSRAM config อัปเดตสำหรับ ESP32-S31 และ H4</li>
+          <li><span class="step-num">5</span> Recovery Bootloader เสถียรบน C5, C61</li>
+        </ul>
+        <div class="pill-row">
+          <span class="pill">ESP-IDF v6.1</span>
+          <span class="pill">PSA Crypto</span>
+          <span class="pill">OTA Bootloader</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Arduino-ESP32 v4.0-alpha -->
+      <div class="card">
+        <div class="card-accent orange"></div>
+        <div class="card-tag orange">&#x1F9EA; Pre-Release</div>
+        <div class="card-title">Arduino-ESP32 v4.0.0-alpha1 — ฐาน ESP-IDF 6.x สำหรับ Arduino</div>
+        <div class="card-body">
+          Espressif ปล่อย <strong>Arduino-ESP32 v4.0.0-alpha1</strong> เป็น pre-release รุ่นแรก
+          ที่ build บน ESP-IDF v6.0.1+ พร้อม toolchain ใหม่ รองรับชิปทุกรุ่นใน IDF 6
+          เหมาะกับนักพัฒนาที่ต้องการ Arduino API บนชิปรุ่นใหม่ เช่น C61, H4
+          ควร pin เวอร์ชัน stable ก่อนสำหรับ production
+        </div>
+        <div class="code-block">
+<span class="comment"># ติดตั้ง alpha ใน Arduino IDE</span>
+<span class="comment"># Board Manager URL:</span>
+https://espressif.github.io/arduino-esp32/
+  package_esp32_dev_index.json
+
+<span class="comment"># หรือ PlatformIO</span>
+platform = espressif32@<span class="num">4.0.0-alpha1</span>
+framework = arduino
+        </div>
+        <div class="pill-row">
+          <span class="pill">Arduino v4-alpha</span>
+          <span class="pill">ESP-IDF 6.x</span>
+          <span class="pill">C61 Support</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═ SECTION 2: PROJECTS ═ -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon purple">&#x1F9F0;</div>
+      <span class="section-title">ไอเดียโปรเจกต์น่าสร้างประจำวัน</span>
+      <span class="section-count">3 ไอเดีย</span>
+    </div>
+    <div class="grid grid-2">
+
+      <!-- Project 1: mmWave Radar -->
+      <div class="card">
+        <div class="card-accent cyan"></div>
+        <div class="card-tag cyan">&#x1F4E1; Human Detection</div>
+        <div class="card-title">mmWave 24GHz Radar Human Tracker — ESP32-S3 + RD-03D + Web Dashboard</div>
+        <div class="card-body">
+          ใช้ <strong>Ai-Thinker RD-03D</strong> radar module 24GHz FMCW ต่อกับ
+          <strong>ESP32-S3</strong> ผ่าน UART ติดตามคนได้สูงสุด 5 คน พร้อมระยะ
+          (distance), มุม (angle) และความเร็ว (speed) แบบ real-time แสดงผลผ่าน
+          WebSocket บน Touchscreen TFT หรือ Web Browser ไม่ต้องมีกล้อง ปกป้อง
+          ความเป็นส่วนตัวได้ดีกว่า ใช้ในระบบความปลอดภัย, นับคน, Smart Lighting
+        </div>
+        <ul class="steps">
+          <li><span class="step-num">1</span> ต่อ RD-03D TX/RX เข้า GPIO 17/18 บน ESP32-S3</li>
+          <li><span class="step-num">2</span> Parse protocol 4 bytes header + target data ผ่าน UART2</li>
+          <li><span class="step-num">3</span> Serve WebSocket server ด้วย AsyncWebServer</li>
+          <li><span class="step-num">4</span> วาด radar sweep ด้วย HTML5 Canvas + JavaScript</li>
+          <li><span class="step-num">5</span> แจ้งเตือนผ่าน MQTT เมื่อตรวจพบการเคลื่อนไหว</li>
+        </ul>
+        <div class="pill-row">
+          <span class="pill">ESP32-S3</span>
+          <span class="pill">RD-03D</span>
+          <span class="pill">24GHz FMCW</span>
+          <span class="pill">WebSocket</span>
+          <span class="pill">Privacy-Safe</span>
+        </div>
+      </div>
+
+      <!-- Project 2: TinyML Vibration -->
+      <div class="card">
+        <div class="card-accent purple"></div>
+        <div class="card-tag purple">&#x1F9E0; TinyML / Edge AI</div>
+        <div class="card-title">TinyML Vibration Anomaly Detection — ESP32-S3 + ADXL345 + Edge Impulse</div>
+        <div class="card-body">
+          ใช้ <strong>ESP32-S3</strong> กับ accelerometer <strong>ADXL345</strong> เก็บ vibration
+          signature ของมอเตอร์/ปั๊มในสภาวะปกติ แล้ว train โมเดล anomaly detection
+          บน <strong>Edge Impulse</strong> deploy กลับมารันบน ESP32-S3 ใช้ int8 TFLite Micro
+          inference latency &lt;5ms เตือนเมื่อ vibration ผิดปกติ ก่อนที่เครื่องจะพังจริงๆ
+          เป็น Predictive Maintenance ต้นทุนต่ำมาก
+        </div>
+        <ul class="steps">
+          <li><span class="step-num">1</span> อ่านข้อมูล ADXL345 ผ่าน SPI @ 3.2kHz sampling</li>
+          <li><span class="step-num">2</span> แบ่ง time window 2 วินาที สร้าง FFT features</li>
+          <li><span class="step-num">3</span> Upload dataset ไป Edge Impulse Studio</li>
+          <li><span class="step-num">4</span> Train Anomaly Detection (K-means clustering)</li>
+          <li><span class="step-num">5</span> Export Arduino library + deploy ไป ESP32-S3</li>
+          <li><span class="step-num">6</span> ส่ง alert ผ่าน MQTT เมื่อ anomaly score &gt; threshold</li>
+        </ul>
+        <div class="pill-row">
+          <span class="pill">TinyML</span>
+          <span class="pill">Edge Impulse</span>
+          <span class="pill">TFLite Micro</span>
+          <span class="pill">ADXL345</span>
+          <span class="pill">Predictive Maintenance</span>
+        </div>
+      </div>
+
+      <!-- Project 3: ESP32-P4 Face Recognition -->
+      <div class="card">
+        <div class="card-accent pink"></div>
+        <div class="card-tag pink">&#x1F3A5; Computer Vision</div>
+        <div class="card-title">ESP32-P4 Face Recognition Door Lock — ไม่ต้องมี Cloud ความเป็นส่วนตัว 100%</div>
+        <div class="card-body">
+          ใช้ <strong>ESP32-P4-EYE</strong> รัน <strong>ESP-WHO</strong> (Espressif's face detection
+          framework) พร้อมกล้อง MIPI OV5640 5MP ทำ face detection + recognition บน device
+          โดยตรง ไม่ส่งภาพใดๆ ไป cloud เลย ประมวลผลที่ 360MHz dual-core RISC-V + AI
+          instruction extensions สามารถ enroll ใบหน้าผู้ใช้ได้ถึง 20 คน ต่อ servo
+          ล็อคประตูผ่าน GPIO หรือส่งสัญญาณ relay ได้ทันที
+        </div>
+        <ul class="steps">
+          <li><span class="step-num">1</span> ตั้งค่า ESP-IDF + ESP-WHO บน ESP32-P4-EYE</li>
+          <li><span class="step-num">2</span> Init MIPI-CSI OV5640 + H.264 encoder pipeline</li>
+          <li><span class="step-num">3</span> Enroll ใบหน้า 3 ภาพต่อคน ผ่าน USB serial</li>
+          <li><span class="step-num">4</span> Run face detection @ &gt;10fps + recognition</li>
+          <li><span class="step-num">5</span> Trigger GPIO relay เปิดล็อคเมื่อจำหน้าได้</li>
+          <li><span class="step-num">6</span> Log เวลาเข้า-ออกผ่าน Wi-Fi 6 ไป Home Assistant</li>
+        </ul>
+        <div class="pill-row">
+          <span class="pill">ESP32-P4</span>
+          <span class="pill">ESP-WHO</span>
+          <span class="pill">MIPI-CSI</span>
+          <span class="pill">On-Device AI</span>
+          <span class="pill">Privacy-First</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═ SECTION 3: SENSORS ═ -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon green">&#x1F4CB;</div>
+      <span class="section-title">Sensors น่าสนใจประจำวัน</span>
+      <span class="section-count">4 รายการ</span>
+    </div>
+    <div class="grid grid-3">
+
+      <!-- Sensor 1: RD-03D -->
+      <div class="card">
+        <div class="card-accent cyan"></div>
+        <div class="card-tag cyan">&#x1F4E1; mmWave Radar</div>
+        <div class="card-title">RD-03D — 24GHz mmWave Multi-Target Radar (Ai-Thinker)</div>
+        <div class="card-body">
+          โมดูล FMCW radar 24GHz จาก Ai-Thinker ออกแบบมาสำหรับ
+          <strong>multi-human tracking</strong> ติดตามได้สูงสุด 5 เป้าพร้อมกัน
+          วัดระยะ ตำแหน่ง และความเร็วได้ละเอียด ต่อใช้ผ่าน UART ง่ายมาก
+          ไม่มีปัญหา privacy เหมือนกล้อง
+        </div>
+        <table class="spec-table">
+          <tr><td>Frequency</td><td>24 GHz (ISM band)</td></tr>
+          <tr><td>Technology</td><td>FMCW Radar</td></tr>
+          <tr><td>Max Targets</td><td>5 คน พร้อมกัน</td></tr>
+          <tr><td>Range</td><td>0.3 – 8 เมตร</td></tr>
+          <tr><td>Interface</td><td>UART 256000 bps</td></tr>
+          <tr><td>ราคา</td><td>~$8-12 USD</td></tr>
+        </table>
+      </div>
+
+      <!-- Sensor 2: SEN55 -->
+      <div class="card">
+        <div class="card-accent green"></div>
+        <div class="card-tag green">&#x1F32C; Air Quality</div>
+        <div class="card-title">SEN55 — All-in-One Environmental Sensor (Sensirion)</div>
+        <div class="card-body">
+          Sensirion <strong>SEN55</strong> คือ sensor ออลอินวัน ที่รวม 5 การวัดในชิ้นเดียว
+          PM1.0, PM2.5, PM4.0, PM10 (ฝุ่นละออง) + VOC index + NOx index +
+          อุณหภูมิ + ความชื้น รองรับ I2C มี Arduino library พร้อมใช้ เหมาะกับ
+          Air Quality Monitor ที่ต้องการครบทุกค่าใน BOM ชิ้นเดียว
+        </div>
+        <table class="spec-table">
+          <tr><td>PM วัดได้</td><td>PM1.0, PM2.5, PM4.0, PM10</td></tr>
+          <tr><td>Gas</td><td>VOC Index + NOx Index</td></tr>
+          <tr><td>Climate</td><td>Temperature + Humidity</td></tr>
+          <tr><td>Interface</td><td>I2C (addr 0x69)</td></tr>
+          <tr><td>Library</td><td>SensirionI2CSen5x (Arduino)</td></tr>
+        </table>
+      </div>
+
+      <!-- Sensor 3: SGP41 -->
+      <div class="card">
+        <div class="card-accent orange"></div>
+        <div class="card-tag orange">&#x1F9EA; Gas Sensor</div>
+        <div class="card-title">SGP41 — VOC + NOx Dual Gas Sensor (Sensirion)</div>
+        <div class="card-body">
+          <strong>SGP41</strong> เป็น metal-oxide gas sensor รุ่นใหม่จาก Sensirion
+          วัดทั้ง <strong>VOC (สารอินทรีย์ระเหย)</strong> และ <strong>NOx (ไนโตรเจนออกไซด์)</strong>
+          ในชิปเดียว ให้ค่า VOC Index (1-500) และ NOx Index (1-500)
+          เหมาะกับ air purifier, demand-controlled ventilation, HVAC system
+        </div>
+        <table class="spec-table">
+          <tr><td>วัดได้</td><td>VOC + NOx (dual sensing)</td></tr>
+          <tr><td>Output</td><td>VOC Index 1-500 / NOx Index 1-500</td></tr>
+          <tr><td>Algorithm</td><td>Sensirion VOC/NOx Engine</td></tr>
+          <tr><td>Interface</td><td>I2C (addr 0x59)</td></tr>
+          <tr><td>Library</td><td>Sensirion/arduino-i2c-sgp41</td></tr>
+        </table>
+      </div>
+
+      <!-- Sensor 4: A02YYUW -->
+      <div class="card">
+        <div class="card-accent blue"></div>
+        <div class="card-tag blue">&#x1F30A; Waterproof Ultrasonic</div>
+        <div class="card-title">A02YYUW — IP67 Waterproof Ultrasonic Distance Sensor (DFRobot)</div>
+        <div class="card-body">
+          <strong>A02YYUW</strong> จาก DFRobot เป็น ultrasonic sensor กันน้ำ IP67
+          ส่งข้อมูลผ่าน UART (ไม่ใช่ trigger/echo แบบเก่า) วัดระยะ 3-450cm
+          เหมาะกับวัดระดับน้ำในถัง/บ่อ, ตรวจจับน้ำท่วม, sump pump monitor
+          ทนน้ำ ฝน ความชื้นสูง ใช้กลางแจ้งได้สบาย
+        </div>
+        <table class="spec-table">
+          <tr><td>Rating</td><td>IP67 (กันน้ำ/ฝุ่น)</td></tr>
+          <tr><td>Range</td><td>3 – 450 cm</td></tr>
+          <tr><td>Blind Spot</td><td>3 cm</td></tr>
+          <tr><td>Interface</td><td>UART 9600 bps</td></tr>
+          <tr><td>Voltage</td><td>3.3V / 5V</td></tr>
+          <tr><td>ราคา</td><td>~$10-15 USD</td></tr>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- Bonus: SEN55 Code Snippet -->
+    <div class="card" style="margin-top:1.25rem;">
+      <div class="card-accent green"></div>
+      <div class="card-tag green">&#x1F4BB; Code Snippet</div>
+      <div class="card-title">SEN55 + ESP32 — อ่านค่าฝุ่น + VOC + NOx ด้วย I2C</div>
+      <div class="code-block">
+<span class="comment">// ติดตั้ง Library: SensirionI2CSen5x ใน Arduino Library Manager</span>
+<span class="kw">#include</span> &lt;SensirionI2CSen5x.h&gt;
+<span class="kw">#include</span> &lt;Wire.h&gt;
+
+SensirionI2CSen5x sen5x;
+
+<span class="kw">void</span> setup() {
+  Wire.begin();
+  sen5x.begin(Wire);
+  sen5x.startMeasurement();
+}
+
+<span class="kw">void</span> loop() {
+  <span class="kw">float</span> pm25, pm10, voc, nox, temp, hum;
+  sen5x.readMeasuredValues(
+    pm25, pm10, voc, nox, temp, hum
+  );
+  Serial.printf(
+    <span class="str">"PM2.5=%.1f | NOx=%.0f | VOC=%.0f | T=%.1f°C\n"</span>,
+    pm25, nox, voc, temp
+  );
+  delay(<span class="num">1000</span>);
+}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═ SECTION 4: RESOURCES ═ -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon cyan">&#x1F517;</div>
+      <span class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง</span>
+      <span class="section-count">6 แหล่ง</span>
+    </div>
+    <div class="grid grid-2">
+
+      <a class="res-card" href="https://www.espressif.com/en/products/socs/esp32-c61" target="_blank" rel="noopener">
+        <div class="res-icon" style="background:rgba(59,130,246,0.15); color:#60a5fa;">&#x1F4E6;</div>
+        <div>
+          <div class="res-title">ESP32-C61 — Official Product Page</div>
+          <div class="res-sub">Espressif Systems — ข้อมูล Wi-Fi 6 Budget SoC ล่าสุด</div>
+          <div class="res-url">espressif.com/en/products/socs/esp32-c61</div>
+        </div>
+      </a>
+
+      <a class="res-card" href="https://www.espressif.com/en/products/socs/esp32-h4" target="_blank" rel="noopener">
+        <div class="res-icon" style="background:rgba(139,92,246,0.15); color:#a78bfa;">&#x1F4F1;</div>
+        <div>
+          <div class="res-title">ESP32-H4 — Next-Gen BLE 5.4 + 802.15.4 SoC</div>
+          <div class="res-sub">Espressif Systems — Dual-Core Ultra-Low-Power SoC</div>
+          <div class="res-url">espressif.com/en/products/socs/esp32-h4</div>
+        </div>
+      </a>
+
+      <a class="res-card" href="https://github.com/espressif/esp-idf/blob/master/ROADMAP.md" target="_blank" rel="noopener">
+        <div class="res-icon" style="background:rgba(16,185,129,0.15); color:#34d399;">&#x1F5FA;</div>
+        <div>
+          <div class="res-title">ESP-IDF Roadmap — v6.1 และแผนอนาคต</div>
+          <div class="res-sub">GitHub Espressif — timeline ทุก release รวมถึง v6.2</div>
+          <div class="res-url">github.com/espressif/esp-idf/blob/master/ROADMAP.md</div>
+        </div>
+      </a>
+
+      <a class="res-card" href="https://www.espboards.dev/sensors/rd03/" target="_blank" rel="noopener">
+        <div class="res-icon" style="background:rgba(6,182,212,0.15); color:#22d3ee;">&#x1F4E1;</div>
+        <div>
+          <div class="res-title">RD-03D mmWave Radar — Pinout & Wiring Guide</div>
+          <div class="res-sub">espboards.dev — การต่อสาย + ESP32 example code</div>
+          <div class="res-url">espboards.dev/sensors/rd03/</div>
+        </div>
+      </a>
+
+      <a class="res-card" href="https://github.com/Sensirion/arduino-i2c-sgp41" target="_blank" rel="noopener">
+        <div class="res-icon" style="background:rgba(245,158,11,0.15); color:#fbbf24;">&#x1F9EA;</div>
+        <div>
+          <div class="res-title">SGP41 Arduino Library (Sensirion)</div>
+          <div class="res-sub">GitHub — VOC + NOx sensor I2C library พร้อม example</div>
+          <div class="res-url">github.com/Sensirion/arduino-i2c-sgp41</div>
+        </div>
+      </a>
+
+      <a class="res-card" href="https://github.com/espressif/esp-who" target="_blank" rel="noopener">
+        <div class="res-icon" style="background:rgba(236,72,153,0.15); color:#f472b6;">&#x1F3A5;</div>
+        <div>
+          <div class="res-title">ESP-WHO — Face Detection & Recognition Framework</div>
+          <div class="res-sub">Espressif GitHub — รันบน ESP32-P4 พร้อม MIPI camera</div>
+          <div class="res-url">github.com/espressif/esp-who</div>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <strong>ESP32 &amp; Sensor Daily Research</strong><br>
+  สร้างอัตโนมัติโดย Claude AI — 4 สิงหาคม 2569 (2026)<br><br>
+  <strong>แหล่งอ้างอิง:</strong>
+  espressif.com · cnx-software.com · espboards.dev · sensirion.com ·
+  hackster.io · developer.espressif.com · github.com/espressif<br><br>
+  <span style="color:#475569;">เนื้อหาครอบคลุม: ESP32-C61 Mass Production · ESP32-H4 Sampling · ESP-IDF v6.1 ·
+  Arduino-ESP32 v4.0-alpha · RD-03D mmWave · SEN55 · SGP41 · A02YYUW ·
+  TinyML Anomaly Detection · Face Recognition · Radar Human Tracking</span>
+</footer>
+
+</body>
+</html>
