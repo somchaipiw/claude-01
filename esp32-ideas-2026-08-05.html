@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 &amp; Sensor Innovations — 5 สิงหาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #253348;
+    --accent-blue: #38bdf8;
+    --accent-green: #4ade80;
+    --accent-amber: #fbbf24;
+    --accent-purple: #a78bfa;
+    --accent-pink: #f472b6;
+    --accent-teal: #2dd4bf;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --badge-new: #10b981;
+    --badge-hot: #ef4444;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1a1040 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(56,189,248,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-chip {
+    display: inline-block;
+    background: rgba(56,189,248,0.12);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent-blue);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1.25rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #38bdf8, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.6rem;
+  }
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.4rem 1.1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .stat-pill .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100%{opacity:1;} 50%{opacity:0.3;}
+  }
+
+  /* ===== LAYOUT ===== */
+  main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+
+  /* ===== SECTION HEADERS ===== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    margin-top: 3rem;
+  }
+  .section-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-count {
+    margin-left: auto;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+  }
+
+  /* ===== CARDS ===== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem 1.5rem;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: #4a6080;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .card.blue::before { background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); }
+  .card.green::before { background: linear-gradient(90deg, var(--accent-green), var(--accent-teal)); }
+  .card.amber::before { background: linear-gradient(90deg, var(--accent-amber), var(--accent-pink)); }
+  .card.purple::before { background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue)); }
+  .card.teal::before { background: linear-gradient(90deg, var(--accent-teal), var(--accent-green)); }
+  .card.pink::before { background: linear-gradient(90deg, var(--accent-pink), var(--accent-purple)); }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+    border-radius: 5px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .badge-new { background: rgba(16,185,129,0.2); color: var(--badge-new); border: 1px solid rgba(16,185,129,0.3); }
+  .badge-hot { background: rgba(239,68,68,0.2); color: var(--badge-hot); border: 1px solid rgba(239,68,68,0.3); }
+  .badge-update { background: rgba(56,189,248,0.15); color: var(--accent-blue); border: 1px solid rgba(56,189,248,0.25); }
+  .badge-tip { background: rgba(251,191,36,0.15); color: var(--accent-amber); border: 1px solid rgba(251,191,36,0.25); }
+
+  .card-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+
+  /* tag pills */
+  .tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .tag {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-muted);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* spec table */
+  .spec-table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; }
+  .spec-table td {
+    font-size: 0.82rem;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    vertical-align: top;
+  }
+  .spec-table td:first-child {
+    color: var(--text-muted);
+    width: 42%;
+    padding-right: 0.5rem;
+  }
+  .spec-table td:last-child { color: var(--text-primary); font-weight: 600; }
+
+  /* highlight box */
+  .highlight-box {
+    background: rgba(56,189,248,0.07);
+    border-left: 3px solid var(--accent-blue);
+    border-radius: 0 8px 8px 0;
+    padding: 0.7rem 0.9rem;
+    margin: 0.75rem 0 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .highlight-box.green { background: rgba(74,222,128,0.07); border-color: var(--accent-green); }
+  .highlight-box.amber { background: rgba(251,191,36,0.07); border-color: var(--accent-amber); }
+  .highlight-box.purple { background: rgba(167,139,250,0.07); border-color: var(--accent-purple); }
+
+  /* ===== WIDE CARD (project) ===== */
+  .project-grid { display: grid; gap: 1.25rem; }
+  .project-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+  .project-card:hover {
+    background: var(--bg-card-hover);
+    border-color: #4a6080;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+  .project-card.blue::before { background: linear-gradient(90deg,#38bdf8,#a78bfa); }
+  .project-card.green::before { background: linear-gradient(90deg,#4ade80,#2dd4bf); }
+  .project-card.amber::before { background: linear-gradient(90deg,#fbbf24,#f472b6); }
+
+  .project-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.9rem; flex-wrap: wrap; }
+  .project-number {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .project-number.blue { background: rgba(56,189,248,0.15); color: var(--accent-blue); }
+  .project-number.green { background: rgba(74,222,128,0.15); color: var(--accent-green); }
+  .project-number.amber { background: rgba(251,191,36,0.15); color: var(--accent-amber); }
+  .project-title { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); flex: 1; }
+
+  .component-list {
+    display: flex; flex-wrap: wrap; gap: 0.45rem;
+    margin: 0.75rem 0;
+  }
+  .component-chip {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 7px;
+    font-weight: 600;
+  }
+  .chip-blue { background: rgba(56,189,248,0.12); color: var(--accent-blue); }
+  .chip-green { background: rgba(74,222,128,0.12); color: var(--accent-green); }
+  .chip-amber { background: rgba(251,191,36,0.12); color: var(--accent-amber); }
+  .chip-purple { background: rgba(167,139,250,0.12); color: var(--accent-purple); }
+  .chip-teal { background: rgba(45,212,191,0.12); color: var(--accent-teal); }
+  .chip-pink { background: rgba(244,114,182,0.12); color: var(--accent-pink); }
+
+  .step-list { list-style: none; margin: 0.75rem 0; }
+  .step-list li {
+    display: flex;
+    gap: 0.7rem;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    padding: 0.25rem 0;
+  }
+  .step-num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(56,189,248,0.15);
+    color: var(--accent-blue);
+    font-size: 0.7rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 3px;
+  }
+
+  /* ===== RESOURCES ===== */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+  }
+  .resource-card:hover {
+    background: var(--bg-card-hover);
+    border-color: #4a6080;
+    transform: translateY(-1px);
+  }
+  .resource-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .resource-name { font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem; }
+  .resource-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+
+  /* ===== DIVIDER ===== */
+  .divider { height: 1px; background: var(--border); margin: 2rem 0 0; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    line-height: 1.9;
+  }
+  footer a { color: var(--accent-blue); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .footer-chips {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .footer-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.2rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 640px) {
+    header { padding: 2rem 1rem 1.75rem; }
+    main { padding: 2rem 1rem 3rem; }
+    .card-grid { grid-template-columns: 1fr; }
+    .resource-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-chip">🔬 Daily ESP32 Research Brief</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">5 สิงหาคม 2569 &nbsp;·&nbsp; รวบรวมโดย AI Researcher อัตโนมัติ</p>
+  <div class="stats-row">
+    <div class="stat-pill"><span class="dot"></span>4 นวัตกรรมเด่น</div>
+    <div class="stat-pill">🚀 3 ไอเดียโปรเจกต์</div>
+    <div class="stat-pill">🔌 4 Sensors/ICs</div>
+    <div class="stat-pill">🔗 6 แหล่งข้อมูล</div>
+  </div>
+</header>
+
+<main>
+
+<!-- ===== SECTION 1: INNOVATIONS ===== -->
+<div class="section-header" id="innovations">
+  <div class="section-icon" style="background:rgba(56,189,248,0.12);">💡</div>
+  <span class="section-title">นวัตกรรมและอัปเดตเด่นประจำวัน</span>
+  <span class="section-count">4 รายการ</span>
+</div>
+
+<div class="card-grid">
+
+  <!-- Card 1: ESP-KVM -->
+  <div class="card blue">
+    <div class="card-top">
+      <div class="card-title">ESP-KVM — IP KVM โอเพนซอร์สบน ESP32-P4 ควบคุม PC จากระยะไกล</div>
+      <span class="badge badge-hot">HOT</span>
+    </div>
+    <p class="card-desc">
+      โปรเจกต์ ESP-KVM เปิดตัว 30 ก.ค. 2026 ใช้ ESP32-P4 dual-core RISC-V 400 MHz ทำหน้าที่เป็น IP KVM (Keyboard–Video–Mouse) ราคาถูก ควบคุมคอมพิวเตอร์หรือเซิร์ฟเวอร์จากเว็บบราวเซอร์ผ่าน HTTPS ไม่ต้องติดตั้ง client ใด ๆ
+    </p>
+    <table class="spec-table">
+      <tr><td>บอร์ด</td><td>Waveshare ESP32-P4-WIFI6-POE-ETH</td></tr>
+      <tr><td>HDMI Capture</td><td>Toshiba TC358743 (HDMI → CSI)</td></tr>
+      <tr><td>วิดีโอ</td><td>MJPEG 19 FPS / H.264</td></tr>
+      <tr><td>การควบคุม</td><td>Keyboard + Mouse (absolute/relative)</td></tr>
+      <tr><td>ความปลอดภัย</td><td>HTTPS + Login (กำลังพัฒนา)</td></tr>
+      <tr><td>ไลเซนส์</td><td>Apache 2.0</td></tr>
+    </table>
+    <div class="highlight-box">
+      🎯 เหมาะสำหรับการดูแลเซิร์ฟเวอร์ในงาน embedded, homelab หรือ remote debugging — ทำได้ด้วยบอร์ด ESP32-P4 ราคาไม่กี่ร้อยบาท
+    </div>
+    <div class="tag-row" style="margin-top:0.9rem;">
+      <span class="tag">ESP32-P4</span><span class="tag">IP KVM</span><span class="tag">HDMI Capture</span><span class="tag">RISC-V</span><span class="tag">Open Source</span>
+    </div>
+  </div>
+
+  <!-- Card 2: PowerFeather V2 -->
+  <div class="card green">
+    <div class="card-top">
+      <div class="card-title">ESP32-S3 PowerFeather V2 — Solar MPPT + LiFePO4 สำหรับ Off-Grid IoT</div>
+      <span class="badge badge-new">NEW</span>
+    </div>
+    <p class="card-desc">
+      บอร์ดพัฒนา ESP32-S3 ที่ออกแบบมาสำหรับโปรเจกต์พลังงานแสงอาทิตย์โดยเฉพาะ V2 เพิ่มรองรับแบตเตอรี่ LiFePO4/LFP นอกเหนือจาก Li-ion และ LiPo ใช้ IC ชั้นนำอย่าง TI BQ25628E (charger) และ Analog Devices MAX17260 (fuel gauge)
+    </p>
+    <table class="spec-table">
+      <tr><td>CPU</td><td>ESP32-S3 Dual-core Xtensa LX7 @240 MHz</td></tr>
+      <tr><td>Solar Input</td><td>สูงสุด 18V + MPPT อัตโนมัติ</td></tr>
+      <tr><td>ชาร์จ</td><td>2A, รองรับ LiFePO4 / Li-ion / LiPo</td></tr>
+      <tr><td>Deep Sleep</td><td>เพียง 20µA quiescent current</td></tr>
+      <tr><td>Fuel Gauge</td><td>MAX17260 (วัด % แบตเตอรี่แม่นยำ)</td></tr>
+      <tr><td>Form Factor</td><td>Adafruit Feather-compatible</td></tr>
+    </table>
+    <div class="highlight-box green">
+      ☀️ แบตเตอรี่ 1,000 mAh + แผงโซลาร์เล็ก ๆ ทำให้ sensor node ทำงานได้ตลอดปีโดยไม่ต้องเปลี่ยนแบต
+    </div>
+    <div class="tag-row" style="margin-top:0.9rem;">
+      <span class="tag">Solar MPPT</span><span class="tag">LiFePO4</span><span class="tag">Off-Grid</span><span class="tag">ESP32-S3</span><span class="tag">Energy Harvesting</span>
+    </div>
+  </div>
+
+  <!-- Card 3: MicroPython 1.29 + CircuitPython 10.2 -->
+  <div class="card purple">
+    <div class="card-top">
+      <div class="card-title">MicroPython v1.29-preview &amp; CircuitPython 10.2.0 — รองรับ ESP32 รุ่นใหม่เต็มรูปแบบ</div>
+      <span class="badge badge-update">UPDATE</span>
+    </div>
+    <p class="card-desc">
+      MicroPython v1.29.0-preview (2 ส.ค. 2026) และ CircuitPython 10.2.0 stable ต่างรองรับ ESP32-C61 และ ESP32-H4 แล้ว CircuitPython เพิ่ม mipidsi module สำหรับจอ MIPI DSI ซึ่งรองรับ ESP32-P4 โดยเฉพาะ และอัปเดต ESP-IDF เป็น v5.5.3
+    </p>
+    <table class="spec-table">
+      <tr><td>MicroPython</td><td>v1.29.0-preview (2 ส.ค. 2026)</td></tr>
+      <tr><td>CircuitPython</td><td>10.2.0 stable (22 เม.ย. 2026)</td></tr>
+      <tr><td>ESP-IDF base</td><td>v5.5.3 (CircuitPython)</td></tr>
+      <tr><td>ชิปใหม่</td><td>ESP32-C61, ESP32-H4 รองรับแล้ว</td></tr>
+      <tr><td>ฟีเจอร์ใหม่</td><td>mipidsi (MIPI DSI display) สำหรับ P4</td></tr>
+    </table>
+    <div class="highlight-box purple">
+      🐍 ใช้ Python เขียน firmware ให้ ESP32-P4 พร้อมควบคุมจอ MIPI DSI ได้แล้ว ไม่ต้องใช้ C/C++
+    </div>
+    <div class="tag-row" style="margin-top:0.9rem;">
+      <span class="tag">MicroPython</span><span class="tag">CircuitPython</span><span class="tag">ESP32-C61</span><span class="tag">MIPI DSI</span><span class="tag">ESP-IDF 5.5</span>
+    </div>
+  </div>
+
+  <!-- Card 4: ESP-SR TTS Pipeline V3 -->
+  <div class="card amber">
+    <div class="card-top">
+      <div class="card-title">ESP-SR TTS Pipeline V3 — Voice Recognition + TTS หลายภาษาไม่ต้องใช้ Cloud</div>
+      <span class="badge badge-update">UPDATE</span>
+    </div>
+    <p class="card-desc">
+      Espressif อัปเดต ESP-SR library พร้อม TTS Pipeline V3 รองรับการฝึก Wake Word สำหรับจีน อังกฤษ ญี่ปุ่น และฝรั่งเศส กำลังพัฒนาเพิ่ม เกาหลี สเปน โปรตุเกส เยอรมัน รัสเซีย และอาหรับ ทำงานบน ESP32-S3 โดยสมบูรณ์ไม่ต้องส่งข้อมูลออก Cloud
+    </p>
+    <table class="spec-table">
+      <tr><td>ชิปที่แนะนำ</td><td>ESP32-S3 (พร้อม PSRAM)</td></tr>
+      <tr><td>Wake Word</td><td>ZH / EN / JA / FR (V3)</td></tr>
+      <tr><td>Commands</td><td>MultiNet 7 — สูงสุด 300 คำสั่ง</td></tr>
+      <tr><td>พลังงาน (active)</td><td>160–260 mA ขณะฟังต่อเนื่อง</td></tr>
+      <tr><td>พลังงาน (wake)</td><td>10–50 mA เฉลี่ย (deep sleep ระหว่าง)</td></tr>
+      <tr><td>ไลเซนส์</td><td>Apache 2.0</td></tr>
+    </table>
+    <div class="highlight-box amber">
+      🎙️ INMP441 I2S mic + ESP32-S3 + ESP-SR = smart speaker DIY ภาษาไทยก็ทำได้ด้วย custom wake word
+    </div>
+    <div class="tag-row" style="margin-top:0.9rem;">
+      <span class="tag">ESP-SR</span><span class="tag">Voice Recognition</span><span class="tag">TTS</span><span class="tag">Offline AI</span><span class="tag">ESP32-S3</span>
+    </div>
+  </div>
+
+</div><!-- /card-grid -->
+
+
+<!-- ===== SECTION 2: PROJECTS ===== -->
+<div class="divider"></div>
+<div class="section-header" id="projects">
+  <div class="section-icon" style="background:rgba(74,222,128,0.12);">🚀</div>
+  <span class="section-title">ไอเดียโปรเจกต์น่าสร้างประจำวัน</span>
+  <span class="section-count">3 โปรเจกต์</span>
+</div>
+
+<div class="project-grid">
+
+  <!-- Project 1 -->
+  <div class="project-card green">
+    <div class="project-header">
+      <div class="project-number green">01</div>
+      <div class="project-title">Solar-Powered Remote Weather Station — สถานีตรวจอากาศ Off-Grid พลังงานแสงอาทิตย์</div>
+      <span class="badge badge-tip">แนะนำ</span>
+    </div>
+    <p class="card-desc">
+      สร้างสถานีตรวจวัดสภาพอากาศที่ไม่ต้องพึ่งไฟฟ้าหลัก ส่งข้อมูลผ่าน MQTT ไปยัง Home Assistant หรือ Grafana Dashboard โดยใช้ PowerFeather V2 เป็นใจกลางการจัดการพลังงาน เหมาะสำหรับติดตั้งในสวน ไร่นา หรือพื้นที่ห่างไกล
+    </p>
+    <div class="component-list">
+      <span class="component-chip chip-green">ESP32-S3 PowerFeather V2</span>
+      <span class="component-chip chip-amber">แผงโซลาร์ 5W 18V</span>
+      <span class="component-chip chip-blue">BME680 (Temp/Hum/Pressure/VOC)</span>
+      <span class="component-chip chip-teal">SCD41 (CO₂ NDIR)</span>
+      <span class="component-chip chip-purple">MQTT + Home Assistant</span>
+      <span class="component-chip chip-pink">LiFePO4 แบต 3.2V 2000mAh</span>
+    </div>
+    <ul class="step-list">
+      <li><span class="step-num">1</span>ต่อแผงโซลาร์เข้า PowerFeather V2 ตั้ง MPP Voltage ให้ตรงกับแผง</li>
+      <li><span class="step-num">2</span>ต่อ BME680 และ SCD41 ผ่าน I2C (GPIO 21/22)</li>
+      <li><span class="step-num">3</span>เขียน firmware ด้วย ESP-IDF หรือ Arduino — อ่านค่าทุก 5 นาที ส่ง MQTT</li>
+      <li><span class="step-num">4</span>ใช้ Deep Sleep ระหว่างรอ — ประหยัดไฟ &lt;20µA ขณะหลับ</li>
+      <li><span class="step-num">5</span>ตั้ง Dashboard บน Grafana + InfluxDB เพื่อดูกราฟย้อนหลัง</li>
+    </ul>
+    <div class="highlight-box green">
+      ⚡ แบตเตอรี่ LiFePO4 2000mAh + โซลาร์ 5W: สถานีทำงานได้ตลอด 24/7 ตลอดทั้งปีในประเทศไทยที่มีแสงแดดเพียงพอ
+    </div>
+  </div>
+
+  <!-- Project 2 -->
+  <div class="project-card blue">
+    <div class="project-header">
+      <div class="project-number blue">02</div>
+      <div class="project-title">ESP32-S3 Offline AI Voice Assistant — สั่งงานบ้านด้วยเสียง ไม่ต้องใช้ Cloud</div>
+      <span class="badge badge-hot">HOT</span>
+    </div>
+    <p class="card-desc">
+      สร้าง Voice Assistant ที่ประมวลผลเสียงทั้งหมดในตัวเอง (on-device) ไม่ส่งข้อมูลออก Internet โดยใช้ ESP-SR TTS Pipeline V3 ฝึก Wake Word ภาษาอังกฤษหรือจีน และสั่ง MultiNet 7 ให้รู้จำคำสั่ง เช่น เปิด/ปิดไฟ ปรับแอร์ เปิดม่าน
+    </p>
+    <div class="component-list">
+      <span class="component-chip chip-blue">ESP32-S3 (8MB PSRAM)</span>
+      <span class="component-chip chip-purple">INMP441 I2S MEMS Mic</span>
+      <span class="component-chip chip-green">ESP-SR + MultiNet 7</span>
+      <span class="component-chip chip-teal">Relay Module 4-ch</span>
+      <span class="component-chip chip-amber">MAX98357A I2S Amp + Speaker</span>
+      <span class="component-chip chip-pink">Arduino IDE / ESP-IDF</span>
+    </div>
+    <ul class="step-list">
+      <li><span class="step-num">1</span>ต่อ INMP441 กับ ESP32-S3 ผ่าน I2S (BCLK, WS, SD pins)</li>
+      <li><span class="step-num">2</span>ดาวน์โหลด ESP-SR จาก GitHub แล้ว import ใน ESP-IDF project</li>
+      <li><span class="step-num">3</span>กำหนด Wake Word ("Hey ESP" หรือฝึก custom wake word) ใน Pipeline V3</li>
+      <li><span class="step-num">4</span>เพิ่ม MultiNet 7 command list: "เปิดไฟ", "ปิดไฟ", "ลดอุณหภูมิ" ฯลฯ</li>
+      <li><span class="step-num">5</span>ต่อ Relay ควบคุมอุปกรณ์ ตอบกลับด้วย TTS ผ่าน MAX98357A</li>
+    </ul>
+    <div class="highlight-box">
+      🔒 ทุกการประมวลผลเกิดขึ้นใน ESP32-S3 — ข้อมูลเสียงไม่ออก Internet เลย ความเป็นส่วนตัว 100%
+    </div>
+  </div>
+
+  <!-- Project 3 -->
+  <div class="project-card amber">
+    <div class="project-header">
+      <div class="project-number amber">03</div>
+      <div class="project-title">Smart NFC/RFID Door Access Control — ระบบเปิดประตูอัจฉริยะพร้อม Web Dashboard + Telegram</div>
+      <span class="badge badge-new">ไอเดียใหม่</span>
+    </div>
+    <p class="card-desc">
+      ระบบควบคุมการเข้าออกด้วยบัตร NFC/RFID ที่รองรับผู้ใช้ได้สูงสุด 1,000 คน มี Web Dashboard สำหรับจัดการบัตร บันทึกประวัติการเข้าออก และแจ้งเตือนผ่าน Telegram Bot ทุกครั้งที่มีการสแกนบัตร เพิ่ม OTA update ผ่าน Wi-Fi
+    </p>
+    <div class="component-list">
+      <span class="component-chip chip-amber">ESP32-S3</span>
+      <span class="component-chip chip-purple">PN532 NFC/RFID Module (I2C)</span>
+      <span class="component-chip chip-teal">Relay (ควบคุม Electric Strike Lock)</span>
+      <span class="component-chip chip-green">NeoPixel LED (สถานะ OK/Denied)</span>
+      <span class="component-chip chip-blue">Web Server (ESPAsyncWebServer)</span>
+      <span class="component-chip chip-pink">Telegram Bot API</span>
+    </div>
+    <ul class="step-list">
+      <li><span class="step-num">1</span>ต่อ PN532 กับ ESP32-S3 ผ่าน I2C (SDA/SCL) — ตั้ง DIP switch เป็น I2C mode</li>
+      <li><span class="step-num">2</span>เขียน ESP32 เป็น Web Server — จัดการรายชื่อ UID บัตรที่อนุญาต</li>
+      <li><span class="step-num">3</span>สแกนบัตร → ตรวจสอบ UID ใน list → เปิด relay + LED เขียว หรือ LED แดง</li>
+      <li><span class="step-num">4</span>บันทึก log ลง SPIFFS (timestamp + UID) แสดงบน Web UI</li>
+      <li><span class="step-num">5</span>ส่งแจ้งเตือน Telegram พร้อม timestamp และชื่อผู้ใช้ทุกครั้งที่สแกน</li>
+    </ul>
+    <div class="highlight-box amber">
+      📱 ติดตั้งที่ออฟฟิศ หอพัก หรือโรงรถ — จัดการบัตรผ่านมือถือโดยไม่ต้องโปรแกรมใหม่ทุกครั้ง
+    </div>
+  </div>
+
+</div><!-- /project-grid -->
+
+
+<!-- ===== SECTION 3: SENSORS ===== -->
+<div class="divider"></div>
+<div class="section-header" id="sensors">
+  <div class="section-icon" style="background:rgba(167,139,250,0.12);">🔌</div>
+  <span class="section-title">Sensors &amp; ICs น่าสนใจประจำวัน</span>
+  <span class="section-count">4 รายการ</span>
+</div>
+
+<div class="card-grid">
+
+  <!-- Sensor 1: INMP441 -->
+  <div class="card purple">
+    <div class="card-top">
+      <div class="card-title">INMP441 — I2S MEMS Microphone สำหรับ Voice Recognition &amp; Audio Processing</div>
+      <span class="badge badge-tip">คลาสสิก</span>
+    </div>
+    <p class="card-desc">
+      ไมโครโฟน MEMS ที่เชื่อมต่อผ่าน I2S ดิจิทัล เป็นตัวเลือกยอดนิยมสำหรับโปรเจกต์ Voice Recognition บน ESP32-S3 ให้ SNR สูงถึง 61 dB และมีน้ำหนักเบา ขนาดเล็ก เหมาะสำหรับงาน edge AI
+    </p>
+    <table class="spec-table">
+      <tr><td>Interface</td><td>I2S (3-wire: BCLK, WS, SD)</td></tr>
+      <tr><td>SNR</td><td>61 dB(A) — เสียงชัดในสภาพแวดล้อมทั่วไป</td></tr>
+      <tr><td>ย่านความถี่</td><td>60 Hz – 15 kHz</td></tr>
+      <tr><td>แรงดัน</td><td>1.8V – 3.3V</td></tr>
+      <tr><td>Sensitivity</td><td>−26 dBFS @ 94 dB SPL</td></tr>
+      <tr><td>ราคาประมาณ</td><td>30–80 บาท (AliExpress module)</td></tr>
+    </table>
+    <div class="highlight-box purple">
+      💡 ใช้คู่กับ ESP32-S3 + ESP-SR: อ่าน I2S แล้วส่งไป Wake Word Detection pipeline ได้ทันที
+    </div>
+    <div class="tag-row" style="margin-top:0.9rem;">
+      <span class="tag">I2S</span><span class="tag">MEMS Mic</span><span class="tag">Voice AI</span><span class="tag">ESP-SR</span><span class="tag">Edge AI</span>
+    </div>
+  </div>
+
+  <!-- Sensor 2: PN532 -->
+  <div class="card amber">
+    <div class="card-top">
+      <div class="card-title">PN532 — NFC/RFID Controller ยอดนิยม รองรับ ISO 14443A/B, MIFARE, FeliCa</div>
+      <span class="badge badge-tip">ยอดนิยม</span>
+    </div>
+    <p class="card-desc">
+      NXP PN532 เป็น NFC Controller ที่ได้รับความนิยมสูงสุดในกลุ่ม Maker รองรับทั้ง I2C, SPI และ UART เชื่อมต่อได้ทั้งการ์ด MIFARE Classic, MIFARE DESFire, NFC Type 2/4 และ FeliCa ใช้ library ที่มีเอกสารดีมาก
+    </p>
+    <table class="spec-table">
+      <tr><td>ความถี่</td><td>13.56 MHz (ISO 14443A/B, ISO 18092)</td></tr>
+      <tr><td>Interface</td><td>I2C / SPI / UART (สลับด้วย DIP switch)</td></tr>
+      <tr><td>ระยะอ่าน</td><td>~5 cm (ขึ้นกับ antenna)</td></tr>
+      <tr><td>รองรับ</td><td>MIFARE Classic, DESFire, NFC Forum Type 2–4, FeliCa</td></tr>
+      <tr><td>แรงดัน</td><td>3.3V (โมดูลมี level shifter)</td></tr>
+      <tr><td>Library</td><td>Adafruit PN532 (Arduino / CircuitPython)</td></tr>
+    </table>
+    <div class="highlight-box amber">
+      🔐 ต่อผ่าน I2C กับ ESP32-S3 ได้ทันที ใช้ library Adafruit PN532 — มีตัวอย่างโค้ดครบ
+    </div>
+    <div class="tag-row" style="margin-top:0.9rem;">
+      <span class="tag">NFC</span><span class="tag">RFID</span><span class="tag">13.56MHz</span><span class="tag">MIFARE</span><span class="tag">Access Control</span>
+    </div>
+  </div>
+
+  <!-- Sensor 3: SCD41 -->
+  <div class="card teal">
+    <div class="card-top">
+      <div class="card-title">SCD41 — CO₂ Sensor แบบ Photoacoustic NDIR จาก Sensirion (ความแม่นยำสูง)</div>
+      <span class="badge badge-new">แนะนำ</span>
+    </div>
+    <p class="card-desc">
+      SCD41 ใช้เทคโนโลยี Photoacoustic NDIR (PASens) วัด CO₂ ได้แม่นยำกว่าเซนเซอร์ chemical ทั่วไป บัดกรีแล้วใช้ได้ทันทีโดยไม่ต้องปรับเทียบเพิ่ม (factory calibrated) เหมาะสำหรับวัดคุณภาพอากาศในห้องหรือออฟฟิศ
+    </p>
+    <table class="spec-table">
+      <tr><td>หลักการทำงาน</td><td>Photoacoustic NDIR (PASens)</td></tr>
+      <tr><td>ช่วงวัด</td><td>400 – 5,000 ppm CO₂</td></tr>
+      <tr><td>ความแม่นยำ</td><td>±40 ppm ±5% ของค่าวัด</td></tr>
+      <tr><td>Interface</td><td>I2C (address 0x62)</td></tr>
+      <tr><td>แรงดัน</td><td>2.4V – 5.5V</td></tr>
+      <tr><td>พลังงาน</td><td>~3 mA (low power periodic mode)</td></tr>
+    </table>
+    <div class="highlight-box">
+      🌬️ CO₂ &gt;1,000 ppm ในห้องทำให้ง่วงและสมาธิสั้น — SCD41 + ESP32-C6 + e-ink display เป็น desk meter ที่ดีมาก
+    </div>
+    <div class="tag-row" style="margin-top:0.9rem;">
+      <span class="tag">CO₂</span><span class="tag">NDIR</span><span class="tag">Sensirion</span><span class="tag">I2C</span><span class="tag">Air Quality</span>
+    </div>
+  </div>
+
+  <!-- Sensor 4: BQ25628E -->
+  <div class="card blue">
+    <div class="card-top">
+      <div class="card-title">BQ25628E — Texas Instruments Solar/USB Battery Charger IC พร้อม MPPT</div>
+      <span class="badge badge-tip">IC น่ารู้</span>
+    </div>
+    <p class="card-desc">
+      IC ชาร์จแบตเตอรี่จาก TI ที่ใช้ใน PowerFeather V2 รองรับ input จาก USB-C หรือ Solar Panel สูงสุด 18V มีอัลกอริธึม MPPT ในตัว ทำให้ดึงพลังงานจากโซลาร์ได้เต็มประสิทธิภาพ รองรับแบตหลายเคมี
+    </p>
+    <table class="spec-table">
+      <tr><td>Input</td><td>USB-C หรือ DC 3.9V–18V (Solar)</td></tr>
+      <tr><td>MPPT</td><td>ตั้ง input voltage limit เพื่อ near-MPPT</td></tr>
+      <tr><td>กระแสชาร์จ</td><td>สูงสุด 2A</td></tr>
+      <tr><td>รองรับแบต</td><td>Li-ion, LiPo, LiFePO4</td></tr>
+      <tr><td>Interface</td><td>I2C (สำหรับตั้งค่าและอ่านสถานะ)</td></tr>
+      <tr><td>Package</td><td>20-pin VQFN (SMD)</td></tr>
+    </table>
+    <div class="highlight-box">
+      ⚡ เรียนรู้การออกแบบ PCB solar charger ด้วย BQ25628E — datasheet มี reference design ครบ พร้อม MPPT tuning guide
+    </div>
+    <div class="tag-row" style="margin-top:0.9rem;">
+      <span class="tag">Solar Charger</span><span class="tag">MPPT</span><span class="tag">LiFePO4</span><span class="tag">Texas Instruments</span><span class="tag">I2C</span>
+    </div>
+  </div>
+
+</div><!-- /card-grid -->
+
+
+<!-- ===== SECTION 4: RESOURCES ===== -->
+<div class="divider"></div>
+<div class="section-header" id="resources">
+  <div class="section-icon" style="background:rgba(45,212,191,0.12);">🔗</div>
+  <span class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง</span>
+  <span class="section-count">6 ลิงก์</span>
+</div>
+
+<div class="resource-grid">
+
+  <a class="resource-card" href="https://github.com/espkvm/espkvm" target="_blank" rel="noopener">
+    <div class="resource-icon" style="background:rgba(56,189,248,0.12);">🖥️</div>
+    <div>
+      <div class="resource-name">GitHub — espkvm/espkvm</div>
+      <div class="resource-desc">Source code และเอกสาร ESP-KVM: IP KVM บน ESP32-P4 รองรับ HDMI + USB HID ผ่านเบราว์เซอร์</div>
+    </div>
+  </a>
+
+  <a class="resource-card" href="https://powerfeather.dev" target="_blank" rel="noopener">
+    <div class="resource-icon" style="background:rgba(74,222,128,0.12);">☀️</div>
+    <div>
+      <div class="resource-name">PowerFeather V2 — Official Site</div>
+      <div class="resource-desc">ESP32-S3 + Solar MPPT + LiFePO4 board — เอกสาร SDK และตัวอย่างโค้ดสำหรับ off-grid IoT</div>
+    </div>
+  </a>
+
+  <a class="resource-card" href="https://micropython.org/download/esp32/" target="_blank" rel="noopener">
+    <div class="resource-icon" style="background:rgba(167,139,250,0.12);">🐍</div>
+    <div>
+      <div class="resource-name">MicroPython — ESP32 Downloads</div>
+      <div class="resource-desc">ดาวน์โหลด MicroPython v1.29-preview สำหรับ ESP32, ESP32-S3, ESP32-C3, ESP32-C6</div>
+    </div>
+  </a>
+
+  <a class="resource-card" href="https://github.com/espressif/esp-sr" target="_blank" rel="noopener">
+    <div class="resource-icon" style="background:rgba(251,191,36,0.12);">🎙️</div>
+    <div>
+      <div class="resource-name">GitHub — espressif/esp-sr</div>
+      <div class="resource-desc">ESP-SR library: Wake Word Detection, MultiNet command recognition, TTS Pipeline V3 พร้อม example code</div>
+    </div>
+  </a>
+
+  <a class="resource-card" href="https://www.hackster.io/dexif/esp-kvm-a-browser-based-ip-kvm-on-the-esp32-p4-no-soldering-4c4488" target="_blank" rel="noopener">
+    <div class="resource-icon" style="background:rgba(244,114,182,0.12);">📖</div>
+    <div>
+      <div class="resource-name">Hackster.io — ESP-KVM Build Guide</div>
+      <div class="resource-desc">คู่มือสร้าง ESP-KVM แบบ no-soldering ครบขั้นตอน พร้อมรายการอุปกรณ์และ firmware setup</div>
+    </div>
+  </a>
+
+  <a class="resource-card" href="https://www.makemindz.com/2026/02/smart-rfid-access-control-system-using.html" target="_blank" rel="noopener">
+    <div class="resource-icon" style="background:rgba(45,212,191,0.12);">🔐</div>
+    <div>
+      <div class="resource-name">MakeMindz — Smart RFID Access Control</div>
+      <div class="resource-desc">Tutorial ระบบ RFID Access Control ด้วย ESP32 + UHF RFID Reader พร้อม Web UI ครบถ้วน</div>
+    </div>
+  </a>
+
+</div><!-- /resource-grid -->
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p>
+    สร้างโดย <strong>AI Researcher อัตโนมัติ</strong> &nbsp;·&nbsp;
+    วันที่ <strong>5 สิงหาคม 2569 (2026)</strong> &nbsp;·&nbsp;
+    ซีรีส์ ESP32 Daily Innovation Brief
+  </p>
+  <div class="footer-chips" style="margin-top:0.75rem;">
+    <span class="footer-chip">ESP32-P4</span>
+    <span class="footer-chip">ESP32-S3</span>
+    <span class="footer-chip">Solar IoT</span>
+    <span class="footer-chip">Voice Recognition</span>
+    <span class="footer-chip">NFC/RFID</span>
+    <span class="footer-chip">MicroPython</span>
+    <span class="footer-chip">CircuitPython</span>
+    <span class="footer-chip">ESP-SR</span>
+  </div>
+  <p style="margin-top:1rem; font-size:0.75rem; color:#4b5563;">
+    แหล่งอ้างอิง:
+    <a href="https://espkvm.io/" target="_blank" rel="noopener">espkvm.io</a> ·
+    <a href="https://www.cnx-software.com/2026/07/30/esp-kvm-an-open-source-ip-kvm-solution-based-on-esp32-p4-risc-v-mcu/" target="_blank" rel="noopener">CNX-Software</a> ·
+    <a href="https://powerfeather.dev" target="_blank" rel="noopener">PowerFeather</a> ·
+    <a href="https://blog.adafruit.com/2026/04/22/circuitpython-10-2-0-released/" target="_blank" rel="noopener">Adafruit Blog</a> ·
+    <a href="https://micropython.org/download/esp32/" target="_blank" rel="noopener">MicroPython.org</a> ·
+    <a href="https://github.com/espressif/esp-sr" target="_blank" rel="noopener">GitHub ESP-SR</a>
+  </p>
+</footer>
+
+</body>
+</html>
