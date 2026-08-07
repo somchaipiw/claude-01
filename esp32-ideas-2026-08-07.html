@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 &amp; Sensor Innovations — 7 สิงหาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary:    #0b1120;
+    --bg-card:       #131d30;
+    --bg-card-hover: #1a2742;
+    --border:        #1e3358;
+    --accent-blue:   #3b82f6;
+    --accent-teal:   #14b8a6;
+    --accent-green:  #22c55e;
+    --accent-amber:  #f59e0b;
+    --accent-rose:   #f43f5e;
+    --accent-purple: #a855f7;
+    --text-primary:  #e2e8f0;
+    --text-secondary:#94a3b8;
+    --text-muted:    #64748b;
+    --new-badge:     #f43f5e;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: linear-gradient(135deg, #0d1b3e 0%, #0b2340 40%, #0a1628 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 60% at 20% 50%, rgba(59,130,246,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 60% at 80% 50%, rgba(20,184,166,0.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.35);
+    border-radius: 999px;
+    padding: .25rem 1rem;
+    font-size: .8rem;
+    color: #93c5fd;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  .chip-dot {
+    width: 7px; height: 7px;
+    background: var(--accent-blue);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: .4; transform: scale(.7); }
+  }
+  h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    color: #f1f5f9;
+    position: relative;
+  }
+  h1 span { color: var(--accent-blue); }
+  .header-meta {
+    margin-top: .8rem;
+    font-size: .9rem;
+    color: var(--text-secondary);
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: .5rem 1.5rem;
+    position: relative;
+  }
+  .header-meta span { display: flex; align-items: center; gap: .35rem; }
+
+  /* ─── LAYOUT ─── */
+  main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.2rem 3rem;
+  }
+
+  /* ─── SECTION ─── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin: 2.5rem 0 1.25rem;
+  }
+  .section-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-blue   { background: rgba(59,130,246,0.2);  color: var(--accent-blue);   }
+  .icon-teal   { background: rgba(20,184,166,0.2);  color: var(--accent-teal);   }
+  .icon-green  { background: rgba(34,197,94,0.2);   color: var(--accent-green);  }
+  .icon-amber  { background: rgba(245,158,11,0.2);  color: var(--accent-amber);  }
+  .section-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+  .section-subtitle {
+    font-size: .82rem;
+    color: var(--text-muted);
+    margin-left: .4rem;
+  }
+
+  /* ─── GRID ─── */
+  .grid { display: grid; gap: 1rem; }
+  .grid-2 { grid-template-columns: repeat(auto-fill, minmax(min(100%, 560px), 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); }
+  .grid-4 { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.3rem 1.4rem;
+    transition: border-color .25s, background .25s, transform .2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    border-color: #2d4a7a;
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+  }
+  .card-accent-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+  .bar-blue   { background: linear-gradient(90deg, var(--accent-blue),  #60a5fa); }
+  .bar-teal   { background: linear-gradient(90deg, var(--accent-teal),  #2dd4bf); }
+  .bar-green  { background: linear-gradient(90deg, var(--accent-green), #4ade80); }
+  .bar-amber  { background: linear-gradient(90deg, var(--accent-amber), #fbbf24); }
+  .bar-rose   { background: linear-gradient(90deg, var(--accent-rose),  #fb7185); }
+  .bar-purple { background: linear-gradient(90deg, var(--accent-purple),#c084fc); }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: .5rem;
+    margin-bottom: .6rem;
+  }
+  .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    line-height: 1.4;
+  }
+  .card-body {
+    font-size: .88rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+  }
+
+  /* ─── BADGES ─── */
+  .badge {
+    display: inline-block;
+    padding: .15rem .55rem;
+    border-radius: 999px;
+    font-size: .7rem;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge-new    { background: rgba(244,63,94,.18);  color: #fb7185;  border: 1px solid rgba(244,63,94,.3); }
+  .badge-hot    { background: rgba(245,158,11,.18); color: #fbbf24;  border: 1px solid rgba(245,158,11,.3); }
+  .badge-diy    { background: rgba(59,130,246,.18); color: #93c5fd;  border: 1px solid rgba(59,130,246,.3); }
+  .badge-lib    { background: rgba(34,197,94,.18);  color: #86efac;  border: 1px solid rgba(34,197,94,.3); }
+  .badge-sensor { background: rgba(168,85,247,.18); color: #d8b4fe;  border: 1px solid rgba(168,85,247,.3); }
+
+  /* ─── TAG PILLS ─── */
+  .tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .75rem; }
+  .tag {
+    font-size: .72rem;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 6px;
+    padding: .1rem .5rem;
+    color: var(--text-muted);
+  }
+
+  /* ─── SPEC TABLE ─── */
+  .spec-table { width: 100%; border-collapse: collapse; margin-top: .7rem; }
+  .spec-table td {
+    padding: .3rem .5rem;
+    font-size: .82rem;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+    vertical-align: top;
+  }
+  .spec-table td:first-child {
+    color: var(--text-muted);
+    white-space: nowrap;
+    padding-right: 1rem;
+    width: 38%;
+  }
+  .spec-table td:last-child { color: var(--text-secondary); }
+
+  /* ─── HIGHLIGHT BOX ─── */
+  .highlight-box {
+    background: rgba(59,130,246,0.08);
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 10px;
+    padding: .75rem 1rem;
+    margin-top: .75rem;
+    font-size: .84rem;
+    color: #93c5fd;
+  }
+
+  /* ─── RESOURCE CARD ─── */
+  .res-grid { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+  .res-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    transition: border-color .25s, background .25s;
+  }
+  .res-card:hover { border-color: #2d4a7a; background: var(--bg-card-hover); }
+  .res-type {
+    font-size: .7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: .35rem;
+  }
+  .res-title { font-size: .92rem; font-weight: 700; color: #e2e8f0; margin-bottom: .3rem; }
+  .res-desc  { font-size: .8rem; color: var(--text-muted); line-height: 1.6; }
+  .res-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    margin-top: .55rem;
+    font-size: .78rem;
+    color: var(--accent-blue);
+    text-decoration: none;
+  }
+  .res-link:hover { text-decoration: underline; }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: #080f1e;
+    border-top: 1px solid var(--border);
+    padding: 1.5rem;
+    text-align: center;
+    font-size: .8rem;
+    color: var(--text-muted);
+  }
+  footer strong { color: var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-chip">
+    <span class="chip-dot"></span>
+    AI Research Update
+  </div>
+  <h1>ESP32 &amp; IoT <span>Innovations</span></h1>
+  <div class="header-meta">
+    <span>📅 7 สิงหาคม 2026</span>
+    <span>💡 16 ไอเดีย</span>
+    <span>🔧 Water Quality · LoRa · Predictive Maintenance · Wearable</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SECTION 1 : นวัตกรรมและอัปเดตล่าสุด
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="section-header">
+    <div class="section-icon icon-blue">🚀</div>
+    <div>
+      <div class="section-title">นวัตกรรมและอัปเดตล่าสุด</div>
+      <span class="section-subtitle">Hardware &amp; Software ที่น่าจับตามอง</span>
+    </div>
+  </div>
+
+  <div class="grid grid-2" id="innovations">
+
+    <!-- Card 1 -->
+    <div class="card">
+      <div class="card-accent-bar bar-blue"></div>
+      <div class="card-top">
+        <div class="card-title">Heltec WiFi LoRa 32 V4 — ESP32-S3 + SX1262 27 dBm</div>
+        <span class="badge badge-new">NEW</span>
+      </div>
+      <div class="card-body">
+        บอร์ด Heltec รุ่นล่าสุดอัปเกรดเป็น <strong>ESP32-S3R2</strong> จับคู่กับ <strong>SX1262</strong> ชิป LoRa พลังสูง 27 dBm พร้อม FEM ใหม่ (KCT8103L) ที่ปรับปรุง RX LNA path ด้วยซอฟต์แวร์ เพิ่มพอร์ต Solar Panel (SH1.25-2Pin) และ GNSS (SH1.25-8Pin) ใหม่ รองรับ Meshtastic และ LoRaWAN อย่างสมบูรณ์
+      </div>
+      <table class="spec-table">
+        <tr><td>MCU</td><td>ESP32-S3R2 (2MB PSRAM + 16MB Flash)</td></tr>
+        <tr><td>LoRa</td><td>SX1262, ส่งได้ 27 dBm (High-power version)</td></tr>
+        <tr><td>การสื่อสาร</td><td>Wi-Fi b/g/n, BLE 5.0, LoRa 868/915 MHz</td></tr>
+        <tr><td>พลังงาน</td><td>Deep sleep &lt;20 μA, รองรับ Solar Panel</td></tr>
+        <tr><td>ดีไซน์ใหม่</td><td>PC Casing กันรอยจอ, ฟอร์มแฟกเตอร์ตรงกับ V3</td></tr>
+      </table>
+      <div class="tags">
+        <span class="tag">LoRa</span><span class="tag">ESP32-S3</span><span class="tag">Meshtastic</span><span class="tag">LoRaWAN</span><span class="tag">Solar</span>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="card">
+      <div class="card-accent-bar bar-teal"></div>
+      <div class="card-top">
+        <div class="card-title">EnviroGo — ESP32-S3 Wearable Environmental Monitor 7 Sensors</div>
+        <span class="badge badge-new">NEW</span>
+      </div>
+      <div class="card-body">
+        อุปกรณ์ Crowdfunding จาก CNX Software (ม.ค. 2026) บอร์ด ESP32-S3 แบบพกพา วัดสภาพแวดล้อมรอบตัวผู้สวมใส่ครบ 7 พารามิเตอร์ในอุปกรณ์เดียว เหมาะสำหรับการตรวจสอบคุณภาพอากาศส่วนบุคคล แจ้งเตือนผ่าน BLE ไปยังสมาร์ทโฟน และบันทึก log ระยะยาว
+      </div>
+      <table class="spec-table">
+        <tr><td>MCU</td><td>ESP32-S3</td></tr>
+        <tr><td>Sensors</td><td>VOC, UV Index, Temperature, Humidity, Air Pressure, Light, 9-axis MEMS IMU</td></tr>
+        <tr><td>ข้อมูลออก</td><td>BLE → สมาร์ทโฟน, onboard logging</td></tr>
+        <tr><td>เหมาะกับ</td><td>Personal air quality, outdoor activity, research</td></tr>
+      </table>
+      <div class="tags">
+        <span class="tag">Wearable</span><span class="tag">Air Quality</span><span class="tag">VOC</span><span class="tag">UV</span><span class="tag">IMU</span>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="card">
+      <div class="card-accent-bar bar-green"></div>
+      <div class="card-top">
+        <div class="card-title">EzLoRaWAN Library — LoRaWAN OTAA/ABP สำหรับ ESP32 ด้วย Arduino IDE</div>
+        <span class="badge badge-lib">Library</span>
+      </div>
+      <div class="card-body">
+        Library โดย Francois Riotte อัปเดตรองรับ <strong>Arduino-ESP32 v3.3.4+</strong> ทำให้การเชื่อมต่อ LoRaWAN ผ่าน The Things Network (TTN) ง่ายขึ้นมาก ทั้งแบบ OTAA (Over-The-Air Activation) และ ABP (Activation By Personalization) มี tutorial ครบถ้วนบน Medium โดยใช้ Heltec board เป็น reference
+      </div>
+      <div class="highlight-box">
+        💡 <strong>ทำไมต้องใช้ EzLoRaWAN?</strong> ซ่อนความซับซ้อนของ LoRaMac-node ไว้ เขียนโค้ดเชื่อม TTN ได้ใน ~30 บรรทัด ไม่ต้องจัดการ timing window เอง
+      </div>
+      <div class="tags">
+        <span class="tag">LoRaWAN</span><span class="tag">TTN</span><span class="tag">OTAA</span><span class="tag">ABP</span><span class="tag">Arduino Library</span>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="card">
+      <div class="card-accent-bar bar-purple"></div>
+      <div class="card-top">
+        <div class="card-title">AquaPi — ESPHome Integration สำหรับ Atlas Scientific EZO บน Home Assistant</div>
+        <span class="badge badge-hot">HOT</span>
+      </div>
+      <div class="card-body">
+        โปรเจกต์ GitHub <strong>TheRealFalseReality/aquapi</strong> รวม YAML configuration สำหรับใช้ ESP32 กับ Atlas Scientific EZO sensors ผ่าน ESPHome เชื่อมต่อตรงกับ Home Assistant ติดตามสุขภาพน้ำในตู้ปลา/ไฮโดรโปนิกส์ได้แบบ real-time ไม่ต้องเขียนโค้ด C++ เองเลย
+      </div>
+      <div class="tags">
+        <span class="tag">ESPHome</span><span class="tag">Home Assistant</span><span class="tag">Aquarium</span><span class="tag">Hydroponics</span><span class="tag">Atlas Scientific</span>
+      </div>
+    </div>
+
+  </div><!-- /grid innovations -->
+
+  <hr class="divider">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SECTION 2 : ไอเดียโปรเจกต์น่าสร้าง
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="section-header">
+    <div class="section-icon icon-teal">🔨</div>
+    <div>
+      <div class="section-title">ไอเดียโปรเจกต์น่าสร้าง</div>
+      <span class="section-subtitle">แนวคิดโปรเจกต์สำหรับ Builder และ Maker</span>
+    </div>
+  </div>
+
+  <div class="grid grid-2" id="projects">
+
+    <!-- Project 1 -->
+    <div class="card">
+      <div class="card-accent-bar bar-teal"></div>
+      <div class="card-top">
+        <div class="card-title">Smart Water Quality Station — ESP32 + Atlas Scientific EZO</div>
+        <span class="badge badge-diy">DIY</span>
+      </div>
+      <div class="card-body">
+        สร้างสถานีตรวจสอบคุณภาพน้ำแบบ professional ด้วย ESP32 ควบคุม EZO circuits หลายตัวผ่าน I2C multiplexer วัดค่า pH, EC (Conductivity), TDS, Dissolved Oxygen และอุณหภูมิพร้อมกัน แสดงผลบน web dashboard และ Home Assistant
+      </div>
+      <div class="highlight-box">
+        🎯 <strong>Use Case:</strong> ระบบน้ำดื่มชุมชน, ฟาร์มกุ้ง/ปลา, ไฮโดรโปนิกส์อุตสาหกรรม, การตรวจสอบแหล่งน้ำธรรมชาติ
+      </div>
+      <table class="spec-table">
+        <tr><td>MCU</td><td>ESP32 / ESP32-S3</td></tr>
+        <tr><td>Sensors</td><td>EZO-pH, EZO-EC, EZO-DO, PT-1000 Temperature</td></tr>
+        <tr><td>Protocol</td><td>I2C (ต้องใช้ TCA9548A multiplexer)</td></tr>
+        <tr><td>UI</td><td>ESPHome + Home Assistant หรือ MQTT + Grafana</td></tr>
+        <tr><td>ต้นทุน</td><td>~3,500–8,000 บาท (ขึ้นกับจำนวน EZO circuits)</td></tr>
+      </table>
+      <div class="tags">
+        <span class="tag">Water Quality</span><span class="tag">pH</span><span class="tag">TDS</span><span class="tag">Dissolved O₂</span><span class="tag">I2C Mux</span>
+      </div>
+    </div>
+
+    <!-- Project 2 -->
+    <div class="card">
+      <div class="card-accent-bar bar-blue"></div>
+      <div class="card-top">
+        <div class="card-title">Long-Range Smart Farm Sensor Network — ESP32 + LoRa SX1262</div>
+        <span class="badge badge-diy">DIY</span>
+      </div>
+      <div class="card-body">
+        เครือข่าย sensor nodes กระจายในพื้นที่เกษตร ระยะ 3–10 กม. แต่ละ node ใช้ ESP32 + SX1262 ส่งข้อมูล (ความชื้นดิน, อุณหภูมิ, ความชื้นอากาศ, ปริมาณแสง) ผ่าน LoRaWAN ไปยัง TTN gateway กลาง แล้วส่งต่อไปที่ Node-RED หรือ ThingsBoard สั่งควบคุมปั๊มน้ำได้จากระยะไกล
+      </div>
+      <table class="spec-table">
+        <tr><td>MCU</td><td>Heltec WiFi LoRa 32 V4 (ESP32-S3 + SX1262)</td></tr>
+        <tr><td>Sensors</td><td>DHT22, Capacitive Soil Moisture, BH1750 Light</td></tr>
+        <tr><td>ระยะส่ง</td><td>3–10 กม. (urban), 15+ กม. (ทุ่งโล่ง)</td></tr>
+        <tr><td>Power</td><td>Solar panel 5W + LiPo 2000mAh, deep sleep ~4μA</td></tr>
+        <tr><td>Platform</td><td>TTN v3 → ThingsBoard CE หรือ Node-RED</td></tr>
+      </table>
+      <div class="tags">
+        <span class="tag">Smart Farm</span><span class="tag">LoRaWAN</span><span class="tag">TTN</span><span class="tag">Soil Moisture</span><span class="tag">Solar</span>
+      </div>
+    </div>
+
+    <!-- Project 3 -->
+    <div class="card">
+      <div class="card-accent-bar bar-amber"></div>
+      <div class="card-top">
+        <div class="card-title">Industrial Vibration Monitor — ESP32-S3 + ADXL355 + FFT Analysis</div>
+        <span class="badge badge-diy">DIY</span>
+      </div>
+      <div class="card-body">
+        ระบบ predictive maintenance สำหรับมอเตอร์และปั๊มอุตสาหกรรม อ่านสัญญาณสั่นสะเทือนจาก ADXL355 (noise ต่ำมาก) ที่ 1 kHz แล้วทำ FFT บน ESP32-S3 ตรวจหา frequency peaks ที่บ่งบอกความผิดปกติ เช่น bearing wear หรือ imbalance แจ้งเตือนผ่าน MQTT / LINE Notify
+      </div>
+      <div class="highlight-box">
+        ⚙️ เทคนิค FFT บน ESP32-S3 ใช้ Arduino ESP32 FFT library หรือ CMSIS-DSP ที่ build-in ใน ESP-IDF ได้ผล real-time ที่ 1024 samples
+      </div>
+      <table class="spec-table">
+        <tr><td>MCU</td><td>ESP32-S3 (PSRAM เพิ่มเติมสำหรับ FFT buffer)</td></tr>
+        <tr><td>Sensor</td><td>ADXL355 (±0.5/1/2g, SPI, noise 22 μg/√Hz)</td></tr>
+        <tr><td>Algorithm</td><td>RMS + FFT 1024-point → peak detection</td></tr>
+        <tr><td>แจ้งเตือน</td><td>MQTT → Node-RED → LINE Notify / Email</td></tr>
+      </table>
+      <div class="tags">
+        <span class="tag">Predictive Maintenance</span><span class="tag">FFT</span><span class="tag">ADXL355</span><span class="tag">Industrial IoT</span><span class="tag">MEMS</span>
+      </div>
+    </div>
+
+    <!-- Project 4 -->
+    <div class="card">
+      <div class="card-accent-bar bar-rose"></div>
+      <div class="card-top">
+        <div class="card-title">Animal Health Wearable — ESP32 Mini + MAX30102 + MPU6050 + BLE</div>
+        <span class="badge badge-diy">DIY</span>
+      </div>
+      <div class="card-body">
+        ปลอกคอสัตว์เลี้ยงอัจฉริยะติดตาม อัตราการเต้นของหัวใจ และ SpO₂ ด้วย MAX30102 บวกกับ accelerometer MPU-6050 ตรวจจับการเคลื่อนไหว (วิ่ง/นอน/กินข้าว) ส่งข้อมูลผ่าน BLE ไปยังสมาร์ทโฟน แจ้งเตือนเมื่อสัตว์เลี้ยงมีพฤติกรรมผิดปกติ อ้างอิง PCBWay community project ต้นปี 2026
+      </div>
+      <table class="spec-table">
+        <tr><td>MCU</td><td>ESP32-C3 Mini (ขนาดเล็ก, BLE 5.0)</td></tr>
+        <tr><td>Sensors</td><td>MAX30102 (PPG), MPU-6050 (IMU), NTC Temperature</td></tr>
+        <tr><td>Power</td><td>LiPo 100mAh, ชาร์จผ่าน USB-C</td></tr>
+        <tr><td>UI</td><td>BLE → MIT App Inventor App หรือ custom Flutter</td></tr>
+        <tr><td>ต้นทุนเป้าหมาย</td><td>&lt;500 บาท</td></tr>
+      </table>
+      <div class="tags">
+        <span class="tag">Pet Wearable</span><span class="tag">PPG</span><span class="tag">SpO₂</span><span class="tag">Activity Tracking</span><span class="tag">BLE</span>
+      </div>
+    </div>
+
+  </div><!-- /grid projects -->
+
+  <hr class="divider">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SECTION 3 : Sensors น่าสนใจ
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="section-header">
+    <div class="section-icon icon-green">🔬</div>
+    <div>
+      <div class="section-title">Sensors น่าสนใจ</div>
+      <span class="section-subtitle">อุปกรณ์วัดที่ควรรู้จักสำหรับ ESP32 Projects</span>
+    </div>
+  </div>
+
+  <div class="grid grid-3" id="sensors">
+
+    <!-- Sensor 1 -->
+    <div class="card">
+      <div class="card-accent-bar bar-teal"></div>
+      <div class="card-top">
+        <div class="card-title">Atlas Scientific EZO-pH Circuit</div>
+        <span class="badge badge-sensor">Sensor IC</span>
+      </div>
+      <div class="card-body">
+        วงจร pH สำเร็จรูประดับ professional จาก Atlas Scientific ใช้กับ probe pH มาตรฐาน SMA connector รองรับ I2C และ UART ตรงกับ ESP32 3.3V โดยตรง (ไม่ต้อง level shift) Calibration ง่ายผ่าน command ASCII รองรับ ISO 10523
+      </div>
+      <table class="spec-table">
+        <tr><td>ช่วงวัด</td><td>0.001 – 14.000 pH</td></tr>
+        <tr><td>ความแม่นยำ</td><td>±0.001 pH</td></tr>
+        <tr><td>Interface</td><td>I2C (addr 0x63) / UART</td></tr>
+        <tr><td>แรงดัน</td><td>3.3V / 5V</td></tr>
+        <tr><td>ราคา</td><td>~35 USD (circuit only)</td></tr>
+      </table>
+      <div class="tags">
+        <span class="tag">pH</span><span class="tag">Water Quality</span><span class="tag">I2C</span><span class="tag">ISO 10523</span>
+      </div>
+    </div>
+
+    <!-- Sensor 2 -->
+    <div class="card">
+      <div class="card-accent-bar bar-blue"></div>
+      <div class="card-top">
+        <div class="card-title">Atlas Scientific EZO-EC (Conductivity)</div>
+        <span class="badge badge-sensor">Sensor IC</span>
+      </div>
+      <div class="card-body">
+        วัด EC (Electrical Conductivity), TDS (Total Dissolved Solids), Salinity และ Specific Gravity ในวงจรเดียว เหมาะสำหรับระบบไฮโดรโปนิกส์ ตู้ปลาทะเล และเกษตรอัจฉริยะ รองรับ K 0.1 / K 1.0 / K 10 probe ราคาถูกกว่าและแม่นยำกว่า TDS sensor ทั่วไปมาก
+      </div>
+      <table class="spec-table">
+        <tr><td>ช่วงวัด</td><td>0.07 – 500,000 μS/cm</td></tr>
+        <tr><td>ความแม่นยำ</td><td>±2%</td></tr>
+        <tr><td>Interface</td><td>I2C (addr 0x64) / UART</td></tr>
+        <tr><td>คำนวณได้</td><td>EC, TDS, Salinity, SG</td></tr>
+      </table>
+      <div class="tags">
+        <span class="tag">EC</span><span class="tag">TDS</span><span class="tag">Salinity</span><span class="tag">Hydroponics</span>
+      </div>
+    </div>
+
+    <!-- Sensor 3 -->
+    <div class="card">
+      <div class="card-accent-bar bar-amber"></div>
+      <div class="card-top">
+        <div class="card-title">Analog Devices ADXL355 — Low Noise Accelerometer</div>
+        <span class="badge badge-sensor">Sensor IC</span>
+      </div>
+      <div class="card-body">
+        Accelerometer 3 แกน ระดับ industrial ความละเอียดสูงจาก Analog Devices เหมาะสำหรับงาน structural health monitoring และ predictive maintenance Noise density เพียง 22 μg/√Hz ทำให้ตรวจจับ micro-vibration ได้แม่นยำกว่า MPU-6050/ADXL345 มาก
+      </div>
+      <table class="spec-table">
+        <tr><td>ช่วงวัด</td><td>±0.5g / ±1g / ±2g (เลือกได้)</td></tr>
+        <tr><td>Noise Density</td><td>22 μg/√Hz</td></tr>
+        <tr><td>Resolution</td><td>20-bit</td></tr>
+        <tr><td>Interface</td><td>SPI / I2C</td></tr>
+        <tr><td>Supply</td><td>1.8V – 3.6V</td></tr>
+      </table>
+      <div class="tags">
+        <span class="tag">Accelerometer</span><span class="tag">SHM</span><span class="tag">Low Noise</span><span class="tag">SPI</span><span class="tag">Analog Devices</span>
+      </div>
+    </div>
+
+    <!-- Sensor 4 -->
+    <div class="card">
+      <div class="card-accent-bar bar-green"></div>
+      <div class="card-top">
+        <div class="card-title">DFRobot Gravity TDS Sensor v1.0</div>
+        <span class="badge badge-sensor">Sensor Module</span>
+      </div>
+      <div class="card-body">
+        โมดูล TDS (Total Dissolved Solids) ราคาประหยัดสำหรับวัดคุณภาพน้ำดื่ม น้ำ RO และระบบไฮโดรโปนิกส์เบื้องต้น ต่อกับ ESP32 โดยตรงผ่าน ADC ไม่ต้องใช้ EZO circuit ใช้ขั้วโลหะไทเทเนียมทนทานต่อการกัดกร่อน สั่งชื้อได้ราคา ~150–250 บาท
+      </div>
+      <table class="spec-table">
+        <tr><td>ช่วงวัด</td><td>0 – 1000 ppm TDS</td></tr>
+        <tr><td>ความแม่นยำ</td><td>±10% full scale</td></tr>
+        <tr><td>Interface</td><td>Analog (3.3V ADC ของ ESP32)</td></tr>
+        <tr><td>แรงดัน</td><td>3.3 – 5.5V</td></tr>
+        <tr><td>ราคา</td><td>~150 – 250 บาท</td></tr>
+      </table>
+      <div class="tags">
+        <span class="tag">TDS</span><span class="tag">Water Quality</span><span class="tag">Analog</span><span class="tag">DFRobot</span>
+      </div>
+    </div>
+
+    <!-- Sensor 5 -->
+    <div class="card">
+      <div class="card-accent-bar bar-purple"></div>
+      <div class="card-top">
+        <div class="card-title">Seeed XIAO ESP32-S3 Vibration Anomaly Detection Kit</div>
+        <span class="badge badge-hot">HOT</span>
+      </div>
+      <div class="card-body">
+        ชุดอุปกรณ์สำเร็จรูปจาก Seeed Studio สำหรับตรวจจับความผิดปกติของการสั่นสะเทือน (Vibration Anomaly Detection) บน XIAO ESP32-S3 รวม accelerometer และ Edge Impulse model สำเร็จรูป เปิด box แล้วทดสอบได้เลยโดยไม่ต้อง train model ใหม่เอง
+      </div>
+      <div class="highlight-box">
+        🧠 บน Edge Impulse รองรับ ESP32-S3 native — train เพิ่มข้อมูลของเครื่องจักรตัวเองได้ใน ~30 นาที
+      </div>
+      <div class="tags">
+        <span class="tag">TinyML</span><span class="tag">Vibration</span><span class="tag">Edge Impulse</span><span class="tag">XIAO</span><span class="tag">Seeed</span>
+      </div>
+    </div>
+
+    <!-- Sensor 6 -->
+    <div class="card">
+      <div class="card-accent-bar bar-rose"></div>
+      <div class="card-top">
+        <div class="card-title">MAX30102 — Pulse Oximeter &amp; Heart Rate (Wearable)</div>
+        <span class="badge badge-sensor">Sensor IC</span>
+      </div>
+      <div class="card-body">
+        ชิป PPG (Photoplethysmography) จาก Maxim Integrated สำหรับวัด SpO₂ และ Heart Rate ผ่านแสง IR + Red LED ราคาถูก (~30–80 บาท) I2C ต่อ ESP32 ง่าย เหมาะสำหรับ wearable ต้นทุนต่ำ ใช้กับ library SparkFun_Bio_Sensor_Hub หรือ MAX30105 Arduino library ของ SparkFun
+      </div>
+      <table class="spec-table">
+        <tr><td>วัดได้</td><td>SpO₂ (%), Heart Rate (BPM)</td></tr>
+        <tr><td>Interface</td><td>I2C (addr 0x57)</td></tr>
+        <tr><td>Supply</td><td>1.8V core / 3.3V I/O</td></tr>
+        <tr><td>แรงดัน LED</td><td>5V (มีบอร์ดแปลงแล้วในตลาด)</td></tr>
+        <tr><td>ราคา</td><td>30 – 80 บาท (module)</td></tr>
+      </table>
+      <div class="tags">
+        <span class="tag">SpO₂</span><span class="tag">Heart Rate</span><span class="tag">PPG</span><span class="tag">Wearable</span><span class="tag">I2C</span>
+      </div>
+    </div>
+
+  </div><!-- /grid sensors -->
+
+  <hr class="divider">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SECTION 4 : แหล่งข้อมูลและลิงก์
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="section-header">
+    <div class="section-icon icon-amber">📚</div>
+    <div>
+      <div class="section-title">แหล่งข้อมูลและลิงก์</div>
+      <span class="section-subtitle">Libraries, Projects, Tutorials ที่อ้างอิงในวันนี้</span>
+    </div>
+  </div>
+
+  <div class="res-grid" id="resources">
+
+    <div class="res-card">
+      <div class="res-type" style="color: var(--accent-teal);">Library</div>
+      <div class="res-title">Atlas-Scientific/Ezo_I2c_lib</div>
+      <div class="res-desc">Arduino library สำหรับ EZO pH, EC, DO sensors ผ่าน I2C พร้อม example สำหรับ Hydroponics Kit</div>
+      <a class="res-link" href="https://github.com/Atlas-Scientific/Ezo_I2c_lib" target="_blank" rel="noopener">→ github.com</a>
+    </div>
+
+    <div class="res-card">
+      <div class="res-type" style="color: var(--accent-blue);">Tutorial</div>
+      <div class="res-title">EzLoRaWAN — OTAA Startup Guide</div>
+      <div class="res-desc">Tutorial บน Medium ครอบคลุม OTAA และ ABP activation บน ESP32 ผ่าน TTN v3 โดย AndroidCrypto</div>
+      <a class="res-link" href="https://medium.com/@androidcrypto/startup-guide-for-your-first-lorawan-steps-with-an-esp32-and-a-lora-module-otaa-activation-c31cdbe6ef29" target="_blank" rel="noopener">→ medium.com</a>
+    </div>
+
+    <div class="res-card">
+      <div class="res-type" style="color: var(--accent-green);">Project</div>
+      <div class="res-title">AquaPi for ESPHome</div>
+      <div class="res-desc">Smart aquarium/hydroponics monitoring ด้วย ESP32 + Atlas Scientific EZO + Home Assistant</div>
+      <a class="res-link" href="https://github.com/TheRealFalseReality/aquapi" target="_blank" rel="noopener">→ github.com</a>
+    </div>
+
+    <div class="res-card">
+      <div class="res-type" style="color: var(--accent-amber);">Hardware</div>
+      <div class="res-title">Heltec WiFi LoRa 32 V4</div>
+      <div class="res-desc">ESP32-S3 + SX1262 27 dBm บอร์ดล่าสุดพร้อม Solar + GNSS interface รองรับ Meshtastic และ LoRaWAN</div>
+      <a class="res-link" href="https://heltec.org/project/wifi-lora-32-v4/" target="_blank" rel="noopener">→ heltec.org</a>
+    </div>
+
+    <div class="res-card">
+      <div class="res-type" style="color: var(--accent-purple);">Project</div>
+      <div class="res-title">Smart Farming ESP32 (lily-osp)</div>
+      <div class="res-desc">IoT-based smart farming solution ระบบรดน้ำอัตโนมัติ dual cloud, offline mode, modular display options</div>
+      <a class="res-link" href="https://github.com/lily-osp/smart-farming-esp32" target="_blank" rel="noopener">→ github.com</a>
+    </div>
+
+    <div class="res-card">
+      <div class="res-type" style="color: var(--accent-rose);">Research</div>
+      <div class="res-title">IJERT: Industrial Machine Health Monitoring</div>
+      <div class="res-desc">งานวิจัย Real-Time Industrial Machine Health Monitoring and Failure Prediction Using ESP32 ปี 2026</div>
+      <a class="res-link" href="https://www.ijert.org/real-time-industrial-machine-health-monitoring-and-failure-prediction-using-esp32-ijertv15is060098" target="_blank" rel="noopener">→ ijert.org</a>
+    </div>
+
+    <div class="res-card">
+      <div class="res-type" style="color: var(--accent-teal);">Hardware</div>
+      <div class="res-title">Seeed XIAO ESP32-S3 Vibration Kit</div>
+      <div class="res-desc">ชุดสำเร็จรูป Vibration Anomaly Detection พร้อม Edge Impulse model สำหรับ Predictive Maintenance</div>
+      <a class="res-link" href="https://www.seeedstudio.com/Vibration-Anomaly-Detection-Kit-for-XIAO-ESP32-S3.html" target="_blank" rel="noopener">→ seeedstudio.com</a>
+    </div>
+
+    <div class="res-card">
+      <div class="res-type" style="color: var(--accent-blue);">Community</div>
+      <div class="res-title">EnviroGo ESP32-S3 Wearable</div>
+      <div class="res-desc">Wearable 7-sensor environmental monitor บน ESP32-S3 วัด VOC, UV, Temp, Humidity, Pressure, Light, IMU</div>
+      <a class="res-link" href="https://www.cnx-software.com/2026/01/20/envirogo-esp32-s3-wearable-environmental-monitor-features-7-sensors/" target="_blank" rel="noopener">→ cnx-software.com</a>
+    </div>
+
+  </div><!-- /res-grid -->
+
+</main>
+
+<footer>
+  <strong>ESP32 &amp; Sensor Innovations</strong> — สร้างโดย AI Research Bot · 7 สิงหาคม 2026<br>
+  <span style="margin-top:.4rem;display:inline-block;">แหล่งอ้างอิง: Heltec.org, Atlas Scientific, CNX Software, Medium, IEEE Xplore, Hackster.io, Seeed Studio, IJERT, GitHub</span>
+</footer>
+
+</body>
+</html>
