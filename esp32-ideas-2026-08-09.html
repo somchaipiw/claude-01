@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 &amp; Sensor Innovations — 9 สิงหาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-base:   #0f172a;
+    --bg-card:   #1e293b;
+    --bg-card2:  #243044;
+    --border:    rgba(148,163,184,.14);
+    --text:      #e2e8f0;
+    --text-muted:#94a3b8;
+    --blue:      #60a5fa;
+    --teal:      #2dd4bf;
+    --green:     #4ade80;
+    --amber:     #fbbf24;
+    --violet:    #a78bfa;
+    --rose:      #fb7185;
+    --grad-header: linear-gradient(135deg,#1e3a5f 0%,#0f172a 60%,#1a2e1f 100%);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Sarabun',sans-serif;background:var(--bg-base);color:var(--text);line-height:1.8;min-height:100vh}
+
+  /* ── HEADER ── */
+  header{background:var(--grad-header);border-bottom:1px solid var(--border);padding:2.5rem 1.5rem 2rem}
+  .header-inner{max-width:1100px;margin:0 auto}
+  .header-eyebrow{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:.5rem}
+  .header-title{font-size:clamp(1.5rem,4vw,2.4rem);font-weight:700;color:#fff;margin-bottom:.5rem}
+  .header-title span{color:var(--blue)}
+  .header-meta{display:flex;flex-wrap:wrap;gap:.75rem;font-size:.82rem;color:var(--text-muted);margin-top:.75rem}
+  .header-meta .pill{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:999px;padding:.2rem .75rem}
+
+  /* ── LAYOUT ── */
+  main{max-width:1100px;margin:0 auto;padding:2.5rem 1.25rem}
+  section{margin-bottom:3.5rem}
+
+  /* ── SECTION HEADER ── */
+  .sec-hdr{display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)}
+  .sec-icon{width:2.25rem;height:2.25rem;border-radius:.55rem;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+  .icon-blue  {background:rgba(96,165,250,.15);box-shadow:0 0 0 1px rgba(96,165,250,.25)}
+  .icon-teal  {background:rgba(45,212,191,.15);box-shadow:0 0 0 1px rgba(45,212,191,.25)}
+  .icon-green {background:rgba(74,222,128,.15);box-shadow:0 0 0 1px rgba(74,222,128,.25)}
+  .icon-amber {background:rgba(251,191,36,.15) ;box-shadow:0 0 0 1px rgba(251,191,36,.25)}
+  .icon-violet{background:rgba(167,139,250,.15);box-shadow:0 0 0 1px rgba(167,139,250,.25)}
+  .sec-label{flex:1}
+  .sec-title{font-size:1.15rem;font-weight:700;color:#fff}
+  .sec-sub{font-size:.8rem;color:var(--text-muted);margin-top:.1rem}
+  .sec-count{font-size:.75rem;font-weight:600;color:var(--text-muted);background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:999px;padding:.15rem .65rem}
+
+  /* ── GRID ── */
+  .grid-2{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,480px),1fr));gap:1.25rem}
+  .grid-3{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,310px),1fr));gap:1.25rem}
+
+  /* ── CARD ── */
+  .card{background:var(--bg-card);border:1px solid var(--border);border-radius:.9rem;padding:1.35rem 1.4rem;transition:border-color .2s,box-shadow .2s}
+  .card:hover{border-color:rgba(96,165,250,.3);box-shadow:0 4px 24px rgba(0,0,0,.35)}
+  .card-badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:.18rem .6rem;margin-bottom:.65rem}
+  .badge-blue  {background:rgba(96,165,250,.12);color:var(--blue)  ;border:1px solid rgba(96,165,250,.25)}
+  .badge-teal  {background:rgba(45,212,191,.12);color:var(--teal)  ;border:1px solid rgba(45,212,191,.25)}
+  .badge-green {background:rgba(74,222,128,.12);color:var(--green) ;border:1px solid rgba(74,222,128,.25)}
+  .badge-amber {background:rgba(251,191,36,.12) ;color:var(--amber) ;border:1px solid rgba(251,191,36,.25)}
+  .badge-violet{background:rgba(167,139,250,.12);color:var(--violet);border:1px solid rgba(167,139,250,.25)}
+  .badge-rose  {background:rgba(251,113,133,.12);color:var(--rose)  ;border:1px solid rgba(251,113,133,.25)}
+  .card-title{font-size:1.02rem;font-weight:700;color:#fff;margin-bottom:.55rem;line-height:1.4}
+  .card-body{font-size:.88rem;color:var(--text-muted);line-height:1.75}
+  .card-body strong{color:var(--text)}
+  .card-body code{font-family:monospace;font-size:.82rem;background:rgba(255,255,255,.07);padding:.05rem .3rem;border-radius:.25rem}
+
+  /* ── SPEC ROW ── */
+  .spec-row{display:flex;flex-wrap:wrap;gap:.4rem .75rem;margin-top:.9rem}
+  .spec-chip{font-size:.72rem;font-weight:600;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:.3rem;padding:.15rem .5rem;color:var(--text-muted)}
+  .spec-chip span{color:var(--text)}
+
+  /* ── PROJECT CARD ── */
+  .proj-card{background:var(--bg-card);border:1px solid var(--border);border-radius:.9rem;padding:1.35rem 1.4rem}
+  .proj-card:hover{border-color:rgba(45,212,191,.3)}
+  .proj-step{display:flex;gap:.6rem;margin-top:.65rem;flex-wrap:wrap}
+  .step{font-size:.72rem;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:.3rem;padding:.15rem .5rem;color:var(--text-muted)}
+  .step strong{color:var(--teal)}
+  .cost-row{display:flex;align-items:center;gap:.5rem;margin-top:.75rem;font-size:.8rem;color:var(--text-muted)}
+  .cost-badge{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);color:var(--green);border-radius:999px;padding:.15rem .65rem;font-weight:700;font-size:.78rem}
+
+  /* ── SENSOR CARD ── */
+  .sensor-card{background:var(--bg-card);border:1px solid var(--border);border-radius:.9rem;padding:1.2rem 1.25rem}
+  .sensor-name{font-size:1rem;font-weight:700;color:#fff;margin-bottom:.25rem}
+  .sensor-maker{font-size:.75rem;color:var(--text-muted);margin-bottom:.55rem}
+  .sensor-desc{font-size:.84rem;color:var(--text-muted);line-height:1.7}
+  .sensor-desc strong{color:var(--text)}
+  .sensor-tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.75rem}
+  .tag{font-size:.68rem;font-weight:600;border-radius:.25rem;padding:.12rem .45rem;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text-muted)}
+
+  /* ── RESOURCE ── */
+  .res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:1rem}
+  .res-card{background:var(--bg-card);border:1px solid var(--border);border-radius:.75rem;padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.35rem}
+  .res-card:hover{border-color:rgba(251,191,36,.3)}
+  .res-type{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted)}
+  .res-name{font-size:.92rem;font-weight:700;color:#fff}
+  .res-desc{font-size:.8rem;color:var(--text-muted);line-height:1.6;flex:1}
+  .res-link{font-size:.78rem;color:var(--blue);text-decoration:none;word-break:break-all}
+  .res-link:hover{text-decoration:underline}
+
+  /* ── HIGHLIGHT BAR ── */
+  .highlight-bar{background:linear-gradient(90deg,rgba(45,212,191,.08),rgba(96,165,250,.08));border-left:3px solid var(--teal);border-radius:0 .5rem .5rem 0;padding:.75rem 1rem;margin-top:.9rem;font-size:.84rem;color:var(--text-muted);line-height:1.7}
+  .highlight-bar strong{color:var(--text)}
+
+  /* ── FOOTER ── */
+  footer{text-align:center;padding:2rem 1rem 3rem;border-top:1px solid var(--border);color:var(--text-muted);font-size:.8rem;line-height:2}
+  footer a{color:var(--blue);text-decoration:none}
+
+  @media(max-width:600px){
+    .header-meta{gap:.5rem}
+    main{padding:1.5rem 1rem}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-eyebrow">Daily IoT Intelligence · 9 สิงหาคม 2026</div>
+    <h1 class="header-title">ESP32 &amp; <span>Sensor</span> Innovations</h1>
+    <p style="font-size:.9rem;color:var(--text-muted);margin-top:.4rem">วันนี้โฟกัสที่ Thread/Matter ด้วย ESP32-C6, Health Monitoring, Water Quality และ Solar IoT Node</p>
+    <div class="header-meta">
+      <span class="pill">🔋 4 นวัตกรรม</span>
+      <span class="pill">🔨 4 โปรเจกต์</span>
+      <span class="pill">🔬 6 Sensors</span>
+      <span class="pill">📚 6 Resources</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ════════════════════════════════════════════
+       ① นวัตกรรมและอัปเดตล่าสุด
+  ════════════════════════════════════════════ -->
+  <section id="innovations">
+    <div class="sec-hdr">
+      <div class="sec-icon icon-blue">🚀</div>
+      <div class="sec-label">
+        <div class="sec-title">นวัตกรรมและอัปเดตล่าสุด</div>
+        <div class="sec-sub">Thread / Matter / Solar / Health AI — สิ่งที่น่าจับตาสัปดาห์นี้</div>
+      </div>
+      <div class="sec-count">4 รายการ</div>
+    </div>
+
+    <div class="grid-2">
+
+      <!-- Card 1: ESP32-C6 Thread Border Router -->
+      <div class="card">
+        <span class="card-badge badge-blue">ESP32-C6 · Thread/Matter</span>
+        <div class="card-title">ESP32-C6 กลายเป็น Thread Border Router แบบ Single-Chip ราคา $5</div>
+        <div class="card-body">
+          ชุมชน Home Assistant และนักพัฒนา Maker ค้นพบว่า <strong>ESP32-C6</strong> ซึ่งมี 3 วิทยุในชิปเดียว (Wi-Fi 6, BLE 5.3, IEEE 802.15.4) สามารถทำงานเป็น <strong>Thread Border Router</strong> แบบ standalone ได้โดยตรงผ่าน ESP-IDF v5.4.1 โดยไม่ต้องใช้ OTBR add-on แยก ระบบจะ expose REST API บนพอร์ต 8080 ให้ Home Assistant ค้นพบและเชื่อมต่อกับ Matter over Thread devices ในบ้านได้ทันที
+          <div class="highlight-bar">
+            <strong>ข้อดีหลัก:</strong> ต้นทุนต่ำมาก (ESP32-C6 ราคาประมาณ $3–5), ใช้ไฟน้อย (RISC-V single-core 160 MHz + LP core 20 MHz), เหมาะทำ border router ที่เปิดตลอด 24/7 โดยไม่เปลือง power — ดีกว่าใช้ Raspberry Pi มาก
+          </div>
+          <div class="spec-row">
+            <div class="spec-chip">Wi-Fi 6 <span>802.11ax</span></div>
+            <div class="spec-chip">Thread <span>1.3</span></div>
+            <div class="spec-chip">Zigbee <span>3.0</span></div>
+            <div class="spec-chip">Matter <span>over Thread</span></div>
+            <div class="spec-chip">BLE <span>5.3</span></div>
+            <div class="spec-chip">RISC-V <span>160 MHz</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: SN1 Solar Node -->
+      <div class="card">
+        <span class="card-badge badge-amber">Solar IoT · ESP32-C3</span>
+        <div class="card-title">SN1 Solar Node — บอร์ด ESP32-C3 พร้อม Solar + IP67 สำหรับงาน Off-Grid</div>
+        <div class="card-body">
+          <strong>SN1 Solar Node</strong> คือบอร์ดพัฒนาแบบ all-in-one สำหรับโปรเจกต์ IoT นอกอาคาร ตัวกล่องทำจากพลาสติก IP67 กันน้ำ/กันฝุ่น มีแผง Solar Cell ขนาดเล็กติดอยู่บนฝา รองรับแบตเตอรี่ 18650 และชาร์จอัตโนมัติผ่าน charging IC ในตัว ใช้ ESPHome เป็น firmware หลัก ทำให้ integrate กับ Home Assistant ได้ทันทีโดยไม่ต้องเขียนโค้ด
+          <div class="highlight-bar">
+            ด้วย deep sleep ที่ดึงกระแสเพียง <strong>5–10µA</strong> บวกกับ Solar recharge — node หนึ่งตัวสามารถทำงานได้ <strong>นานหลายเดือนถึงปี</strong> โดยไม่ต้องชาร์จ เหมาะสำหรับ soil moisture monitoring ในไร่นา, rainfall gauge, air quality ริมถนน
+          </div>
+          <div class="spec-row">
+            <div class="spec-chip">ESP32-C3 <span>RISC-V</span></div>
+            <div class="spec-chip">IP67 <span>enclosure</span></div>
+            <div class="spec-chip">Solar <span>charging</span></div>
+            <div class="spec-chip">18650 <span>battery</span></div>
+            <div class="spec-chip">ESPHome <span>ready</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: ESPHome 2026 -->
+      <div class="card">
+        <span class="card-badge badge-teal">ESPHome 2026 · Performance</span>
+        <div class="card-title">ESPHome 2026 — Compile เร็วขึ้น 36%, Flash น้อยลง 44%, RAM ลด 50%</div>
+        <div class="card-body">
+          ESPHome เวอร์ชันปี 2026 มีการปรับปรุงด้าน performance อย่างมีนัยสำคัญ: <strong>compilation เร็วขึ้น 36%</strong>, binary size ลดลง <strong>44%</strong>, และ static RAM usage ลดลง <strong>50%</strong> ทำให้สามารถใช้งานบน ESP32 รุ่นเก่าและ ESP8266 ที่มี memory จำกัดได้ดียิ่งขึ้น นอกจากนี้ <strong>esp32_ble_tracker</strong> loop ใช้ CPU น้อยลงถึง <strong>85%</strong> ด้วย state change tracking — ช่วยลดการตื่นนอนโดยไม่จำเป็นใน deep sleep applications
+          <div class="highlight-bar">
+            <strong>ผลกระทบจริง:</strong> โปรเจกต์ที่ต้องการ BLE scanning + Wi-Fi พร้อมกัน สามารถทำงานได้นานขึ้นบนแบตเตอรี่ เพราะ CPU ไม่ต้องทำงานหนักขนาดเดิม — เหมาะกับ battery-powered BLE gateway
+          </div>
+          <div class="spec-row">
+            <div class="spec-chip">Build time <span>-36%</span></div>
+            <div class="spec-chip">Flash <span>-44%</span></div>
+            <div class="spec-chip">RAM <span>-50%</span></div>
+            <div class="spec-chip">BLE CPU <span>-85%</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Sensor Fusion TinyML -->
+      <div class="card">
+        <span class="card-badge badge-violet">TinyML · Sensor Fusion</span>
+        <div class="card-title">ESP32-S3 + TinyML Multi-Sensor Fusion — AI ตัดสินใจจาก 5 Sensors พร้อมกัน</div>
+        <div class="card-body">
+          โปรเจกต์ล่าสุดบน ESP32-S3 แสดงให้เห็นว่า TensorFlow Lite Micro (TFLM) รองรับ <strong>multimodal sensor fusion</strong> โดยรับข้อมูลจาก microphone, light sensor, temperature, humidity, และ PIR พร้อมกัน แล้วให้ model ตัดสินใจว่าห้องอยู่ในสถานะ "occupied/noisy/secure" โดย dual-core ของ ESP32-S3 แบ่งงาน: <strong>core 0</strong> เก็บข้อมูล sensor, <strong>core 1</strong> รัน inference — latency รวมอยู่ที่ 40–60ms
+          <div class="highlight-bar">
+            ตัวอย่างที่น่าสนใจ: RC car ไร้คนขับแบบ bare-metal ใช้ <strong>INT8 MobileNetV2</strong> บน ESP32-S3 ผ่าน FreeRTOS ทำ real-time inference บน camera + IMU sensor fusion ได้ที่ 40ms โดยไม่ต้องพึ่ง cloud เลย
+          </div>
+          <div class="spec-row">
+            <div class="spec-chip">TFLM <span>inference</span></div>
+            <div class="spec-chip">INT8 <span>quantized</span></div>
+            <div class="spec-chip">Dual-core <span>FreeRTOS</span></div>
+            <div class="spec-chip">40–60ms <span>latency</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════
+       ② ไอเดียโปรเจกต์น่าสร้าง
+  ════════════════════════════════════════════ -->
+  <section id="projects">
+    <div class="sec-hdr">
+      <div class="sec-icon icon-teal">🔨</div>
+      <div class="sec-label">
+        <div class="sec-title">ไอเดียโปรเจกต์น่าสร้าง</div>
+        <div class="sec-sub">แนวคิดโปรเจกต์ทำได้จริง — ไม่ซ้ำกับสัปดาห์ที่ผ่านมา</div>
+      </div>
+      <div class="sec-count">4 ไอเดีย</div>
+    </div>
+
+    <div class="grid-2">
+
+      <!-- Project 1 -->
+      <div class="proj-card">
+        <span class="card-badge badge-blue">Home Automation · Thread</span>
+        <div class="card-title">DIY Thread Border Router ด้วย ESP32-C6 เชื่อม Matter กับ Home Assistant</div>
+        <div class="card-body">
+          ใช้ <strong>ESP32-C6-DevKitC-1</strong> (ราคาประมาณ 150 บาท) flash firmware border router ผ่าน ESP-IDF v5.4.1 บอร์ดจะทำหน้าที่เป็นตัวกลางระหว่าง Thread mesh network กับ Wi-Fi router ทำให้ Matter-over-Thread devices เช่น smart bulb, sensor, lock สามารถ join เครือข่าย Home Assistant ได้โดยตรง Home Assistant ค้นพบ router ผ่าน OTBR REST API พอร์ต 8080 อัตโนมัติ ทั้งหมดทำงานในบ้าน ไม่พึ่ง cloud
+        </div>
+        <div class="proj-step">
+          <div class="step"><strong>1.</strong> ซื้อ ESP32-C6-DevKitC-1</div>
+          <div class="step"><strong>2.</strong> ติดตั้ง ESP-IDF v5.4.1</div>
+          <div class="step"><strong>3.</strong> Flash thread_border_router firmware</div>
+          <div class="step"><strong>4.</strong> เปิด Home Assistant → Thread Integration</div>
+          <div class="step"><strong>5.</strong> Pair Matter devices</div>
+        </div>
+        <div class="cost-row">
+          ต้นทุนประมาณ: <span class="cost-badge">~150–250 บาท</span>
+          <span style="color:var(--text-muted)">· ระดับ: ปานกลาง · เวลา: 2–3 ชั่วโมง</span>
+        </div>
+      </div>
+
+      <!-- Project 2 -->
+      <div class="proj-card">
+        <span class="card-badge badge-violet">Health · Wearable</span>
+        <div class="card-title">Wearable Health Monitor — ECG + SpO2 + BPM ส่งข้อมูลผ่าน BLE Dashboard</div>
+        <div class="card-body">
+          รวม <strong>AD8232</strong> (ECG single-lead) และ <strong>MAX30102</strong> (SpO2 + Heart Rate) เข้ากับ ESP32 ทำ wearable patch สำหรับ monitor สุขภาพแบบ real-time MAX30102 วัด SpO2 ผ่าน I2C ดึงกระแสเพียง 600µA ขณะวัด / 0.7µA ขณะ standby — เหมาะมากสำหรับใช้แบตเตอรี่ coin cell ส่วน AD8232 วัดคลื่นไฟฟ้าหัวใจแบบ analog แล้ว ESP32 ประมวลผล HR variability และส่งผ่าน BLE Notify ไปแสดงบน smartphone app หรือ web dashboard ผ่าน Wi-Fi
+        </div>
+        <div class="proj-step">
+          <div class="step"><strong>Sensor 1:</strong> MAX30102 (I2C)</div>
+          <div class="step"><strong>Sensor 2:</strong> AD8232 (Analog)</div>
+          <div class="step"><strong>Comm:</strong> BLE GATT Notification</div>
+          <div class="step"><strong>UI:</strong> Web Dashboard / App</div>
+        </div>
+        <div class="cost-row">
+          ต้นทุนประมาณ: <span class="cost-badge">~400–600 บาท</span>
+          <span style="color:var(--text-muted)">· ระดับ: ปานกลาง-ยาก · เวลา: 1–2 วัน</span>
+        </div>
+      </div>
+
+      <!-- Project 3 -->
+      <div class="proj-card">
+        <span class="card-badge badge-teal">Water Quality · IoT</span>
+        <div class="card-title">ระบบตรวจคุณภาพน้ำแบบ Multi-Parameter — TDS + Turbidity + pH + Temp</div>
+        <div class="card-body">
+          ตั้ง sensor array ตรวจน้ำ 4 พารามิเตอร์พร้อมกัน: <strong>TDS sensor</strong> วัด Total Dissolved Solids (ค่า ppm), <strong>Turbidity sensor</strong> วัดความขุ่น, <strong>pH probe</strong>, และ <strong>DS18B20</strong> วัดอุณหภูมิน้ำ ESP32 เก็บข้อมูลส่งขึ้น Firebase / MQTT broker ทุก 5 นาที แสดงบน dashboard อาจเพิ่ม <strong>alert</strong> ผ่าน LINE Notify เมื่อค่าเกิน threshold เหมาะสำหรับ monitor น้ำประปา, บ่อปลา, pool, หรือน้ำในไร่
+        </div>
+        <div class="proj-step">
+          <div class="step"><strong>TDS:</strong> GPIO34 Analog</div>
+          <div class="step"><strong>Turbidity:</strong> Analog/GPIO</div>
+          <div class="step"><strong>pH:</strong> pH meter module</div>
+          <div class="step"><strong>Temp:</strong> DS18B20 OneWire</div>
+          <div class="step"><strong>Cloud:</strong> Firebase / MQTT</div>
+        </div>
+        <div class="cost-row">
+          ต้นทุนประมาณ: <span class="cost-badge">~600–900 บาท</span>
+          <span style="color:var(--text-muted)">· ระดับ: ปานกลาง · เวลา: 1 วัน</span>
+        </div>
+      </div>
+
+      <!-- Project 4 -->
+      <div class="proj-card">
+        <span class="card-badge badge-amber">Solar · Off-Grid</span>
+        <div class="card-title">Solar IoT Sensor Node แบบ Off-Grid — ทำงานได้นานหลายเดือนโดยไม่ต้องชาร์จ</div>
+        <div class="card-body">
+          ออกแบบ sensor node สำหรับวาง outdoor ระยะไกล: ใช้ <strong>ESP32 + โซล่าเซล 5W + TP4056 + แบตเตอรี่ 18650</strong> กล่อง IP65 กันน้ำ เพิ่ม BME280 วัด temp/humidity/pressure และ LDR วัดแสง ใช้ deep sleep 5µA ตื่นทุก 5–15 นาทีเพื่อวัดและส่งข้อมูลผ่าน Wi-Fi/MQTT แล้วกลับ deep sleep ทันที คำนวณ power budget: ถ้าตื่น 3 วินาที ดึง 70mA, deep sleep ดึง 10µA — แบต 2000mAh จะอยู่ได้ >6 เดือน ถ้าไม่มีแสงอาทิตย์เลย
+        </div>
+        <div class="proj-step">
+          <div class="step"><strong>Solar:</strong> 5W panel</div>
+          <div class="step"><strong>Charger:</strong> TP4056 + protection</div>
+          <div class="step"><strong>Battery:</strong> 18650 2000mAh</div>
+          <div class="step"><strong>Sleep:</strong> &lt;10µA deep sleep</div>
+          <div class="step"><strong>Enclosure:</strong> IP65 ABS box</div>
+        </div>
+        <div class="cost-row">
+          ต้นทุนประมาณ: <span class="cost-badge">~350–550 บาท</span>
+          <span style="color:var(--text-muted)">· ระดับ: เริ่มต้น-ปานกลาง · เวลา: ครึ่งวัน</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════
+       ③ Sensors น่าสนใจ
+  ════════════════════════════════════════════ -->
+  <section id="sensors">
+    <div class="sec-hdr">
+      <div class="sec-icon icon-green">🔬</div>
+      <div class="sec-label">
+        <div class="sec-title">Sensors น่าสนใจ</div>
+        <div class="sec-sub">อุปกรณ์วัดที่ควรรู้จักสำหรับ Health, Water Quality และ Power Projects</div>
+      </div>
+      <div class="sec-count">6 ตัว</div>
+    </div>
+
+    <div class="grid-3">
+
+      <div class="sensor-card">
+        <div class="sensor-name">MAX30102</div>
+        <div class="sensor-maker">Maxim Integrated · Pulse Oximeter + Heart Rate</div>
+        <div class="sensor-desc">
+          วัด <strong>SpO2 (ออกซิเจนในเลือด)</strong> และ <strong>Heart Rate (BPM)</strong> โดยใช้ LED แดง (660nm) + LED IR (880nm) ฉายผ่านผิวหนัง photodetector ตรวจ pulse ในเลือด ดึงกระแสเพียง <strong>600µA</strong> ขณะทำงาน / <strong>0.7µA</strong> standby — เหมาะสำหรับ wearable มีขนาดเล็กมาก (5.6×3.3mm) เชื่อมต่อผ่าน I2C มี built-in ambient light rejection
+        </div>
+        <div class="sensor-tags">
+          <span class="tag">I2C</span><span class="tag">SpO2</span><span class="tag">BPM</span><span class="tag">600µA</span><span class="tag">Wearable</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">AD8232</div>
+        <div class="sensor-maker">Analog Devices · ECG Single-Lead Monitor</div>
+        <div class="sensor-desc">
+          IC สำหรับวัด <strong>คลื่นไฟฟ้าหัวใจ (ECG)</strong> แบบ single-lead โดยขยาย bioelectric signal ที่อ่อนมาก (mV) ให้อยู่ในช่วงที่ ADC ของ ESP32 อ่านได้ มี built-in right leg drive (RLD) และ lead-off detection แบบ active ทำให้ signal สะอาด ใช้ในเครื่อง fitness tracker, patch ECG, และ research prototype
+        </div>
+        <div class="sensor-tags">
+          <span class="tag">Analog Output</span><span class="tag">ECG</span><span class="tag">Heart Rate</span><span class="tag">Lead-off detect</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">TDS Sensor Module</div>
+        <div class="sensor-maker">Generic / DFRobot · Total Dissolved Solids</div>
+        <div class="sensor-desc">
+          วัด <strong>Total Dissolved Solids</strong> ในน้ำ แสดงผลเป็น ppm (mg/L) โดยวัดค่าการนำไฟฟ้า (conductivity) ของน้ำผ่าน electrode 2 ขา เชื่อมต่อ analog output เข้า GPIO34 ของ ESP32 ใช้ทำ filter monitor, fish tank, hydroponics, water purifier quality check — ราคาถูกมาก (ประมาณ 60–100 บาท) มี probe แบบถอดแยกล้างได้
+        </div>
+        <div class="sensor-tags">
+          <span class="tag">Analog</span><span class="tag">ppm</span><span class="tag">Water Quality</span><span class="tag">~60 บาท</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">SEN0189 Turbidity</div>
+        <div class="sensor-maker">DFRobot · ความขุ่นน้ำ</div>
+        <div class="sensor-desc">
+          วัด <strong>ความขุ่นของน้ำ</strong> โดยส่งแสง IR ผ่านตัวอย่างน้ำ แล้ววัดแสงที่กระเจิง (backscatter) ค่าที่ได้บ่งบอกปริมาณ suspended particle ใช้งานผ่าน analog output (0–4.5V) หรือ digital output (NTU threshold) มี 2 mode: analog mode ให้ค่า NTU แบบ continuous, digital mode ใช้ set threshold เตือน เหมาะสำหรับ water quality monitoring, river monitoring, sewage treatment
+        </div>
+        <div class="sensor-tags">
+          <span class="tag">Analog / Digital</span><span class="tag">NTU</span><span class="tag">IR Scatter</span><span class="tag">Water</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">INA226</div>
+        <div class="sensor-maker">Texas Instruments · Power Monitor</div>
+        <div class="sensor-desc">
+          วัด <strong>แรงดัน, กระแส, และกำลังไฟฟ้า</strong> ผ่าน I2C ด้วยความแม่นยำสูง 16-bit resolution ใช้ shunt resistor ขนาดเล็กวัดกระแส ช่วงวัดถึง 36V / กระแสตามขนาด shunt เหมาะสำหรับ monitor power consumption ของ solar system, battery, หรือ DC load ใน IoT node — บอกได้ว่า ESP32 ในโหมดต่างๆ กิน current เท่าไหร่จริงๆ
+        </div>
+        <div class="sensor-tags">
+          <span class="tag">I2C</span><span class="tag">16-bit</span><span class="tag">Voltage</span><span class="tag">Current</span><span class="tag">Power</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">DS18B20</div>
+        <div class="sensor-maker">Maxim Integrated · Digital Temperature</div>
+        <div class="sensor-desc">
+          เซ็นเซอร์วัดอุณหภูมิ digital ยอดนิยมสำหรับงาน <strong>วัดอุณหภูมิน้ำ/ดิน</strong> ใช้ OneWire protocol สื่อสารผ่าน data line เพียง 1 เส้น สามารถต่อแบบ parasitic power (ไม่ต้อง VCC) สาย 1 เส้นเลี้ยงได้หลายตัวพร้อมกัน ทนน้ำ มี housing สแตนเลสทรงกระบอก (TO-92, probe) วัดได้ -55°C ถึง +125°C ความแม่นยำ ±0.5°C — ราคาต่ำมาก ประมาณ 20–30 บาท
+        </div>
+        <div class="sensor-tags">
+          <span class="tag">OneWire</span><span class="tag">Waterproof</span><span class="tag">±0.5°C</span><span class="tag">Parasitic power</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════
+       ④ แหล่งข้อมูลและลิงก์
+  ════════════════════════════════════════════ -->
+  <section id="resources">
+    <div class="sec-hdr">
+      <div class="sec-icon icon-amber">📚</div>
+      <div class="sec-label">
+        <div class="sec-title">แหล่งข้อมูลและลิงก์</div>
+        <div class="sec-sub">Libraries, Repos, Tutorials ที่อ้างอิงในวันนี้</div>
+      </div>
+      <div class="sec-count">6 รายการ</div>
+    </div>
+
+    <div class="res-grid">
+
+      <div class="res-card">
+        <div class="res-type">GitHub · Thread Border Router</div>
+        <div class="res-name">esp32-c6-native-thread-border-router</div>
+        <div class="res-desc">คู่มือและ firmware สำหรับทำ ESP32-C6 เป็น standalone Thread Border Router แบบ single-chip รองรับ ESP-IDF v5.4.1 มี mesh extender, otbr-proxy, matter.js setup</div>
+        <a class="res-link" href="https://github.com/techo35/esp32-c6-native-thread-border-router" target="_blank" rel="noopener">github.com/techo35/esp32-c6-native-thread-border-router</a>
+      </div>
+
+      <div class="res-card">
+        <div class="res-type">GitHub · Thread Repeater</div>
+        <div class="res-name">esp32-thread-repeater</div>
+        <div class="res-desc">โปรเจกต์ ESP32-C6 Matter over Thread Router/Repeater ใช้ขยาย coverage ของ Thread mesh network ในบ้านโดยไม่ต้องซื้ออุปกรณ์เพิ่ม</div>
+        <a class="res-link" href="https://github.com/attaxia/esp32-thread-repeater" target="_blank" rel="noopener">github.com/attaxia/esp32-thread-repeater</a>
+      </div>
+
+      <div class="res-card">
+        <div class="res-type">Library · BLE Mesh</div>
+        <div class="res-name">painlessMesh</div>
+        <div class="res-desc">Library สำหรับสร้าง WiFi Mesh network ระหว่าง ESP32/ESP8266 ใช้ JSON messaging, sync time ข้ามทุก node — ไม่ต้องมี router เหมาะ sensor network กระจายตัว</div>
+        <a class="res-link" href="https://docs.arduino.cc/libraries/painless-mesh/" target="_blank" rel="noopener">docs.arduino.cc/libraries/painless-mesh</a>
+      </div>
+
+      <div class="res-card">
+        <div class="res-type">Project · BLE Gateway</div>
+        <div class="res-name">OpenMQTTGateway</div>
+        <div class="res-desc">Gateway ที่ใช้ ESP32 scan BLE sensors รอบข้าง (Xiaomi, Govee, SwitchBot ฯลฯ) แล้วส่งข้อมูลผ่าน MQTT ไป Home Assistant รองรับอุปกรณ์ BLE หลายสิบชนิดผ่าน Theengs Decoder</div>
+        <a class="res-link" href="https://docs.openmqttgateway.com/" target="_blank" rel="noopener">docs.openmqttgateway.com</a>
+      </div>
+
+      <div class="res-card">
+        <div class="res-type">Tutorial · Water Quality</div>
+        <div class="res-name">ESP32 TDS Sensor Guide</div>
+        <div class="res-desc">คู่มือ step-by-step การต่อ TDS sensor กับ ESP32 พร้อม code ตัวอย่าง วิธีอ่านค่า ppm, calibration, และส่งข้อมูลขึ้น MQTT/Firebase จาก Random Nerd Tutorials</div>
+        <a class="res-link" href="https://randomnerdtutorials.com/esp32-tds-water-quality-sensor/" target="_blank" rel="noopener">randomnerdtutorials.com/esp32-tds-water-quality-sensor</a>
+      </div>
+
+      <div class="res-card">
+        <div class="res-type">Tutorial · Edge AI</div>
+        <div class="res-name">TensorFlow Lite Micro on ESP32-S3</div>
+        <div class="res-desc">คู่มือการ deploy TensorFlow Lite Micro บน ESP32-S3 สำหรับงาน Wake Word detection และ sensor fusion inference ครอบคลุม INT8 quantization, model conversion, FreeRTOS dual-core</div>
+        <a class="res-link" href="https://zediot.com/blog/esp32-s3-tensorflow-lite-micro/" target="_blank" rel="noopener">zediot.com/blog/esp32-s3-tensorflow-lite-micro</a>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div>สร้างเมื่อ: 9 สิงหาคม 2026 · โดย AI researcher อัตโนมัติ</div>
+  <div style="margin-top:.3rem">
+    แหล่งอ้างอิง:
+    <a href="https://github.com/techo35/esp32-c6-native-thread-border-router" target="_blank" rel="noopener">ESP32-C6 Thread Border Router</a> ·
+    <a href="https://community.home-assistant.io/t/diy-standalone-thread-border-router-using-esp32-c6-and-esp-idf/995171" target="_blank" rel="noopener">HA Community</a> ·
+    <a href="https://docs.openmqttgateway.com/" target="_blank" rel="noopener">OpenMQTTGateway</a> ·
+    <a href="https://docs.arduino.cc/libraries/painless-mesh/" target="_blank" rel="noopener">painlessMesh</a>
+  </div>
+  <div style="margin-top:.3rem;color:#475569;font-size:.72rem">ESP32 &amp; IoT Daily Research · #esp32 #iot #sensors #matter #thread</div>
+</footer>
+
+</body>
+</html>
