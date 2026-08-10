@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations — 10 สิงหาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0f1e;
+    --bg2: #0f172a;
+    --bg3: #1e293b;
+    --card: #162032;
+    --border: #1e3a5f;
+    --accent1: #38bdf8;
+    --accent2: #818cf8;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    border-bottom: 1px solid #312e81;
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 50%, rgba(56,189,248,.08) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 80% 50%, rgba(129,140,248,.08) 0%, transparent 70%);
+  }
+  header .badge {
+    display: inline-block;
+    background: rgba(56,189,248,.15);
+    border: 1px solid rgba(56,189,248,.35);
+    color: var(--accent1);
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    padding: .25rem .9rem;
+    border-radius: 9999px;
+    margin-bottom: 1.1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.5rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #38bdf8, #818cf8, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: .6rem;
+    position: relative;
+  }
+  header .subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 1.4rem;
+  }
+  .stat-row {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 8px;
+    padding: .4rem 1rem;
+    font-size: .82rem;
+    color: var(--text-muted);
+  }
+  .stat-chip span { color: var(--text); font-weight: 700; }
+
+  /* ─── LAYOUT ─── */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 4rem;
+  }
+
+  /* ─── SECTION HEADER ─── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    margin: 2.8rem 0 1.4rem;
+  }
+  .section-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .icon-blue  { background: rgba(56,189,248,.15);  border: 1px solid rgba(56,189,248,.25); }
+  .icon-purple{ background: rgba(129,140,248,.15); border: 1px solid rgba(129,140,248,.25); }
+  .icon-green { background: rgba(52,211,153,.15);  border: 1px solid rgba(52,211,153,.25); }
+  .icon-orange{ background: rgba(251,146,60,.15);  border: 1px solid rgba(251,146,60,.25); }
+  .section-header h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .section-header p {
+    font-size: .82rem;
+    color: var(--text-muted);
+    margin-top: .1rem;
+  }
+
+  /* ─── GRID ─── */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.1rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1.1rem; }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.35rem 1.4rem;
+    transition: border-color .2s, transform .2s;
+  }
+  .card:hover {
+    border-color: rgba(56,189,248,.45);
+    transform: translateY(-2px);
+  }
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    margin-bottom: .75rem;
+  }
+  .card-emoji {
+    font-size: 1.55rem;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: .1rem;
+  }
+  .card-title {
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: .25rem;
+    line-height: 1.35;
+  }
+  .card-sub {
+    font-size: .78rem;
+    color: var(--text-muted);
+  }
+  .card-body {
+    font-size: .875rem;
+    color: var(--text-muted);
+    line-height: 1.75;
+  }
+  .card-body strong { color: var(--text); }
+
+  /* ─── TAG CHIPS ─── */
+  .tags {
+    display: flex; flex-wrap: wrap; gap: .4rem;
+    margin-top: .85rem;
+  }
+  .tag {
+    font-size: .72rem; font-weight: 600;
+    padding: .2rem .65rem;
+    border-radius: 9999px;
+  }
+  .tag-blue   { background: rgba(56,189,248,.12);  color: #7dd3fc; border: 1px solid rgba(56,189,248,.2); }
+  .tag-purple { background: rgba(129,140,248,.12); color: #a5b4fc; border: 1px solid rgba(129,140,248,.2); }
+  .tag-green  { background: rgba(52,211,153,.12);  color: #6ee7b7; border: 1px solid rgba(52,211,153,.2); }
+  .tag-orange { background: rgba(251,146,60,.12);  color: #fdba74; border: 1px solid rgba(251,146,60,.2); }
+  .tag-pink   { background: rgba(244,114,182,.12); color: #f9a8d4; border: 1px solid rgba(244,114,182,.2); }
+
+  /* ─── SPEC TABLE ─── */
+  .spec-table {
+    width: 100%; border-collapse: collapse;
+    font-size: .82rem; margin-top: .75rem;
+  }
+  .spec-table tr { border-bottom: 1px solid rgba(255,255,255,.05); }
+  .spec-table tr:last-child { border-bottom: none; }
+  .spec-table td { padding: .35rem .5rem; color: var(--text-muted); }
+  .spec-table td:first-child { color: var(--text-dim); width: 42%; }
+  .spec-table td:last-child { color: var(--text); font-weight: 600; }
+
+  /* ─── HIGHLIGHT CARD ─── */
+  .card-highlight {
+    background: linear-gradient(135deg, rgba(56,189,248,.08) 0%, rgba(129,140,248,.08) 100%);
+    border-color: rgba(56,189,248,.3);
+  }
+  .card-highlight:hover { border-color: rgba(56,189,248,.6); }
+
+  /* ─── COMPARE TABLE ─── */
+  .compare-wrap { overflow-x: auto; }
+  .compare-table {
+    width: 100%; border-collapse: collapse;
+    font-size: .83rem;
+  }
+  .compare-table th {
+    background: rgba(56,189,248,.1);
+    color: var(--accent1);
+    padding: .6rem .9rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-table td {
+    padding: .55rem .9rem;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    color: var(--text-muted);
+  }
+  .compare-table td:first-child { color: var(--text); font-weight: 600; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,.02); }
+  .badge-best {
+    display: inline-block;
+    background: rgba(52,211,153,.15);
+    color: #6ee7b7;
+    border: 1px solid rgba(52,211,153,.3);
+    font-size: .68rem; font-weight: 700;
+    padding: .1rem .45rem; border-radius: 4px;
+    margin-left: .4rem;
+  }
+
+  /* ─── RESOURCE CARDS ─── */
+  .res-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: .85rem; }
+  .res-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    display: flex; gap: .75rem; align-items: flex-start;
+    transition: border-color .2s;
+  }
+  .res-card:hover { border-color: rgba(56,189,248,.4); }
+  .res-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .res-title { font-size: .9rem; font-weight: 700; color: var(--text); margin-bottom: .2rem; }
+  .res-desc { font-size: .78rem; color: var(--text-muted); }
+  .res-link {
+    display: inline-block; margin-top: .4rem;
+    font-size: .75rem; color: var(--accent1); text-decoration: none;
+  }
+  .res-link:hover { text-decoration: underline; }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 2rem 0;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: .82rem;
+    line-height: 2;
+  }
+  footer strong { color: var(--text-muted); }
+
+  @media (max-width: 600px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .stat-row { gap: .75rem; }
+    header { padding: 2rem 1rem 1.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════════ -->
+<header>
+  <div class="badge">🔬 Daily ESP32 &amp; IoT Research</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">10 สิงหาคม 2026 · อัปเดตล่าสุดจากระบบ AI Research อัตโนมัติ</p>
+  <div class="stat-row">
+    <div class="stat-chip"><span>2</span> ชิปใหม่ CES 2026</div>
+    <div class="stat-chip"><span>3</span> ไอเดียโปรเจกต์</div>
+    <div class="stat-chip"><span>3</span> เซ็นเซอร์ mmWave</div>
+    <div class="stat-chip"><span>1</span> Framework Update</div>
+  </div>
+</header>
+
+<main>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 1: INNOVATIONS
+═══════════════════════════════════════════════════ -->
+<div class="section-header" id="innovations">
+  <div class="section-icon icon-blue">⚡</div>
+  <div>
+    <h2>นวัตกรรมและชิปใหม่</h2>
+    <p>ESP32-H21 และ ESP32-E22 — สองชิปใหม่จาก CES 2026 ที่เปลี่ยนเกม IoT</p>
+  </div>
+</div>
+
+<div class="grid-2">
+
+  <!-- ESP32-H21 -->
+  <div class="card card-highlight">
+    <div class="card-top">
+      <div class="card-emoji">🔋</div>
+      <div>
+        <div class="card-title">ESP32-H21 — Ultra-Low-Power Thread &amp; BLE 5 SoC</div>
+        <div class="card-sub">ประกาศที่ CES 2026 · อัปเกรดจาก H2</div>
+      </div>
+    </div>
+    <div class="card-body">
+      Espressif เปิดตัว <strong>ESP32-H21</strong> ในงาน CES 2026 ร่วมกับ ESP32-E22 โดย H21 เป็นชิป RISC-V 32-bit ประหยัดพลังงานสูงสุด เหมาะกับ Smart Home Sensor ที่ต้องทำงานหลายปีด้วยแบตก้อนเดียว
+      <br><br>
+      จุดเด่นหลักคือ <strong>on-chip DC-DC Converter</strong> ที่ลดกระแสไฟขณะ active ได้อย่างมีนัยสำคัญ รองรับโปรโตคอล <strong>Thread 1.4, Zigbee 3.0, Matter และ BLE 5.0</strong> ผ่านวิทยุ IEEE 802.15.4 ตัวเดียว — ไม่ต้องใช้ชิปแยก
+      <table class="spec-table">
+        <tr><td>CPU</td><td>RISC-V 32-bit, 96 MHz</td></tr>
+        <tr><td>RAM</td><td>320 KB SRAM + 128 KB ROM</td></tr>
+        <tr><td>GPIO</td><td>19 pins (compact form)</td></tr>
+        <tr><td>วิทยุ</td><td>802.15.4 + BLE 5.0</td></tr>
+        <tr><td>พิเศษ</td><td>On-chip DC-DC Converter</td></tr>
+        <tr><td>โปรโตคอล</td><td>Thread 1.4 / Zigbee 3.0 / Matter</td></tr>
+      </table>
+    </div>
+    <div class="tags">
+      <span class="tag tag-blue">Thread 1.4</span>
+      <span class="tag tag-purple">Zigbee 3.0</span>
+      <span class="tag tag-green">Matter</span>
+      <span class="tag tag-orange">Ultra-Low-Power</span>
+    </div>
+  </div>
+
+  <!-- ESP32-E22 -->
+  <div class="card card-highlight">
+    <div class="card-top">
+      <div class="card-emoji">📡</div>
+      <div>
+        <div class="card-title">ESP32-E22 — Wi-Fi 6E Tri-Band Co-Processor</div>
+        <div class="card-sub">ชิปแรกของ Espressif ที่รองรับ 2.4/5/6 GHz</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <strong>ESP32-E22</strong> คือก้าวกระโดดครั้งใหญ่ด้าน connectivity ใน ESP32 family — เป็น <strong>Tri-Band Wi-Fi 6E</strong> ตัวแรกของ Espressif รองรับทั้ง 2.4 GHz, 5 GHz และ <strong>6 GHz</strong> (Wi-Fi 6E) พร้อม 2×2 MIMO และ 160 MHz channels
+      <br><br>
+      ออกแบบเป็น <strong>Radio Co-Processor (RCP)</strong> เชื่อมต่อกับ host processor ผ่าน PCIe, USB หรือ SDIO รันโปรโตคอล stack ทั้งหมดในตัวเอง ลด load จาก host ได้มาก เหมาะกับ Industrial Gateway และ Edge Compute
+      <table class="spec-table">
+        <tr><td>CPU</td><td>Dual-Core RISC-V, 500 MHz</td></tr>
+        <tr><td>Wi-Fi</td><td>6E · 2.4/5/6 GHz · 2×2 MIMO</td></tr>
+        <tr><td>Bluetooth</td><td>6.0 (LE + BR/EDR)</td></tr>
+        <tr><td>Throughput</td><td>สูงสุด 2.4 Gbps</td></tr>
+        <tr><td>Interface</td><td>PCIe / USB / SDIO</td></tr>
+        <tr><td>สถานะ</td><td>Engineering Samples พร้อมแล้ว</td></tr>
+      </table>
+    </div>
+    <div class="tags">
+      <span class="tag tag-blue">Wi-Fi 6E</span>
+      <span class="tag tag-purple">Bluetooth 6.0</span>
+      <span class="tag tag-green">PCIe Interface</span>
+      <span class="tag tag-orange">2.4 Gbps</span>
+    </div>
+  </div>
+
+  <!-- ESPHome Framework Change -->
+  <div class="card">
+    <div class="card-top">
+      <div class="card-emoji">🔄</div>
+      <div>
+        <div class="card-title">ESPHome 2026.1 — ย้ายจาก Arduino เป็น ESP-IDF โดย Default</div>
+        <div class="card-sub">การเปลี่ยนแปลงสำคัญที่ส่งผลทั้ง ecosystem</div>
+      </div>
+    </div>
+    <div class="card-body">
+      ตั้งแต่ <strong>ESPHome 2026.1.0</strong> เป็นต้นไป framework เริ่มต้นสำหรับ ESP32 เปลี่ยนจาก <strong>Arduino เป็น ESP-IDF</strong> อย่างเป็นทางการ — เป็นการตัดสินใจสำคัญที่สะท้อนความสมบูรณ์ของ ESP-IDF
+      <br><br>
+      ข้อดีที่ผู้ใช้จะได้รับ: ลด Flash ใช้งาน, ลด RAM overhead, รองรับฟีเจอร์ใหม่อย่าง <strong>AI Acceleration, MIPI CSI/DSI</strong> บน ESP32-P4 ได้เต็มที่ และรองรับชิปรุ่นใหม่อย่าง ESP32-H21, ESP32-E22 ได้เร็วขึ้น
+    </div>
+    <div class="tags">
+      <span class="tag tag-blue">ESPHome 2026.1</span>
+      <span class="tag tag-purple">ESP-IDF v5.5</span>
+      <span class="tag tag-green">Arduino → IDF</span>
+    </div>
+  </div>
+
+  <!-- Arduino-ESP32 3.3.8 -->
+  <div class="card">
+    <div class="card-top">
+      <div class="card-emoji">🛠️</div>
+      <div>
+        <div class="card-title">Arduino-ESP32 v3.3.8 — ฐาน ESP-IDF v5.5.4</div>
+        <div class="card-sub">เสถียรภาพและความเข้ากันได้ระยะยาว</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <strong>Arduino Core ESP32 v3.3.8</strong> ปรับ ESP-IDF ฐานเป็น v5.5.4 — เวอร์ชัน LTS (Long-Term Support) ที่ได้รับการแก้ไขบัก security และ stability patch
+      <br><br>
+      สำหรับโปรเจกต์ใหม่ที่ต้องการ <strong>ความเสถียรระยะยาว</strong> ควรใช้ Arduino Core 3.3.x series นี้ เพราะ Espressif รับประกัน ABI compatibility และ patch ต่อเนื่อง ขณะที่ 3.4.x ยังอยู่ระหว่าง feature development
+    </div>
+    <div class="tags">
+      <span class="tag tag-orange">Arduino v3.3.8</span>
+      <span class="tag tag-blue">ESP-IDF v5.5.4</span>
+      <span class="tag tag-green">LTS</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 2: PROJECTS
+═══════════════════════════════════════════════════ -->
+<div class="section-header" id="projects">
+  <div class="section-icon icon-purple">💡</div>
+  <div>
+    <h2>ไอเดียโปรเจกต์น่าสนใจ</h2>
+    <p>จาก GitHub, Hackaday, Adafruit Blog และชุมชน ESP32 สัปดาห์นี้</p>
+  </div>
+</div>
+
+<div class="grid-2">
+
+  <!-- Basilisk II Mac Emulator -->
+  <div class="card">
+    <div class="card-top">
+      <div class="card-emoji">🍎</div>
+      <div>
+        <div class="card-title">รัน Mac OS 8.1 บน ESP32-P4 ด้วย BasiliskII</div>
+        <div class="card-sub">โปรเจกต์ไวรัลที่พิสูจน์พลัง ESP32-P4</div>
+      </div>
+    </div>
+    <div class="card-body">
+      นักพัฒนา <strong>amcchord</strong> ได้ port <strong>Basilisk II</strong> — emulator Macintosh 68k — มาบน <strong>ESP32-P4 / M5Stack Tab5</strong> ได้สำเร็จ สามารถรัน <strong>Mac OS 7.x ถึง 8.1</strong> บนหน้าจอ touch ขนาด 5 นิ้ว
+      <br><br>
+      ประสิทธิภาพเทียบเท่า <strong>Macintosh Quadra 610</strong> (25 MHz 68040) ได้ถึง 2-3 MIPS และ frame rate 15-24 FPS เพียงพอสำหรับงาน productivity บน OS เก่า โดยบอร์ดที่ใช้ราคาเพียง <strong>$60</strong>!
+      <br><br>
+      นอกจากนี้ยังรองรับ <strong>Waveshare ESP32-P4 10.1"</strong> สำหรับหน้าจอใหญ่ขึ้น
+    </div>
+    <div class="tags">
+      <span class="tag tag-blue">ESP32-P4</span>
+      <span class="tag tag-purple">M5Stack Tab5</span>
+      <span class="tag tag-orange">Mac Emulator</span>
+      <span class="tag tag-green">68040 CPU</span>
+    </div>
+  </div>
+
+  <!-- DIY Presence Sensor 25m -->
+  <div class="card">
+    <div class="card-top">
+      <div class="card-emoji">🎯</div>
+      <div>
+        <div class="card-title">DIY Presence Sensor 25 เมตร ด้วย DFRobot C4001 + ESPHome</div>
+        <div class="card-sub">แทน PIR ด้วย mmWave ที่แม่นยำกว่ามาก</div>
+      </div>
+    </div>
+    <div class="card-body">
+      แทนที่ PIR sensor ธรรมดาด้วย <strong>DFRobot C4001</strong> (24GHz FMCW mmWave) + ESP32 + ESPHome สำหรับตรวจจับการอยู่ในพื้นที่ได้ระยะ <strong>25 เมตร</strong> — แม้แต่การหายใจขณะนอนนิ่ง
+      <br><br>
+      <strong>ขั้นตอนสร้าง:</strong><br>
+      1. เชื่อม C4001 กับ ESP32 ผ่าน UART (หรือ I2C)<br>
+      2. configure ESPHome YAML ด้วย uart component<br>
+      3. ตั้ง detection zone และ threshold ผ่าน command protocol<br>
+      4. เชื่อมต่อ Home Assistant — ได้ presence sensor ที่ <strong>ไม่มี false trigger</strong>
+    </div>
+    <div class="tags">
+      <span class="tag tag-blue">mmWave 24GHz</span>
+      <span class="tag tag-green">ESPHome</span>
+      <span class="tag tag-orange">Home Assistant</span>
+      <span class="tag tag-purple">25m Range</span>
+    </div>
+  </div>
+
+  <!-- Multi-Target Tracking -->
+  <div class="card">
+    <div class="card-top">
+      <div class="card-emoji">👥</div>
+      <div>
+        <div class="card-title">ระบบติดตาม 5 คนพร้อมกันด้วย LD2461 + ESP32</div>
+        <div class="card-sub">Multi-Target Tracking พร้อม Trajectory Analysis</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <strong>HiLink LD2461</strong> เป็น mmWave radar 24GHz ที่มีความสามารถพิเศษ — แตกต่างจาก LD2410 ที่ track ได้แค่ 1 คน LD2461 ใช้ <strong>เสาอากาศ 2T4R (2 Transmit, 4 Receive)</strong> ทำให้ detect และ track ได้ <strong>5 เป้าหมายพร้อมกัน</strong>
+      <br><br>
+      <strong>Use case ที่น่าสนใจ:</strong><br>
+      • ระบบนับคนในห้องแบบ real-time<br>
+      • วิเคราะห์ Traffic flow ในอาคาร<br>
+      • ระบบ Smart Lighting ที่รู้ว่าใครอยู่ตรงไหน<br>
+      • Security system ที่แยก occupant ออกจากกัน
+    </div>
+    <div class="tags">
+      <span class="tag tag-blue">LD2461</span>
+      <span class="tag tag-purple">2T4R MIMO</span>
+      <span class="tag tag-green">5 Targets</span>
+      <span class="tag tag-orange">Trajectory</span>
+    </div>
+  </div>
+
+  <!-- ESP-VISION -->
+  <div class="card">
+    <div class="card-top">
+      <div class="card-emoji">👁️</div>
+      <div>
+        <div class="card-title">ESP-VISION — Framework กล้องและวิดีโอสำหรับ ESP32-P4/S3</div>
+        <div class="card-sub">API เดียวครบทุกอย่าง ตั้งแต่กล้องถึง Stream</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <strong>ESP-VISION</strong> เป็น framework unified สำหรับงาน camera, image processing และ video ที่ Espressif พัฒนาขึ้นโดยเฉพาะ รองรับ ESP32-P4, S3 และ S31
+      <br><br>
+      ครอบคลุมตั้งแต่ <strong>Camera Input → Image Processing → Display Output</strong> และ Video Encoding ในชุด API เดียว มี built-in algorithms สำหรับ color tracking, feature detection, QR code, และ barcode — ไม่ต้องพึ่ง library ภายนอก
+      <br><br>
+      รองรับ MIPI CSI (camera) และ MIPI DSI (display) บน ESP32-P4 เต็มรูปแบบ
+    </div>
+    <div class="tags">
+      <span class="tag tag-blue">ESP32-P4</span>
+      <span class="tag tag-purple">ESP32-S3</span>
+      <span class="tag tag-green">MIPI CSI/DSI</span>
+      <span class="tag tag-orange">Vision AI</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 3: SENSORS
+═══════════════════════════════════════════════════ -->
+<div class="section-header" id="sensors">
+  <div class="section-icon icon-green">📡</div>
+  <div>
+    <h2>mmWave Radar Sensors เปรียบเทียบ</h2>
+    <p>คู่มือเลือก HiLink / DFRobot mmWave สำหรับ ESP32 ปี 2026</p>
+  </div>
+</div>
+
+<!-- Compare Table -->
+<div class="card" style="margin-bottom: 1.1rem;">
+  <div class="card-body" style="margin-bottom: .85rem;">
+    <strong>เปรียบเทียบ mmWave Radar Sensors ยอดนิยมสำหรับ ESP32</strong> — ทั้งสามตัวเชื่อมต่อผ่าน UART ง่ายกับ ESPHome
+  </div>
+  <div class="compare-wrap">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>รุ่น</th>
+          <th>เป้าหมาย</th>
+          <th>ระยะ</th>
+          <th>เสาอากาศ</th>
+          <th>Interface</th>
+          <th>Use Case</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>HiLink LD2410</td>
+          <td>1 คน</td>
+          <td>6m</td>
+          <td>1T1R</td>
+          <td>UART + BLE</td>
+          <td>ห้องเล็ก, DIY พื้นฐาน</td>
+        </tr>
+        <tr>
+          <td>HiLink LD2450</td>
+          <td>3 คน</td>
+          <td>6m</td>
+          <td>1T2R</td>
+          <td>UART</td>
+          <td>ห้องนั่งเล่น, ติดตามตำแหน่ง</td>
+        </tr>
+        <tr>
+          <td>HiLink LD2461<span class="badge-best">NEW</span></td>
+          <td>5 คน</td>
+          <td>8m</td>
+          <td>2T4R</td>
+          <td>UART</td>
+          <td>ห้องประชุม, trajectory analysis</td>
+        </tr>
+        <tr>
+          <td>DFRobot C4001<span class="badge-best">BEST</span></td>
+          <td>1 คน</td>
+          <td>25m</td>
+          <td>FMCW</td>
+          <td>UART + I2C</td>
+          <td>โกดัง, ระยะไกล, outdoor</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="grid-3">
+
+  <!-- LD2461 Detail -->
+  <div class="card">
+    <div class="card-top">
+      <div class="card-emoji">🔭</div>
+      <div>
+        <div class="card-title">HiLink LD2461</div>
+        <div class="card-sub">Multi-Target 2T4R Radar</div>
+      </div>
+    </div>
+    <div class="card-body">
+      ตรวจจับ <strong>5 เป้าหมายพร้อมกัน</strong> พร้อมวัด range และ angle ของแต่ละคน ใช้ระบบเสาอากาศ 2 Transmit 4 Receive (2T4R) ที่ให้ข้อมูล spatial resolution สูง
+      <br><br>
+      เหมาะกับงานที่ต้องรู้ว่า <strong>"ใครอยู่ตรงไหน"</strong> ไม่ใช่แค่ "มีคนอยู่หรือเปล่า"
+    </div>
+    <div class="tags">
+      <span class="tag tag-blue">24 GHz</span>
+      <span class="tag tag-purple">5 Targets</span>
+      <span class="tag tag-green">8m Range</span>
+    </div>
+  </div>
+
+  <!-- DFRobot C4001 -->
+  <div class="card">
+    <div class="card-top">
+      <div class="card-emoji">📻</div>
+      <div>
+        <div class="card-title">DFRobot C4001</div>
+        <div class="card-sub">Long-Range FMCW mmWave</div>
+      </div>
+    </div>
+    <div class="card-body">
+      ใช้เทคโนโลยี <strong>FMCW (Frequency-Modulated Continuous Wave)</strong> ที่ detect ได้แม้แต่การหายใจ ระยะ presence detection <strong>16 เมตร</strong> และ motion detection <strong>25 เมตร</strong>
+      <br><br>
+      รองรับทั้ง <strong>UART และ I2C</strong> มี configurable detection zones ตั้งค่าผ่าน command protocol ไม่มี false trigger
+    </div>
+    <div class="tags">
+      <span class="tag tag-orange">25m Motion</span>
+      <span class="tag tag-blue">FMCW</span>
+      <span class="tag tag-green">I2C + UART</span>
+    </div>
+  </div>
+
+  <!-- LD2410 Entry Level -->
+  <div class="card">
+    <div class="card-top">
+      <div class="card-emoji">🏠</div>
+      <div>
+        <div class="card-title">HiLink LD2410 + LD2410B</div>
+        <div class="card-sub">จุดเริ่มต้น mmWave ราคาประหยัด</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <strong>LD2410</strong> ยังเป็นตัวเลือกยอดนิยมสำหรับผู้เริ่มต้น ราคาถูก เชื่อม ESPHome ได้ง่าย มี library ครบ ส่วน <strong>LD2410B</strong> เพิ่ม Bluetooth LE สำหรับ configure แบบ wireless ผ่าน phone app
+      <br><br>
+      รองรับใน <strong>ESPHome built-in component</strong> — ไม่ต้องเขียน custom UART parser แค่ใส่ YAML config ก็ใช้งานได้เลย
+    </div>
+    <div class="tags">
+      <span class="tag tag-green">ESPHome Native</span>
+      <span class="tag tag-purple">BLE Config</span>
+      <span class="tag tag-blue">Entry Level</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SECTION 4: RESOURCES
+═══════════════════════════════════════════════════ -->
+<div class="section-header" id="resources">
+  <div class="section-icon icon-orange">🔗</div>
+  <div>
+    <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+    <p>แหล่งข้อมูลที่ใช้ในการรวบรวมข้อมูลวันนี้</p>
+  </div>
+</div>
+
+<div class="res-grid">
+  <div class="res-card">
+    <div class="res-icon">🏭</div>
+    <div>
+      <div class="res-title">Espressif — ESP32-H21 Official</div>
+      <div class="res-desc">หน้าผลิตภัณฑ์และข้อมูลทางเทคนิคของ ESP32-H21 ultra-low-power SoC</div>
+      <a class="res-link" href="https://www.espressif.com/en/products/socs/esp32-h21" target="_blank">espressif.com →</a>
+    </div>
+  </div>
+  <div class="res-card">
+    <div class="res-icon">📰</div>
+    <div>
+      <div class="res-title">Espressif — ESP32-E22 Announcement</div>
+      <div class="res-desc">ข่าวเปิดตัว ESP32-E22 Wi-Fi 6E Co-Processor อย่างเป็นทางการ</div>
+      <a class="res-link" href="https://www.espressif.com/en/news/ESP32_E22_Announcement" target="_blank">espressif.com →</a>
+    </div>
+  </div>
+  <div class="res-card">
+    <div class="res-icon">🍎</div>
+    <div>
+      <div class="res-title">GitHub — M5Tab-Macintosh</div>
+      <div class="res-desc">BasiliskII Macintosh 68k emulator ที่ port มาบน ESP32-P4 / M5Stack Tab5</div>
+      <a class="res-link" href="https://github.com/amcchord/M5Tab-Macintosh" target="_blank">github.com →</a>
+    </div>
+  </div>
+  <div class="res-card">
+    <div class="res-icon">⚡</div>
+    <div>
+      <div class="res-title">Hackaday — Mac on Microcontroller</div>
+      <div class="res-desc">บทความ Hackaday เกี่ยวกับโปรเจกต์ Mac emulator บน ESP32-P4</div>
+      <a class="res-link" href="https://hackaday.com/2026/01/11/a-much-faster-mac-on-a-microcontroller/" target="_blank">hackaday.com →</a>
+    </div>
+  </div>
+  <div class="res-card">
+    <div class="res-icon">🌐</div>
+    <div>
+      <div class="res-title">EENews Europe — ESP32-E22 Features</div>
+      <div class="res-desc">รายละเอียดเชิงลึกเรื่อง tri-band Wi-Fi 6E และ co-processor architecture</div>
+      <a class="res-link" href="https://www.eenewseurope.com/en/esp32-e22-wi-fi-6e-connectivity-co-processor-2/" target="_blank">eenewseurope.com →</a>
+    </div>
+  </div>
+  <div class="res-card">
+    <div class="res-icon">🏠</div>
+    <div>
+      <div class="res-title">SmartHomeScene — DIY C4001 Presence Sensor</div>
+      <div class="res-desc">คู่มือสร้าง presence sensor ระยะ 25m ด้วย DFRobot C4001 + ESPHome</div>
+      <a class="res-link" href="https://smarthomescene.com/diy/diy-presence-sensor-with-25m-detection-range-using-dfrobot-c4001-and-esp32/" target="_blank">smarthomescene.com →</a>
+    </div>
+  </div>
+  <div class="res-card">
+    <div class="res-icon">📡</div>
+    <div>
+      <div class="res-title">espboards.dev — LD2461 Sensor Guide</div>
+      <div class="res-desc">Pinout, wiring diagram และตัวอย่างโค้ดสำหรับ LD2461 กับ ESP32</div>
+      <a class="res-link" href="https://www.espboards.dev/sensors/ld2461/" target="_blank">espboards.dev →</a>
+    </div>
+  </div>
+  <div class="res-card">
+    <div class="res-icon">🔧</div>
+    <div>
+      <div class="res-title">Arduino-ESP32 Releases — GitHub</div>
+      <div class="res-desc">Release notes ของ Arduino Core ESP32 v3.3.8 บน ESP-IDF v5.5.4</div>
+      <a class="res-link" href="https://github.com/espressif/arduino-esp32/releases" target="_blank">github.com →</a>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <strong>ESP32 &amp; IoT Daily Research</strong><br>
+  สร้างอัตโนมัติโดยระบบ AI Research · 10 สิงหาคม 2026<br>
+  แหล่งข้อมูล: Espressif Systems, Hackaday, ESPHome Blog, SmartHomeScene, EENews Europe, espboards.dev<br>
+  <span style="color: var(--text-dim); font-size: .75rem;">ข้อมูลถูกต้อง ณ วันที่เผยแพร่ · โปรดตรวจสอบจากแหล่งอ้างอิงก่อนนำไปใช้งาน</span>
+</footer>
+
+</body>
+</html>
