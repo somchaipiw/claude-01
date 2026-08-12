@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 &amp; Sensor Innovations — 12 สิงหาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f172a;
+    --bg2: #1e293b;
+    --bg3: #273349;
+    --bg-card: #1a2744;
+    --border: #2d3f5e;
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --tag-bg: #1e3a5f;
+    --tag-text: #7dd3fc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ========= HEADER ========= */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1a1f4e 50%, #0f2d4a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%; transform: translateX(-50%);
+    width: 500px; height: 200px;
+    background: radial-gradient(ellipse, rgba(56,189,248,.13) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-eyebrow {
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .6rem;
+  }
+  header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: .5rem;
+  }
+  header h1 span { color: var(--accent); }
+  .header-date { font-size: .92rem; color: var(--text-muted); margin-bottom: 1.2rem; }
+  .stat-row {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: .5rem;
+  }
+  .stat-pill {
+    background: rgba(56,189,248,.1);
+    border: 1px solid rgba(56,189,248,.25);
+    border-radius: 99px;
+    padding: .35rem 1rem;
+    font-size: .82rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .today-focus {
+    margin: .9rem auto 0;
+    max-width: 620px;
+    font-size: .88rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .today-focus strong { color: var(--text); }
+
+  /* ========= LAYOUT ========= */
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.2rem 3rem; }
+  section { margin-bottom: 3.5rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: .75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 38px; height: 38px;
+    border-radius: .6rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-blue  { background: rgba(56,189,248,.15); }
+  .icon-purple{ background: rgba(129,140,248,.15); }
+  .icon-green { background: rgba(52,211,153,.15); }
+  .icon-orange{ background: rgba(251,146,60,.15); }
+  .section-header h2 {
+    font-size: 1.2rem; font-weight: 700; color: #fff;
+  }
+  .section-header p { font-size: .82rem; color: var(--text-muted); margin-top: .15rem; }
+
+  /* ========= GRID ========= */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 1.25rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.1rem; }
+  @media (max-width: 600px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  /* ========= CARD ========= */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.4rem 1.5rem;
+    transition: border-color .2s, transform .2s;
+    display: flex; flex-direction: column; gap: .65rem;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+  .card-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(56,189,248,.1);
+    border: 1px solid rgba(56,189,248,.2);
+    border-radius: 99px;
+    padding: .2rem .7rem;
+    margin-bottom: .2rem;
+    width: fit-content;
+  }
+  .card-badge.purple { color: var(--accent2); background: rgba(129,140,248,.1); border-color: rgba(129,140,248,.2); }
+  .card-badge.green  { color: var(--accent3); background: rgba(52,211,153,.1);  border-color: rgba(52,211,153,.2); }
+  .card-badge.orange { color: var(--accent4); background: rgba(251,146,60,.1);  border-color: rgba(251,146,60,.2); }
+  .card-badge.pink   { color: var(--accent5); background: rgba(244,114,182,.1); border-color: rgba(244,114,182,.2); }
+
+  .card-title { font-size: 1.05rem; font-weight: 700; color: #fff; line-height: 1.4; }
+  .card-subtitle { font-size: .8rem; color: var(--accent); font-weight: 600; margin-bottom: .1rem; }
+  .card-body { font-size: .88rem; color: var(--text-muted); line-height: 1.75; }
+  .card-body strong { color: var(--text); }
+  .card-body ul { padding-left: 1.2rem; margin-top: .4rem; }
+  .card-body li { margin-bottom: .25rem; }
+
+  /* ========= IDEA BOX ========= */
+  .idea-box {
+    background: rgba(52,211,153,.06);
+    border: 1px solid rgba(52,211,153,.2);
+    border-radius: .65rem;
+    padding: .75rem 1rem;
+    font-size: .84rem;
+    color: var(--text-muted);
+    margin-top: .4rem;
+  }
+  .idea-box strong { color: var(--accent3); font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+
+  /* ========= TAGS ========= */
+  .tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .55rem; }
+  .tag {
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    border-radius: 99px;
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .2rem .65rem;
+  }
+  .tag.g { background: rgba(52,211,153,.1); color: var(--accent3); }
+  .tag.p { background: rgba(129,140,248,.1); color: var(--accent2); }
+  .tag.o { background: rgba(251,146,60,.1); color: var(--accent4); }
+
+  /* ========= CODE BOX ========= */
+  .code-box {
+    background: #0a1628;
+    border: 1px solid #1e3a5f;
+    border-radius: .6rem;
+    padding: .9rem 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: .78rem;
+    color: #7dd3fc;
+    line-height: 1.7;
+    overflow-x: auto;
+    margin-top: .5rem;
+  }
+  .code-box .kw  { color: #c084fc; }
+  .code-box .fn  { color: #34d399; }
+  .code-box .str { color: #fb923c; }
+  .code-box .cmt { color: #475569; }
+  .code-box .num { color: #f9a8d4; }
+
+  /* ========= STEPS ========= */
+  .steps { display: flex; flex-direction: column; gap: .6rem; margin-top: .5rem; }
+  .step {
+    display: flex; align-items: flex-start; gap: .75rem;
+    font-size: .86rem; color: var(--text-muted);
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 24px; height: 24px;
+    background: rgba(56,189,248,.15);
+    border: 1px solid rgba(56,189,248,.3);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .72rem; font-weight: 700; color: var(--accent);
+    margin-top: .15rem;
+  }
+  .step-body strong { color: var(--text); }
+
+  /* ========= SENSOR TABLE ========= */
+  .sensor-table-wrap { overflow-x: auto; border-radius: .75rem; border: 1px solid var(--border); }
+  .sensor-table {
+    width: 100%; border-collapse: collapse;
+    font-size: .83rem; min-width: 620px;
+  }
+  .sensor-table thead th {
+    background: var(--bg3);
+    color: var(--text-muted);
+    font-size: .72rem; font-weight: 700;
+    letter-spacing: .07em; text-transform: uppercase;
+    padding: .7rem 1rem; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .sensor-table tbody td {
+    padding: .75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top; color: var(--text-muted);
+  }
+  .sensor-table tbody tr:last-child td { border-bottom: none; }
+  .sensor-table tbody tr:hover td { background: var(--bg3); }
+  .sensor-name-cell { font-weight: 700; color: #fff; white-space: nowrap; }
+  .best-badge {
+    display: inline-block;
+    background: rgba(52,211,153,.15);
+    color: var(--accent3);
+    font-size: .68rem; font-weight: 700;
+    border-radius: 99px; padding: .1rem .5rem;
+    margin-left: .35rem; white-space: nowrap;
+  }
+
+  /* ========= SENSOR CARDS ========= */
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: .9rem;
+    padding: 1.15rem 1.25rem;
+  }
+  .sensor-card:hover { border-color: var(--accent2); }
+  .sensor-name { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: .2rem; }
+  .sensor-maker { font-size: .73rem; color: var(--text-muted); margin-bottom: .5rem; }
+  .sensor-desc { font-size: .83rem; color: var(--text-muted); line-height: 1.7; }
+  .sensor-desc strong { color: var(--text); }
+  .sensor-tags { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .65rem; }
+
+  /* ========= RESOURCES ========= */
+  .res-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: .8rem;
+    padding: 1rem 1.25rem;
+    display: flex; gap: 1rem; align-items: flex-start;
+  }
+  .res-icon {
+    width: 36px; height: 36px; border-radius: .5rem;
+    background: rgba(56,189,248,.1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+  }
+  .res-title { font-size: .9rem; font-weight: 700; color: #fff; margin-bottom: .2rem; }
+  .res-url { font-size: .75rem; color: var(--accent); word-break: break-all; }
+  .res-desc { font-size: .81rem; color: var(--text-muted); margin-top: .25rem; }
+
+  /* ========= HIGHLIGHT BOX ========= */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(56,189,248,.06), rgba(129,140,248,.06));
+    border: 1px solid rgba(56,189,248,.2);
+    border-radius: .8rem;
+    padding: 1rem 1.25rem;
+    font-size: .86rem; color: var(--text-muted); line-height: 1.75;
+    margin-top: .5rem;
+  }
+  .highlight-box strong { color: var(--text); }
+
+  /* ========= PERF ROW ========= */
+  .perf-row {
+    display: flex; flex-wrap: wrap; gap: .75rem; margin-top: .65rem;
+  }
+  .perf-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: .5rem;
+    padding: .5rem .9rem;
+    text-align: center; flex: 1; min-width: 90px;
+  }
+  .perf-val { font-size: 1.25rem; font-weight: 700; color: var(--accent); }
+  .perf-lbl { font-size: .7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
+
+  /* ========= FOOTER ========= */
+  footer {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 1.5rem 1rem;
+    font-size: .8rem; color: var(--text-muted);
+  }
+  footer strong { color: var(--text); }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-eyebrow">Daily Research · 12 สิงหาคม 2026</div>
+  <h1>ESP32 &amp; <span>Sensor</span> Innovations</h1>
+  <div class="header-date">วันอังคาร · 12 สิงหาคม 2026 · อัปเดตอัตโนมัติทุกวัน</div>
+  <div class="stat-row">
+    <div class="stat-pill">4 นวัตกรรมใหม่</div>
+    <div class="stat-pill">5 ไอเดียโปรเจกต์</div>
+    <div class="stat-pill">6 Sensors น่าสนใจ</div>
+    <div class="stat-pill">60 fps HMI</div>
+  </div>
+  <div class="today-focus">
+    วันนี้โฟกัสที่ <strong>LVGL 9 + ESP32-P4 PPA Accelerator</strong>,
+    <strong>Predictive Maintenance ด้วย FFT Vibration</strong>,
+    <strong>micro-ROS Mecanum Robot</strong> และ <strong>ESP-BLE-MESH Smart Lighting</strong>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔬</div>
+      <div>
+        <h2>นวัตกรรมและ Update ล่าสุด</h2>
+        <p>เทคโนโลยีใหม่จาก Espressif และชุมชน ESP32 สัปดาห์นี้</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+
+      <!-- Card 1: LVGL 9 + ESP32-P4 PPA -->
+      <div class="card">
+        <div class="card-badge">ESP32-P4 · LVGL 9</div>
+        <div class="card-title">ESP32-P4 + LVGL 9 + PPA Accelerator — GUI 60 fps ด้วย Hardware Rendering</div>
+        <div class="card-body">
+          <p>LVGL 9.5+ เพิ่ม <strong>PPA (Pixel Processing Accelerator) draw unit</strong> สำหรับ ESP32-P4 โดยเฉพาะ ทำให้ทุก widget — chart, gauge, animation, image blend — ถูก render ด้วย <strong>hardware GPU ในชิป</strong> แทน CPU core ผล: UI ที่ไม่ smooth เดิมกลายเป็น 60 fps ลื่นไหลสมบูรณ์แบบ บน MIPI-DSI display ความละเอียดสูงถึง 1080p</p>
+          <br>
+          <p>โครงสร้าง hardware pipeline: <strong>PPA + DMA-2D</strong> รับผิดชอบ buffer movement และ pixel blending ทั้งหมด CPU core 0 (240 MHz) มีแรงเหลือเต็มที่สำหรับ application logic และ sensor reading</p>
+          <div class="perf-row">
+            <div class="perf-item">
+              <div class="perf-val">60</div>
+              <div class="perf-lbl">fps MIPI-DSI</div>
+            </div>
+            <div class="perf-item">
+              <div class="perf-val">1080p</div>
+              <div class="perf-lbl">Max Resolution</div>
+            </div>
+            <div class="perf-item">
+              <div class="perf-val">400</div>
+              <div class="perf-lbl">MHz Dual-core</div>
+            </div>
+            <div class="perf-item">
+              <div class="perf-val">32MB</div>
+              <div class="perf-lbl">PSRAM Internal</div>
+            </div>
+          </div>
+          <div class="highlight-box" style="margin-top:.75rem">
+            <strong>⚡ Key Insight:</strong> Waveshare ESP32-P4-Module-DEV-KIT-C และ OLIMEX ESP32-P4-DevKit ออก <strong>LVGL demo ใหม่บน 10.1" MIPI-DSI</strong> (JD9365 + GT911 touch) แสดงให้เห็นว่า ESP32-P4 พร้อมสำหรับ production HMI จริงๆ แล้ว — ไม่ใช่แค่ proof-of-concept
+          </div>
+          <div class="idea-box">
+            <strong>💡 ไอเดีย:</strong> Smart Factory HMI — แผงควบคุม production line บน ESP32-P4 + 7" touch display แสดง sensor data real-time 8 channel + machine status gauge + emergency stop UI ทั้งหมดใน ESP-IDF + LVGL 9 โดยไม่ต้องใช้ Linux SBC แพงๆ
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag">ESP32-P4</span>
+          <span class="tag">LVGL 9</span>
+          <span class="tag">PPA</span>
+          <span class="tag">MIPI-DSI</span>
+          <span class="tag">HMI</span>
+          <span class="tag g">60fps</span>
+        </div>
+      </div>
+
+      <!-- Card 2: Predictive Maintenance + FFT -->
+      <div class="card">
+        <div class="card-badge orange">Industrial IoT · TinyML</div>
+        <div class="card-title">ESP32 Predictive Maintenance — ตรวจจับความผิดปกติของมอเตอร์ด้วย FFT Vibration Analysis</div>
+        <div class="card-body">
+          <p>งานวิจัยใหม่ (IJERT 2026) พิสูจน์ว่า ESP32 240 MHz สามารถ <strong>sample accelerometer ที่ 3,200 samples/sec</strong> และทำ <strong>real-time FFT บน 512 samples</strong> ได้พร้อมกัน ด้วย dual-core: core 0 เก็บข้อมูล ADXL345/MPU6050, core 1 รัน FFT + kurtosis analysis — latency &lt;30ms</p>
+          <br>
+          <p><strong>Bearing Fault Detection:</strong> คำนวณ BPFO, BPFI, BSF, FTF จาก geometry ของ bearing เมื่อ bearing เสียจะเกิด peak ในสเปกตรัม FFT ที่ความถี่เหล่านี้ — ตรวจพบล่วงหน้าหลายสัปดาห์ก่อน breakdown จริง</p>
+          <div class="code-box"><span class="cmt">// FFT vibration analysis on ESP32 dual-core</span>
+<span class="kw">void</span> <span class="fn">core1_task</span>(void* param) {
+  <span class="kw">float</span> vReal[<span class="num">512</span>], vImag[<span class="num">512</span>];
+  <span class="kw">while</span>(<span class="num">1</span>) {
+    <span class="fn">xQueueReceive</span>(accelQueue, vReal, portMAX_DELAY);
+    fft.<span class="fn">Windowing</span>(FFT_WIN_TYP_HAMMING, FFT_FORWARD);
+    fft.<span class="fn">Compute</span>(FFT_FORWARD);
+    fft.<span class="fn">ComplexToMagnitude</span>();
+    <span class="kw">float</span> peakFreq = fft.<span class="fn">MajorPeak</span>();
+    <span class="kw">float</span> kurtosis = <span class="fn">calcKurtosis</span>(vReal, <span class="num">512</span>);
+    <span class="cmt">// Alert if kurtosis > 4.0 (bearing fault threshold)</span>
+    <span class="kw">if</span>(kurtosis > <span class="num">4.0f</span>) <span class="fn">sendMQTTAlert</span>(peakFreq, kurtosis);
+  }
+}</div>
+          <div class="idea-box">
+            <strong>💡 ไอเดีย:</strong> ต่อ ADXL345 เข้ากับ ESP32 แปะบนตัวมอเตอร์ pump น้ำ, แอร์, หรือ generator ส่งข้อมูล FFT spectrum ขึ้น Grafana ผ่าน MQTT — ตรวจสอบสุขภาพมอเตอร์ตลอด 24/7 โดยอัตโนมัติ
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag o">Predictive Maintenance</span>
+          <span class="tag">FFT</span>
+          <span class="tag">ADXL345</span>
+          <span class="tag">MPU6050</span>
+          <span class="tag">Industrial</span>
+        </div>
+      </div>
+
+      <!-- Card 3: ESP-BLE-MESH -->
+      <div class="card">
+        <div class="card-badge purple">BLE Mesh · ESP-IDF 6.0</div>
+        <div class="card-title">ESP-BLE-MESH — Bluetooth Mesh สำหรับ Smart Lighting ควบคุม 100+ โหนดไม่ต้องใช้ Wi-Fi</div>
+        <div class="card-body">
+          <p><strong>ESP-BLE-MESH</strong> บน ESP-IDF v6.0.2 ผ่านการรับรอง <strong>Bluetooth® Mesh Specification v1.0.1</strong> อย่างเป็นทางการ รองรับ ESP32, S3, C3, H2 ในเครือข่ายเดียวกันพร้อมกัน ทุก node ทำหน้าที่เป็น relay ทำให้ mesh <strong>self-healing</strong> — ถ้า node หนึ่งดับ ข้อมูลจะ route ผ่าน node อื่นอัตโนมัติ</p>
+          <br>
+          <p><strong>โครงสร้าง Node Types:</strong></p>
+          <ul>
+            <li><strong>Provisioner</strong> — เพิ่ม device ใหม่เข้า mesh (ESP32 ตัวหลัก)</li>
+            <li><strong>Relay Node</strong> — ขยาย range (แต่ละ hop บวก ~10m)</li>
+            <li><strong>Low Power Node</strong> — battery sensor ที่ deep sleep ได้ระหว่าง polling</li>
+            <li><strong>Friend Node</strong> — buffer message สำหรับ Low Power Node</li>
+          </ul>
+          <div class="highlight-box">
+            <strong>Use Case:</strong> ระบบแสงสว่างออฟฟิศ 200 หลอด — ESP32-C3 ในหลอดไฟแต่ละดวง join mesh, สั่ง dimming/scene/schedule จาก smartphone แบบ group control พร้อมกันทั้งชั้น ไม่ต้องเดินสาย network เพิ่มเลย
+          </div>
+          <div class="idea-box">
+            <strong>💡 ไอเดีย:</strong> สร้าง BLE Mesh Presence-Aware Lighting — ESP32-H2 ทุกจุดรับสัญญาณ PIR sensor, เมื่อมีคนเข้าห้อง broadcast ผ่าน mesh ให้ไฟทุกดวงในโซนนั้นสว่างพร้อมกัน ใช้เวลา &lt;50ms — เร็วกว่า Wi-Fi based system 10 เท่า
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag p">BLE Mesh</span>
+          <span class="tag">ESP-BLE-MESH</span>
+          <span class="tag">Smart Lighting</span>
+          <span class="tag">ESP32-C3</span>
+          <span class="tag">ESP32-H2</span>
+          <span class="tag g">Self-Healing</span>
+        </div>
+      </div>
+
+      <!-- Card 4: micro-ROS + ESP32 -->
+      <div class="card">
+        <div class="card-badge green">Robotics · ROS2</div>
+        <div class="card-title">micro-ROS บน ESP32 — เชื่อม Microcontroller เข้า ROS 2 Ecosystem แบบ Native</div>
+        <div class="card-body">
+          <p><strong>micro-ROS</strong> นำ ROS 2 client library (node, topic, message, subscription) มาให้ ESP32 ใช้งานได้โดยตรง — ESP32 กลายเป็น ROS 2 node จริงๆ สื่อสารกับ Raspberry Pi หรือ PC ที่รัน ROS 2 ผ่าน <strong>micro-ROS Agent</strong> ทาง Wi-Fi หรือ Serial</p>
+          <br>
+          <p><strong>โปรเจกต์ highlight:</strong> <code>micro-ROS-Mecanum-Robot-Control-with-ESP32</code> — ESP32 subscribe ต่อ topic <code>/cmd_vel</code> จาก ROS 2 แล้วแปลง linear/angular velocity เป็น wheel speed ของ Mecanum Robot 4 ล้อ พร้อม PID encoder feedback loop ทั้งหมดใน FreeRTOS</p>
+          <div class="code-box"><span class="cmt">// micro-ROS subscriber ใน ESP32 (PlatformIO)</span>
+<span class="kw">#include</span> <span class="str">&lt;micro_ros_platformio.h&gt;</span>
+rcl_subscription_t cmd_vel_sub;
+geometry_msgs__msg__Twist twist_msg;
+
+<span class="kw">void</span> <span class="fn">cmdVelCallback</span>(const void* msg) {
+  <span class="kw">auto</span>* t = (<span class="kw">const</span> geometry_msgs__msg__Twist*)msg;
+  <span class="kw">float</span> vx = t->linear.x, vy = t->linear.y;
+  <span class="kw">float</span> wz = t->angular.z;
+  <span class="fn">mecanum_set_velocity</span>(vx, vy, wz); <span class="cmt">// PID + encoder</span>
+}</div>
+          <div class="highlight-box">
+            <strong>Stack:</strong> PlatformIO + <code>micro_ros_platformio</code> library → micro-ROS Agent (Docker/Linux) → ROS 2 Jazzy → Navigation2 stack. ESP32 ทำ motor control + IMU ส่วน Raspberry Pi 5 ทำ path planning + SLAM
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag g">micro-ROS</span>
+          <span class="tag">ROS 2</span>
+          <span class="tag">Mecanum</span>
+          <span class="tag">Robotics</span>
+          <span class="tag">PlatformIO</span>
+          <span class="tag">FreeRTOS</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">🛠️</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์น่าสนใจ</h2>
+        <p>โปรเจกต์ที่สร้างได้จริงพร้อม component list และขั้นตอน</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+
+      <!-- Project 1: INA3221 Power Monitor -->
+      <div class="card">
+        <div class="card-badge green">⚡ Energy Monitoring</div>
+        <div class="card-title">ระบบตรวจจับพลังงาน 3 วงจรพร้อมกัน — INA3221 + ESP32 + ESPHome + Home Assistant</div>
+        <div class="card-body">
+          <p>ใช้ <strong>INA3221</strong> (3-channel, 0–26V, I2C) ต่อกับ ESP32-C3 SuperMini วัด voltage, current และ power ของ 3 วงจรพร้อมกัน ตัวอย่าง: CH1=โซล่า, CH2=แบตเตอรี, CH3=โหลด ส่งข้อมูลขึ้น Home Assistant ผ่าน ESPHome ทุก 10 วินาที แสดงกราฟ energy flow real-time</p>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-body"><strong>Hardware:</strong> INA3221 module + ESP32-C3 SuperMini + shunt resistors 0.1Ω (3 ตัว) + terminal block</div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-body"><strong>Wiring:</strong> INA3221 SDA→GPIO6, SCL→GPIO7 (I2C), address 0x40 by default</div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-body"><strong>ESPHome config:</strong> เพิ่ม sensor component <code>ina3221</code>, ตั้ง 3 channels, update_interval 10s</div>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-body"><strong>Home Assistant:</strong> สร้าง Energy dashboard แสดง kWh, cost, power flow — ตั้ง alert เมื่อ current เกิน threshold</div>
+            </div>
+          </div>
+          <div class="code-box"><span class="cmt"># ESPHome config ตัวอย่าง</span>
+sensor:
+  - platform: ina3221
+    address: <span class="num">0x40</span>
+    update_interval: <span class="str">10s</span>
+    channel_1:
+      bus_voltage:
+        name: <span class="str">"Solar Voltage"</span>
+      current:
+        name: <span class="str">"Solar Current"</span>
+      power:
+        name: <span class="str">"Solar Power"</span></div>
+          <p style="font-size:.82rem;color:var(--text-muted);margin-top:.5rem">ต้นทุนรวมประมาณ <strong style="color:var(--accent3)">350 บาท</strong> — ESP32-C3 SuperMini ~80฿ + INA3221 module ~120฿ + อุปกรณ์เสริม ~150฿</p>
+        </div>
+        <div class="tags">
+          <span class="tag g">INA3221</span>
+          <span class="tag">ESPHome</span>
+          <span class="tag">Home Assistant</span>
+          <span class="tag">Energy Monitor</span>
+          <span class="tag">Solar</span>
+        </div>
+      </div>
+
+      <!-- Project 2: Vibration Predictive Maintenance -->
+      <div class="card">
+        <div class="card-badge orange">🏭 Predictive Maintenance</div>
+        <div class="card-title">ระบบตรวจสอบสุขภาพมอเตอร์แบบ Real-Time — ADXL345 + ESP32 + FFT + Grafana Dashboard</div>
+        <div class="card-body">
+          <p>ออกแบบให้ติดตั้งง่าย: แปะ <strong>ADXL345 accelerometer</strong> บนตัวมอเตอร์ด้วย magnets หรือ adhesive mount เชื่อมต่อกับ ESP32 ผ่าน SPI (high-speed, 3200 Hz sample rate) ESP32 ทำ FFT ทุก 512 samples และส่ง peak frequencies + kurtosis + RMS ขึ้น MQTT ทุก 5 วินาที</p>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-body"><strong>Hardware:</strong> ADXL345 (SPI mode) + ESP32 38-pin, ใช้ SPI CS=GPIO5, SCLK=GPIO18, MISO=GPIO19, MOSI=GPIO23</div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-body"><strong>Library:</strong> ArduinoFFT v2.0 (arduino-fft) — ฟรี open-source, รัน FFT 512 pts ใน ~8ms บน ESP32</div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-body"><strong>Baseline:</strong> เก็บ FFT spectrum ของมอเตอร์ปกติ 24 ชั่วโมง สร้าง baseline ที่ใช้เปรียบเทียบ</div>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-body"><strong>Alert:</strong> ถ้า kurtosis &gt; 4.0 หรือ peak ใน bearing frequency bands สูงกว่า baseline &gt; 3dB → LINE Notify alert</div>
+            </div>
+          </div>
+          <div class="highlight-box">
+            <strong>Bearing Fault Frequencies ที่ต้องดู:</strong><br>
+            BPFO (Outer Race) = n/2 × RPM × (1 − d/D × cosθ) / 60<br>
+            <span style="color:var(--text-muted);font-size:.8rem">โดย n=จำนวนลูกปืน, d=เส้นผ่าน ball, D=pitch diameter, θ=contact angle</span>
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag o">ADXL345</span>
+          <span class="tag">FFT</span>
+          <span class="tag">MQTT</span>
+          <span class="tag">Grafana</span>
+          <span class="tag">Predictive Maintenance</span>
+        </div>
+      </div>
+
+      <!-- Project 3: ESP-P4 HMI Panel -->
+      <div class="card">
+        <div class="card-badge">🖥️ Smart Home HMI</div>
+        <div class="card-title">Wall Panel Controller ด้วย ESP32-P4 + 7" Touch Display — ควบคุม Home Assistant ได้ทุกอย่าง</div>
+        <div class="card-body">
+          <p>ใช้ Elecrow ESP32-P4 HMI Display 7" (1024×600 MIPI-DSI + GT911 capacitive touch) สร้างแผงควบคุม smart home ฝังผนัง แสดง: สภาพอากาศ, sensor ทุกห้อง, HVAC control, scene button, กล้อง snapshot — ทั้งหมดผ่าน WebSocket ไปยัง Home Assistant</p>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-body"><strong>Framework:</strong> ESP-IDF v5.5 + LVGL 9.5 + lv_port_esp32 (PPA enabled) — ดูตัวอย่างจาก OLIMEX ESP32-P4-DevKit repo</div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-body"><strong>HA Integration:</strong> ใช้ HomeAssistant-REST API + WebSocket ส่ง command และรับ state update แบบ real-time</div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-body"><strong>UI Layout:</strong> LVGL Flexbox แบ่งหน้าจอเป็น grid 4×3, แต่ละ tile = widget (temp gauge, switch toggle, slider dimmer)</div>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-body"><strong>Performance:</strong> Enable <code>CONFIG_LV_USE_PPA=y</code> ใน sdkconfig — ดู FPS counter ใน LVGL perf monitor จะเห็นขึ้นจาก 20→60 fps ทันที</div>
+            </div>
+          </div>
+          <p style="font-size:.82rem;color:var(--text-muted);margin-top:.5rem">Hardware ราคาประมาณ <strong style="color:var(--accent)">2,500–3,500 บาท</strong> ขึ้นกับขนาดจอ (5"–10.1")</p>
+        </div>
+        <div class="tags">
+          <span class="tag">ESP32-P4</span>
+          <span class="tag p">LVGL 9</span>
+          <span class="tag">Touch Display</span>
+          <span class="tag">Home Assistant</span>
+          <span class="tag">Wall Panel</span>
+        </div>
+      </div>
+
+      <!-- Project 4: BLE Mesh Lighting -->
+      <div class="card">
+        <div class="card-badge purple">💡 BLE Mesh Lighting</div>
+        <div class="card-title">BLE Mesh ระบบแสงสว่างอัจฉริยะขนาดใหญ่ — ESP32-C3 ทุกหลอด ควบคุม 100 จุดพร้อมกัน</div>
+        <div class="card-body">
+          <p>สร้าง BLE Mesh network สำหรับ lighting control scale ใหญ่ เช่น warehouse, โรงงาน, หรือออฟฟิศหลายชั้น ESP32-C3 ราคาถูก (~$2) ทำเป็น <strong>Relay Node</strong> อยู่ในแต่ละ fixture แต่ละตัวรับ group command และสั่ง PWM dimming แบบ phase-accurate</p>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-body"><strong>Provisioner:</strong> ESP32-S3 หรือ Raspberry Pi รัน BLE Mesh provisioning app สำหรับเพิ่ม/ลบ node ใหม่เข้าระบบ</div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-body"><strong>Group Address:</strong> กำหนด group address ตามโซน (ชั้น, ห้อง, แถว) → broadcast 1 packet ควบคุมทั้ง group พร้อมกัน</div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-body"><strong>Friend/Low-Power:</strong> sensor node (PIR, daylight) ทำงานเป็น Low Power Node — wake รับ message จาก Friend Node เมื่อมีคำสั่ง</div>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-body"><strong>App Integration:</strong> iOS/Android app ต่อผ่าน Bluetooth → Provisioner Node → broadcast mesh ไม่ต้องมี Wi-Fi</div>
+            </div>
+          </div>
+          <div class="idea-box">
+            <strong>💡 ขยาย:</strong> เพิ่ม Occupancy-Aware Scene — ถ้า PIR sensor ไม่ detect คนนาน 30 นาที ระบบ mesh broadcast ลด dimming ทุกหลอดในโซนลงเหลือ 10% อัตโนมัติ — ประหยัดไฟได้ 40–60% โดยไม่ต้องเขียน backend server
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag p">ESP-BLE-MESH</span>
+          <span class="tag">ESP32-C3</span>
+          <span class="tag">Smart Lighting</span>
+          <span class="tag">PWM</span>
+          <span class="tag g">Energy Saving</span>
+        </div>
+      </div>
+
+      <!-- Project 5: micro-ROS Mecanum -->
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="card-badge green">🤖 Autonomous Robot</div>
+        <div class="card-title">DIY Mecanum Robot ควบคุมจาก ROS 2 — ESP32 + micro-ROS + Navigation2 + SLAM</div>
+        <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+          <div>
+            <p><strong>System Architecture:</strong></p>
+            <ul style="margin-top:.4rem">
+              <li>ESP32-S3 — Motor controller (PID, encoder feedback, IMU read)</li>
+              <li>Raspberry Pi 5 — ROS 2 Jazzy host: Nav2, SLAM Toolbox, rviz2</li>
+              <li>micro-ROS Agent — Bridge ESP32 ↔ ROS 2 ผ่าน Wi-Fi UDP</li>
+              <li>RPLiDAR A1M8 — 2D LIDAR สำหรับ SLAM mapping</li>
+              <li>MPU6050 — IMU ส่ง /imu topic ให้ Robot Localization filter</li>
+            </ul>
+            <div class="tags" style="margin-top:.75rem">
+              <span class="tag g">micro-ROS</span>
+              <span class="tag">ESP32-S3</span>
+              <span class="tag">Navigation2</span>
+              <span class="tag">SLAM</span>
+              <span class="tag">Mecanum</span>
+              <span class="tag">RPLiDAR</span>
+            </div>
+          </div>
+          <div>
+            <p style="font-size:.84rem;color:var(--text-muted);margin-bottom:.5rem"><strong style="color:var(--text)">ESP32 Publishes:</strong></p>
+            <div class="code-box" style="margin-top:0">
+<span class="cmt">// Topics ESP32 publish</span>
+/odom  → nav_msgs/Odometry
+/imu   → sensor_msgs/Imu
+
+<span class="cmt">// Topics ESP32 subscribe</span>
+/cmd_vel → geometry_msgs/Twist
+
+<span class="cmt">// ROS2 command ทดสอบ robot</span>
+ros2 topic pub /cmd_vel \
+  geometry_msgs/msg/Twist \
+  <span class="str">"{linear: {x: 0.5}}"</span></div>
+            <div class="idea-box" style="margin-top:.6rem">
+              <strong>💡 ต้นทุน:</strong> Mecanum chassis ~800฿ + ESP32-S3 ~150฿ + RPi5 ~3,500฿ + RPLiDAR ~1,800฿ = ~6,500 บาท สำหรับ autonomous navigation robot จริงๆ
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">📊</div>
+      <div>
+        <h2>Sensors น่าสนใจ: Vibration &amp; Power Monitoring</h2>
+        <p>เปรียบเทียบ sensors สำหรับงาน Industrial IoT, Predictive Maintenance และ Energy Monitoring</p>
+      </div>
+    </div>
+
+    <!-- Vibration Sensor Comparison Table -->
+    <div style="margin-bottom:1.5rem">
+      <h3 style="font-size:.9rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem">เปรียบเทียบ Vibration / Accelerometer Sensors สำหรับ Predictive Maintenance</h3>
+      <div class="sensor-table-wrap">
+        <table class="sensor-table">
+          <thead>
+            <tr>
+              <th>Sensor</th>
+              <th>Interface</th>
+              <th>Sample Rate</th>
+              <th>Resolution</th>
+              <th>ราคา (บาท)</th>
+              <th>เหมาะสำหรับ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="sensor-name-cell">ADXL345<span class="best-badge">DIY Pick</span></td>
+              <td>I2C / SPI</td>
+              <td>3,200 Hz</td>
+              <td>13-bit</td>
+              <td>~80</td>
+              <td>Predictive Maintenance, Tilt, Vibration FFT</td>
+            </tr>
+            <tr>
+              <td class="sensor-name-cell">MPU6050</td>
+              <td>I2C</td>
+              <td>1,000 Hz</td>
+              <td>16-bit</td>
+              <td>~60</td>
+              <td>Robotics (+ Gyro), General IMU, Motor Monitor</td>
+            </tr>
+            <tr>
+              <td class="sensor-name-cell">ADXL355<span class="best-badge">Industrial</span></td>
+              <td>SPI / I2C</td>
+              <td>4,000 Hz</td>
+              <td>20-bit</td>
+              <td>~450</td>
+              <td>Low-noise industrial, Seismic monitoring, High-precision</td>
+            </tr>
+            <tr>
+              <td class="sensor-name-cell">ICM-42688-P</td>
+              <td>SPI / I2C</td>
+              <td>32,000 Hz</td>
+              <td>16-bit</td>
+              <td>~200</td>
+              <td>Drone/Robot high-performance IMU, UAV Flight Controller</td>
+            </tr>
+            <tr>
+              <td class="sensor-name-cell">SW-420</td>
+              <td>Digital GPIO</td>
+              <td>Binary</td>
+              <td>1-bit</td>
+              <td>~15</td>
+              <td>Simple vibration alarm, door/window alert</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Power Sensor Comparison Table -->
+    <div style="margin-bottom:2rem">
+      <h3 style="font-size:.9rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem">เปรียบเทียบ Power / Current Monitoring Sensors</h3>
+      <div class="sensor-table-wrap">
+        <table class="sensor-table">
+          <thead>
+            <tr>
+              <th>Sensor</th>
+              <th>Channels</th>
+              <th>Voltage Range</th>
+              <th>Current Max</th>
+              <th>Interface</th>
+              <th>ESPHome</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="sensor-name-cell">INA3221<span class="best-badge">3-Ch Best</span></td>
+              <td>3</td>
+              <td>0–26V</td>
+              <td>±3.2A (0.1Ω shunt)</td>
+              <td>I2C</td>
+              <td>✅ Native</td>
+            </tr>
+            <tr>
+              <td class="sensor-name-cell">INA226</td>
+              <td>1</td>
+              <td>0–36V</td>
+              <td>±10A</td>
+              <td>I2C</td>
+              <td>✅ Native</td>
+            </tr>
+            <tr>
+              <td class="sensor-name-cell">INA219</td>
+              <td>1</td>
+              <td>0–26V</td>
+              <td>±3.2A</td>
+              <td>I2C</td>
+              <td>✅ Native</td>
+            </tr>
+            <tr>
+              <td class="sensor-name-cell">ACS712</td>
+              <td>1</td>
+              <td>AC/DC</td>
+              <td>5A / 20A / 30A</td>
+              <td>Analog</td>
+              <td>✅ ADC</td>
+            </tr>
+            <tr>
+              <td class="sensor-name-cell">PZEM-004T<span class="best-badge">AC Meter</span></td>
+              <td>1</td>
+              <td>80–260V AC</td>
+              <td>100A (CT)</td>
+              <td>UART</td>
+              <td>✅ Native</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Individual Sensor Cards -->
+    <div class="grid-3">
+      <div class="sensor-card">
+        <div class="sensor-name">ADXL345</div>
+        <div class="sensor-maker">Analog Devices · 3-Axis Accelerometer</div>
+        <div class="sensor-desc">
+          ขาใช้งานมากที่สุดสำหรับ <strong>vibration FFT</strong> บน ESP32 รองรับ SPI ความเร็วสูง 5 MHz สำหรับ sample rate 3,200 Hz Full Scale ปรับได้ ±2g/±4g/±8g/±16g มี FIFO buffer 32 samples ทำให้ CPU ไม่ต้อง poll ตลอดเวลา เหมาะงาน predictive maintenance ราคา DIY
+        </div>
+        <div class="sensor-tags">
+          <span class="tag">SPI/I2C</span>
+          <span class="tag">3,200Hz</span>
+          <span class="tag">13-bit</span>
+          <span class="tag g">FIFO Buffer</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">INA3221</div>
+        <div class="sensor-maker">Texas Instruments · 3-Channel Power Monitor</div>
+        <div class="sensor-desc">
+          วัด voltage และ current <strong>3 วงจรพร้อมกัน</strong> ใน chip เดียว I2C address ตั้งได้ 4 ค่า (ต่อได้ 4 ตัวในบัสเดียว = 12 channels) ใช้ shunt resistor ภายนอก ความแม่นยำ ±5.9 mA ESPHome รองรับ native ต่อขาเพียง 2 เส้น (SDA, SCL) ต่อทันที
+        </div>
+        <div class="sensor-tags">
+          <span class="tag g">3-Channel</span>
+          <span class="tag">I2C</span>
+          <span class="tag">0–26V</span>
+          <span class="tag">ESPHome</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">ICM-42688-P</div>
+        <div class="sensor-maker">TDK InvenSense · High-Performance IMU</div>
+        <div class="sensor-desc">
+          IMU รุ่นใหม่ที่ใช้ใน <strong>Flight Controller และ High-performance Robotics</strong> 6-axis (Accel + Gyro) sample rate สูงสุด 32 kHz สำหรับ accel ความแม่นยำ Gyro ±2000 dps Noise 70 µg/√Hz (accel) SPI รองรับ 24 MHz เป็น standard ชิป drone เกือบทุกตัวในปัจจุบัน
+        </div>
+        <div class="sensor-tags">
+          <span class="tag p">6-DoF</span>
+          <span class="tag">32kHz</span>
+          <span class="tag">SPI 24MHz</span>
+          <span class="tag">Drone/Robot</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">ADXL355</div>
+        <div class="sensor-maker">Analog Devices · Low-Noise Industrial MEMS</div>
+        <div class="sensor-desc">
+          MEMS accelerometer สำหรับงาน <strong>industrial precision</strong> — noise 25 µg/√Hz (ต่ำกว่า ADXL345 มาก) 20-bit resolution, ±2g/±4g/±8g เหมาะสำหรับ seismic monitoring, structural health monitoring ของสะพาน/โรงงาน หรือ precision machine vibration ที่ต้องการ SNR สูง
+        </div>
+        <div class="sensor-tags">
+          <span class="tag o">Industrial</span>
+          <span class="tag">20-bit</span>
+          <span class="tag">Low Noise</span>
+          <span class="tag">Seismic</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">PZEM-004T v3.0</div>
+        <div class="sensor-maker">Peacefair · AC Power Meter Module</div>
+        <div class="sensor-desc">
+          วัดไฟบ้าน AC 80–260V ครบทุกพารามิเตอร์: <strong>Voltage, Current (CT 100A), Power (W), Energy (kWh), Frequency, Power Factor</strong> ส่งข้อมูลผ่าน UART/MODBUS ไป ESP32 ESPHome รองรับ native ใช้ตรวจสอบ energy consumption ของเครื่องใช้ไฟฟ้าแต่ละตัวในบ้าน
+        </div>
+        <div class="sensor-tags">
+          <span class="tag g">AC 220V</span>
+          <span class="tag">UART</span>
+          <span class="tag">kWh Meter</span>
+          <span class="tag">ESPHome</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">MPU6050</div>
+        <div class="sensor-maker">InvenSense · 6-Axis IMU</div>
+        <div class="sensor-desc">
+          IMU ราคาถูกที่สุดในตลาด ยังนิยมใช้มากที่สุดใน <strong>robotics และ vibration monitoring</strong> มี DMP (Digital Motion Processor) ช่วยคำนวณ quaternion attitude โดยไม่ต้องใช้ CPU เหมาะสำหรับโปรเจกต์ micro-ROS robot, gimbal stabilizer และ predictive maintenance ขั้นต้น
+        </div>
+        <div class="sensor-tags">
+          <span class="tag">I2C</span>
+          <span class="tag">6-DoF</span>
+          <span class="tag">DMP</span>
+          <span class="tag g">~60 บาท</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔗</div>
+      <div>
+        <h2>แหล่งข้อมูลและ Library</h2>
+        <p>Repository, Tutorial, และเอกสารที่ใช้งานได้จริงสำหรับโปรเจกต์วันนี้</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="res-card">
+        <div class="res-icon">📦</div>
+        <div>
+          <div class="res-title">OLIMEX ESP32-P4-DevKit LVGL Demo</div>
+          <div class="res-url">github.com/OLIMEX/ESP32-P4-DevKit/tree/main/SOFTWARE/Demo_Examples/display_lvgl_demos</div>
+          <div class="res-desc">Demo projects ครบชุดสำหรับ ESP32-P4 + LVGL 9 บน MIPI-DSI display รองรับ touch, PPA acceleration, animation — เริ่มต้นได้ทันทีด้วย ESP-IDF</div>
+        </div>
+      </div>
+
+      <div class="res-card">
+        <div class="res-icon">📦</div>
+        <div>
+          <div class="res-title">HarryVienna — Waveshare ESP32-P4 LVGL Demo</div>
+          <div class="res-url">github.com/HarryVienna/Waveshare-ESP32-P4-Module-DEV-KIT-C-LVGL-Demo</div>
+          <div class="res-desc">Demo สำหรับ 10.1" Waveshare display (JD9365 + GT911) แสดงการ init MIPI-DSI และ touch controller พร้อม LVGL 9.5 integration</div>
+        </div>
+      </div>
+
+      <div class="res-card">
+        <div class="res-icon">📖</div>
+        <div>
+          <div class="res-title">LVGL PPA (Pixel Processing Accelerator) Documentation</div>
+          <div class="res-url">docs.lvgl.io/master/integration/chip_vendors/espressif/hardware_accelerator_ppa.html</div>
+          <div class="res-desc">เอกสารอย่างเป็นทางการวิธี enable PPA draw unit ใน LVGL 9.5+, sdkconfig options, การทำงานร่วมกับ DMA-2D สำหรับ ESP32-P4</div>
+        </div>
+      </div>
+
+      <div class="res-card">
+        <div class="res-icon">🤖</div>
+        <div>
+          <div class="res-title">micro-ROS Mecanum Robot — ESP32</div>
+          <div class="res-url">github.com/Mehmetmrtgl/micro-ROS-Mecanum-Robot-Control-with-ESP32</div>
+          <div class="res-desc">Project ครบวงจรสำหรับ Mecanum robot ด้วย ESP32 + micro-ROS ครอบคลุม cmd_vel subscriber, wheel kinematics, PID encoder feedback</div>
+        </div>
+      </div>
+
+      <div class="res-card">
+        <div class="res-icon">📖</div>
+        <div>
+          <div class="res-title">ESP-BLE-MESH — ESP-IDF Programming Guide v6.0.2</div>
+          <div class="res-url">docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/esp-ble-mesh/ble-mesh-index.html</div>
+          <div class="res-desc">เอกสาร Espressif อย่างเป็นทางการสำหรับ BLE Mesh — provisioning, node features, Low Power Node, Friend Node, Proxy support</div>
+        </div>
+      </div>
+
+      <div class="res-card">
+        <div class="res-icon">📖</div>
+        <div>
+          <div class="res-title">INA3221 — ESPHome Component</div>
+          <div class="res-url">esphome.io/components/sensor/ina3221/</div>
+          <div class="res-desc">เอกสาร ESPHome native component สำหรับ INA3221 3-channel power sensor พร้อมตัวอย่าง YAML config, I2C address options, channel setup</div>
+        </div>
+      </div>
+
+      <div class="res-card">
+        <div class="res-icon">📄</div>
+        <div>
+          <div class="res-title">Embedded TinyML for Predictive Maintenance — ResearchGate 2026</div>
+          <div class="res-url">researchgate.net/publication/395334243_Embedded_TinyML_for_Predictive_Maintenance</div>
+          <div class="res-desc">งานวิจัยล่าสุด (2026) เรื่อง Vibration Analysis บน ESP32 ด้วย Real-Time Fault Detection ใน Industrial Equipment ครอบคลุม FFT, kurtosis, TinyML approach</div>
+        </div>
+      </div>
+
+      <div class="res-card">
+        <div class="res-icon">🌐</div>
+        <div>
+          <div class="res-title">Roboost Robotics — Modular micro-ROS Motor Control</div>
+          <div class="res-url">github.com/Roboost-Robotics/firmware</div>
+          <div class="res-desc">Firmware สำเร็จรูปสำหรับ motor control ด้วย micro-ROS + ESP32 + PlatformIO รองรับ differential drive, Mecanum, encoder feedback, PID tuning</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>
+    <strong>ESP32 &amp; IoT Daily Research</strong> · สร้างอัตโนมัติวันที่ 12 สิงหาคม 2026<br>
+    <span style="font-size:.75rem">แหล่งข้อมูล: Espressif Systems Docs · LVGL Documentation · GitHub · ResearchGate · IEEE Xplore · ESPHome Docs · Hackster.io</span><br>
+    <span style="font-size:.75rem">
+      <a href="https://docs.espressif.com">docs.espressif.com</a> ·
+      <a href="https://lvgl.io">lvgl.io</a> ·
+      <a href="https://esphome.io">esphome.io</a> ·
+      <a href="https://micro.ros.org">micro.ros.org</a>
+    </span>
+  </p>
+  <p style="margin-top:.5rem;font-size:.73rem;color:#475569">#esp32 #iot #sensors #lvgl #predictivemaintenance #micro-ros #blemesh #energymonitoring</p>
+</footer>
+
+</body>
+</html>
