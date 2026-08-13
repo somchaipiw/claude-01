@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 13 สิงหาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263348;
+    --accent-1: #38bdf8;
+    --accent-2: #818cf8;
+    --accent-3: #34d399;
+    --accent-4: #fb923c;
+    --accent-5: #f472b6;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --tag-bg: #0f172a;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #0c1445 0%, #1a1040 40%, #0d2035 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(56,189,248,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; right: -40px;
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, rgba(129,140,248,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.4);
+    color: var(--accent-1);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.35rem 1rem;
+    border-radius: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #e2e8f0 0%, var(--accent-1) 50%, var(--accent-2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.6rem;
+    position: relative;
+  }
+
+  .header-sub {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.8rem;
+  }
+
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-num {
+    display: block;
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--accent-1);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 2rem;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+
+  nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 1rem;
+    border-radius: 2rem;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+  }
+
+  nav a:hover {
+    color: var(--accent-1);
+    border-color: rgba(56,189,248,0.4);
+    background: rgba(56,189,248,0.08);
+  }
+
+  /* ===== MAIN ===== */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  section {
+    margin-bottom: 3.5rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.8rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .section-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .section-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .section-header .section-count {
+    margin-left: auto;
+    background: var(--tag-bg);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 2rem;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.7rem;
+  }
+
+  /* ===== CARDS GRID ===== */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(56,189,248,0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+  }
+
+  .card-accent-blue::before  { background: linear-gradient(90deg, var(--accent-1), var(--accent-2)); }
+  .card-accent-green::before { background: linear-gradient(90deg, var(--accent-3), var(--accent-1)); }
+  .card-accent-orange::before{ background: linear-gradient(90deg, var(--accent-4), var(--accent-5)); }
+  .card-accent-purple::before{ background: linear-gradient(90deg, var(--accent-2), var(--accent-5)); }
+  .card-accent-teal::before  { background: linear-gradient(90deg, #2dd4bf, var(--accent-3)); }
+
+  .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+  }
+
+  .card-desc {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+
+  /* ===== SPEC TABLE ===== */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin: 0.75rem 0;
+  }
+
+  .spec-table td {
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid rgba(51,65,85,0.6);
+    vertical-align: top;
+  }
+
+  .spec-table td:first-child {
+    color: var(--text-muted);
+    width: 38%;
+    white-space: nowrap;
+  }
+
+  .spec-table td:last-child {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  /* ===== TAGS ===== */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.8rem;
+  }
+
+  .tag {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 1rem;
+  }
+
+  .tag-blue   { color: var(--accent-1); border-color: rgba(56,189,248,0.3); background: rgba(56,189,248,0.08); }
+  .tag-green  { color: var(--accent-3); border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.08); }
+  .tag-orange { color: var(--accent-4); border-color: rgba(251,146,60,0.3);  background: rgba(251,146,60,0.08); }
+  .tag-purple { color: var(--accent-2); border-color: rgba(129,140,248,0.3); background: rgba(129,140,248,0.08); }
+
+  /* ===== HIGHLIGHT BOX ===== */
+  .highlight-box {
+    background: rgba(56,189,248,0.07);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-left: 3px solid var(--accent-1);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    margin: 0.75rem 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .highlight-box.green {
+    background: rgba(52,211,153,0.07);
+    border-color: rgba(52,211,153,0.2);
+    border-left-color: var(--accent-3);
+  }
+
+  .highlight-box.orange {
+    background: rgba(251,146,60,0.07);
+    border-color: rgba(251,146,60,0.2);
+    border-left-color: var(--accent-4);
+  }
+
+  .highlight-box.purple {
+    background: rgba(129,140,248,0.07);
+    border-color: rgba(129,140,248,0.2);
+    border-left-color: var(--accent-2);
+  }
+
+  /* ===== CODE BLOCK ===== */
+  .code-block {
+    background: #0a0f1e;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: #a5f3fc;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+  }
+
+  .code-comment { color: #475569; }
+  .code-keyword { color: #818cf8; }
+  .code-string  { color: #34d399; }
+  .code-num     { color: #fb923c; }
+
+  /* ===== STEP LIST ===== */
+  .step-list {
+    list-style: none;
+    counter-reset: step;
+  }
+
+  .step-list li {
+    counter-increment: step;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.5rem 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(51,65,85,0.4);
+  }
+
+  .step-list li:last-child { border-bottom: none; }
+
+  .step-list li::before {
+    content: counter(step);
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  /* ===== WIDE CARD ===== */
+  .card-wide {
+    grid-column: 1 / -1;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .two-col { grid-template-columns: 1fr; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .stats-row { gap: 1.2rem; }
+  }
+
+  /* ===== RESOURCE LINKS ===== */
+  .resource-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .resource-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    transition: all 0.2s;
+  }
+
+  .resource-item:hover {
+    color: var(--accent-1);
+    border-color: rgba(56,189,248,0.3);
+    background: var(--bg-card-hover);
+  }
+
+  .resource-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .resource-title { font-weight: 600; color: var(--text-primary); }
+  .resource-desc  { font-size: 0.78rem; color: var(--text-muted); }
+
+  /* ===== BADGE ===== */
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.6rem;
+    border-radius: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-new    { background: rgba(52,211,153,0.2); color: var(--accent-3); }
+  .badge-hot    { background: rgba(251,146,60,0.2); color: var(--accent-4); }
+  .badge-ces    { background: rgba(129,140,248,0.2); color: var(--accent-2); }
+
+  /* ===== COMPARISON TABLE ===== */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin: 0.75rem 0;
+  }
+
+  .compare-table th {
+    background: rgba(56,189,248,0.1);
+    color: var(--accent-1);
+    font-weight: 700;
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+    border-bottom: 2px solid rgba(56,189,248,0.3);
+  }
+
+  .compare-table td {
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    color: var(--text-secondary);
+    vertical-align: middle;
+  }
+
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(56,189,248,0.04); }
+
+  .val-good { color: var(--accent-3); font-weight: 600; }
+  .val-ok   { color: var(--accent-4); font-weight: 600; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+  }
+
+  footer p {
+    color: var(--text-muted);
+    font-size: 0.83rem;
+    line-height: 1.8;
+  }
+
+  footer strong { color: var(--text-secondary); }
+
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+
+  .footer-links a {
+    color: var(--accent-1);
+    text-decoration: none;
+    font-size: 0.8rem;
+    opacity: 0.8;
+  }
+
+  .footer-links a:hover { opacity: 1; text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-badge">Daily ESP32 Intelligence Report</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="header-sub">วันพุธที่ 13 สิงหาคม 2569 &nbsp;·&nbsp; UWB Positioning · WiFi 6E · ESP32-H21 · Vision AI · CAN Bus · ESP-NOW Mesh</p>
+  <div class="stats-row">
+    <div class="stat-item">
+      <span class="stat-num">4</span>
+      <span class="stat-label">ชิปใหม่</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">6</span>
+      <span class="stat-label">ไอเดียโปรเจกต์</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">5</span>
+      <span class="stat-label">Sensors & Modules</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">8</span>
+      <span class="stat-label">แหล่งข้อมูล</span>
+    </div>
+  </div>
+</header>
+
+<!-- ===== NAV ===== -->
+<nav>
+  <a href="#innovations">นวัตกรรม</a>
+  <a href="#projects">โปรเจกต์</a>
+  <a href="#sensors">Sensors & Modules</a>
+  <a href="#resources">แหล่งข้อมูล</a>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(56,189,248,0.15);">⚡</div>
+      <h2>นวัตกรรมและชิปใหม่ล่าสุด</h2>
+      <span class="section-count">4 รายการ</span>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- Card 1: ESP32-H21 -->
+      <div class="card card-accent-blue">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;">
+          <span class="badge badge-ces">CES 2026</span>
+          <span class="badge badge-new">ชิปใหม่</span>
+        </div>
+        <div class="card-title">ESP32-H21 — DC-DC ในชิป ประหยัดพลังงานสูงสุด สำหรับ Smart Home</div>
+        <div class="card-desc">
+          Espressif เปิดตัว ESP32-H21 ที่งาน CES 2026 เดือนมกราคม เป็นการอัปเกรดจาก ESP32-H2 โดยเพิ่ม
+          <strong>DC-DC Converter ในชิป</strong> ทำให้ลดกระแสขณะทำงานได้อย่างมีนัยสำคัญ
+          รองรับ Thread, Zigbee, Matter และ BLE 5 ครบในชิปเดียว
+        </div>
+
+        <table class="spec-table">
+          <tr><td>Core</td><td>32-bit RISC-V @ 96 MHz</td></tr>
+          <tr><td>วิทยุ</td><td>IEEE 802.15.4 + BLE 5.x</td></tr>
+          <tr><td>โปรโตคอล</td><td>Thread 1.3, Zigbee 3.0, Matter, BLE</td></tr>
+          <tr><td>TX Power</td><td>สูงสุด 20 dBm</td></tr>
+          <tr><td>Active RX</td><td>~8.2 mA (ลดลงจาก H2 ด้วย DC-DC)</td></tr>
+          <tr><td>Light Sleep</td><td>9 µA</td></tr>
+          <tr><td>Deep Sleep</td><td>5 µA</td></tr>
+          <tr><td>ข้อดีหลัก</td><td>DC-DC ในชิป ไม่ต้องใช้ LDO ภายนอก</td></tr>
+        </table>
+
+        <div class="highlight-box green">
+          <strong>ทำไมสำคัญ:</strong> ถ่านขนาด CR2032 เพียงก้อนเดียวสามารถให้ Smart Home sensor node
+          ทำงานได้นานกว่า 2 ปี เมื่อใช้ Deep Sleep + Thread advertising cycle ที่เหมาะสม
+        </div>
+
+        <div class="tags">
+          <span class="tag tag-blue">Thread</span>
+          <span class="tag tag-blue">Zigbee</span>
+          <span class="tag tag-green">Matter</span>
+          <span class="tag tag-green">Ultra Low Power</span>
+          <span class="tag tag-purple">DC-DC</span>
+        </div>
+      </div>
+
+      <!-- Card 2: ESP32-E22 WiFi 6E -->
+      <div class="card card-accent-purple">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;">
+          <span class="badge badge-ces">CES 2026</span>
+          <span class="badge badge-hot">Wi-Fi Certified</span>
+        </div>
+        <div class="card-title">ESP32-E22 — WiFi 6E ความเร็ว 2.4 Gbps ชิป Co-Processor ใหม่</div>
+        <div class="card-desc">
+          ESP32-E22 เป็นชิป <strong>Wi-Fi 6E Connectivity Co-Processor</strong> ตัวแรกของ Espressif
+          รองรับ tri-band 2.4/5/6 GHz และ Bluetooth 5.4 ได้รับใบรับรอง Wi-Fi CERTIFIED ในเดือนมิถุนายน 2026
+          ออกแบบมาให้เป็น wireless backend ให้กับ host processor อื่นๆ
+        </div>
+
+        <table class="spec-table">
+          <tr><td>Core</td><td>Dual-core RISC-V @ 500 MHz</td></tr>
+          <tr><td>RAM</td><td>1 MB</td></tr>
+          <tr><td>WiFi</td><td>Wi-Fi 6E (2.4/5/6 GHz), 160 MHz, 2×2 MIMO</td></tr>
+          <tr><td>Modulation</td><td>1024-QAM</td></tr>
+          <tr><td>Throughput</td><td>2.4 Gbps (theoretical) / 2.1 Gbps (iperf)</td></tr>
+          <tr><td>Bluetooth</td><td>BT 5.4 (Classic + BLE)</td></tr>
+          <tr><td>GPIO</td><td>41 pins</td></tr>
+          <tr><td>Interface</td><td>PCIe 2.0 / SDIO (RCP Mode)</td></tr>
+        </table>
+
+        <div class="highlight-box purple">
+          <strong>Use Case:</strong> ใช้ ESP32-E22 เป็น wireless co-processor สำหรับ Raspberry Pi หรือ Linux SBC
+          ที่ต้องการ WiFi 6E ราคาถูก แทนการซื้อ WiFi card แยก — เหมาะมากสำหรับ Industrial IoT Gateway
+        </div>
+
+        <div class="tags">
+          <span class="tag tag-blue">WiFi 6E</span>
+          <span class="tag tag-blue">6 GHz</span>
+          <span class="tag tag-purple">2×2 MIMO</span>
+          <span class="tag tag-orange">Co-Processor</span>
+        </div>
+      </div>
+
+      <!-- Card 3: ESP32-P4-EYE -->
+      <div class="card card-accent-green">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;">
+          <span class="badge badge-hot">Vision AI</span>
+          <span class="badge badge-new">บอร์ดใหม่</span>
+        </div>
+        <div class="card-title">ESP32-P4-EYE — กล้อง AI Smart Camera 1080p พร้อม YOLOv11</div>
+        <div class="card-desc">
+          Espressif ออก development board รูปร่างเหมือนกล้องดิจิตอลจริง ติดตั้ง ESP32-P4 SoC
+          พร้อม OmniVision OV2710 sensor สำหรับงาน <strong>Edge AI Vision</strong>
+          มี ISP ในฮาร์ดแวร์และรองรับ H.265 encoding พร้อม demo AI ออกกล่อง
+        </div>
+
+        <div class="two-col" style="margin-top:0.75rem;">
+          <div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.08em;">ฮาร์ดแวร์</div>
+            <table class="spec-table">
+              <tr><td>กล้อง</td><td>OV2710 1080p@30fps</td></tr>
+              <tr><td>PSRAM</td><td>32 MB</td></tr>
+              <tr><td>จอ LCD</td><td>1.54" 240×240 SPI</td></tr>
+              <tr><td>ไมค์</td><td>ดิจิตอล MEMS</td></tr>
+              <tr><td>Storage</td><td>MicroSD Card</td></tr>
+              <tr><td>ไฟ Fill/Flash</td><td>ในตัว</td></tr>
+            </table>
+          </div>
+          <div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.08em;">AI Features</div>
+            <ul style="list-style:none;font-size:0.82rem;color:var(--text-secondary);">
+              <li style="padding:0.25rem 0;border-bottom:1px solid rgba(51,65,85,0.4);">✓ Face Detection</li>
+              <li style="padding:0.25rem 0;border-bottom:1px solid rgba(51,65,85,0.4);">✓ Pedestrian Detection</li>
+              <li style="padding:0.25rem 0;border-bottom:1px solid rgba(51,65,85,0.4);">✓ YOLOv11-nano Object Detection</li>
+              <li style="padding:0.25rem 0;border-bottom:1px solid rgba(51,65,85,0.4);">✓ Image Classification</li>
+              <li style="padding:0.25rem 0;border-bottom:1px solid rgba(51,65,85,0.4);">✓ Video Recording H.265</li>
+              <li style="padding:0.25rem 0;">✓ USB SD Card Mount</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="highlight-box green" style="margin-top:0.75rem;">
+          <strong>Connectivity:</strong> มี ESP32-C6-MINI-1U module แยกสำหรับ WiFi 6 และ Bluetooth
+          ทำให้ P4 ประมวลผล Vision ได้เต็มที่โดยไม่แชร์ core กับ wireless stack
+        </div>
+
+        <div class="tags">
+          <span class="tag tag-green">RISC-V 400MHz</span>
+          <span class="tag tag-blue">1080p Camera</span>
+          <span class="tag tag-orange">YOLOv11</span>
+          <span class="tag tag-purple">H.265</span>
+        </div>
+      </div>
+
+      <!-- Card 4: MaTouch UWB -->
+      <div class="card card-accent-orange">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.6rem;">
+          <span class="badge badge-hot">ข่าวล่าสุด</span>
+          <span class="badge badge-new">8 ส.ค. 2569</span>
+        </div>
+        <div class="card-title">MaTouch ESP32-S3 MaUWB — จอสัมผัส 3.95" + UWB สำหรับ Indoor Positioning</div>
+        <div class="card-desc">
+          Makerfabs เปิดตัว MaTouch ESP32-S3 MaUWB บอร์ดใหม่ล่าสุดเมื่อ 8 สิงหาคม 2026
+          รวม ESP32-S3, จอสัมผัส 3.95 นิ้ว และ UWB module เข้าด้วยกัน
+          แสดงตำแหน่งแบบ Real-time ด้วย algorithm trilateration บนจอที่ติดมาในตัว
+        </div>
+
+        <table class="spec-table">
+          <tr><td>MCU</td><td>ESP32-S3 (Xtensa LX7 Dual-Core)</td></tr>
+          <tr><td>จอ</td><td>3.95" Capacitive Touchscreen</td></tr>
+          <tr><td>UWB Module</td><td>ในตัว (ใช้ chip รุ่น DW-series)</td></tr>
+          <tr><td>ความแม่นยำ</td><td>ต่ำกว่า 30 cm (sub-meter)</td></tr>
+          <tr><td>Algorithm</td><td>Trilateration (ต้องการ anchor 3 จุด)</td></tr>
+          <tr><td>Interface</td><td>WiFi + BLE + UWB Wireless</td></tr>
+          <tr><td>UI Library</td><td>LVGL</td></tr>
+          <tr><td>Use Case</td><td>Portable indoor tag terminal</td></tr>
+        </table>
+
+        <div class="tags">
+          <span class="tag tag-blue">UWB</span>
+          <span class="tag tag-blue">ESP32-S3</span>
+          <span class="tag tag-orange">Touchscreen</span>
+          <span class="tag tag-green">LVGL</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,0.15);">🔧</div>
+      <h2>ไอเดียโปรเจกต์น่าสนใจ</h2>
+      <span class="section-count">6 โปรเจกต์</span>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- Project 1: UWB Indoor Positioning -->
+      <div class="card card-accent-blue">
+        <div class="card-title">🎯 ระบบระบุตำแหน่งภายในอาคาร DIY — ESP32 + UWB DWM3000 ความแม่นยำ 10 cm</div>
+        <div class="card-desc">
+          สร้างระบบ Indoor Positioning System (IPS) แบบ DIY ที่ให้ความแม่นยำ sub-10 cm
+          โดยใช้ ESP32 ร่วมกับ UWB module Qorvo DWM3000 ใช้เทคนิค DS-TWR
+          (Double-Sided Two-Way Ranging) คำนวณระยะทางแล้วใช้ trilateration หาตำแหน่ง 2D
+        </div>
+
+        <div class="highlight-box">
+          <strong>หลักการทำงาน:</strong> UWB วัดเวลาที่สัญญาณเดินทาง (Time of Flight) ระหว่าง anchor-tag
+          ด้วยความแม่นยำระดับนาโนวินาที แปลงเป็นระยะทาง แล้ว trilaterate จาก anchor 3 จุด
+        </div>
+
+        <div style="margin:0.75rem 0;">
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.5rem;font-weight:600;text-transform:uppercase;">Components</div>
+          <ol class="step-list">
+            <li>ESP32 + DWM3000 UWB module × 3 (เป็น anchor ติดผนัง)</li>
+            <li>ESP32 + DWM3000 × 1 (เป็น mobile tag)</li>
+            <li>แหล่งจ่ายไฟ 5V สำหรับ anchor และแบต LiPo สำหรับ tag</li>
+            <li>Server/Raspberry Pi รับ MQTT จาก anchor และคำนวณตำแหน่ง</li>
+            <li>Dashboard (Node-RED, Grafana, หรือ web app) แสดง floor plan + position</li>
+          </ol>
+        </div>
+
+        <div class="code-block">
+<span class="code-comment">// Arduino skeleton — Anchor node (DWM3000 + ESP32)</span>
+<span class="code-keyword">#include</span> <span class="code-string">"DW3000.h"</span>
+<span class="code-keyword">#include</span> <span class="code-string">"WiFi.h"</span>
+<span class="code-keyword">#include</span> <span class="code-string">"PubSubClient.h"</span>
+
+DW3000Class dw3000;
+
+<span class="code-keyword">void</span> loop() {
+  <span class="code-comment">// รับ ranging request จาก tag</span>
+  <span class="code-keyword">if</span> (dw3000.isReceived()) {
+    <span class="code-keyword">float</span> dist = dw3000.doTWR();  <span class="code-comment">// cm</span>
+    <span class="code-comment">// ส่งระยะทางผ่าน MQTT</span>
+    mqtt.publish(<span class="code-string">"uwb/anchor/A1"</span>, String(dist).c_str());
+  }
+}
+        </div>
+
+        <div class="tags">
+          <span class="tag tag-blue">UWB</span>
+          <span class="tag tag-blue">DWM3000</span>
+          <span class="tag tag-green">10 cm accuracy</span>
+          <span class="tag tag-orange">MQTT</span>
+          <span class="tag">Indoor Tracking</span>
+        </div>
+      </div>
+
+      <!-- Project 2: ESP32 CAN Bus -->
+      <div class="card card-accent-orange">
+        <div class="card-title">🚗 ESP32 OBD-II Data Logger — อ่านข้อมูลรถผ่าน CAN Bus แบบ Wireless</div>
+        <div class="card-desc">
+          ใช้ ESP32 ต่อกับ CAN Bus transceiver (TJA1050 หรือ SN65HVD230) เชื่อมต่อกับ port OBD-II ของรถยนต์
+          อ่านข้อมูล real-time เช่น RPM, ความเร็ว, อุณหภูมิน้ำหล่อเย็น, การใช้เชื้อเพลิง
+          แล้วส่งผ่าน BLE/WiFi ไปยัง dashboard บนสมาร์ทโฟน
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.4rem;font-weight:600;">Hardware</div>
+            <table class="spec-table">
+              <tr><td>MCU</td><td>ESP32 (built-in TWAI)</td></tr>
+              <tr><td>Transceiver</td><td>TJA1050 หรือ SN65HVD230</td></tr>
+              <tr><td>Connector</td><td>OBD-II 16-pin (SAE J1962)</td></tr>
+              <tr><td>แรงดัน</td><td>12V → 5V → 3.3V (LDO)</td></tr>
+            </table>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.4rem;font-weight:600;">ข้อมูลที่อ่านได้</div>
+            <ul style="list-style:none;font-size:0.82rem;color:var(--text-secondary);">
+              <li style="padding:0.2rem 0;">→ Engine RPM (PID 0x0C)</li>
+              <li style="padding:0.2rem 0;">→ ความเร็วรถ (PID 0x0D)</li>
+              <li style="padding:0.2rem 0;">→ Coolant Temp (PID 0x05)</li>
+              <li style="padding:0.2rem 0;">→ Engine Load (PID 0x04)</li>
+              <li style="padding:0.2rem 0;">→ Fuel Trim, MAP, MAF</li>
+              <li style="padding:0.2rem 0;">→ DTC (รหัสข้อผิดพลาด)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="highlight-box orange">
+          <strong>ESP32 TWAI Controller:</strong> ESP32 มี TWAI (Two-Wire Automotive Interface) ในตัว
+          ซึ่งรองรับ CAN 2.0A/B protocol โดยตรง ต้องการแค่ transceiver IC ภายนอก 1 ชิ้น
+          ราคาประมาณ 20-30 บาท
+        </div>
+
+        <div class="code-block">
+<span class="code-comment">// ESP32 Arduino CAN Bus Init</span>
+<span class="code-keyword">#include</span> <span class="code-string">"driver/twai.h"</span>
+
+twai_general_config_t g_config =
+  TWAI_GENERAL_CONFIG_DEFAULT(GPIO_NUM_21, GPIO_NUM_22,
+                              TWAI_MODE_NORMAL);
+twai_timing_config_t t_config =
+  TWAI_TIMING_CONFIG_500KBITS();  <span class="code-comment">// OBD-II ใช้ 500kbps</span>
+twai_filter_config_t f_config =
+  TWAI_FILTER_CONFIG_ACCEPT_ALL();
+
+<span class="code-comment">// Install and start driver</span>
+twai_driver_install(&g_config, &t_config, &f_config);
+twai_start();
+        </div>
+
+        <div class="tags">
+          <span class="tag tag-orange">CAN Bus</span>
+          <span class="tag tag-orange">OBD-II</span>
+          <span class="tag tag-blue">TWAI</span>
+          <span class="tag">Automotive</span>
+          <span class="tag">TJA1050</span>
+        </div>
+      </div>
+
+      <!-- Project 3: ESP-NOW Self-Healing Mesh -->
+      <div class="card card-accent-teal">
+        <div class="card-title">📡 ESP-NOW Self-Healing Mesh Network — IoT ไร้ WiFi Router</div>
+        <div class="card-desc">
+          สร้าง mesh network ที่ไม่ต้องการ WiFi router โดยใช้ ESP-NOW protocol ของ Espressif
+          nodes แต่ละตัวส่งต่อข้อมูล (multi-hop relay) ซ่อมแซมตัวเองอัตโนมัติเมื่อ node ล้มเหลว
+          เหมาะสำหรับฟาร์ม, คลังสินค้า, หรือพื้นที่ขนาดใหญ่ที่ไม่มี infrastructure
+        </div>
+
+        <div style="margin:0.75rem 0;">
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.5rem;font-weight:600;text-transform:uppercase;">ข้อดีของ ESP-NOW vs WiFi Mesh</div>
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>คุณสมบัติ</th>
+                <th>ESP-NOW</th>
+                <th>WiFi Mesh</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Latency</td>
+                <td class="val-good">&lt; 1 ms</td>
+                <td class="val-ok">5–50 ms</td>
+              </tr>
+              <tr>
+                <td>Power (Rx)</td>
+                <td class="val-good">ต่ำมาก</td>
+                <td class="val-ok">ปานกลาง</td>
+              </tr>
+              <tr>
+                <td>Peer Limit</td>
+                <td>20 peer/node</td>
+                <td>ไม่จำกัด</td>
+              </tr>
+              <tr>
+                <td>Payload</td>
+                <td>250 bytes/packet</td>
+                <td>ไม่จำกัด</td>
+              </tr>
+              <tr>
+                <td>Setup</td>
+                <td class="val-good">ง่ายมาก</td>
+                <td class="val-ok">ซับซ้อน</td>
+              </tr>
+              <tr>
+                <td>Router Required</td>
+                <td class="val-good">ไม่ต้องการ</td>
+                <td>ต้องการ</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="highlight-box">
+          <strong>Library แนะนำ:</strong> painlessMesh — open-source library ที่สร้าง dynamic ESP-NOW mesh
+          โดยอัตโนมัติ nodes หา neighbor กันเอง ส่งข้อมูลแบบ JSON ผ่าน multi-hop
+          รองรับ ESP32 ทุกรุ่นและ ESP8266
+        </div>
+
+        <div class="tags">
+          <span class="tag tag-blue">ESP-NOW</span>
+          <span class="tag tag-green">painlessMesh</span>
+          <span class="tag tag-green">Self-Healing</span>
+          <span class="tag">No Router</span>
+          <span class="tag">Multi-Hop</span>
+        </div>
+      </div>
+
+      <!-- Project 4: Smart Beehive -->
+      <div class="card card-accent-green">
+        <div class="card-title">🐝 Smart Beehive Monitor — ESP32 + HX711 + LoRa ติดตามสุขภาพรังผึ้ง</div>
+        <div class="card-desc">
+          โปรเจกต์บน GitHub อัปเดตล่าสุด เมษายน 2026 ตรวจสอบสุขภาพรังผึ้งด้วย sensor หลายตัว
+          ส่งข้อมูลผ่าน LoRa ระยะไกลกลับมายัง base station
+          deep sleep ช่วยยืดอายุแบตเตอรีได้หลายเดือน
+        </div>
+
+        <div style="margin:0.75rem 0;">
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.4rem;font-weight:600;">Sensors ในระบบ</div>
+          <table class="spec-table">
+            <tr><td>น้ำหนักรัง</td><td>Load Cell + HX711 (ผึ้งกินน้ำผึ้ง = น้ำหนักลด)</td></tr>
+            <tr><td>อุณหภูมิรัง</td><td>DHT22 × 2 (ใน/นอกรัง)</td></tr>
+            <tr><td>ความชื้น</td><td>DHT22 วัดความชื้นสัมพัทธ์</td></tr>
+            <tr><td>Communication</td><td>LoRa SX1278 (ส่งได้ไกล 2-5 km)</td></tr>
+            <tr><td>แสดงผล</td><td>OLED 0.96"</td></tr>
+            <tr><td>พลังงาน</td><td>แบต LiPo + Solar + Deep Sleep</td></tr>
+          </table>
+        </div>
+
+        <div class="highlight-box green">
+          <strong>วิเคราะห์อัตโนมัติ:</strong> น้ำหนักเพิ่มเร็ว = ฤดูดอกไม้บาน น้ำหนักลดเร็วผิดปกติ = โรคหรือศัตรู
+          อุณหภูมิใน 34-35°C ปกติ ถ้าต่ำกว่า = ราชินีป่วย ถ้าสูงเกิน = ผึ้งล้นรัง
+        </div>
+
+        <div class="tags">
+          <span class="tag tag-green">Beehive</span>
+          <span class="tag tag-blue">HX711</span>
+          <span class="tag tag-blue">LoRa</span>
+          <span class="tag tag-green">Smart Farm</span>
+          <span class="tag">Deep Sleep</span>
+        </div>
+      </div>
+
+      <!-- Project 5: Mushroom Farm AI -->
+      <div class="card card-accent-purple">
+        <div class="card-title">🍄 Smart Mushroom Farm — ESP32 + Computer Vision ตรวจโรคอัตโนมัติ</div>
+        <div class="card-desc">
+          ระบบปลูกเห็ดอัจฉริยะใช้ ESP32 ควบคุมสภาพแวดล้อม (อุณหภูมิ, ความชื้น, CO₂)
+          ร่วมกับ camera module ถ่ายภาพเห็ดสม่ำเสมอแล้วส่ง inference ผ่าน Edge AI
+          ตรวจจับโรคราน้ำค้างและการปนเปื้อนแบคทีเรียได้ก่อนสายตาเปล่า
+        </div>
+
+        <ol class="step-list">
+          <li>DHT22/SHT40 วัด temp+humidity → ESP32 ควบคุม humidifier + fan ด้วย PID</li>
+          <li>MH-Z19B วัด CO₂ → เปิด/ปิด ventilation ให้ CO₂ ต่ำกว่า 1000 ppm</li>
+          <li>ESP32-CAM ถ่ายภาพทุก 30 นาที ส่งไป ESP32-P4 หรือ server</li>
+          <li>Edge Impulse model classify: normal / contamination / harvest-ready</li>
+          <li>แจ้งเตือนผ่าน LINE Notify เมื่อตรวจพบโรคหรือถึงเวลาเก็บเกี่ยว</li>
+        </ol>
+
+        <div class="highlight-box purple">
+          <strong>ROI:</strong> เห็ดนางฟ้าที่โรคไม่ทันระบาด ลดการสูญเสียได้ 40-60%
+          ระบบนี้ใช้ ESP32 ราคาต่ำกว่า 500 บาท แต่ช่วยประหยัดค่าเสียหายได้เป็นหมื่น
+        </div>
+
+        <div class="tags">
+          <span class="tag tag-purple">Computer Vision</span>
+          <span class="tag tag-green">Mushroom Farm</span>
+          <span class="tag tag-blue">Edge Impulse</span>
+          <span class="tag tag-orange">MH-Z19B</span>
+          <span class="tag">PID Control</span>
+        </div>
+      </div>
+
+      <!-- Project 6: UWB + Matter Smart Home -->
+      <div class="card card-accent-teal">
+        <div class="card-title">🏠 Presence-Based Smart Home — UWB + ESP32-H21 + Matter ห้องรู้ว่าคุณอยู่ที่ไหน</div>
+        <div class="card-desc">
+          รวม UWB positioning เข้ากับ ESP32-H21 Matter node สร้างระบบ Smart Home
+          ที่รู้ว่าสมาชิกแต่ละคนอยู่ห้องไหน ควบคุม lighting, AC, และ entertainment
+          ตาม presence จริงๆ แบบ sub-room accuracy — ไม่ใช่แค่ PIR ว่ามีคนในบ้าน
+        </div>
+
+        <div class="highlight-box">
+          <strong>Architecture:</strong> UWB anchor (ESP32-S3) 4 จุดในบ้าน → กำหนด zone map
+          Tag บน keychain ของแต่ละคน → ตำแหน่ง update ทุก 200ms → ส่งผ่าน MQTT →
+          Home Assistant อ่าน zone → trigger automation
+        </div>
+
+        <div style="margin:0.75rem 0;">
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.4rem;font-weight:600;">Automation Ideas</div>
+          <ul style="list-style:none;font-size:0.82rem;color:var(--text-secondary);">
+            <li style="padding:0.2rem 0;border-bottom:1px solid rgba(51,65,85,0.3);">💡 ไฟเปิดล่วงหน้า 2 วินาที ก่อนคุณเดินถึงห้อง</li>
+            <li style="padding:0.2rem 0;border-bottom:1px solid rgba(51,65,85,0.3);">❄️ แอร์ตั้งอุณหภูมิตาม profile ของแต่ละคน</li>
+            <li style="padding:0.2rem 0;border-bottom:1px solid rgba(51,65,85,0.3);">📺 หยุด TV เมื่อคนเดินออกจากห้องนั่งเล่น</li>
+            <li style="padding:0.2rem 0;">🔒 ล็อคคอมพิวเตอร์อัตโนมัติเมื่อคุณออกห่างจากโต๊ะ</li>
+          </ul>
+        </div>
+
+        <div class="tags">
+          <span class="tag tag-blue">UWB</span>
+          <span class="tag tag-green">Matter</span>
+          <span class="tag tag-green">ESP32-H21</span>
+          <span class="tag tag-purple">Home Assistant</span>
+          <span class="tag">Presence</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: SENSORS & MODULES ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,146,60,0.15);">🔬</div>
+      <h2>Sensors & Modules น่าสนใจ</h2>
+      <span class="section-count">5 รายการ</span>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- Sensor 1: Qorvo DWM3000 -->
+      <div class="card card-accent-blue">
+        <div class="card-title">Qorvo DWM3000EVB — UWB Module ราคาย่อมเยา</div>
+        <div class="card-desc">
+          UWB module ที่นิยมที่สุดสำหรับ DIY indoor positioning ต่อกับ ESP32 ผ่าน SPI
+          ใช้ DW3000 chip รองรับ IEEE 802.15.4-2015 UWB และ DS-TWR ranging
+        </div>
+        <table class="spec-table">
+          <tr><td>Chip</td><td>Qorvo DW3000</td></tr>
+          <tr><td>Standard</td><td>IEEE 802.15.4-2015 UWB</td></tr>
+          <tr><td>ความแม่นยำ</td><td>10 cm (Line of Sight)</td></tr>
+          <tr><td>ระยะทำงาน</td><td>สูงสุด 60 เมตร (LOS)</td></tr>
+          <tr><td>Interface</td><td>SPI (เชื่อมต่อ ESP32 ได้ตรง)</td></tr>
+          <tr><td>ความถี่</td><td>Channel 5 (6.5 GHz) / Channel 9 (8 GHz)</td></tr>
+          <tr><td>Power</td><td>TX: 60 mA, Idle: 1 µA</td></tr>
+          <tr><td>ราคา</td><td>~600-900 บาท/ชิ้น (AliExpress)</td></tr>
+        </table>
+        <div class="tags">
+          <span class="tag tag-blue">UWB</span>
+          <span class="tag tag-green">10 cm accuracy</span>
+          <span class="tag">SPI</span>
+          <span class="tag">60 m range</span>
+        </div>
+      </div>
+
+      <!-- Sensor 2: TJA1050 CAN -->
+      <div class="card card-accent-orange">
+        <div class="card-title">TJA1050 / SN65HVD230 — CAN Bus Transceiver สำหรับ ESP32</div>
+        <div class="card-desc">
+          IC แปลงสัญญาณระหว่าง ESP32's TWAI controller กับสาย CAN Bus จริงๆ ในรถยนต์
+          NXP TJA1050 ใช้ไฟ 5V, TI SN65HVD230 ใช้ไฟ 3.3V (เหมาะกว่าสำหรับ ESP32)
+        </div>
+        <table class="spec-table">
+          <tr><td>Speed</td><td>สูงสุด 1 Mbit/s</td></tr>
+          <tr><td>แรงดัน (SN65)</td><td>3.3V (ตรงกับ ESP32)</td></tr>
+          <tr><td>แรงดัน (TJA1050)</td><td>5V (ต้องใช้ level shifter)</td></tr>
+          <tr><td>Mode</td><td>Normal, Standby, Sleep</td></tr>
+          <tr><td>ราคา</td><td>15-40 บาท/ชิ้น</td></tr>
+          <tr><td>Library</td><td>ESP-IDF TWAI, arduino-CAN</td></tr>
+        </table>
+        <div class="highlight-box orange" style="font-size:0.82rem;">
+          <strong>แนะนำ:</strong> ซื้อ module สำเร็จรูปที่มี SN65HVD230 พร้อม terminal block
+          ราคา ~80-120 บาท ประหยัดเวลา soldering มาก
+        </div>
+        <div class="tags">
+          <span class="tag tag-orange">CAN Bus</span>
+          <span class="tag tag-orange">3.3V Logic</span>
+          <span class="tag">1 Mbit/s</span>
+          <span class="tag">Automotive</span>
+        </div>
+      </div>
+
+      <!-- Sensor 3: OV2710 Camera -->
+      <div class="card card-accent-green">
+        <div class="card-title">OmniVision OV2710 — 2MP 1080p@30fps สำหรับ Edge Vision</div>
+        <div class="card-desc">
+          Image sensor ที่ใช้ใน ESP32-P4-EYE ให้ภาพคุณภาพสูงสำหรับ AI inference
+          ความไวต่อแสงน้อยดีเยี่ยม เหมาะกับ surveillance และ industrial inspection
+        </div>
+        <table class="spec-table">
+          <tr><td>Resolution</td><td>1920×1080 (Full HD)</td></tr>
+          <tr><td>Frame Rate</td><td>30 fps @ 1080p</td></tr>
+          <tr><td>Sensor Size</td><td>1/2.7"</td></tr>
+          <tr><td>Pixel Size</td><td>3 µm</td></tr>
+          <tr><td>Low Light</td><td>3300 mV/lux-sec</td></tr>
+          <tr><td>SNR</td><td>39 dB</td></tr>
+          <tr><td>Dynamic Range</td><td>69 dB</td></tr>
+          <tr><td>Interface</td><td>MIPI CSI-2</td></tr>
+        </table>
+        <div class="tags">
+          <span class="tag tag-green">1080p</span>
+          <span class="tag tag-green">MIPI CSI</span>
+          <span class="tag">Low Light</span>
+          <span class="tag tag-orange">Edge AI</span>
+        </div>
+      </div>
+
+      <!-- Sensor 4: Load Cell HX711 -->
+      <div class="card card-accent-teal">
+        <div class="card-title">Load Cell + HX711 — วัดน้ำหนักความละเอียด 1 กรัม ราคาถูก</div>
+        <div class="card-desc">
+          Combo ยอดนิยมสำหรับโปรเจกต์ที่ต้องวัดน้ำหนัก เช่น smart scale, beehive monitor,
+          stock management ใน supply chain HX711 เป็น 24-bit ADC ที่ออกแบบมาสำหรับ load cell โดยเฉพาะ
+        </div>
+        <table class="spec-table">
+          <tr><td>ADC</td><td>HX711 — 24-bit resolution</td></tr>
+          <tr><td>Sampling Rate</td><td>10 หรือ 80 SPS (selectable)</td></tr>
+          <tr><td>Input Range</td><td>FullScale ±40mV</td></tr>
+          <tr><td>Interface</td><td>2-wire (CLK + DATA) — ไม่ใช่ SPI/I²C</td></tr>
+          <tr><td>Load Cell</td><td>เลือกตาม range: 1/5/10/50/100 kg</td></tr>
+          <tr><td>ความละเอียด</td><td>&lt; 1 กรัม (load cell 10 kg)</td></tr>
+          <tr><td>ราคา HX711</td><td>~20-40 บาท</td></tr>
+          <tr><td>Library</td><td>bogde/HX711 (Arduino)</td></tr>
+        </table>
+        <div class="tags">
+          <span class="tag tag-blue">24-bit ADC</span>
+          <span class="tag tag-green">Weight Sensor</span>
+          <span class="tag">Load Cell</span>
+          <span class="tag">Smart Scale</span>
+        </div>
+      </div>
+
+      <!-- Sensor 5: MH-Z19B CO2 -->
+      <div class="card card-accent-purple">
+        <div class="card-title">MH-Z19B / MH-Z19C — CO₂ Sensor NDIR แม่นยำสูง ราคา 350 บาท</div>
+        <div class="card-desc">
+          Sensor วัด CO₂ ด้วยเทคโนโลยี NDIR (Non-Dispersive Infrared) ที่ใช้แสง IR ตรวจสอบโมเลกุล CO₂
+          ความแม่นยำสูงกว่า VOC-based sensor มาก เหมาะสำหรับ indoor air quality, greenhouse และ mushroom farm
+        </div>
+        <table class="spec-table">
+          <tr><td>เทคโนโลยี</td><td>NDIR (Non-Dispersive Infrared)</td></tr>
+          <tr><td>Range</td><td>0–5000 ppm (รุ่น B) / 0–2000 ppm (C)</td></tr>
+          <tr><td>ความแม่นยำ</td><td>±(50 ppm + 5%)</td></tr>
+          <tr><td>Pre-heat Time</td><td>3 นาที</td></tr>
+          <tr><td>Interface</td><td>UART (9600 baud) หรือ PWM</td></tr>
+          <tr><td>Self-Calibration</td><td>Auto baseline correction ทุก 24h</td></tr>
+          <tr><td>ราคา</td><td>~300-450 บาท</td></tr>
+          <tr><td>Library</td><td>WifWaf/MH-Z19 (Arduino)</td></tr>
+        </table>
+        <div class="highlight-box purple">
+          <strong>เกณฑ์อ้างอิง:</strong> CO₂ ที่ดี = &lt;800 ppm, เริ่มง่วง = 1000-1500 ppm,
+          สุขภาพแย่ = &gt;2000 ppm — พืชในโรงเรือนชอบ 1000-1500 ppm
+        </div>
+        <div class="tags">
+          <span class="tag tag-purple">CO₂ Sensor</span>
+          <span class="tag tag-purple">NDIR</span>
+          <span class="tag tag-green">Indoor Air</span>
+          <span class="tag">Greenhouse</span>
+          <span class="tag">UART</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(129,140,248,0.15);">📚</div>
+      <h2>แหล่งข้อมูลและ Library</h2>
+      <span class="section-count">8 รายการ</span>
+    </div>
+
+    <div class="resource-list">
+
+      <a href="https://github.com/nicolaielectronics/ESP32-UWB-RTLS" class="resource-item">
+        <div class="resource-icon" style="background:rgba(56,189,248,0.15);">🎯</div>
+        <div>
+          <div class="resource-title">ESP32-UWB-RTLS — Real-Time Location System บน GitHub</div>
+          <div class="resource-desc">ระบบ RTLS สำเร็จรูปด้วย ESP32 + DWM1000 รองรับ anchor หลายจุดและ web dashboard</div>
+        </div>
+        <div class="tags" style="margin-left:auto;margin-top:0;">
+          <span class="tag tag-blue">UWB</span>
+        </div>
+      </a>
+
+      <a href="https://github.com/nkolban/esp32-snippets" class="resource-item">
+        <div class="resource-icon" style="background:rgba(52,211,153,0.15);">📘</div>
+        <div>
+          <div class="resource-title">esp32-snippets — โค้ดตัวอย่าง CAN Bus, BLE, WiFi สำหรับ ESP32</div>
+          <div class="resource-desc">คลังโค้ดตัวอย่างจาก Neil Kolban ครอบคลุมทุก peripheral ของ ESP32</div>
+        </div>
+        <div class="tags" style="margin-left:auto;margin-top:0;">
+          <span class="tag tag-green">Arduino</span>
+        </div>
+      </a>
+
+      <a href="https://github.com/painlessMesh/painlessMesh" class="resource-item">
+        <div class="resource-icon" style="background:rgba(251,146,60,0.15);">🕸️</div>
+        <div>
+          <div class="resource-title">painlessMesh — ESP-NOW Mesh Library อัตโนมัติ</div>
+          <div class="resource-desc">สร้าง self-healing mesh network จาก ESP32 หลายตัวด้วยโค้ดแค่ไม่กี่บรรทัด</div>
+        </div>
+        <div class="tags" style="margin-left:auto;margin-top:0;">
+          <span class="tag tag-orange">Mesh</span>
+        </div>
+      </a>
+
+      <a href="https://github.com/bogde/HX711" class="resource-item">
+        <div class="resource-icon" style="background:rgba(129,140,248,0.15);">⚖️</div>
+        <div>
+          <div class="resource-title">bogde/HX711 — Arduino Library สำหรับ Load Cell ADC</div>
+          <div class="resource-desc">Library ยอดนิยมสำหรับ HX711 รองรับ calibration, tare และ averaging</div>
+        </div>
+        <div class="tags" style="margin-left:auto;margin-top:0;">
+          <span class="tag tag-purple">Load Cell</span>
+        </div>
+      </a>
+
+      <a href="https://github.com/WifWaf/MH-Z19" class="resource-item">
+        <div class="resource-icon" style="background:rgba(52,211,153,0.15);">💨</div>
+        <div>
+          <div class="resource-title">WifWaf/MH-Z19 — Library สำหรับ MH-Z19 CO₂ Sensor</div>
+          <div class="resource-desc">รองรับ UART และ PWM mode, background calibration control, temperature reading</div>
+        </div>
+        <div class="tags" style="margin-left:auto;margin-top:0;">
+          <span class="tag tag-green">CO₂</span>
+        </div>
+      </a>
+
+      <a href="https://github.com/lily-osp/smart-farming-esp32" class="resource-item">
+        <div class="resource-icon" style="background:rgba(52,211,153,0.15);">🌾</div>
+        <div>
+          <div class="resource-title">smart-farming-esp32 — IoT Smart Farm พร้อมใช้งาน</div>
+          <div class="resource-desc">ระบบ Smart Farm ครบจบ: Soil moisture, Temp, Humidity, MQTT, dual cloud, offline mode</div>
+        </div>
+        <div class="tags" style="margin-left:auto;margin-top:0;">
+          <span class="tag tag-green">Smart Farm</span>
+        </div>
+      </a>
+
+      <a href="https://github.com/espressif/esp-idf/tree/master/examples/peripherals/twai" class="resource-item">
+        <div class="resource-icon" style="background:rgba(251,146,60,0.15);">🚗</div>
+        <div>
+          <div class="resource-title">ESP-IDF TWAI Examples — ตัวอย่าง CAN Bus อย่างเป็นทางการ</div>
+          <div class="resource-desc">ตัวอย่างจาก Espressif สำหรับ TWAI/CAN Bus: alert handling, listen-only, network</div>
+        </div>
+        <div class="tags" style="margin-left:auto;margin-top:0;">
+          <span class="tag tag-orange">CAN Bus</span>
+        </div>
+      </a>
+
+      <a href="https://www.espressif.com/en/news/ESP32_H21" class="resource-item">
+        <div class="resource-icon" style="background:rgba(129,140,248,0.15);">🔔</div>
+        <div>
+          <div class="resource-title">Espressif Official — ESP32-H21 Announcement</div>
+          <div class="resource-desc">ประกาศ ESP32-H21 อย่างเป็นทางการจาก Espressif พร้อม datasheet และ specs</div>
+        </div>
+        <div class="tags" style="margin-left:auto;margin-top:0;">
+          <span class="tag tag-purple">Official</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p>
+    <strong>ESP32 & Sensor Daily Intelligence</strong> — สร้างโดย AI Researcher อัตโนมัติ<br>
+    วันที่สร้าง: วันพุธที่ 13 สิงหาคม 2569 (13 August 2026)<br>
+    หัวข้อวันนี้: UWB Indoor Positioning · ESP32-E22 WiFi 6E · ESP32-H21 DC-DC · ESP32-P4-EYE Vision AI · CAN Bus OBD-II · ESP-NOW Mesh
+  </p>
+  <div class="footer-links">
+    <a href="https://www.espressif.com/en/products/socs/esp32-h21">ESP32-H21</a>
+    <a href="https://www.espressif.com/en/products/socs/esp32-e22">ESP32-E22</a>
+    <a href="https://github.com/espressif/esp-idf">ESP-IDF GitHub</a>
+    <a href="https://github.com/painlessMesh/painlessMesh">painlessMesh</a>
+    <a href="https://github.com/bogde/HX711">HX711 Library</a>
+  </div>
+  <p style="margin-top:1rem;font-size:0.75rem;color:var(--text-muted);">
+    แหล่งอ้างอิง: Espressif Official, Hackster.io, CNX-Software, Notebookcheck, GitHub, Arduino Community 2026
+  </p>
+</footer>
+
+</body>
+</html>
