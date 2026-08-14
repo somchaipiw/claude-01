@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 14 สิงหาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 50%, #1a1040 100%);
+    border-bottom: 1px solid #334155;
+    padding: 48px 24px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.4);
+    color: #818cf8;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+  }
+
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #818cf8, #38bdf8, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+
+  .header-sub {
+    color: #94a3b8;
+    font-size: 1rem;
+    margin-bottom: 24px;
+  }
+
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #818cf8;
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 0.78rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* Navigation tabs */
+  .nav-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px 24px;
+    background: #0f172a;
+    border-bottom: 1px solid #1e293b;
+    flex-wrap: wrap;
+  }
+
+  .nav-tab {
+    padding: 7px 18px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    background: transparent;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .nav-tab:hover {
+    border-color: #818cf8;
+    color: #818cf8;
+    background: rgba(99,102,241,0.08);
+  }
+
+  /* Main layout */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 24px;
+  }
+
+  section {
+    margin-bottom: 64px;
+  }
+
+  .section-header {
+    margin-bottom: 32px;
+  }
+
+  .section-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #818cf8;
+    margin-bottom: 8px;
+  }
+
+  .section-header h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+
+  .section-header p {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin-top: 6px;
+  }
+
+  /* Cards grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+
+  .cards-grid-2 {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  }
+
+  /* Card base */
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: #475569;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .card-purple::before { background: linear-gradient(90deg, #818cf8, #a78bfa); }
+  .card-blue::before   { background: linear-gradient(90deg, #38bdf8, #818cf8); }
+  .card-green::before  { background: linear-gradient(90deg, #34d399, #38bdf8); }
+  .card-orange::before { background: linear-gradient(90deg, #fb923c, #f59e0b); }
+  .card-pink::before   { background: linear-gradient(90deg, #f472b6, #818cf8); }
+  .card-cyan::before   { background: linear-gradient(90deg, #22d3ee, #38bdf8); }
+  .card-teal::before   { background: linear-gradient(90deg, #2dd4bf, #34d399); }
+
+  .card-icon {
+    font-size: 2rem;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+
+  .card-desc {
+    font-size: 0.88rem;
+    color: #94a3b8;
+    line-height: 1.7;
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+  }
+
+  .tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(99,102,241,0.15);
+    color: #818cf8;
+    border: 1px solid rgba(99,102,241,0.25);
+  }
+
+  .tag-green  { background: rgba(52,211,153,0.12); color: #34d399; border-color: rgba(52,211,153,0.25); }
+  .tag-blue   { background: rgba(56,189,248,0.12); color: #38bdf8; border-color: rgba(56,189,248,0.25); }
+  .tag-orange { background: rgba(251,146,60,0.12);  color: #fb923c; border-color: rgba(251,146,60,0.25); }
+  .tag-pink   { background: rgba(244,114,182,0.12); color: #f472b6; border-color: rgba(244,114,182,0.25); }
+
+  /* Highlight card (featured) */
+  .card-featured {
+    background: linear-gradient(135deg, #1e293b 0%, #1a1040 100%);
+    border-color: rgba(129,140,248,0.35);
+    grid-column: span 2;
+  }
+
+  @media (max-width: 768px) {
+    .card-featured { grid-column: span 1; }
+  }
+
+  .card-featured .card-title { font-size: 1.15rem; }
+
+  /* Highlight bar */
+  .highlight-bar {
+    background: rgba(99,102,241,0.1);
+    border-left: 3px solid #818cf8;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    margin-top: 14px;
+    font-size: 0.85rem;
+    color: #a5b4fc;
+  }
+
+  /* Spec table */
+  .spec-table {
+    width: 100%;
+    margin-top: 14px;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+
+  .spec-table tr {
+    border-bottom: 1px solid #1e293b;
+  }
+
+  .spec-table td:first-child {
+    color: #64748b;
+    padding: 5px 0;
+    width: 45%;
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .spec-table td:last-child {
+    color: #cbd5e1;
+    padding: 5px 0;
+  }
+
+  /* Project card */
+  .project-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .project-card:hover {
+    transform: translateY(-2px);
+    border-color: #475569;
+  }
+
+  .project-card-header {
+    padding: 20px 24px 14px;
+    border-bottom: 1px solid #334155;
+  }
+
+  .project-card-emoji {
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+
+  .project-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 4px;
+  }
+
+  .project-card-sub {
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  .project-card-body {
+    padding: 16px 24px 20px;
+  }
+
+  .project-card-desc {
+    font-size: 0.87rem;
+    color: #94a3b8;
+    line-height: 1.7;
+    margin-bottom: 14px;
+  }
+
+  .parts-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .parts-list li {
+    font-size: 0.8rem;
+    color: #64748b;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .parts-list li::before {
+    content: '▸';
+    color: #818cf8;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+  }
+
+  .price-badge {
+    display: inline-block;
+    background: rgba(52,211,153,0.12);
+    color: #34d399;
+    border: 1px solid rgba(52,211,153,0.25);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 999px;
+    margin-top: 12px;
+  }
+
+  /* Sensor card */
+  .sensor-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 22px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .sensor-card:hover {
+    transform: translateY(-2px);
+    border-color: #475569;
+  }
+
+  .sensor-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #38bdf8;
+    margin-bottom: 6px;
+  }
+
+  .sensor-type {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+
+  .sensor-desc {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+
+  .sensor-specs {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .sensor-spec-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    padding: 3px 0;
+    border-bottom: 1px dashed #1e293b;
+  }
+
+  .sensor-spec-key { color: #64748b; }
+  .sensor-spec-val { color: #cbd5e1; font-weight: 600; }
+
+  /* Resource cards */
+  .resource-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .resource-card:hover { border-color: #475569; }
+
+  .resource-icon {
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .resource-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 4px;
+  }
+
+  .resource-desc {
+    font-size: 0.82rem;
+    color: #64748b;
+    line-height: 1.6;
+  }
+
+  .resource-link {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 0.78rem;
+    color: #818cf8;
+    text-decoration: none;
+  }
+
+  .resource-link:hover { color: #a5b4fc; text-decoration: underline; }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid #1e293b;
+    margin: 0;
+  }
+
+  /* Footer */
+  footer {
+    background: #0a101e;
+    border-top: 1px solid #1e293b;
+    padding: 36px 24px;
+    text-align: center;
+    color: #475569;
+    font-size: 0.82rem;
+  }
+
+  footer strong { color: #64748b; }
+
+  .footer-sources {
+    max-width: 800px;
+    margin: 16px auto 0;
+    font-size: 0.78rem;
+    color: #334155;
+    line-height: 1.9;
+  }
+
+  .footer-sources a {
+    color: #475569;
+    text-decoration: none;
+  }
+
+  .footer-sources a:hover { color: #94a3b8; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    main { padding: 32px 16px; }
+    .cards-grid { grid-template-columns: 1fr; }
+    header { padding: 36px 16px 32px; }
+    .stats-row { gap: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily Research — 14 สิงหาคม 2026</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="header-sub">Audio DSP · Matter 1.5 · ESPHome Visual Builder · GPS Tracker · Wearable Health</p>
+  <div class="stats-row">
+    <div class="stat-item">
+      <span class="stat-num">4</span>
+      <span class="stat-label">นวัตกรรมใหม่</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">5</span>
+      <span class="stat-label">ไอเดียโปรเจกต์</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">5</span>
+      <span class="stat-label">Sensor &amp; Module</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">4</span>
+      <span class="stat-label">แหล่งข้อมูล</span>
+    </div>
+  </div>
+</header>
+
+<nav class="nav-tabs">
+  <a class="nav-tab" href="#innovations">นวัตกรรมใหม่</a>
+  <a class="nav-tab" href="#projects">ไอเดียโปรเจกต์</a>
+  <a class="nav-tab" href="#sensors">Sensors &amp; Modules</a>
+  <a class="nav-tab" href="#resources">แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- ====== SECTION 1: INNOVATIONS ====== -->
+  <section id="innovations">
+    <div class="section-header">
+      <span class="section-tag">Section 01</span>
+      <h2>นวัตกรรมและอัปเดตล่าสุด</h2>
+      <p>ชิปใหม่, เครื่องมือพัฒนา, และอัปเดตสำคัญจากวงการ ESP32 ประจำเดือนสิงหาคม 2026</p>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- ESP32-H4 -->
+      <div class="card card-purple">
+        <span class="card-icon">🔵</span>
+        <div class="card-title">ESP32-H4 — ชิป Matter/Thread รุ่นใหม่ RISC-V 96 MHz + BT 5.4</div>
+        <div class="card-desc">
+          ESP32-H4 เป็นชิปตัวล่าสุดจาก Espressif ที่ออกแบบมาสำหรับ <strong>IoT ประหยัดพลังงาน</strong> โดยเฉพาะ
+          ใช้ RISC-V dual-core 96 MHz พร้อม Bluetooth 5.4 รองรับ LE Audio และโปรโตคอล Thread และ Zigbee
+          ทำให้เหมาะสำหรับอุปกรณ์ Matter ที่ใช้แบตเตอรี่ยาวนาน เช่น สวิตช์ไร้สาย, เซ็นเซอร์ประตู
+        </div>
+        <table class="spec-table">
+          <tr><td>CPU</td><td>RISC-V Dual-Core 96 MHz</td></tr>
+          <tr><td>Wireless</td><td>BT 5.4, Thread, Zigbee</td></tr>
+          <tr><td>Protocol</td><td>Matter 1.5 Native</td></tr>
+          <tr><td>Target</td><td>Battery-powered sensors</td></tr>
+        </table>
+        <div class="card-tags">
+          <span class="tag">ESP32-H4</span>
+          <span class="tag tag-blue">Thread</span>
+          <span class="tag tag-green">Matter 1.5</span>
+          <span class="tag tag-orange">Battery IoT</span>
+        </div>
+      </div>
+
+      <!-- ESPHome 2026.6.0 -->
+      <div class="card card-green">
+        <span class="card-icon">🏗️</span>
+        <div class="card-title">ESPHome 2026.6.0 — Visual Builder ไม่ต้องเขียน YAML แล้ว!</div>
+        <div class="card-desc">
+          อัปเดตสำคัญที่สุดของ ESPHome ในปี 2026 Device Builder ถึงเวอร์ชัน 1.0.0 กลายเป็น
+          dashboard หลักใน Home Assistant Add-on แทน legacy dashboard เดิม มาพร้อม
+          Visual Component Editor, Component Catalog พร้อม dependency resolution,
+          Pin Viewer แสดง GPIO ที่ใช้งาน, และ Firmware Job Queue รองรับ background compilation
+        </div>
+        <div class="highlight-bar">
+          ครั้งแรกในประวัติศาสตร์ ESPHome — สร้าง firmware โดยไม่ต้องเขียน YAML แม้แต่บรรทัดเดียว
+          พร้อม side-by-side CodeMirror YAML editor สำหรับผู้ที่ต้องการ
+        </div>
+        <div class="card-tags">
+          <span class="tag">ESPHome 2026.6</span>
+          <span class="tag tag-green">No YAML</span>
+          <span class="tag tag-blue">Visual Builder</span>
+        </div>
+      </div>
+
+      <!-- Matter 1.5.1 -->
+      <div class="card card-blue">
+        <span class="card-icon">📷</span>
+        <div class="card-title">Matter 1.5.1 — รองรับกล้อง HEIC, Two-Way Audio และ Video Doorbell</div>
+        <div class="card-desc">
+          Matter 1.5.1 (March 2026) เป็น maintenance update ที่มุ่งเน้นกล้องเป็นหลัก เพิ่มการรองรับ
+          <strong>HEIC snapshot</strong>, multi-stream video, two-way audio communication,
+          และปรับปรุง doorbell / chime / intercom อย่างครบวงจร นอกจากนี้ Matter 1.5 ยังเพิ่ม
+          soil sensors และ energy management ทำให้ ESP32-CAM ใช้งานใน Matter ecosystem ได้ง่ายขึ้น
+        </div>
+        <div class="card-tags">
+          <span class="tag">Matter 1.5.1</span>
+          <span class="tag tag-blue">IP Camera</span>
+          <span class="tag tag-pink">Doorbell</span>
+          <span class="tag tag-orange">Soil Sensor</span>
+        </div>
+      </div>
+
+      <!-- ESP32Synth v2.4.0 -->
+      <div class="card card-orange card-featured">
+        <span class="card-icon">🎹</span>
+        <div class="card-title">ESP32Synth v2.4.0 — เครื่องสังเคราะห์เสียงดิจิทัล 350 Voices บน ESP32</div>
+        <div class="card-desc">
+          ESP32Synth เป็น library สังเคราะห์เสียงแบบ bare-metal สำหรับ ESP32 ที่รองรับ Polyphony
+          สูงถึง <strong>350 voices พร้อมกัน</strong> ด้วย audio 48kHz@32bit ผ่าน I2S
+          v2.4.0 เพิ่ม zero-latency audio, SD card streaming ในพื้นหลัง, custom DSP hooks,
+          Chiptune bitcrush engine และ built-in filters+envelopes ไม่ต้องพึ่ง cloud หรือ DSP chip ภายนอก
+          ออก Hackaday เมื่อ April 2026
+        </div>
+        <table class="spec-table">
+          <tr><td>Max Voices</td><td>350+ channels พร้อมกัน</td></tr>
+          <tr><td>Sample Rate</td><td>48 kHz @ 32-bit</td></tr>
+          <tr><td>Output</td><td>I2S (PCM5102A / UDA1334A)</td></tr>
+          <tr><td>Features</td><td>SD Streaming, Bitcrush, ADSR Envelope</td></tr>
+          <tr><td>Platform</td><td>ESP32 Dual-Core (IDF / Arduino)</td></tr>
+        </table>
+        <div class="card-tags">
+          <span class="tag">ESP32Synth</span>
+          <span class="tag tag-orange">Audio DSP</span>
+          <span class="tag tag-blue">I2S</span>
+          <span class="tag tag-green">350 Voices</span>
+          <span class="tag tag-pink">Polyphonic</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ====== SECTION 2: PROJECTS ====== -->
+  <section id="projects">
+    <div class="section-header">
+      <span class="section-tag">Section 02</span>
+      <h2>ไอเดียโปรเจกต์น่าสนใจ</h2>
+      <p>โปรเจกต์ที่สามารถสร้างได้จริง พร้อมรายการชิ้นส่วนและงบประมาณโดยประมาณ</p>
+    </div>
+
+    <div class="cards-grid cards-grid-2">
+
+      <!-- Project 1: Smart Doorbell -->
+      <div class="project-card">
+        <div class="project-card-header">
+          <div class="project-card-emoji">🔔</div>
+          <div class="project-card-title">DIY Smart Video Doorbell รองรับ Matter 1.5</div>
+          <div class="project-card-sub">ESP32-CAM + PIR + ESPHome + Home Assistant</div>
+        </div>
+        <div class="project-card-body">
+          <div class="project-card-desc">
+            สร้าง Video Doorbell ใช้งานร่วมกับ Apple Home, Google Home, Amazon Alexa ผ่าน Matter 1.5
+            โดยใช้ ESP32-CAM เป็นศูนย์กลาง ตั้งค่าผ่าน ESPHome Visual Builder ไม่ต้องเขียนโค้ด
+            รองรับ Live View, Two-way Audio ผ่าน I2S mic+speaker, Motion Detection ด้วย PIR
+            และ snapshot บน notification แทน Ring ที่ค่า subscription $5/เดือน
+          </div>
+          <ul class="parts-list">
+            <li>ESP32-CAM (OV2640 2MP) — ราคาประมาณ 180 บาท</li>
+            <li>PIR Motion Sensor (HC-SR501) — 30 บาท</li>
+            <li>INMP441 I2S MEMS Microphone — 60 บาท</li>
+            <li>MAX98357A I2S Amplifier + Speaker — 80 บาท</li>
+            <li>Doorbell Button + Case 3D Print — 150 บาท</li>
+          </ul>
+          <div class="price-badge">งบ ≈ 500 บาท — ไม่มีค่า subscription รายเดือน</div>
+          <div class="card-tags" style="margin-top:12px;">
+            <span class="tag">Matter 1.5</span>
+            <span class="tag tag-blue">ESP32-CAM</span>
+            <span class="tag tag-green">ESPHome</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 2: Polyphonic Synth -->
+      <div class="project-card">
+        <div class="project-card-header">
+          <div class="project-card-emoji">🎹</div>
+          <div class="project-card-title">DIY Polyphonic Synthesizer ด้วย ESP32 + Capacitive Keys</div>
+          <div class="project-card-sub">ESP32 + MPR121 + PCM5102A + ESP32Synth v2.4.0</div>
+        </div>
+        <div class="project-card-body">
+          <div class="project-card-desc">
+            สร้างเครื่องดนตรีดิจิทัลแบบ Polyphonic ที่รองรับ 12 คีย์แบบ capacitive touch
+            ผ่าน MPR121 ใช้ ESP32Synth v2.4.0 library สังเคราะห์เสียงออก I2S DAC PCM5102A
+            เพิ่ม Faust DSP สำหรับ Filter, Reverb, Delay ได้โดยไม่ต้องใช้ DSP ภายนอก
+            Web UI สำหรับปรับ waveform, ADSR envelope และ effects ผ่าน Wi-Fi
+          </div>
+          <ul class="parts-list">
+            <li>ESP32 DevKit V4 (dual-core) — 150 บาท</li>
+            <li>MPR121 Capacitive Touch Sensor — 80 บาท</li>
+            <li>PCM5102A I2S DAC Module — 120 บาท</li>
+            <li>Copper foil tape 12 keys — 40 บาท</li>
+            <li>8Ω speaker + 3W amp — 80 บาท</li>
+          </ul>
+          <div class="price-badge">งบ ≈ 470 บาท — เสียงคุณภาพ 48kHz@32bit</div>
+          <div class="card-tags" style="margin-top:12px;">
+            <span class="tag tag-orange">Audio DSP</span>
+            <span class="tag tag-blue">I2S</span>
+            <span class="tag">ESP32Synth</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 3: Solar GPS Tracker -->
+      <div class="project-card">
+        <div class="project-card-header">
+          <div class="project-card-emoji">🛰️</div>
+          <div class="project-card-title">Solar-Powered GPS Asset Tracker กลางแจ้ง 45+ วัน</div>
+          <div class="project-card-sub">ESP32-S3 + u-blox NEO-M10S + Solar + DeepSleep</div>
+        </div>
+        <div class="project-card-body">
+          <div class="project-card-desc">
+            ติดตามสินทรัพย์กลางแจ้งด้วย GPS ความแม่นยำ 3.1 เมตร โดยใช้ Solar Panel ขนาดเล็ก
+            + Li-Po ชาร์จตัวเอง runtime สูงถึง 45+ วันโดยไม่ต้องชาร์จ ใช้ DeepSleep ระหว่าง
+            รายงาน MQTT ทุก 5 นาที ส่งพิกัด GPS + แรงดันแบตไปแสดงบน Dashboard
+            ผ่าน LoRa (The Things Network) หรือ LTE-M สำหรับพื้นที่ห่างไกล
+          </div>
+          <ul class="parts-list">
+            <li>ESP32-S3 Mini (แบตเตอรี่ connector built-in) — 180 บาท</li>
+            <li>u-blox NEO-M10S GNSS Module — 350 บาท</li>
+            <li>Solar Panel 5V/1W กันน้ำ — 120 บาท</li>
+            <li>TP4056 Lithium Charger + Li-Po 3000mAh — 120 บาท</li>
+            <li>SX1262 LoRa Module (optional) — 180 บาท</li>
+          </ul>
+          <div class="price-badge">งบ ≈ 950 บาท — runtime 45 วันด้วยแสงอาทิตย์</div>
+          <div class="card-tags" style="margin-top:12px;">
+            <span class="tag tag-green">Solar</span>
+            <span class="tag tag-blue">GNSS</span>
+            <span class="tag">DeepSleep</span>
+            <span class="tag tag-orange">LoRa</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 4: DIY Fitness Band -->
+      <div class="project-card">
+        <div class="project-card-header">
+          <div class="project-card-emoji">⌚</div>
+          <div class="project-card-title">DIY Fitness Wristband: SpO₂ + HR + Steps + BLE App</div>
+          <div class="project-card-sub">ESP32-C3 Mini + MAX30102 + MPU6050 + 0.96" OLED</div>
+        </div>
+        <div class="project-card-body">
+          <div class="project-card-desc">
+            สมาร์ทแบนด์ DIY ขนาดเล็กสวมข้อมือจริงด้วย ESP32-C3 Mini ที่มีขนาดเพียง 18×20mm
+            วัด SpO₂ + Heart Rate ด้วย MAX30102 นับก้าวด้วย MPU6050 และแสดงผล OLED 0.96 นิ้ว
+            เชื่อมต่อ BLE กับ smartphone app แสดง historical chart ราคาต่ำกว่า 600 บาท
+            ทั้งชุด เหมาะสำหรับเรียนรู้ wearable health tech แบบ hands-on
+          </div>
+          <ul class="parts-list">
+            <li>ESP32-C3 Mini (18×20mm) — 90 บาท</li>
+            <li>MAX30102 SpO₂ + HR Sensor — 80 บาท</li>
+            <li>MPU6050 Accelerometer+Gyro — 50 บาท</li>
+            <li>0.96" OLED I2C Display — 60 บาท</li>
+            <li>Li-Po 150mAh + TP4056 charger — 80 บาท</li>
+            <li>Wristband + 3D Print Case — 100 บาท</li>
+          </ul>
+          <div class="price-badge">งบ ≈ 460 บาท — วัดค่าจริง SpO₂ &amp; HR ได้</div>
+          <div class="card-tags" style="margin-top:12px;">
+            <span class="tag tag-pink">Wearable</span>
+            <span class="tag tag-blue">SpO₂</span>
+            <span class="tag">BLE</span>
+            <span class="tag tag-orange">Health</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 5: Voice AI Speaker -->
+      <div class="project-card">
+        <div class="project-card-header">
+          <div class="project-card-emoji">🗣️</div>
+          <div class="project-card-title">ESP32 Voice AI Speaker — LLM Offline+Online Hybrid</div>
+          <div class="project-card-sub">ESP32-S3 + INMP441 + MAX98357A + Groq API + TTS</div>
+        </div>
+        <div class="project-card-body">
+          <div class="project-card-desc">
+            ลำโพง AI อัจฉริยะที่ฟังคำถาม ผ่าน INMP441 I2S Microphone → ส่งไปถอดรหัสเสียง STT
+            ด้วย Deepgram/Whisper → ประมวลผลคำตอบด้วย Groq LLM (latency ต่ำ &lt;200ms) →
+            สังเคราะห์เสียงตอบกลับ TTS → ออกลำโพงผ่าน MAX98357A I2S Amplifier
+            Wake word detection "Hey ESP" ทำงาน on-device ด้วย TFLite ไม่ต้องส่ง cloud
+          </div>
+          <ul class="parts-list">
+            <li>ESP32-S3 DevKitC-1 — 180 บาท</li>
+            <li>INMP441 I2S MEMS Microphone — 60 บาท</li>
+            <li>MAX98357A I2S Class-D Amp — 90 บาท</li>
+            <li>3W 8Ω Speaker — 50 บาท</li>
+            <li>Groq API (free tier) — ฟรี</li>
+          </ul>
+          <div class="price-badge">งบ ≈ 380 บาท — Wake Word on-device, LLM cloud optional</div>
+          <div class="card-tags" style="margin-top:12px;">
+            <span class="tag tag-orange">Voice AI</span>
+            <span class="tag tag-blue">I2S Audio</span>
+            <span class="tag tag-green">TinyML</span>
+            <span class="tag">LLM</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ====== SECTION 3: SENSORS ====== -->
+  <section id="sensors">
+    <div class="section-header">
+      <span class="section-tag">Section 03</span>
+      <h2>Sensors &amp; Modules น่าสนใจ</h2>
+      <p>ชิ้นส่วนอิเล็กทรอนิกส์ที่เหมาะกับโปรเจกต์ ESP32 ประจำสัปดาห์นี้</p>
+    </div>
+
+    <div class="cards-grid">
+
+      <div class="sensor-card">
+        <div class="sensor-name">INMP441</div>
+        <div class="sensor-type">I2S MEMS Digital Microphone</div>
+        <div class="sensor-desc">
+          ไมโครโฟนดิจิทัล MEMS แบบ I2S ราคาประหยัด ให้คุณภาพเสียงสูง เชื่อมต่อ ESP32 ด้วย
+          สายเพียง 3 เส้น (SCK, WS, SD) เหมาะสำหรับ Voice Recognition, Sound Classification,
+          Audio Recording และ Wake Word Detection ความไวสูง SNR 61 dB
+        </div>
+        <div class="sensor-specs">
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">Interface</span>
+            <span class="sensor-spec-val">I2S Standard</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">SNR</span>
+            <span class="sensor-spec-val">61 dB (A-weighted)</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">Frequency</span>
+            <span class="sensor-spec-val">60 Hz – 15 kHz</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">Voltage</span>
+            <span class="sensor-spec-val">1.8V – 3.3V</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">ราคา</span>
+            <span class="sensor-spec-val">~55–80 บาท</span>
+          </div>
+        </div>
+        <div class="card-tags" style="margin-top:12px;">
+          <span class="tag tag-blue">Voice AI</span>
+          <span class="tag">I2S</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">PCM5102A</div>
+        <div class="sensor-type">I2S Hi-Fi DAC Module</div>
+        <div class="sensor-desc">
+          DAC (Digital-to-Analog Converter) คุณภาพสูง 32-bit 384kHz จาก Texas Instruments
+          เชื่อมต่อ ESP32 ผ่าน I2S เพียง 3 pins ให้เสียงดนตรี Hi-Fi ระดับ 112dB SNR
+          เหมาะสำหรับ Music Player, ESP32Synth, Streaming Audio และ Notification sounds
+          มี onboard analog filter ไม่ต้องเพิ่มวงจร
+        </div>
+        <div class="sensor-specs">
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">Resolution</span>
+            <span class="sensor-spec-val">32-bit</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">Sample Rate</span>
+            <span class="sensor-spec-val">สูงสุด 384 kHz</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">SNR</span>
+            <span class="sensor-spec-val">112 dB</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">Output</span>
+            <span class="sensor-spec-val">Stereo Line Out (3.5mm)</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">ราคา</span>
+            <span class="sensor-spec-val">~100–140 บาท</span>
+          </div>
+        </div>
+        <div class="card-tags" style="margin-top:12px;">
+          <span class="tag tag-orange">Hi-Fi Audio</span>
+          <span class="tag">I2S</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">MAX30102</div>
+        <div class="sensor-type">SpO₂ &amp; Heart Rate Sensor</div>
+        <div class="sensor-desc">
+          เซ็นเซอร์วัด Pulse Oximetry (SpO₂) และ Heart Rate แบบ optical photoplethysmography
+          ใช้ LED สีแดง + อินฟราเรดส่องผ่านผิวหนัง เชื่อมต่อ I2C ขนาดเล็กมาก 5.6×3.3mm
+          เหมาะสำหรับ wearable health monitor, fitness tracker, patient monitor
+        </div>
+        <div class="sensor-specs">
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">Interface</span>
+            <span class="sensor-spec-val">I2C (400kHz)</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">SpO₂ Range</span>
+            <span class="sensor-spec-val">70% – 100%</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">HR Range</span>
+            <span class="sensor-spec-val">0 – 300 BPM</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">Current</span>
+            <span class="sensor-spec-val">600 µA สูงสุด</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">ราคา</span>
+            <span class="sensor-spec-val">~70–100 บาท</span>
+          </div>
+        </div>
+        <div class="card-tags" style="margin-top:12px;">
+          <span class="tag tag-pink">Health</span>
+          <span class="tag">I2C</span>
+          <span class="tag tag-green">Wearable</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">u-blox NEO-M10S</div>
+        <div class="sensor-type">Multi-Band GNSS Module</div>
+        <div class="sensor-desc">
+          GNSS module รุ่นใหม่จาก u-blox ที่รองรับ GPS, GLONASS, Galileo, BeiDou พร้อมกัน
+          ให้ความแม่นยำ 2.5m CEP และ Time-to-First-Fix เพียง 6 วินาที
+          ประหยัดพลังงานเพียง 11mA ขณะติดตาม เหมาะกับ solar-powered tracker
+          รองรับ I2C, SPI, UART หลาย interface
+        </div>
+        <div class="sensor-specs">
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">Constellations</span>
+            <span class="sensor-spec-val">GPS + GLONASS + Galileo + BeiDou</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">Accuracy</span>
+            <span class="sensor-spec-val">2.5m CEP</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">TTFF (cold)</span>
+            <span class="sensor-spec-val">~24s (warm: 2s)</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">Current</span>
+            <span class="sensor-spec-val">11 mA tracking</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">ราคา</span>
+            <span class="sensor-spec-val">~300–400 บาท</span>
+          </div>
+        </div>
+        <div class="card-tags" style="margin-top:12px;">
+          <span class="tag tag-blue">GNSS</span>
+          <span class="tag">GPS</span>
+          <span class="tag tag-green">Low Power</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">MPR121</div>
+        <div class="sensor-type">Capacitive Touch Controller</div>
+        <div class="sensor-desc">
+          Capacitive Touch Controller 12 ช่อง จาก NXP ที่ใช้กันอย่างแพร่หลายในโปรเจกต์ synthesizer
+          และเครื่องดนตรี DIY รองรับ electrode ได้หลากหลาย รวมถึง copper foil, fruit, water
+          เชื่อมต่อ I2C ง่าย มี auto-calibration ในตัว ใช้ร่วมกับ ESP32Synth ทำ keyboard ได้ทันที
+        </div>
+        <div class="sensor-specs">
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">Channels</span>
+            <span class="sensor-spec-val">12 electrodes</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">Interface</span>
+            <span class="sensor-spec-val">I2C</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">Detection</span>
+            <span class="sensor-spec-val">Touch + Proximity</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">Calibration</span>
+            <span class="sensor-spec-val">Auto</span>
+          </div>
+          <div class="sensor-spec-row">
+            <span class="sensor-spec-key">ราคา</span>
+            <span class="sensor-spec-val">~70–100 บาท</span>
+          </div>
+        </div>
+        <div class="card-tags" style="margin-top:12px;">
+          <span class="tag tag-orange">Capacitive</span>
+          <span class="tag">Synthesizer</span>
+          <span class="tag">I2C</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ====== SECTION 4: RESOURCES ====== -->
+  <section id="resources">
+    <div class="section-header">
+      <span class="section-tag">Section 04</span>
+      <h2>แหล่งข้อมูลและ Library</h2>
+      <p>เครื่องมือ, ไลบรารี และแหล่งเรียนรู้สำหรับโปรเจกต์ ESP32 ในสัปดาห์นี้</p>
+    </div>
+
+    <div class="cards-grid">
+
+      <div class="resource-card">
+        <div class="resource-icon">🎵</div>
+        <div>
+          <div class="resource-title">ESP32Synth v2.4.0</div>
+          <div class="resource-desc">
+            Polyphonic audio synthesis library สำหรับ ESP32 รองรับ 350 voices, SD streaming,
+            custom DSP, bitcrush engine ใช้งานผ่าน Arduino Library Manager
+          </div>
+          <a class="resource-link" href="https://github.com/danilogcrf2-oss/ESP32Synth">
+            github.com/danilogcrf2-oss/ESP32Synth →
+          </a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🏗️</div>
+        <div>
+          <div class="resource-title">ESPHome 2026.6.0 Device Builder</div>
+          <div class="resource-desc">
+            Visual firmware builder สำหรับ ESP32 ไม่ต้องเขียน YAML มี Component Catalog,
+            Job Queue, Pin Viewer และ background compilation ใช้ใน Home Assistant Add-on
+          </div>
+          <a class="resource-link" href="https://esphome.io/changelog/2026.6.0/">
+            esphome.io/changelog/2026.6.0 →
+          </a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🧠</div>
+        <div>
+          <div class="resource-title">Edge Impulse — TinyML บน ESP32</div>
+          <div class="resource-desc">
+            Platform ฝึกและ deploy ML model บน ESP32 ผ่าน web browser รองรับ keyword detection,
+            image classification, motion recognition ด้วย one-click deployment ไม่ต้องเขียน Python
+          </div>
+          <a class="resource-link" href="https://www.edgeimpulse.com/">
+            edgeimpulse.com →
+          </a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🎛️</div>
+        <div>
+          <div class="resource-title">Faust DSP — Audio Programming บน ESP32</div>
+          <div class="resource-desc">
+            ภาษา DSP ระดับสูง compile เป็น C++ สำหรับ ESP32 ด้วย faust2esp32 tool
+            สร้าง filters, synthesizers, effects โดยเขียนแค่ algorithm ทาง DSP ไม่ต้อง optimize ด้วยมือ
+          </div>
+          <a class="resource-link" href="https://faustdoc.grame.fr/tutorials/esp32/">
+            faustdoc.grame.fr/tutorials/esp32 →
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <strong>ESP32 &amp; Sensor Innovations</strong> — วันที่สร้าง: 14 สิงหาคม 2026<br>
+  รวบรวมโดย AI researcher อัตโนมัติ | ข้อมูลจากแหล่งที่เชื่อถือได้ในวงการ ESP32 และ IoT
+  <div class="footer-sources">
+    แหล่งอ้างอิง:
+    <a href="https://hackaday.com/2026/04/23/esp32synth-an-audio-synthesis-library-for-the-esp32/">Hackaday — ESP32Synth</a> ·
+    <a href="https://esphome.io/changelog/2026.6.0/">ESPHome 2026.6.0 Changelog</a> ·
+    <a href="https://www.matteralpha.com/industry-news/esphome-2026-6-visual-dashboard-update">Matter Alpha — ESPHome Visual Builder</a> ·
+    <a href="https://botmonster.com/posts/build-smart-doorbell-esp32-home-assistant/">BotMonster — DIY Smart Doorbell</a> ·
+    <a href="https://datawiresolutions.com/blog/matter-thread-explained-2026">Data Wire — Matter &amp; Thread 2026</a> ·
+    <a href="https://wiki.dfrobot.com/sen0526">DFRobot — I2S MEMS Microphone</a> ·
+    <a href="https://www.esp32s.com/blog/build-your-own-portable-esp32-gps-tracker-from-basics-to-advanced-tips/">ESP32s.com — GPS Tracker Guide</a>
+  </div>
+</footer>
+
+</body>
+</html>
