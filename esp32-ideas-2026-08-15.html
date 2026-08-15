@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 15 สิงหาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263247;
+    --border: #334155;
+    --accent-1: #38bdf8;
+    --accent-2: #818cf8;
+    --accent-3: #34d399;
+    --accent-4: #fb923c;
+    --accent-5: #f472b6;
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-bright: #f1f5f9;
+    --tag-bg: rgba(56,189,248,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-main);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(56,189,248,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    background: rgba(56,189,248,0.12);
+    border: 1px solid rgba(56,189,248,0.35);
+    color: var(--accent-1);
+    font-size: .78rem;
+    font-weight: 600;
+    padding: .3rem .9rem;
+    border-radius: 2rem;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+  }
+  header h1 {
+    font-size: clamp(1.7rem, 4vw, 2.8rem);
+    font-weight: 700;
+    color: var(--text-bright);
+    line-height: 1.2;
+    margin-bottom: .6rem;
+  }
+  header h1 span { color: var(--accent-1); }
+  .header-sub {
+    color: var(--text-muted);
+    font-size: .95rem;
+    margin-bottom: 1.8rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--accent-1);
+    display: block;
+  }
+  .stat-label {
+    font-size: .75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  /* ── Layout ── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 4rem;
+  }
+  section { margin-bottom: 3.5rem; }
+
+  /* ── Section Header ── */
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: .75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .icon-blue  { background: rgba(56,189,248,0.15); }
+  .icon-purple{ background: rgba(129,140,248,0.15); }
+  .icon-green { background: rgba(52,211,153,0.15); }
+  .icon-orange{ background: rgba(251,146,60,0.15); }
+  .section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    line-height: 1.3;
+  }
+  .section-header p {
+    font-size: .82rem;
+    color: var(--text-muted);
+    margin-top: .15rem;
+  }
+  .section-count {
+    margin-left: auto;
+    background: var(--tag-bg);
+    color: var(--accent-1);
+    font-size: .72rem;
+    font-weight: 700;
+    padding: .2rem .7rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(56,189,248,0.2);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ── Cards ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.4rem;
+    transition: transform .2s, border-color .2s, box-shadow .2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--card-accent, var(--accent-1)), transparent);
+    border-radius: 1rem 1rem 0 0;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: var(--card-accent, var(--accent-1));
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    background: var(--bg-card-hover);
+  }
+  .card-icon { font-size: 1.6rem; margin-bottom: .7rem; }
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.4;
+    margin-bottom: .5rem;
+  }
+  .card-desc {
+    font-size: .88rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: .9rem;
+  }
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+  }
+  .tag {
+    font-size: .7rem;
+    font-weight: 600;
+    padding: .18rem .6rem;
+    border-radius: .4rem;
+    letter-spacing: .03em;
+  }
+  .tag-blue   { background: rgba(56,189,248,0.15);  color: var(--accent-1); }
+  .tag-purple { background: rgba(129,140,248,0.15); color: var(--accent-2); }
+  .tag-green  { background: rgba(52,211,153,0.15);  color: var(--accent-3); }
+  .tag-orange { background: rgba(251,146,60,0.15);  color: var(--accent-4); }
+  .tag-pink   { background: rgba(244,114,182,0.15); color: var(--accent-5); }
+
+  /* ── Feature badge ── */
+  .new-badge {
+    display: inline-block;
+    background: linear-gradient(135deg,#38bdf8,#818cf8);
+    color: #fff;
+    font-size: .62rem;
+    font-weight: 700;
+    padding: .1rem .55rem;
+    border-radius: .35rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin-left: .4rem;
+    vertical-align: middle;
+  }
+
+  /* ── Highlight card (full width) ── */
+  .card-wide {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, rgba(56,189,248,0.08) 0%, rgba(129,140,248,0.08) 100%);
+    border-color: rgba(56,189,248,0.3);
+  }
+  .card-wide .card-title { font-size: 1.15rem; }
+
+  /* ── Sensor table ── */
+  .sensor-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  .sensor-table th {
+    background: rgba(56,189,248,0.1);
+    color: var(--accent-1);
+    font-weight: 700;
+    padding: .7rem 1rem;
+    text-align: left;
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    border-bottom: 1px solid var(--border);
+  }
+  .sensor-table td {
+    padding: .65rem 1rem;
+    border-bottom: 1px solid rgba(51,65,85,0.6);
+    color: var(--text-main);
+    vertical-align: top;
+  }
+  .sensor-table tr:last-child td { border-bottom: none; }
+  .sensor-table tr:hover td { background: rgba(56,189,248,0.04); }
+  .table-wrap { overflow-x: auto; background: var(--bg-card); border: 1px solid var(--border); border-radius: 1rem; }
+
+  /* ── Code block ── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: .75rem;
+    padding: 1.1rem 1.25rem;
+    font-family: 'Courier New', monospace;
+    font-size: .82rem;
+    color: #a5f3fc;
+    overflow-x: auto;
+    line-height: 1.6;
+    margin-top: .9rem;
+  }
+  .code-block .kw { color: #c084fc; }
+  .code-block .str { color: #86efac; }
+  .code-block .cmt { color: #64748b; font-style: italic; }
+  .code-block .num { color: #fb923c; }
+
+  /* ── Resource links ── */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: .85rem;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: .9rem;
+    transition: border-color .2s, transform .2s;
+    text-decoration: none;
+  }
+  .resource-card:hover {
+    border-color: var(--accent-2);
+    transform: translateY(-2px);
+  }
+  .resource-icon {
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: .55rem;
+    background: rgba(129,140,248,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .resource-title {
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: .2rem;
+  }
+  .resource-desc {
+    font-size: .78rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .resource-url {
+    font-size: .73rem;
+    color: var(--accent-2);
+    margin-top: .3rem;
+    word-break: break-all;
+  }
+
+  /* ── Footer ── */
+  footer {
+    background: #0a1020;
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: .82rem;
+  }
+  footer strong { color: var(--accent-1); }
+
+  @media (max-width: 640px) {
+    .stats-row { gap: 1.2rem; }
+    .card-grid { grid-template-columns: 1fr; }
+    .resource-grid { grid-template-columns: 1fr; }
+    .section-count { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-chip">🔬 ESP32 Daily Research</div>
+  <h1>ESP32 & Sensor <span>Innovations</span></h1>
+  <p class="header-sub">15 สิงหาคม 2026 · Solar IoT · Matter 2.0 · LoRaWAN Satellite · Edge AI · Industrial RS485</p>
+  <div class="stats-row">
+    <div class="stat-item">
+      <span class="stat-num">4</span>
+      <span class="stat-label">นวัตกรรมใหม่</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">5</span>
+      <span class="stat-label">ไอเดียโปรเจกต์</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">6</span>
+      <span class="stat-label">Sensors/Tools</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">6</span>
+      <span class="stat-label">แหล่งอ้างอิง</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ════════════════════════ SECTION 1: นวัตกรรม ════════════════════════ -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">⚡</div>
+      <div>
+        <h2>นวัตกรรมและชิปใหม่ล่าสุด</h2>
+        <p>ESP32-C5 Dual-Band · Matter Thread BR · SN1 Solar Node · ESP-DL TinyML</p>
+      </div>
+      <span class="section-count">4 รายการ</span>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card" style="--card-accent:#38bdf8">
+        <div class="card-icon">📡</div>
+        <div class="card-title">ESP32-C5 — Dual-Band Wi-Fi 6 + Thread/Zigbee ชิปแรกของ Espressif <span class="new-badge">2026</span></div>
+        <div class="card-desc">
+          ESP32-C5 คือก้าวใหม่ของ Espressif: ชิป RISC-V 240 MHz ตัวแรกที่รองรับ <strong>Wi-Fi 6 ทั้งคลื่น 2.4 GHz และ 5 GHz</strong> พร้อมกัน รวมถึง Bluetooth 5 LE และ 802.15.4 (Thread/Zigbee) ในชิปเดียว ทำให้เป็นตัวเลือกเดียวในตลาดที่ครอบคลุมทุก protocol สำหรับ Smart Home สมัยใหม่<br><br>
+          จุดเด่นหลัก: <strong>Target Wake Time (TWT)</strong> ของ Wi-Fi 6 ช่วยยืดอายุแบตเตอรี่ได้ 3–5 เท่าเมื่อเทียบกับ Wi-Fi 4, MU-MIMO ลดความแออัดในเครือข่ายที่มีอุปกรณ์มาก, กิน Active current ~80 mA เท่านั้น<br><br>
+          Board พร้อมใช้: <strong>Waveshare ESP32-C5-LCD-1.47</strong> (จอสี 1.47 นิ้ว) · Seeed XIAO ESP32-C5 (~$7) · ESP32-C5-DevKitC-1 (~$15)
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-blue">Wi-Fi 6 5GHz</span>
+          <span class="tag tag-purple">Thread/Zigbee</span>
+          <span class="tag tag-green">RISC-V 240MHz</span>
+          <span class="tag tag-orange">Dual-Band</span>
+        </div>
+      </div>
+
+      <div class="card" style="--card-accent:#818cf8">
+        <div class="card-icon">🏠</div>
+        <div class="card-title">ESP32-C6 ทำ Matter Thread Border Router ได้เอง — $5 DIY <span class="new-badge">HOT</span></div>
+        <div class="card-desc">
+          เดิมต้องซื้อ hub แยกต่างหากราคาหลายร้อยบาท แต่ตอนนี้ ESP32-C6-WROOM ราคา ~$5 สามารถเป็น <strong>Thread Border Router</strong> ได้เองโดยใช้ firmware OpenThread RCP เชื่อมกับ Home Assistant ทาง USB ผ่าน Docker หรือจะ flash เป็น Standalone Native Border Router ที่รันทุกอย่างบนตัว ESP32 เองเลย ไม่ต้องพึ่ง OTBR add-on<br><br>
+          ระดับความยาก: ปานกลาง (ต้องพิมพ์ command ใน terminal) ใช้เวลา ~2-3 ชั่วโมง<br>
+          ใช้ ESP-IDF v5.4.1 หรือสูงกว่า รองรับ matter.js setup พร้อม mesh extender และ otbr-proxy
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-purple">Matter 2.0</span>
+          <span class="tag tag-blue">Thread BR</span>
+          <span class="tag tag-green">Home Assistant</span>
+          <span class="tag tag-orange">$5 DIY</span>
+        </div>
+      </div>
+
+      <div class="card" style="--card-accent:#34d399">
+        <div class="card-icon">☀️</div>
+        <div class="card-title">SN1 Solar Node — ESP32-C3 + IP67 + Solar + ESPHome พร้อม deploy <span class="new-badge">2026</span></div>
+        <div class="card-desc">
+          SN1 Solar Node เป็น board สำเร็จรูปที่ออกแบบมาสำหรับ <strong>IoT นอกอาคารระยะยาว</strong> โดยเฉพาะ มาพร้อม ESP32-C3, ตัวจัดการพลังงานโซลาร์ในตัว (MPPT), IP67 enclosure กันน้ำ/ฝุ่น, และ ESPHome firmware ทำให้ integrate กับ Home Assistant ได้ทันที<br><br>
+          ออกมาในเดือนเมษายน 2026 เหมาะสำหรับ: สถานี weather monitoring ข้างนอกบ้าน, ระบบรดน้ำอัตโนมัติในสวน, node ตรวจสอบดินในฟาร์ม, หรือจุดนับรถยนต์บนถนน
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-green">Solar MPPT</span>
+          <span class="tag tag-blue">IP67</span>
+          <span class="tag tag-orange">ESPHome</span>
+          <span class="tag tag-purple">ESP32-C3</span>
+        </div>
+      </div>
+
+      <div class="card" style="--card-accent:#fb923c">
+        <div class="card-icon">🧠</div>
+        <div class="card-title">ESP-DL v2 — Espressif's TinyML Library สำหรับ ESP32-S3 & P4 เร็วกว่าเดิม 4×</div>
+        <div class="card-desc">
+          <strong>ESP-DL</strong> คือ library TensorFlow Lite Micro ที่ Espressif ปรับแต่งโดยเฉพาะสำหรับ ESP32-S3 และ ESP32-P4 โดยใช้ SIMD vector instructions ของ Xtensa LX7 ทำให้ inference latency ต่ำกว่า 5ms สำหรับ model ขนาด 10–200KB ใช้ไฟฟ้าในระดับ milliwatt<br><br>
+          รองรับ: image classification, person detection, keyword spotting, anomaly detection<br>
+          ใช้งานร่วมกับ Edge Impulse Studio → train model บน cloud → export มา deploy บน ESP32 ได้ใน 1 คลิก เหมาะสำหรับ security camera ในบ้าน, ระบบตรวจจับ smoke/fire จาก camera, และ industrial quality inspection
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-orange">TinyML</span>
+          <span class="tag tag-blue">ESP32-S3</span>
+          <span class="tag tag-purple">Edge Impulse</span>
+          <span class="tag tag-green">&lt;5ms Inference</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════ SECTION 2: โปรเจกต์ ════════════════════════ -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">🛠️</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์น่าสนใจ</h2>
+        <p>Solar IoT · Matter BR · LoRaWAN Farm · Edge AI Security · Industrial Modbus</p>
+      </div>
+      <span class="section-count">5 รายการ</span>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card card-wide" style="--card-accent:#38bdf8">
+        <div class="card-icon">🌾</div>
+        <div class="card-title">Smart Farm Monitor ด้วย ESP32 + LoRaWAN + Satellite Fallback — ครอบคลุมพื้นที่ไร้สัญญาณ</div>
+        <div class="card-desc">
+          LoRa Alliance ประกาศใน Q3/2026 ว่า LoRaWAN รองรับ <strong>Satellite-Backed Connectivity</strong> แล้ว ทำให้สามารถส่งข้อมูล sensor ได้แม้อยู่ในพื้นที่ที่ไม่มี gateway LoRaWAN ในรัศมีหลายร้อยกม. (เช่น สวนทุเรียนในพื้นที่ห่างไกล หรือฟาร์มปศุสัตว์บนภูเขา)<br><br>
+          ตัวอย่างในมาเลเซีย: ฟาร์ม MIE Agro ติด LoRaWAN soil sensor กว่า 20 จุดบนพื้นที่ 6,000 ต้นทุเรียน วัดความชื้นดิน, อุณหภูมิ, ความชื้นอากาศ, แสงแดด ส่งข้อมูลทุก 15 นาที ลดการใช้น้ำได้ 50%
+        </div>
+        <div class="code-block"><span class="cmt">// ESP32 + SX1262 LoRaWAN node ส่งข้อมูล sensor ทุก 15 นาที</span>
+<span class="kw">void</span> setup() {
+  LoRaWAN.begin(BAND);          <span class="cmt">// 923MHz สำหรับ Thailand</span>
+  LoRaWAN.joinOTAA(devEUI, appKey);
+}
+<span class="kw">void</span> loop() {
+  <span class="kw">float</span> soil = readSoilMoisture();   <span class="cmt">// Capacitive sensor</span>
+  <span class="kw">float</span> temp = readTemp();            <span class="cmt">// DS18B20</span>
+  LoRaWAN.sendPacket(soil, temp);     <span class="cmt">// ส่งผ่าน TTN / Helium</span>
+  esp_deep_sleep(<span class="num">15</span> * <span class="num">60</span> * <span class="num">1000000</span>); <span class="cmt">// หลับ 15 นาที</span>
+}</div>
+        <div class="card-tags" style="margin-top:.9rem">
+          <span class="tag tag-blue">LoRaWAN</span>
+          <span class="tag tag-purple">Satellite</span>
+          <span class="tag tag-green">Smart Farm</span>
+          <span class="tag tag-orange">Soil Sensor</span>
+          <span class="tag tag-pink">TTN/Helium</span>
+        </div>
+      </div>
+
+      <div class="card" style="--card-accent:#818cf8">
+        <div class="card-icon">☀️</div>
+        <div class="card-title">Solar-Powered Autonomous Sensor Node — ทำงานได้ปีหลายปีโดยไม่ต้องชาร์จแบต</div>
+        <div class="card-desc">
+          รวม ESP32-C3/S3 เข้ากับ <strong>MPPT Solar Charger</strong> (CN3791 หรือ SPV1040) + แบต 18650 + solar panel 5V/1W ทำ node ที่รัน deep sleep ตลอด เว้นแต่ตื่นขึ้นมา 2 วินาทีเพื่ออ่านค่า sensor แล้วส่ง MQTT/LoRaWAN ก่อนหลับต่อ ใช้ไฟ ~5–10 µA ขณะหลับ (20,000 เท่าน้อยกว่า active mode)<br><br>
+          ใช้งานได้: outdoor weather station, soil monitor ในสวน, ป้ายแจ้งเตือนน้ำท่วม, ตรวจจับสัตว์ป่า
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-green">Solar MPPT</span>
+          <span class="tag tag-blue">Deep Sleep 5µA</span>
+          <span class="tag tag-orange">18650 Battery</span>
+          <span class="tag tag-purple">Autonomous</span>
+        </div>
+      </div>
+
+      <div class="card" style="--card-accent:#34d399">
+        <div class="card-icon">🔒</div>
+        <div class="card-title">Edge AI Home Security — ESP32-S3 + TinyML ตรวจจับบุคคลแบบ Real-Time ไม่ต้องใช้ Cloud</div>
+        <div class="card-desc">
+          ใช้ XIAO ESP32-S3 Sense (กล้อง OV2640 + Mic) รัน ESP-DL model ตรวจจับบุคคล (person detection) บนตัวชิปเอง ไม่ส่งภาพออก cloud เลย ข้อมูลส่วนตัว 100% inference ที่ &lt;5ms ต่อ frame กิน ~milliwatt เท่านั้น<br><br>
+          Architecture: กล้องถ่าย frame → crop 96×96 px → ส่งเข้า TFLite Micro model → ถ้า confidence &gt;80% → trigger alarm MQTT → ส่งภาพแค่ 1 frame ไป Home Assistant
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-green">Privacy-First</span>
+          <span class="tag tag-blue">TFLite Micro</span>
+          <span class="tag tag-orange">Person Detection</span>
+          <span class="tag tag-purple">XIAO ESP32-S3</span>
+        </div>
+      </div>
+
+      <div class="card" style="--card-accent:#fb923c">
+        <div class="card-icon">🏭</div>
+        <div class="card-title">ESP32 + RS485 Modbus Gateway — เชื่อม PLC/เครื่องจักรเก่าเข้า Cloud แบบ Retrofit</div>
+        <div class="card-desc">
+          ใช้ ESP32-S3 + MAX485 module (หรือ Waveshare ESP32-S3-RS485-CAN board พร้อม isolated RS485) เป็น <strong>Modbus RTU → MQTT Gateway</strong> อ่านข้อมูลจาก VFD, meter, PLC, inverter ที่ใช้ Modbus RTU/TCP แล้วส่งขึ้น cloud หรือ InfluxDB + Grafana ได้ทันที ไม่ต้องเปลี่ยนเครื่องจักร<br><br>
+          รองรับ: สายยาวถึง 1,200 เมตร, ทนสัญญาณรบกวนในโรงงาน, ใช้ไฟ 9–26V DC
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-orange">Modbus RTU/TCP</span>
+          <span class="tag tag-blue">RS485</span>
+          <span class="tag tag-purple">Industrial IoT</span>
+          <span class="tag tag-green">Retrofit</span>
+        </div>
+      </div>
+
+      <div class="card" style="--card-accent:#f472b6">
+        <div class="card-icon">🌐</div>
+        <div class="card-title">ESP32-C6 Matter BLE Proxy — ช่วย Commission Matter Device ใหม่แบบ Wireless</div>
+        <div class="card-desc">
+          Home Assistant 2026.6 เพิ่มฟีเจอร์ใหม่: ใช้ ESP32 dev board หรือ Shelly relay ที่รัน ESPHome เป็น <strong>BLE Proxy</strong> สำหรับ Matter commissioning แทน phone ได้ ทำให้ Commission device ใหม่ในมุมที่ BT phone ไปไม่ถึงโดยไม่ต้องเดิน<br><br>
+          ประยุกต์: วาง ESP32-C6 ไว้ตามห้องต่างๆ บ้าน ทำ mesh BLE proxy coverage ให้ Home Assistant เพิ่ม device ได้ทุกมุม
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-pink">Matter 2.0</span>
+          <span class="tag tag-blue">BLE Proxy</span>
+          <span class="tag tag-purple">Home Assistant</span>
+          <span class="tag tag-green">ESP32-C6</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════ SECTION 3: Sensors ════════════════════════ -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">📊</div>
+      <div>
+        <h2>Sensors และ Components น่าสนใจ</h2>
+        <p>เปรียบเทียบ Sensor สำหรับ Solar IoT, LoRaWAN Farm, Industrial Modbus</p>
+      </div>
+      <span class="section-count">6 รายการ</span>
+    </div>
+
+    <div style="margin-bottom:1.5rem">
+      <h3 style="font-size:.95rem;font-weight:700;color:var(--accent-3);margin-bottom:.8rem">🌱 Sensors สำหรับ Smart Agriculture (LoRaWAN Node)</h3>
+      <div class="table-wrap">
+        <table class="sensor-table">
+          <thead>
+            <tr>
+              <th>Sensor</th>
+              <th>วัดอะไร</th>
+              <th>Interface</th>
+              <th>ราคา</th>
+              <th>หมายเหตุ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Capacitive Soil Moisture v2</strong></td>
+              <td>ความชื้นดิน 0–100%</td>
+              <td>Analog (ADC)</td>
+              <td>~$2</td>
+              <td>ไม่เป็นสนิม ทนกว่า resistive</td>
+            </tr>
+            <tr>
+              <td><strong>DS18B20</strong></td>
+              <td>อุณหภูมิดิน/น้ำ -55–125°C</td>
+              <td>1-Wire</td>
+              <td>~$1.5</td>
+              <td>ต่อหลายตัวบน pin เดียวได้</td>
+            </tr>
+            <tr>
+              <td><strong>SHT40</strong></td>
+              <td>อุณหภูมิ + ความชื้นอากาศ</td>
+              <td>I²C</td>
+              <td>~$4</td>
+              <td>แม่นยำกว่า DHT22 มาก</td>
+            </tr>
+            <tr>
+              <td><strong>VEML7700</strong></td>
+              <td>แสง Lux (0–120,000)</td>
+              <td>I²C</td>
+              <td>~$3</td>
+              <td>วัดแสงแดดสำหรับ crop monitoring</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h3 style="font-size:.95rem;font-weight:700;color:var(--accent-4);margin-bottom:.8rem">⚡ Solar Power Management Components สำหรับ Autonomous Node</h3>
+      <div class="table-wrap">
+        <table class="sensor-table">
+          <thead>
+            <tr>
+              <th>IC / Module</th>
+              <th>หน้าที่</th>
+              <th>Input</th>
+              <th>ราคา</th>
+              <th>หมายเหตุ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>TP4056</strong></td>
+              <td>LiPo charger (USB/Solar)</td>
+              <td>5V</td>
+              <td>~$0.5</td>
+              <td>ง่ายที่สุด เหมาะ node เล็ก</td>
+            </tr>
+            <tr>
+              <td><strong>CN3791 (MPPT)</strong></td>
+              <td>Solar MPPT charger</td>
+              <td>4.5–28V</td>
+              <td>~$3</td>
+              <td>ดึงพลังงานได้เต็มประสิทธิภาพ</td>
+            </tr>
+            <tr>
+              <td><strong>MAX17048</strong></td>
+              <td>Battery gauge (SOC)</td>
+              <td>I²C</td>
+              <td>~$2</td>
+              <td>รู้ % แบตที่เหลือแม่นยำ</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════ SECTION 4: Resources ════════════════════════ -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔗</div>
+      <div>
+        <h2>แหล่งข้อมูล Library และลิงก์อ้างอิง</h2>
+        <p>GitHub repos · guides · communities ที่เกี่ยวข้องกับหัวข้อวันนี้</p>
+      </div>
+      <span class="section-count">6 รายการ</span>
+    </div>
+
+    <div class="resource-grid">
+
+      <div class="resource-card">
+        <div class="resource-icon">🐙</div>
+        <div>
+          <div class="resource-title">esp32-c6-native-thread-border-router</div>
+          <div class="resource-desc">Guide ทำ ESP32-C6 เป็น Standalone Thread Border Router พร้อม matter.js, otbr-proxy ใช้ ESP-IDF v5.4.1</div>
+          <div class="resource-url">github.com/techo35/esp32-c6-native-thread-border-router</div>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🐙</div>
+        <div>
+          <div class="resource-title">esp32c6-thread-border-router (p01di)</div>
+          <div class="resource-desc">Single-chip ESP32-C6 Thread Border Router แบบ RCP สำหรับ Home Assistant Matter devices</div>
+          <div class="resource-url">github.com/p01di/esp32c6-thread-border-router</div>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">📖</div>
+        <div>
+          <div class="resource-title">ESP32-C6 Matter Smart Home Guide 2026</div>
+          <div class="resource-desc">คู่มือ setup $5 Thread Border Router ด้วย ESP32-C6 ฉบับสมบูรณ์ อัปเดต สิงหาคม 2026</div>
+          <div class="resource-url">makeronsite.com/blog/2026/08/esp32-c6-matter-smart-home-guide-2026-en/</div>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🌿</div>
+        <div>
+          <div class="resource-title">ESPHome 2026.7.0 Changelog</div>
+          <div class="resource-desc">Release notes กรกฎาคม 2026: BK7238 board support, Tuya T1 family, Matter BLE proxy improvements</div>
+          <div class="resource-url">esphome.io/changelog/2026.7.0/</div>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">☀️</div>
+        <div>
+          <div class="resource-title">Solar Power for ESP32: MPPT Circuit Guide</div>
+          <div class="resource-desc">คู่มือ MPPT และ battery charging circuit สำหรับ ESP32 IoT node แบบ autonomous — Zbotic</div>
+          <div class="resource-url">zbotic.in/solar-power-for-esp32-mppt-and-battery-charging-circuit/</div>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🏭</div>
+        <div>
+          <div class="resource-title">ESP32-S3-RS485-CAN (Waveshare)</div>
+          <div class="resource-desc">Industrial board พร้อม Isolated RS485 + CAN bus + Wi-Fi/BT ทนสัญญาณรบกวนในโรงงาน ใช้ 9–26V DC</div>
+          <div class="resource-url">waveshare.com/esp32-s3-rs485-can.htm</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Research Bot · <strong>15 สิงหาคม 2026</strong></p>
+  <p style="margin-top:.4rem;font-size:.75rem">
+    แหล่งอ้างอิง: Espressif Systems · ESPHome · MakerOnSite · CNX-Software · Zbotic · Waveshare · LoRa Alliance · IoT Business News · Home Assistant Blog
+  </p>
+  <p style="margin-top:.6rem;font-size:.72rem;color:#475569">
+    หัวข้อวันนี้: ESP32-C5 Dual-Band Wi-Fi 6 · Matter Thread Border Router $5 DIY · SN1 Solar Node IP67 · LoRaWAN Satellite Farm · Edge AI TinyML Security · Modbus RS485 Industrial Gateway
+  </p>
+</footer>
+
+</body>
+</html>
