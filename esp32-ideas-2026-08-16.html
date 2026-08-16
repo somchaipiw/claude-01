@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 16 สิงหาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary:#0f172a; --bg-secondary:#1e293b; --bg-card:#1e293b;
+    --border:#334155; --text-primary:#e2e8f0; --text-muted:#94a3b8;
+    --accent-1:#38bdf8; --accent-2:#a78bfa; --accent-3:#34d399;
+    --accent-4:#fb923c; --accent-5:#f472b6; --accent-6:#facc15;
+    --radius:12px; --shadow:0 4px 24px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Sarabun',sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.8;font-size:1rem}
+
+  header{background:linear-gradient(160deg,#0f172a 0%,#1a2744 40%,#0d1b3e 100%);border-bottom:1px solid var(--border);padding:2.5rem 1.5rem 2rem;text-align:center;position:relative;overflow:hidden}
+  header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% -20%,rgba(56,189,248,.15),transparent);pointer-events:none}
+  .header-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.3);border-radius:99px;padding:.35rem 1rem;font-size:.8rem;color:var(--accent-1);margin-bottom:1rem;letter-spacing:.05em}
+  header h1{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:700;background:linear-gradient(90deg,var(--accent-1),var(--accent-2),var(--accent-3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.6rem}
+  header p.sub{color:var(--text-muted);font-size:.95rem;max-width:680px;margin:0 auto}
+  .stat-row{display:flex;justify-content:center;gap:1.5rem;margin-top:1.5rem;flex-wrap:wrap}
+  .stat-pill{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:99px;padding:.4rem 1.1rem;font-size:.82rem;color:var(--text-muted);display:flex;align-items:center;gap:.4rem}
+  .stat-pill span{color:var(--text-primary);font-weight:600}
+
+  main{max-width:1100px;margin:0 auto;padding:2.5rem 1.2rem 4rem;display:flex;flex-direction:column;gap:3.5rem}
+  section h2{font-size:1.35rem;font-weight:700;margin-bottom:1.5rem;display:flex;align-items:center;gap:.6rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)}
+  .section-icon{width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+
+  .feature-band{border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:1.5rem}
+  .feature-band:last-child{margin-bottom:0}
+  .feature-band-header{padding:1.2rem 1.5rem;font-weight:700;font-size:1.05rem;display:flex;align-items:center;gap:.6rem}
+  .feature-band-body{padding:1.2rem 1.5rem}
+  .feature-band-body p{font-size:.9rem;color:#cbd5e1;margin-bottom:.7rem}
+  .feature-band-body p:last-child{margin-bottom:0}
+
+  .highlight{border-left:3px solid;border-radius:0 8px 8px 0;padding:.8rem 1rem;margin-top:.9rem;font-size:.85rem}
+  .highlight.info{border-color:var(--accent-1);background:rgba(56,189,248,.07)}
+  .highlight.success{border-color:var(--accent-3);background:rgba(52,211,153,.07)}
+  .highlight.warn{border-color:var(--accent-4);background:rgba(251,146,60,.07)}
+  .highlight.purple{border-color:var(--accent-2);background:rgba(167,139,250,.07)}
+  .highlight strong{color:var(--text-primary)}
+
+  .project-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:1.25rem}
+  .project-card:last-child{margin-bottom:0}
+  .project-card-top{padding:1.2rem 1.5rem 1rem;display:grid;grid-template-columns:1fr auto;align-items:start;gap:1rem}
+  .project-card-top h3{font-size:1.05rem;font-weight:700;margin-bottom:.3rem}
+  .project-card-top .desc{font-size:.87rem;color:#94a3b8}
+  .difficulty{font-size:.72rem;font-weight:700;padding:.3rem .7rem;border-radius:99px;white-space:nowrap;flex-shrink:0}
+  .diff-easy{background:rgba(52,211,153,.15);color:var(--accent-3);border:1px solid rgba(52,211,153,.3)}
+  .diff-medium{background:rgba(251,146,60,.15);color:var(--accent-4);border:1px solid rgba(251,146,60,.3)}
+  .diff-hard{background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3)}
+  .project-card-body{padding:0 1.5rem 1.3rem}
+
+  .bom-table{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:.8rem;overflow-x:auto;display:block}
+  .bom-table th{background:rgba(255,255,255,.05);padding:.45rem .7rem;text-align:left;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap}
+  .bom-table td{padding:.4rem .7rem;border-bottom:1px solid rgba(51,65,85,.5);color:#cbd5e1}
+  .bom-table tr:last-child td{border-bottom:none}
+
+  .code-block{background:#0d1117;border:1px solid var(--border);border-radius:8px;padding:.9rem 1rem;font-family:monospace;font-size:.78rem;color:#a5f3fc;overflow-x:auto;margin-top:.8rem;white-space:pre;line-height:1.6}
+
+  .sensor-group{margin-bottom:2rem}
+  .sensor-group:last-child{margin-bottom:0}
+  .sensor-group h3{font-size:.95rem;font-weight:700;margin-bottom:.9rem;display:flex;align-items:center;gap:.4rem}
+  .sensor-table{width:100%;border-collapse:collapse;font-size:.84rem;overflow-x:auto;display:block}
+  .sensor-table th{background:rgba(255,255,255,.05);padding:.55rem .8rem;text-align:left;color:var(--text-muted);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap}
+  .sensor-table td{padding:.5rem .8rem;border-bottom:1px solid rgba(51,65,85,.5);color:#cbd5e1;vertical-align:top}
+  .sensor-table tr:last-child td{border-bottom:none}
+  .sensor-table tr:hover td{background:rgba(255,255,255,.02)}
+  .price{color:var(--accent-3);font-weight:600;font-size:.8rem}
+
+  .resource-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem}
+  .resource-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.2rem;display:flex;gap:.8rem;align-items:flex-start;transition:border-color .2s}
+  .resource-card:hover{border-color:rgba(148,163,184,.4)}
+  .rc-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+  .resource-card h4{font-size:.88rem;font-weight:700;margin-bottom:.25rem}
+  .resource-card p{font-size:.78rem;color:var(--text-muted)}
+  .resource-card a{color:var(--accent-1);text-decoration:none;font-size:.78rem}
+  .resource-card a:hover{text-decoration:underline}
+
+  footer{background:var(--bg-secondary);border-top:1px solid var(--border);padding:1.8rem 1.5rem;text-align:center;color:var(--text-muted);font-size:.82rem}
+  footer strong{color:var(--text-primary)}
+  .footer-refs{margin-top:.7rem;display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem .8rem}
+  .footer-refs a{color:var(--accent-1);text-decoration:none;font-size:.75rem}
+  .footer-refs a:hover{text-decoration:underline}
+
+  @media(max-width:600px){
+    .project-card-top{grid-template-columns:1fr}
+    .resource-grid{grid-template-columns:1fr}
+    .stat-row{gap:.75rem}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">🤖 AI Researcher · ESP32 &amp; IoT Daily</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="sub">16 สิงหาคม 2026 · Water Quality Monitoring · Smart Energy Meter · Wearable Health Monitor · Matter 2.0 + Zigbee</p>
+  <div class="stat-row">
+    <div class="stat-pill">🗂️ หัวข้อใหม่ <span>4 หัวข้อ</span></div>
+    <div class="stat-pill">💡 ไอเดียโปรเจกต์ <span>3 โปรเจกต์</span></div>
+    <div class="stat-pill">🔬 Sensors &amp; Modules <span>9 รายการ</span></div>
+    <div class="stat-pill">📦 Libraries <span>5 รายการ</span></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ═══════════════════ SECTION 1: INNOVATIONS ═══════════════════ -->
+  <section id="innovations">
+    <h2>
+      <span class="section-icon" style="background:linear-gradient(135deg,#0369a1,#7c3aed)">🚀</span>
+      นวัตกรรมและเทคโนโลยีใหม่
+    </h2>
+
+    <div class="feature-band">
+      <div class="feature-band-header" style="background:linear-gradient(135deg,#0369a1,#7c3aed)">
+        ⚡ Matter 2.0 + ESP32-C6: ระบบ Smart Home ที่สมบูรณ์แบบด้วย Thread Border Router $5
+      </div>
+      <div class="feature-band-body">
+        <p>
+          <strong>Matter 2.0</strong> (มาตรฐานจาก Connectivity Standards Alliance) เป็น ecosystem ที่ production-ready อย่างสมบูรณ์ในปี 2026 หลัง CES 2026 เปิดตัว Matter-certified device กว่า 50 รายการ ครอบคลุม camera, thermostat, energy system และ closure — ทุกตัวรับประกันทำงานร่วมกันข้ามแพลตฟอร์ม ไม่ว่าจะเป็น Apple HomeKit, Google Home หรือ Amazon Alexa
+        </p>
+        <p>
+          <strong>สิ่งที่ Matter 2.0 เพิ่มขึ้นมีนัยสำคัญ:</strong> Multi-Border Router support ป้องกัน single point of failure — ถ้า router หนึ่งล่ม อีกตัวรับช่วงทันที, Thread 1.4 certification บังคับใช้ตั้งแต่ 1 มกราคม 2026 ทำให้ credential sharing เป็นมาตรฐาน, และ Energy Management Device category ใหม่ครอบคลุม EV charger, solar inverter, battery storage
+        </p>
+        <p>
+          <strong>ESP32-C6</strong> คือ "go-to chip" สำหรับ Matter 2026: RISC-V 160 MHz + Wi-Fi 6 + BT 5 LE + IEEE 802.15.4 (Thread/Zigbee) ในชิปเดียว — Seeed XIAO ESP32-C6 ราคาเพียง <strong>~$5</strong> ทำให้สร้าง node หลายสิบตัวในบ้านได้โดยไม่แพง
+        </p>
+        <div class="highlight info">
+          <strong>💡 DIY Thread Border Router:</strong> Flash ESP32-C6 เป็น Standalone Thread Border Router ด้วย OpenThread Native firmware — ต่อ USB เข้า Home Assistant แล้ว HA มองเห็น Thread network ทันที ไม่ต้องซื้อ hub แยกราคา $50–100
+        </div>
+        <div class="highlight success">
+          <strong>📋 ขั้นตอนง่ายๆ:</strong> ดาวน์โหลด firmware <code>ot-rcp</code> จาก Espressif GitHub → Flash ด้วย <code>esptool.py</code> → ใน Home Assistant เพิ่ม Thread integration → Scan QR Code ของ Matter device → Done ภายใน 10 นาที
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-band">
+      <div class="feature-band-header" style="background:linear-gradient(135deg,#065f46,#0891b2)">
+        🌬️ XIAO ESP32-C6 Zigbee Smart Air Monitor — DIY ง่าย ประหยัดพลังงานสูง
+      </div>
+      <div class="feature-band-body">
+        <p>
+          โปรเจกต์ที่น่าสนใจบน Hackster.io: ใช้ <strong>XIAO ESP32-C6</strong> + <strong>SCD41 CO₂ sensor</strong> + <strong>BME688 tVOC/Humidity/Pressure</strong> เป็น Zigbee End Device ที่ join Home Assistant โดยตรงผ่าน ZHA (Zigbee Home Automation) โดยไม่ต้องมี coordinator เพิ่ม เพราะใช้ HA Zigbee coordinator จัดการ
+        </p>
+        <p>
+          <strong>ทำไมใช้ Zigbee แทน Wi-Fi:</strong> ใช้ไฟน้อยกว่า ~10 เท่า (Zigbee End Device ~4 mA ขณะส่ง vs Wi-Fi ~80 mA), mesh network อัตโนมัติ — ยิ่งมี device เยอะยิ่ง range ไกล, ESP-Zigbee SDK รองรับ <strong>Sleepy End Device mode</strong> บน ESP-IDF 5.4+ — deep sleep ระหว่าง poll cycle เหลือกิน current เพียง 10–30 µA
+        </p>
+        <p>
+          <strong>ผลลัพธ์:</strong> แบตเตอรี่ 18650 (3000 mAh) อายุการใช้งาน <strong>12–18 เดือน</strong> ด้วย polling interval ทุก 60 วินาที — เหมาะกับ sensor node ที่ติดตั้งในมุมที่เดินสายไฟไม่ถึง
+        </p>
+        <div class="highlight purple">
+          <strong>⚙️ ESP-Zigbee SDK Sleepy End Device:</strong> ตั้งค่า <code>esp_zb_sleep_enable(true)</code> และ <code>esp_zb_sleep_set_threshold(10000)</code> (10 วินาที) — ชิปจะ auto-sleep ระหว่าง report cycle และตื่นเฉพาะตอนส่งข้อมูลเท่านั้น
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-band">
+      <div class="feature-band-header" style="background:linear-gradient(135deg,#1e3a5f,#134e4a)">
+        💧 ML-Powered Water Quality Monitoring — ความแม่นยำ 99.28% ต้นทุน &lt;$80
+      </div>
+      <div class="feature-band-body">
+        <p>
+          งานวิจัยใน Scientific Reports (กุมภาพันธ์ 2026): Smart Water Quality Monitoring System ใช้ ESP32 วัด pH, TDS, อุณหภูมิ และ Turbidity — ส่งขึ้น cloud แล้ว classify impurity profile ด้วย Machine Learning ที่ accuracy <strong>99.28%</strong> ต้นทุนระบบทั้งหมดไม่เกิน <strong>$80 (~2,880 บ.)</strong>
+        </p>
+        <p>
+          <strong>จุดเด่นของ sensor fusion ML:</strong> ไม่ใช่ดูค่าทีละตัว แต่ดู pattern รวมของทุก parameter พร้อมกัน ทำให้แยกแยะได้ว่าน้ำขุ่นจาก "ตะกอนดิน" กับ "สาหร่าย" หรือ "สารเคมีอุตสาหกรรม" ต่างกัน — สิ่งที่ threshold rule ธรรมดาทำไม่ได้
+        </p>
+        <div class="highlight warn">
+          <strong>🏗️ Architecture:</strong> ESP32 อ่าน sensor → MQTT broker → Python ML service classify → ผลลัพธ์แสดงบน Grafana / Node-RED dashboard หรือใช้ TensorFlow Lite Micro บน ESP32-S3 สำหรับ offline inference โดยไม่ต้องพึ่ง cloud
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ SECTION 2: PROJECTS ═══════════════════ -->
+  <section id="projects">
+    <h2>
+      <span class="section-icon" style="background:linear-gradient(135deg,#065f46,#0891b2)">💡</span>
+      ไอเดียโปรเจกต์น่าสนใจ
+    </h2>
+
+    <!-- PROJECT 1: Water Quality -->
+    <div class="project-card">
+      <div class="project-card-top">
+        <div>
+          <h3>🌊 Smart Water Quality Station สำหรับบ่อเลี้ยงกุ้ง/ปลา</h3>
+          <p class="desc">ระบบตรวจสอบคุณภาพน้ำแบบ real-time ด้วย ESP32 + 4 sensors ส่งข้อมูลขึ้น Grafana พร้อม LINE Notify แจ้งเตือนเมื่อค่าผิดปกติ</p>
+        </div>
+        <div class="difficulty diff-medium">ระดับกลาง</div>
+      </div>
+      <div class="project-card-body">
+        <p style="font-size:.87rem;color:#94a3b8;margin-bottom:.8rem">
+          บ่อเลี้ยงกุ้งหรือปลาในไทยมักสูญเสียผลผลิตเพราะน้ำเน่าหรือ pH เปลี่ยนกะทันหัน ระบบนี้ใช้ ESP32-S3 อ่านค่า 4 parameter พร้อมกัน ส่งขึ้น InfluxDB ทุก 60 วินาที และ alert ผ่าน LINE เมื่อค่าออกนอกช่วงปลอดภัย
+        </p>
+        <table class="bom-table">
+          <thead>
+            <tr><th>Component</th><th>Module/Sensor</th><th>Interface</th><th>ราคาโดยประมาณ</th><th>ฟังก์ชัน</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Microcontroller</td><td>ESP32-S3-DevKitC-1</td><td>—</td><td>~350 บ.</td><td>Main controller + Wi-Fi</td></tr>
+            <tr><td>pH Sensor</td><td>DFRobot SEN0161-V2</td><td>Analog (ADC)</td><td>~650 บ.</td><td>วัด pH 0–14</td></tr>
+            <tr><td>TDS Sensor</td><td>DFRobot SEN0244</td><td>Analog (ADC)</td><td>~280 บ.</td><td>ความเข้มข้นของแร่ธาตุ mg/L</td></tr>
+            <tr><td>Turbidity Sensor</td><td>SEN0189 (DFRobot)</td><td>Analog / Digital</td><td>~220 บ.</td><td>วัดความขุ่น NTU</td></tr>
+            <tr><td>Temperature</td><td>DS18B20 Waterproof</td><td>1-Wire</td><td>~80 บ.</td><td>อุณหภูมิน้ำ °C</td></tr>
+            <tr><td>Display (option)</td><td>SSD1306 OLED 1.3"</td><td>I2C</td><td>~120 บ.</td><td>แสดงค่าแบบ local</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">/* อ่านค่า TDS พร้อม temperature compensation แล้วส่ง MQTT */
+float readTDS(float waterTemp) {
+  float voltage = analogRead(TDS_PIN) * 3.3 / 4095.0;
+  float tempCoeff = 1.0 + 0.02 * (waterTemp - 25.0);
+  return (133.42*pow(voltage,3) - 255.86*pow(voltage,2)
+          + 857.39*voltage) * 0.5 / tempCoeff;
+}
+
+void publishSensorData(float ph, float tds, float turb, float temp) {
+  char payload[256];
+  snprintf(payload, sizeof(payload),
+    "{\"ph\":%.2f,\"tds\":%.1f,\"turbidity\":%.1f,\"temp\":%.2f}",
+    ph, tds, turb, temp);
+  mqttClient.publish("aqua/station/data", payload);
+}</div>
+        <div class="highlight success" style="margin-top:.9rem">
+          <strong>📊 ค่าอ้างอิงบ่อกุ้ง:</strong> pH ที่ดี = 7.5–8.5 · TDS = 500–2,000 mg/L · อุณหภูมิ = 26–30°C · Turbidity = 20–40 NTU (ขุ่นเล็กน้อย = ดี, ใสเกินไปหรือขุ่นมาก = แจ้งเตือน)
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECT 2: Smart Energy Meter -->
+    <div class="project-card">
+      <div class="project-card-top">
+        <div>
+          <h3>⚡ Smart Energy Meter ด้วย PZEM-004T + MQTT Dashboard</h3>
+          <p class="desc">มิเตอร์ไฟฟ้าอัจฉริยะ วัด Voltage, Current, Power, Energy, Frequency และ Power Factor แบบ real-time ส่ง alert SMS/LINE เมื่อแรงดันผิดปกติ</p>
+        </div>
+        <div class="difficulty diff-medium">ระดับกลาง</div>
+      </div>
+      <div class="project-card-body">
+        <p style="font-size:.87rem;color:#94a3b8;margin-bottom:.8rem">
+          โปรเจกต์ที่ active บน Hackaday.io (มกราคม 2026): ใช้ ESP32 + PZEM-004T วัด parameter ไฟ AC ทั้งหมด 6 ค่าพร้อมกัน ส่งขึ้น MQTT → Grafana dashboard แสดง historical consumption และ cost estimation ตามอัตราค่าไฟ PEA/MEA ของไทย
+        </p>
+        <table class="bom-table">
+          <thead>
+            <tr><th>Component</th><th>รายละเอียด</th><th>ราคา</th><th>หมายเหตุ</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>PZEM-004T v3.0</td><td>AC Power Monitor Module</td><td>~280 บ.</td><td>วัด V, A, W, kWh, Hz, PF</td></tr>
+            <tr><td>ESP32 DevKit v1</td><td>NodeMCU-32S หรือ WROOM</td><td>~180 บ.</td><td>UART ต่อ PZEM</td></tr>
+            <tr><td>Current Transformer</td><td>split-core CT (ใน PZEM kit)</td><td>included</td><td>เจาะสายไฟ phase หนึ่งเส้น</td></tr>
+            <tr><td>AC-DC 5V Adapter</td><td>Hi-Link HLK-5M05</td><td>~90 บ.</td><td>จ่ายไฟ ESP32 จาก AC เลย</td></tr>
+            <tr><td>Junction Box</td><td>กล่องพลาสติก IP65</td><td>~60 บ.</td><td>ป้องกันฝุ่น/น้ำ</td></tr>
+          </tbody>
+        </table>
+        <div class="code-block">/* อ่านค่า PZEM-004T ผ่าน UART และส่ง MQTT */
+#include &lt;PZEM004Tv30.h&gt;
+PZEM004Tv30 pzem(Serial2, RX_PIN, TX_PIN);
+
+void readAndPublish() {
+  float voltage   = pzem.voltage();    // V
+  float current   = pzem.current();    // A
+  float power     = pzem.power();      // W
+  float energy    = pzem.energy();     // kWh
+  float frequency = pzem.frequency();  // Hz
+  float pf        = pzem.pf();         // Power Factor
+
+  // alert ถ้าแรงดันออกนอกช่วง 200–240V
+  if (voltage &lt; 200 || voltage &gt; 240) sendLineAlert(voltage);
+
+  char payload[300];
+  snprintf(payload, sizeof(payload),
+    "{\"v\":%.1f,\"a\":%.3f,\"w\":%.1f,\"kwh\":%.3f,\"hz\":%.1f,\"pf\":%.2f}",
+    voltage, current, power, energy, frequency, pf);
+  mqttClient.publish("home/energy/meter1", payload);
+}</div>
+        <div class="highlight info">
+          <strong>💰 ประมาณการประหยัดต้นทุน:</strong> รู้ว่าอุปกรณ์ตัวไหนกิน watt มากที่สุด → วางแผนปิดช่วง peak → ลดค่าไฟได้ 15–25% ต่อเดือน งาน IEEE 2026 พิสูจน์ว่าระบบนี้มี measurement accuracy ±1% เทียบกับมิเตอร์การไฟฟ้า
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECT 3: Wearable Health Monitor -->
+    <div class="project-card">
+      <div class="project-card-top">
+        <div>
+          <h3>❤️ Wearable Health Monitor — ECG + SpO2 + BPM บน ESP32</h3>
+          <p class="desc">สร้าง patient health monitor ต้นทุนต่ำด้วย ESP32 + AD8232 + MAX30102 ส่ง real-time data ขึ้น web dashboard เหมาะสำหรับ home care ผู้สูงอายุ</p>
+        </div>
+        <div class="difficulty diff-hard">ระดับสูง</div>
+      </div>
+      <div class="project-card-body">
+        <p style="font-size:.87rem;color:#94a3b8;margin-bottom:.8rem">
+          งานวิจัย "Affordable Heart Health Monitoring System Using ESP32, AD8232 and MAX30102" (มกราคม 2026) พิสูจน์ว่าระบบราคาต่ำกว่า $30 สามารถวัด ECG waveform, Heart Rate และ SpO2 ได้แม่นยำเพียงพอสำหรับ home monitoring ไม่ใช่แค่ diagnostic tool
+        </p>
+        <table class="bom-table">
+          <thead>
+            <tr><th>Component</th><th>Module</th><th>Interface</th><th>ราคา</th><th>วัดอะไร</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>AD8232</td><td>SparkFun Heart Rate Monitor</td><td>Analog (ADC)</td><td>~250 บ.</td><td>ECG signal (มิลลิโวลต์)</td></tr>
+            <tr><td>MAX30102</td><td>Pulse Oximeter + Heart Rate</td><td>I2C</td><td>~120 บ.</td><td>SpO2 (%), BPM</td></tr>
+            <tr><td>MLX90614</td><td>Infrared Temperature Sensor</td><td>I2C</td><td>~220 บ.</td><td>อุณหภูมิร่างกาย °C</td></tr>
+            <tr><td>ESP32-S3</td><td>DevKit หรือ WROOM</td><td>—</td><td>~350 บ.</td><td>Processing + Wi-Fi</td></tr>
+            <tr><td>ECG Electrodes</td><td>Disposable 3-lead</td><td>—</td><td>~30 บ./set</td><td>ติด chest 3 จุด</td></tr>
+          </tbody>
+        </table>
+        <div class="highlight warn">
+          <strong>⚠️ ข้อควรระวัง:</strong> ระบบนี้เป็น home monitoring tool เท่านั้น ไม่ใช่ medical device ที่ผ่าน FDA/CE — ไม่ควรใช้ทดแทนการวินิจฉัยแพทย์ แต่เหมาะสำหรับ trend monitoring และ early warning สำหรับผู้สูงอายุที่บ้าน
+        </div>
+        <div class="highlight purple">
+          <strong>🌐 Web Dashboard:</strong> ESP32 host ESPAsyncWebServer → WebSocket ส่ง ECG data ทุก 10ms → Chart.js plot ECG waveform แบบ live บน browser ไม่ต้องมี mobile app — เข้าถึงได้ทุก device บนเครือข่ายเดียวกัน
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ SECTION 3: SENSORS ═══════════════════ -->
+  <section id="sensors">
+    <h2>
+      <span class="section-icon" style="background:linear-gradient(135deg,#7c2d12,#9f1239)">🔬</span>
+      Sensors &amp; Modules น่าสนใจ
+    </h2>
+
+    <!-- Water Quality Sensors -->
+    <div class="sensor-group">
+      <h3 style="color:var(--accent-1)">💧 Water Quality Sensors — สำหรับบ่อปลา/กุ้ง, แหล่งน้ำ, อุตสาหกรรม</h3>
+      <table class="sensor-table">
+        <thead>
+          <tr><th>Sensor</th><th>วัดอะไร</th><th>ช่วงการวัด</th><th>Interface</th><th>ราคา (บ.)</th><th>หมายเหตุ</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>DFRobot SEN0161-V2</strong></td>
+            <td>pH</td>
+            <td>0–14 pH</td>
+            <td>Analog</td>
+            <td class="price">~650</td>
+            <td>ต้อง calibrate ด้วย buffer solution pH 4/7/10 ทุก 3 เดือน</td>
+          </tr>
+          <tr>
+            <td><strong>DFRobot SEN0244</strong></td>
+            <td>TDS (แร่ธาตุ)</td>
+            <td>0–1,000 ppm</td>
+            <td>Analog</td>
+            <td class="price">~280</td>
+            <td>ต้อง temperature compensation — ใช้ร่วม DS18B20</td>
+          </tr>
+          <tr>
+            <td><strong>SEN0189</strong></td>
+            <td>Turbidity (ความขุ่น)</td>
+            <td>0–3,000 NTU</td>
+            <td>Analog/Digital</td>
+            <td class="price">~220</td>
+            <td>ทำงานโดยวัดแสง IR ที่กระจัดกระจายจากตะกอน</td>
+          </tr>
+          <tr>
+            <td><strong>DO Sensor (Atlas Scientific)</strong></td>
+            <td>Dissolved Oxygen</td>
+            <td>0–20 mg/L</td>
+            <td>UART / I2C</td>
+            <td class="price">~3,500</td>
+            <td>ราคาสูง แต่ความแม่นยำสูง — ต้องการใน aquaculture</td>
+          </tr>
+          <tr>
+            <td><strong>DS18B20 Waterproof</strong></td>
+            <td>อุณหภูมิน้ำ</td>
+            <td>-55 ถึง +125°C</td>
+            <td>1-Wire</td>
+            <td class="price">~80</td>
+            <td>จำเป็นสำหรับ temperature compensation ของทุก sensor อื่น</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Health Sensors -->
+    <div class="sensor-group">
+      <h3 style="color:var(--accent-5)">❤️ Health &amp; Biometric Sensors — สำหรับ Wearable และ Home Care</h3>
+      <table class="sensor-table">
+        <thead>
+          <tr><th>Sensor</th><th>วัดอะไร</th><th>Interface</th><th>ราคา (บ.)</th><th>การใช้งาน</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>AD8232</strong></td>
+            <td>ECG (Electrocardiogram)</td>
+            <td>Analog Output</td>
+            <td class="price">~250</td>
+            <td>ต่อ electrode 3 จุดบน chest วัด mV signal ของหัวใจ</td>
+          </tr>
+          <tr>
+            <td><strong>MAX30102</strong></td>
+            <td>Heart Rate + SpO2</td>
+            <td>I2C (400kHz)</td>
+            <td class="price">~120</td>
+            <td>ใช้ PPG (Photoplethysmography) วัด blood oxygen saturation</td>
+          </tr>
+          <tr>
+            <td><strong>MLX90614</strong></td>
+            <td>Body Temperature (IR)</td>
+            <td>I2C</td>
+            <td class="price">~220</td>
+            <td>วัด forehead temp โดยไม่ต้องสัมผัส ±0.5°C</td>
+          </tr>
+          <tr>
+            <td><strong>MPU6050</strong></td>
+            <td>Accelerometer + Gyroscope</td>
+            <td>I2C</td>
+            <td class="price">~60</td>
+            <td>ตรวจจับการล้มในผู้สูงอายุ + นับก้าว</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Energy Sensors -->
+    <div class="sensor-group">
+      <h3 style="color:var(--accent-6)">⚡ Power &amp; Energy Monitoring — สำหรับ Smart Meter</h3>
+      <table class="sensor-table">
+        <thead>
+          <tr><th>Module</th><th>วัดอะไร</th><th>ช่วง AC</th><th>Interface</th><th>ราคา (บ.)</th><th>หมายเหตุ</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>PZEM-004T v3.0</strong></td>
+            <td>V, A, W, kWh, Hz, PF</td>
+            <td>80–260V / 0–100A</td>
+            <td>UART (Modbus)</td>
+            <td class="price">~280</td>
+            <td>ครบที่สุด ราคาถูกที่สุด — ตัวเลือกอันดับ 1</td>
+          </tr>
+          <tr>
+            <td><strong>ACS712 (30A)</strong></td>
+            <td>Current เท่านั้น</td>
+            <td>AC/DC 0–30A</td>
+            <td>Analog</td>
+            <td class="price">~60</td>
+            <td>ง่ายกว่า แต่วัดได้แค่ current ไม่มี power factor</td>
+          </tr>
+          <tr>
+            <td><strong>SCT-013 CT Clamp</strong></td>
+            <td>Current (non-invasive)</td>
+            <td>0–100A AC</td>
+            <td>Analog</td>
+            <td class="price">~150</td>
+            <td>หนีบสายไฟโดยไม่ต้องตัดสาย เหมาะ monitor ทีหลัง</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ SECTION 4: RESOURCES ═══════════════════ -->
+  <section id="resources">
+    <h2>
+      <span class="section-icon" style="background:linear-gradient(135deg,#374151,#1f2937)">📚</span>
+      Library และแหล่งข้อมูลอ้างอิง
+    </h2>
+
+    <div class="resource-grid">
+      <div class="resource-card">
+        <div class="rc-icon" style="background:rgba(56,189,248,.15)">📦</div>
+        <div>
+          <h4>PZEM004Tv30 Library</h4>
+          <p>Library อ่านค่า PZEM-004T v3.0 ผ่าน UART/Modbus — รองรับ ESP32 ได้ดี</p>
+          <a href="https://github.com/mandulaj/PZEM-004T-v30">github.com/mandulaj/PZEM-004T-v30</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-icon" style="background:rgba(167,139,250,.15)">❤️</div>
+        <div>
+          <h4>MAX30105 Library (SparkFun)</h4>
+          <p>อ่านค่า MAX30102/30105 Heart Rate + SpO2 — มี example ครบ beatAvg algorithm</p>
+          <a href="https://github.com/sparkfun/SparkFun_MAX3010x_Sensor_Library">SparkFun MAX3010x Library</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-icon" style="background:rgba(52,211,153,.15)">🌿</div>
+        <div>
+          <h4>ESP-Zigbee SDK (Espressif)</h4>
+          <p>SDK สำหรับ ESP32-C6/H2 build Zigbee device — รองรับ Sleepy End Device mode</p>
+          <a href="https://github.com/espressif/esp-zigbee-sdk">github.com/espressif/esp-zigbee-sdk</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-icon" style="background:rgba(251,146,60,.15)">🏠</div>
+        <div>
+          <h4>ESP Matter SDK (Espressif)</h4>
+          <p>SDK สำหรับ build Matter device บน ESP32-C6/S3 — รวม Thread Border Router firmware</p>
+          <a href="https://github.com/espressif/esp-matter">github.com/espressif/esp-matter</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-icon" style="background:rgba(244,114,182,.15)">💧</div>
+        <div>
+          <h4>Water Quality Monitor (GitHub)</h4>
+          <p>โปรเจกต์ตัวอย่าง ESP32 วัด pH, Turbidity, DO — พร้อม circuit diagram และ code</p>
+          <a href="https://github.com/RyuHiiragi/Simple-Water-Quality-Monitoring-System-Using-ESP32">ESP32 Water Quality Monitor</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-icon" style="background:rgba(250,204,21,.15)">⚡</div>
+        <div>
+          <h4>Smart Energy Meter (Hackaday)</h4>
+          <p>โปรเจกต์ PZEM-004T + MQTT Dashboard + SMS Alert — พร้อม schematic และ firmware</p>
+          <a href="https://hackaday.io/project/204801-smart-energy-meter-with-mqtt-dashboard-sms-alert">Smart Energy Meter @ Hackaday</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-icon" style="background:rgba(56,189,248,.15)">🌬️</div>
+        <div>
+          <h4>ESPHome 2026.7.0</h4>
+          <p>ESPHome รุ่นล่าสุด (กรกฎาคม 2026) — รองรับ ESP32-C6 Zigbee Sleepy End Device</p>
+          <a href="https://esphome.io/changelog/2026.7.0/">ESPHome Changelog 2026.7</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-icon" style="background:rgba(167,139,250,.15)">🔬</div>
+        <div>
+          <h4>Matter 2.0 + ESP32 Guide</h4>
+          <p>คู่มือภาษาไทยสำหรับ Matter 2.0 + ESP32-C6 Thread Border Router ตั้งแต่เริ่มต้น</p>
+          <a href="https://saludpcb.com/matter-protocol-guide-esp32-development/">Matter Protocol Guide (SaludPCB)</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <strong>ESP32 &amp; Sensor Innovations</strong> — วันที่สร้าง: 16 สิงหาคม 2026<br>
+  สร้างโดย AI Researcher อัตโนมัติ | ข้อมูลอ้างอิงจากแหล่งที่เชื่อถือได้
+  <div class="footer-refs">
+    <a href="https://github.com/RyuHiiragi/Simple-Water-Quality-Monitoring-System-Using-ESP32">GitHub: Water Quality ESP32</a>
+    <a href="https://www.nature.com/articles/s41598-026-37287-3">Scientific Reports 2026</a>
+    <a href="https://homegadget.tech/matter-2-0-smart-home-integration/">Matter 2.0 Integration Guide</a>
+    <a href="https://ieeexplore.ieee.org/document/11233978/">IEEE: Smart Energy Meter ESP32</a>
+    <a href="https://hackaday.io/project/204801-smart-energy-meter-with-mqtt-dashboard-sms-alert">Hackaday: Energy Meter Project</a>
+    <a href="https://www.hackster.io/JasonFang/easy-diy-zigbee-smart-air-monitor-with-xiao-esp32c6-8e14d0">Hackster: Zigbee Air Monitor</a>
+    <a href="https://esphome.io/changelog/2026.7.0/">ESPHome 2026.7.0</a>
+    <a href="https://www.researchgate.net/publication/398266791">ResearchGate: ECG ESP32 2026</a>
+  </div>
+</footer>
+
+</body>
+</html>
