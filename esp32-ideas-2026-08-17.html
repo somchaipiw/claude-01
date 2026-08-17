@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations — 17 สิงหาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0a0f1e;
+    --bg-secondary: #111827;
+    --bg-card: #1a2235;
+    --bg-card-hover: #1f2a42;
+    --accent-cyan: #06b6d4;
+    --accent-purple: #8b5cf6;
+    --accent-green: #10b981;
+    --accent-orange: #f59e0b;
+    --accent-pink: #ec4899;
+    --accent-blue: #3b82f6;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #1e2d45;
+    --tag-bg: rgba(6, 182, 212, 0.12);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0c1a2e 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 60%, rgba(6,182,212,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 30%, rgba(139,92,246,0.08) 0%, transparent 60%);
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(139,92,246,0.15);
+    border: 1px solid rgba(139,92,246,0.3);
+    border-radius: 999px;
+    padding: 0.3rem 1rem;
+    font-size: 0.82rem;
+    color: #a78bfa;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+    position: relative;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    line-height: 1.3;
+    position: relative;
+    background: linear-gradient(90deg, #06b6d4, #8b5cf6, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  header p.subtitle {
+    color: var(--text-secondary);
+    margin-top: 0.75rem;
+    font-size: 1rem;
+    position: relative;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    position: relative;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-number {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+  }
+  .stat-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: block;
+  }
+
+  /* ─── LAYOUT ─── */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  section { margin-bottom: 3.5rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    font-size: 1.6rem;
+  }
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-count {
+    margin-left: auto;
+    background: var(--tag-bg);
+    border: 1px solid rgba(6,182,212,0.25);
+    color: var(--accent-cyan);
+    border-radius: 999px;
+    padding: 0.15rem 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  /* ─── CARDS ─── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+  }
+  .card-grid-2 {
+    grid-template-columns: repeat(auto-fill, minmax(540px, 1fr));
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    opacity: 0;
+    transition: opacity 0.25s;
+    background: linear-gradient(135deg, rgba(6,182,212,0.05) 0%, transparent 60%);
+  }
+  .card:hover { border-color: rgba(6,182,212,0.35); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+  .card:hover::before { opacity: 1; }
+
+  .card-accent-purple { border-top: 3px solid var(--accent-purple); }
+  .card-accent-cyan   { border-top: 3px solid var(--accent-cyan); }
+  .card-accent-green  { border-top: 3px solid var(--accent-green); }
+  .card-accent-orange { border-top: 3px solid var(--accent-orange); }
+  .card-accent-pink   { border-top: 3px solid var(--accent-pink); }
+  .card-accent-blue   { border-top: 3px solid var(--accent-blue); }
+
+  .card-icon {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+  .card-subtitle {
+    font-size: 0.82rem;
+    color: var(--accent-cyan);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+  .card-body {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.8;
+  }
+
+  /* ─── FEATURE HIGHLIGHT ─── */
+  .feature-highlight {
+    background: linear-gradient(135deg, rgba(139,92,246,0.1) 0%, rgba(6,182,212,0.07) 100%);
+    border: 1px solid rgba(139,92,246,0.25);
+    border-radius: 14px;
+    padding: 1.75rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-highlight::after {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: rgba(139,92,246,0.08);
+  }
+  .feature-highlight h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #c4b5fd;
+    margin-bottom: 0.6rem;
+  }
+  .feature-highlight p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.8;
+  }
+
+  /* ─── SPEC TABLE ─── */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 0.87rem;
+  }
+  .spec-table th {
+    background: rgba(6,182,212,0.12);
+    color: var(--accent-cyan);
+    padding: 0.6rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+  .spec-table td {
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid rgba(30,45,69,0.6);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  .spec-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .spec-label { color: var(--text-primary); font-weight: 600; width: 38%; }
+
+  /* ─── TAGS / BADGES ─── */
+  .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.85rem; }
+  .tag {
+    background: var(--tag-bg);
+    border: 1px solid rgba(6,182,212,0.2);
+    color: var(--accent-cyan);
+    border-radius: 999px;
+    padding: 0.15rem 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .tag-purple { background: rgba(139,92,246,0.12); border-color: rgba(139,92,246,0.25); color: #a78bfa; }
+  .tag-green  { background: rgba(16,185,129,0.1);  border-color: rgba(16,185,129,0.25); color: #34d399; }
+  .tag-orange { background: rgba(245,158,11,0.1);  border-color: rgba(245,158,11,0.25); color: #fbbf24; }
+  .tag-pink   { background: rgba(236,72,153,0.1);  border-color: rgba(236,72,153,0.25); color: #f472b6; }
+
+  /* ─── CODE BLOCK ─── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid rgba(6,182,212,0.2);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.82rem;
+    color: #7dd3fc;
+    overflow-x: auto;
+    margin-top: 0.85rem;
+    line-height: 1.6;
+  }
+  .code-comment { color: #4b5563; }
+  .code-keyword { color: #c084fc; }
+  .code-string  { color: #86efac; }
+  .code-number  { color: #fb923c; }
+
+  /* ─── INFO BOX ─── */
+  .info-box {
+    background: rgba(16,185,129,0.08);
+    border-left: 3px solid var(--accent-green);
+    border-radius: 0 10px 10px 0;
+    padding: 1rem 1.25rem;
+    margin-top: 1rem;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+  }
+  .info-box strong { color: var(--accent-green); }
+
+  .warn-box {
+    background: rgba(245,158,11,0.08);
+    border-left: 3px solid var(--accent-orange);
+    border-radius: 0 10px 10px 0;
+    padding: 1rem 1.25rem;
+    margin-top: 1rem;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+  }
+  .warn-box strong { color: var(--accent-orange); }
+
+  /* ─── STEP LIST ─── */
+  .step-list { list-style: none; padding: 0; }
+  .step-list li {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: white;
+    margin-top: 0.2rem;
+  }
+
+  /* ─── COMPARISON TABLE ─── */
+  .compare-wrap { overflow-x: auto; }
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    min-width: 540px;
+  }
+  .compare-table th {
+    background: rgba(139,92,246,0.12);
+    color: #c4b5fd;
+    padding: 0.65rem 1rem;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+  .compare-table td {
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid rgba(30,45,69,0.5);
+    color: var(--text-secondary);
+  }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .compare-table .td-label { color: var(--text-primary); font-weight: 600; }
+  .check { color: var(--accent-green); }
+  .cross { color: #f87171; }
+
+  /* ─── RESOURCE CARDS ─── */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    transition: border-color 0.2s;
+  }
+  .resource-card:hover { border-color: rgba(6,182,212,0.3); }
+  .resource-card .res-type {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+  .resource-card h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+  }
+  .resource-card p {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+  footer a { color: var(--accent-cyan); text-decoration: none; }
+  footer .footer-row { margin-top: 0.5rem; }
+
+  @media (max-width: 640px) {
+    .card-grid-2 { grid-template-columns: 1fr; }
+    header { padding: 2rem 1rem 1.5rem; }
+    main { padding: 1.5rem 1rem 3rem; }
+    .spec-table { font-size: 0.82rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════ -->
+<header>
+  <div class="header-badge">📅 17 สิงหาคม 2026 · Daily Research</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">Vision AI · Edge TinyML · Industrial Modbus · Smart Access</p>
+  <div class="header-stats">
+    <div class="stat-item">
+      <div class="stat-number">4</div>
+      <span class="stat-label">หัวข้อหลัก</span>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">12</div>
+      <span class="stat-label">ไอเดียโปรเจกต์</span>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">8</div>
+      <span class="stat-label">แหล่งอ้างอิง</span>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">2026</div>
+      <span class="stat-label">ข้อมูลล่าสุด</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 1: ESP32-P4-EYE Vision AI
+═══════════════════════════════════════════ -->
+<section id="innovations">
+  <div class="section-header">
+    <span class="section-icon">👁️</span>
+    <h2 class="section-title">นวัตกรรมใหม่: ESP32-P4-EYE & ESP-VISION</h2>
+    <span class="section-count">3 หัวข้อ</span>
+  </div>
+
+  <!-- Feature Highlight -->
+  <div class="feature-highlight">
+    <h3>🔥 ESP32-P4-EYE: Development Board สำหรับ Vision AI ออก Production แล้ว</h3>
+    <p>
+      Espressif ปล่อย ESP32-P4-EYE — board ที่ออกแบบมาคล้ายกล้องจริงๆ บน ESP32-P4 (dual-core RISC-V 400 MHz + PSRAM 32 MB)
+      มาพร้อมกล้อง 2MP (MIPI-CSI), จอ LCD 1.54" (240×240), ไมโครโฟน MEMS, และ MicroSD card
+      รองรับ H.264/H.265 encoding ระดับ 1080p@30fps ด้วย hardware — ทำให้สร้าง smart camera, edge AI inference,
+      และ video streaming ได้โดยไม่ต้องพึ่ง cloud แม้แต่น้อย ราคา ~$25 — ถูกกว่า Raspberry Pi Camera Module 3 ถึง 3 เท่า
+    </p>
+  </div>
+
+  <div class="card-grid">
+    <!-- Card 1: ESP32-P4-EYE Specs -->
+    <div class="card card-accent-purple">
+      <span class="card-icon">📷</span>
+      <div class="card-title">ESP32-P4-EYE Specs & AI Features</div>
+      <div class="card-subtitle">Espressif Vision AI Dev Kit · ~$25</div>
+      <table class="spec-table">
+        <tr>
+          <td class="spec-label">CPU</td>
+          <td>Dual-core RISC-V 400 MHz + LP core 40 MHz</td>
+        </tr>
+        <tr>
+          <td class="spec-label">PSRAM</td>
+          <td>32 MB PSRAM ภายใน</td>
+        </tr>
+        <tr>
+          <td class="spec-label">Camera</td>
+          <td>2 MP OV2640/SC2336, MIPI-CSI, Auto Focus</td>
+        </tr>
+        <tr>
+          <td class="spec-label">Display</td>
+          <td>1.54" SPI LCD 240×240 (ด้านหลัง board)</td>
+        </tr>
+        <tr>
+          <td class="spec-label">Connectivity</td>
+          <td>ESP32-C6-MINI-1U (Wi-Fi 6 + BLE 5.3)</td>
+        </tr>
+        <tr>
+          <td class="spec-label">Encode</td>
+          <td>H.264 1080p@30fps (hardware)</td>
+        </tr>
+        <tr>
+          <td class="spec-label">AI Features</td>
+          <td>Face detect, Pedestrian detect, YOLOv11-nano</td>
+        </tr>
+        <tr>
+          <td class="spec-label">USB</td>
+          <td>USB 2.0 High-Speed (480 Mbps)</td>
+        </tr>
+      </table>
+      <div class="tags">
+        <span class="tag tag-purple">ESP32-P4</span>
+        <span class="tag tag-purple">Vision AI</span>
+        <span class="tag tag-green">YOLOv11</span>
+        <span class="tag">MIPI-CSI</span>
+      </div>
+    </div>
+
+    <!-- Card 2: ESP-VISION Python Framework -->
+    <div class="card card-accent-cyan">
+      <span class="card-icon">🐍</span>
+      <div class="card-title">ESP-VISION: Python API ใหม่ (Jul 2026)</div>
+      <div class="card-subtitle">Low-Code Edge AI & Computer Vision Framework</div>
+      <p class="card-body">
+        Espressif ปล่อย <strong style="color: var(--accent-cyan)">ESP-VISION</strong> — framework Python unified สำหรับ computer vision บน ESP32-P4
+        ใช้ได้ตั้งแต่ camera capture, image processing, video encode, AI inference ถึง network streaming
+        ในชุด API เดียว ไม่ต้องเขียน C/C++ เหมือนเดิม
+      </p>
+      <div class="code-block">
+<span class="code-comment"># ตัวอย่าง: Object Detection ใน 5 บรรทัด</span>
+<span class="code-keyword">from</span> esp_vision <span class="code-keyword">import</span> Camera, Model
+
+cam = Camera(resolution=<span class="code-string">"1080P"</span>)
+model = Model.load(<span class="code-string">"yolov11_nano_int8.model"</span>)
+
+<span class="code-keyword">while</span> True:
+    frame = cam.capture()
+    results = model.detect(frame)
+    cam.draw_boxes(frame, results)
+    cam.display(frame)
+      </div>
+      <div class="tags">
+        <span class="tag">Python</span>
+        <span class="tag tag-purple">ESP-IDF</span>
+        <span class="tag tag-green">Low-Code</span>
+        <span class="tag">ESP-DL</span>
+      </div>
+    </div>
+
+    <!-- Card 3: Project Idea -->
+    <div class="card card-accent-green">
+      <span class="card-icon">🏭</span>
+      <div class="card-title">ไอเดีย: ระบบ Visual QC ตรวจสอบผลผลิตเกษตร</div>
+      <div class="card-subtitle">ESP32-P4-EYE + YOLOv11 + MQTT Dashboard</div>
+      <p class="card-body">
+        ใช้ ESP32-P4-EYE ถ่ายรูปผลไม้/ผัก ส่ง frame ผ่าน YOLOv11-nano ที่รันอยู่บน board โดยตรง
+        ตรวจจับตำแหน่ง, ขนาด, รอยตำหนิ — ผ่าน MQTT ส่งผล pass/fail + metadata ขึ้น Node-RED dashboard
+        ทั้งหมดทำงาน offline เชื่อมต่อเฉพาะ LAN local ไม่ต้องพึ่ง cloud
+      </p>
+      <ul class="step-list" style="margin-top: 0.85rem;">
+        <li>
+          <div class="step-num">1</div>
+          <div>Train YOLOv11-nano บน Roboflow dataset รูปผลไม้ของเรา → export ONNX → แปลงผ่าน ESP-DL converter</div>
+        </li>
+        <li>
+          <div class="step-num">2</div>
+          <div>Flash model ลง ESP32-P4-EYE พร้อม ESP-VISION firmware ตั้งค่า confidence threshold 0.6</div>
+        </li>
+        <li>
+          <div class="step-num">3</div>
+          <div>ติดตั้ง board ในสายพาน conveyor กลับข้างลง (camera ชี้ลง) ต่อไฟ 5V จาก USB-PD</div>
+        </li>
+        <li>
+          <div class="step-num">4</div>
+          <div>ส่ง JSON ผล detect ผ่าน MQTT → Node-RED → แสดง real-time + เก็บ log SQLite + กระตุ้น relay ปัด defect ออก</div>
+        </li>
+      </ul>
+      <div class="info-box">
+        <strong>ต้นทุน:</strong> ESP32-P4-EYE ~$25 + LED ring light ~$3 + relay module ~$1 = &lt;$30 ต่อสถานี
+        เทียบกับ camera inspection system ระดับอุตสาหกรรม ราคา $500–$2,000
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 2: TinyML / Edge AI
+═══════════════════════════════════════════ -->
+<section id="tinyml">
+  <div class="section-header">
+    <span class="section-icon">🧠</span>
+    <h2 class="section-title">TinyML บน ESP32: NILM + Keyword Spotting</h2>
+    <span class="section-count">4 ไอเดีย</span>
+  </div>
+
+  <div class="card-grid card-grid-2">
+    <!-- NILM Full Card -->
+    <div class="card card-accent-orange">
+      <span class="card-icon">⚡</span>
+      <div class="card-title">NILM — ตรวจจับเครื่องใช้ไฟฟ้าแบบ Non-Intrusive ด้วย TinyML</div>
+      <div class="card-subtitle">IJERT Research 2026 · Accuracy 99.49% บน ESP32</div>
+      <p class="card-body">
+        งานวิจัยล่าสุด (IJERT Vol.15, 2026) พิสูจน์ว่า ESP32 สามารถทำ
+        <strong style="color: var(--accent-orange)">Non-Intrusive Load Monitoring (NILM)</strong> ได้แบบ edge
+        โดยใช้สูตร P = V × I วัด electrical signature ของแต่ละเครื่อง
+        ผ่าน TinyML model ที่รันบน microcontroller โดยตรง — ความแม่นยำ 99.49% โดยไม่ต้องใช้ cloud
+      </p>
+      <div class="warn-box" style="margin-top: 0.85rem;">
+        <strong>NILM คืออะไร?</strong> แทนที่จะติด sensor แยกทุกเครื่อง ใช้ sensor ตัวเดียวที่ distribution board
+        แล้วให้ AI แยกแยะว่าตอนนี้เปิดเครื่องอะไรอยู่บ้าง จาก pattern กระแสไฟรวม — ไม่ต้องรื้อสายไฟเพิ่มเลย
+      </div>
+      <h4 style="color: var(--text-primary); margin-top: 1rem; font-size: 0.95rem;">Architecture:</h4>
+      <table class="spec-table">
+        <tr>
+          <td class="spec-label">Voltage Sensor</td>
+          <td>ZMPT101B (ต่อไฟ 220V ผ่าน transformer)</td>
+        </tr>
+        <tr>
+          <td class="spec-label">Current Sensor</td>
+          <td>ATM90E36 Energy IC (SPI) หรือ SCT-013 + burden resistor</td>
+        </tr>
+        <tr>
+          <td class="spec-label">Feature Engineering</td>
+          <td>RMS power, reactive power, power factor, harmonic signatures</td>
+        </tr>
+        <tr>
+          <td class="spec-label">ML Model</td>
+          <td>Decision Tree (EON Compiler) — ใช้ RAM เพียง 8 KB</td>
+        </tr>
+        <tr>
+          <td class="spec-label">Framework</td>
+          <td>Edge Impulse + Arduino IDE หรือ PlatformIO</td>
+        </tr>
+        <tr>
+          <td class="spec-label">Output</td>
+          <td>MQTT → Home Assistant → แจ้งเตือน LINE ถ้ากระแสผิดปกติ</td>
+        </tr>
+      </table>
+      <div class="tags">
+        <span class="tag tag-orange">NILM</span>
+        <span class="tag tag-orange">TinyML</span>
+        <span class="tag tag-purple">Edge Impulse</span>
+        <span class="tag">ATM90E36</span>
+        <span class="tag">EON Compiler</span>
+      </div>
+    </div>
+
+    <!-- Keyword Spotting -->
+    <div class="card card-accent-pink">
+      <span class="card-icon">🎤</span>
+      <div class="card-title">Keyword Spotting — Voice Wake Word บน ESP32-S3</div>
+      <div class="card-subtitle">ESP-SR MultiNet + INMP441 I2S Microphone</div>
+      <p class="card-body">
+        ESP-SR คือ framework ของ Espressif สำหรับ offline speech recognition บน ESP32-S3
+        ล่าสุด (2026) รองรับ <strong style="color: #f472b6">custom wake word ภาษาไทย</strong> ผ่าน MultiNet model
+        — ไม่ต้องส่งเสียงขึ้น cloud ใช้ RAM เพียง ~200 KB ทำงาน real-time ตลอด 24/7
+      </p>
+
+      <h4 style="color: var(--text-primary); margin: 0.85rem 0 0.5rem; font-size: 0.9rem;">สิ่งที่ ESP-SR ทำได้ใน 2026:</h4>
+      <ul class="step-list">
+        <li>
+          <div class="step-num">1</div>
+          <div><strong style="color: #f472b6">Wake Word Detection</strong> — ตรวจจับคำปลุก เช่น "เฮ้ บ้าน" ก่อนฟัง command</div>
+        </li>
+        <li>
+          <div class="step-num">2</div>
+          <div><strong style="color: #f472b6">Command Recognition</strong> — MultiNet รู้จัก command ได้ 100+ คำ ภาษาไทย/อังกฤษ/จีน/ญี่ปุ่น/ฝรั่งเศส</div>
+        </li>
+        <li>
+          <div class="step-num">3</div>
+          <div><strong style="color: #f472b6">AEC (Acoustic Echo Cancellation)</strong> — ยกเลิก echo จากลำโพง ทำให้ full-duplex voice ใช้ได้จริง</div>
+        </li>
+        <li>
+          <div class="step-num">4</div>
+          <div><strong style="color: #f472b6">TTS Pipeline V3</strong> — สังเคราะห์เสียงพูดตอบกลับ (Text-to-Speech) ในตัว ไม่ต้องใช้ internet</div>
+        </li>
+      </ul>
+
+      <div class="code-block">
+<span class="code-comment"># Hardware ที่ต้องใช้</span>
+ESP32-S3-DevKitC-1   <span class="code-comment"># ตัวหลัก (มี PSRAM)</span>
+INMP441              <span class="code-comment"># I2S MEMS Microphone ~$2</span>
+MAX98357A            <span class="code-comment"># I2S 3W Audio Amplifier ~$1.5</span>
+Speaker 4Ω 3W        <span class="code-comment"># ลำโพงเล็ก</span>
+      </div>
+
+      <div class="info-box">
+        <strong>ไอเดียโปรเจกต์:</strong> Smart Home Hub ออกคำสั่งด้วยเสียงภาษาไทย ไม่ต้องพึ่ง Google Assistant/Alexa
+        ควบคุม Home Assistant ผ่าน Wi-Fi — เหมาะสำหรับผู้สูงอายุ และบ้านที่ internet ไม่เสถียร
+      </div>
+      <div class="tags">
+        <span class="tag tag-pink">ESP-SR</span>
+        <span class="tag tag-pink">MultiNet</span>
+        <span class="tag">INMP441</span>
+        <span class="tag">ภาษาไทย</span>
+        <span class="tag tag-green">Offline</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TinyML Platform Comparison -->
+  <div class="card" style="margin-top: 1.25rem;">
+    <span class="card-icon">📊</span>
+    <div class="card-title">เปรียบเทียบ TinyML Platform สำหรับ ESP32 (2026)</div>
+    <div class="compare-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Platform</th>
+            <th>ใช้ง่าย</th>
+            <th>RAM Optimized</th>
+            <th>ภาษา</th>
+            <th>Community</th>
+            <th>เหมาะกับ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-label">Edge Impulse + EON</td>
+            <td><span class="check">✓✓✓</span></td>
+            <td><span class="check">✓✓✓</span> (EON ลด RAM 40%)</td>
+            <td>C++ / Python</td>
+            <td><span class="check">✓✓✓</span></td>
+            <td>Classification, KWS, IMU, NILM</td>
+          </tr>
+          <tr>
+            <td class="td-label">TFLite Micro (LiteRT)</td>
+            <td><span class="check">✓✓</span></td>
+            <td><span class="check">✓✓</span></td>
+            <td>C++</td>
+            <td><span class="check">✓✓✓</span></td>
+            <td>Generic, ยืดหยุ่น, custom model</td>
+          </tr>
+          <tr>
+            <td class="td-label">ESP-DL (Espressif)</td>
+            <td><span class="check">✓✓</span></td>
+            <td><span class="check">✓✓✓</span> (SIMD vectorized)</td>
+            <td>C++ / Python</td>
+            <td><span class="check">✓✓</span></td>
+            <td>Vision AI บน ESP32-S3, P4 เท่านั้น</td>
+          </tr>
+          <tr>
+            <td class="td-label">ESP-SR</td>
+            <td><span class="check">✓✓✓</span></td>
+            <td><span class="check">✓✓✓</span></td>
+            <td>C / C++</td>
+            <td><span class="check">✓✓</span></td>
+            <td>Speech/Voice AI โดยเฉพาะ</td>
+          </tr>
+          <tr>
+            <td class="td-label">MicroPython + ulab</td>
+            <td><span class="check">✓✓✓</span></td>
+            <td><span class="cross">✗</span> (ช้ากว่า C 10×)</td>
+            <td>Python</td>
+            <td><span class="check">✓✓</span></td>
+            <td>Prototype / เรียนรู้</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 3: Industrial Modbus RTU
+═══════════════════════════════════════════ -->
+<section id="projects">
+  <div class="section-header">
+    <span class="section-icon">🏗️</span>
+    <h2 class="section-title">ESP32 Industrial IoT: Modbus RTU → Cloud Bridge</h2>
+    <span class="section-count">3 โปรเจกต์</span>
+  </div>
+
+  <div class="feature-highlight" style="background: linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(6,182,212,0.07) 100%); border-color: rgba(245,158,11,0.25);">
+    <h3 style="color: #fbbf24;">🔑 ทำไม ESP32 + Modbus จึงน่าสนใจในปี 2026?</h3>
+    <p>
+      โรงงานทั่วโลกยังใช้ Modbus RTU (RS-485) อยู่เป็น 90% — เครื่องจักรเก่าหลายสิบปียังส่ง data ผ่าน protocol นี้
+      ESP32 มี UART 3 ช่อง ราคาถูก มี Wi-Fi ในตัว จึงเป็น gateway ที่สมบูรณ์แบบในการ bridge
+      ข้อมูลจาก PLC/sensor legacy เข้า MQTT, InfluxDB, หรือ cloud โดยไม่ต้องเปลี่ยนอุปกรณ์เดิมเลย
+    </p>
+  </div>
+
+  <div class="card-grid">
+    <!-- Project 1: Modbus Gateway -->
+    <div class="card card-accent-orange">
+      <span class="card-icon">🌉</span>
+      <div class="card-title">Modbus RTU → MQTT Cloud Gateway</div>
+      <div class="card-subtitle">ESP32-S3 + RS-485 → Grafana Dashboard</div>
+      <p class="card-body">สร้าง gateway อ่านข้อมูล Modbus slave สูงสุด 247 ตัว ผ่าน RS-485 แล้วส่ง JSON ขึ้น MQTT broker ทุก 10 วินาที</p>
+      <table class="spec-table">
+        <tr>
+          <td class="spec-label">Hardware</td>
+          <td>ESP32-S3 + TTL-to-RS485 (MAX3485 module) + terminal block</td>
+        </tr>
+        <tr>
+          <td class="spec-label">Library</td>
+          <td>ModbusESP8266 / modbus-esp8266 (รองรับ ESP32 ด้วย)</td>
+        </tr>
+        <tr>
+          <td class="spec-label">Register Types</td>
+          <td>Coil (0x), Discrete Input (1x), Input Reg (3x), Holding Reg (4x)</td>
+        </tr>
+        <tr>
+          <td class="spec-label">Output</td>
+          <td>MQTT JSON → InfluxDB → Grafana (stack เต็ม $0)</td>
+        </tr>
+      </table>
+      <div class="code-block">
+<span class="code-comment">// Arduino - อ่าน Holding Register Modbus slave #1</span>
+mb.begin(&amp;Serial2, RE_DE_PIN);
+mb.master();
+
+<span class="code-keyword">if</span> (!mb.slave()) {
+  mb.readHreg(<span class="code-number">1</span>, <span class="code-number">0x0001</span>, &amp;result, <span class="code-number">1</span>);
+}
+<span class="code-keyword">while</span> (mb.slave()) mb.task();
+Serial.println(<span class="code-string">"Temp: "</span> + String(result * 0.1f));
+      </div>
+      <div class="tags">
+        <span class="tag tag-orange">Modbus RTU</span>
+        <span class="tag">RS-485</span>
+        <span class="tag">MQTT</span>
+        <span class="tag">Grafana</span>
+      </div>
+    </div>
+
+    <!-- Project 2: SCADA Simulator -->
+    <div class="card card-accent-blue">
+      <span class="card-icon">🖥️</span>
+      <div class="card-title">ESP32-S3 Modbus Slave Simulator</div>
+      <div class="card-subtitle">ทดสอบ SCADA Systems โดยไม่ต้องใช้ PLC จริง</div>
+      <p class="card-body">
+        โปรเจกต์บน Vivek's Tech Blog (2026): ใช้ ESP32-S3 จำลองเป็น Modbus RTU slave ที่มี 200 data point
+        ครบทั้ง coil, discrete input, input register และ holding register — เหมาะสำหรับทดสอบ SCADA software
+        หรือ Modbus master code โดยไม่ต้องซื้อ PLC ราคาแพง
+      </p>
+      <div class="info-box">
+        <strong>ประหยัดต้นทุน:</strong> PLC ระดับอุตสาหกรรมราคา 5,000–50,000 บาท
+        ใช้ ESP32-S3 รัน firmware นี้แทนได้ในระหว่าง development phase ทั้งหมด
+      </div>
+      <div class="tags">
+        <span class="tag tag-blue">SCADA</span>
+        <span class="tag tag-blue">Modbus Slave</span>
+        <span class="tag">PLC Simulator</span>
+        <span class="tag tag-green">Open Source</span>
+      </div>
+    </div>
+
+    <!-- Project 3: Industrial Smart Factory -->
+    <div class="card card-accent-cyan">
+      <span class="card-icon">⚙️</span>
+      <div class="card-title">Smart Factory: อ่าน VFD ผ่าน Modbus + Dashboard</div>
+      <div class="card-subtitle">Variable Frequency Drive Monitor — ประหยัดไฟ 20–40%</div>
+      <p class="card-body">
+        VFD (Variable Frequency Drive) ควบคุมมอเตอร์ส่วนใหญ่มี Modbus RTU interface ในตัว
+        ใช้ ESP32 อ่าน ความถี่ปัจจุบัน, กระแส, แรงดัน, อุณหภูมิ inverter ทุก 5 วินาที
+        ส่งขึ้น Home Assistant หรือ industrial SCADA เพื่อวิเคราะห์ energy efficiency
+      </p>
+      <ul style="color: var(--text-secondary); font-size: 0.88rem; padding-left: 1.2rem; margin-top: 0.7rem;">
+        <li>Register 0x0001: Output frequency (Hz × 100)</li>
+        <li>Register 0x0002: Output current (A × 10)</li>
+        <li>Register 0x0003: DC Bus voltage (V)</li>
+        <li>Register 0x0004: Heatsink temperature (°C)</li>
+        <li>Register 0x2000: Control word (Start/Stop/Reset)</li>
+      </ul>
+      <div class="warn-box">
+        <strong>ข้อควรระวัง:</strong> ต้องใช้ isolated RS-485 transceiver (เช่น ISO3082, ADM2587E) เพื่อป้องกัน
+        ground loop จาก VFD ที่มี switching noise สูง — ไม่ควรใช้ module RS-485 ราคาถูกโดยตรง
+      </div>
+      <div class="tags">
+        <span class="tag">VFD</span>
+        <span class="tag tag-orange">Modbus RTU</span>
+        <span class="tag">Motor Control</span>
+        <span class="tag tag-green">Energy Saving</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 4: Sensors
+═══════════════════════════════════════════ -->
+<section id="sensors">
+  <div class="section-header">
+    <span class="section-icon">🔬</span>
+    <h2 class="section-title">Sensors น่าสนใจ: RFID UHF + Environmental</h2>
+    <span class="section-count">4 sensors</span>
+  </div>
+
+  <div class="card-grid">
+    <!-- UHF RFID -->
+    <div class="card card-accent-purple">
+      <span class="card-icon">📡</span>
+      <div class="card-title">UHF RFID + ESP32 — Smart Inventory & Access</div>
+      <div class="card-subtitle">อ่านบัตร RFID ระยะ 1–10 เมตร · ราคา ~500฿</div>
+      <p class="card-body">
+        ผิดกับ RFID 13.56 MHz (NFC) ที่อ่านได้ระยะ &lt;10 ซม. UHF RFID (860–960 MHz)
+        อ่านได้ไกล 1–10 เมตรโดยไม่ต้องชี้ตรง เหมาะสำหรับ warehouse inventory, livestock tracking
+        และ vehicle access control
+      </p>
+      <div class="compare-wrap" style="margin-top: 0.85rem;">
+        <table class="compare-table">
+          <thead>
+            <tr><th>Module</th><th>ระยะ</th><th>Interface</th><th>ราคา</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="td-label">PN532</td><td>≤10 ซม. (NFC)</td><td>I2C/SPI/UART</td><td>~120฿</td></tr>
+            <tr><td class="td-label">RC522 (MFRC522)</td><td>≤5 ซม. (HF)</td><td>SPI</td><td>~60฿</td></tr>
+            <tr><td class="td-label">JRD4035 UHF</td><td>0.5–3 m</td><td>UART</td><td>~500฿</td></tr>
+            <tr><td class="td-label">RRU9019 UHF</td><td>1–10 m</td><td>UART/RS232</td><td>~1,500฿</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="info-box">
+        <strong>ไอเดีย:</strong> ติด UHF RFID reader ที่ประตูโกดัง ESP32 บันทึก log วัสดุเข้า/ออกอัตโนมัติ
+        ส่งขึ้น Google Sheets ผ่าน Apps Script — ไม่ต้องสแกนทีละชิ้น
+      </div>
+      <div class="tags">
+        <span class="tag tag-purple">UHF RFID</span>
+        <span class="tag tag-purple">NFC</span>
+        <span class="tag">Inventory</span>
+        <span class="tag">Access Control</span>
+      </div>
+    </div>
+
+    <!-- BMP581 Pressure -->
+    <div class="card card-accent-cyan">
+      <span class="card-icon">🌤️</span>
+      <div class="card-title">BMP581 — Barometric Pressure Sensor รุ่นใหม่</div>
+      <div class="card-subtitle">Bosch MEMS · ±0.06 hPa · I2C/SPI · 2026</div>
+      <p class="card-body">
+        BMP581 เป็น barometric sensor รุ่นใหม่จาก Bosch แทนที่ BMP280/BME280 เดิม
+        ความแม่นยำสูงกว่า — noise เพียง 0.06 hPa RMS (เทียบกับ 0.2 hPa ของ BMP280)
+        ใช้ไฟน้อยลง 40% มี FIFO 511 samples ทำ data logging โดยไม่ต้องตื่น CPU
+      </p>
+      <table class="spec-table">
+        <tr><td class="spec-label">Altitude Resolution</td><td>±0.5 เมตร (เทียบ 5 เมตรของ BMP280)</td></tr>
+        <tr><td class="spec-label">Pressure Range</td><td>300–1250 hPa</td></tr>
+        <tr><td class="spec-label">Current (Normal)</td><td>1.3 µA (1 Hz ODR)</td></tr>
+        <tr><td class="spec-label">Interface</td><td>I2C (400 kHz) หรือ SPI (10 MHz)</td></tr>
+        <tr><td class="spec-label">Package</td><td>2.0 × 2.0 mm LGA — เล็กมาก</td></tr>
+      </table>
+      <div class="tags">
+        <span class="tag">BMP581</span>
+        <span class="tag tag-green">Low Power</span>
+        <span class="tag">Weather Station</span>
+        <span class="tag">Altitude</span>
+      </div>
+    </div>
+
+    <!-- SEN55 Air Quality -->
+    <div class="card card-accent-green">
+      <span class="card-icon">💨</span>
+      <div class="card-title">SEN55 — All-in-One Air Quality Sensor</div>
+      <div class="card-subtitle">Sensirion · PM1/PM2.5/PM10 + VOC + NOx + T/H</div>
+      <p class="card-body">
+        SEN55 คือ sensor ตัวเดียวที่วัดได้ครบทุกพารามิเตอร์คุณภาพอากาศ: ฝุ่น PM1/PM2.5/PM4/PM10,
+        VOC Index, NOx Index, อุณหภูมิ และความชื้น — ผ่าน I2C ตัวเดียว
+        ไม่ต้องต่อ sensor หลายตัวและ calibrate แยก ราคา ~$35 คุ้มกว่าซื้อแยก
+      </p>
+      <div class="info-box">
+        <strong>ไอเดีย:</strong> AQI Monitor โรงเรียน/ออฟฟิศ ด้วย SEN55 + ESP32 + E-Ink display
+        แสดงสี traffic light (เขียว/เหลือง/แดง) พร้อมส่ง alert LINE Notify เมื่อ PM2.5 &gt; 50 µg/m³
+        ต้นทุนรวม &lt;$50 ต่อจุด
+      </div>
+      <div class="tags">
+        <span class="tag tag-green">SEN55</span>
+        <span class="tag tag-green">Air Quality</span>
+        <span class="tag">PM2.5</span>
+        <span class="tag">VOC</span>
+        <span class="tag">NOx</span>
+      </div>
+    </div>
+
+    <!-- AS7341 Spectral -->
+    <div class="card card-accent-pink">
+      <span class="card-icon">🌈</span>
+      <div class="card-title">AS7341 — 11-Channel Spectral Color Sensor</div>
+      <div class="card-subtitle">AMS-OSRAM · Food QC / Plant Health / LED Matching</div>
+      <p class="card-body">
+        AS7341 ไม่ใช่แค่ RGB sensor ธรรมดา — มี 11 channels วัดแสงที่ความยาวคลื่นต่างกัน
+        ตั้งแต่ 415 nm (violet) ถึง 680 nm (deep red) + NIR channel ทำให้วิเคราะห์สีและวัสดุ
+        ได้ใกล้เคียงกับ spectrometer จริงๆ ราคาเพียง ~$15
+      </p>
+      <ul style="color: var(--text-secondary); font-size: 0.88rem; padding-left: 1.2rem; margin-top: 0.7rem; line-height: 1.9;">
+        <li><strong style="color: #f472b6">Food QC:</strong> ตรวจสีผลไม้ประเมินความสุก/เน่าจากสีผิว</li>
+        <li><strong style="color: #f472b6">Plant Health:</strong> วัด NDVI (ดัชนีสุขภาพพืช) แบบ DIY</li>
+        <li><strong style="color: #f472b6">Water Clarity:</strong> ประเมินสีน้ำ ตรวจจับการปนเปื้อน</li>
+        <li><strong style="color: #f472b6">LED Matching:</strong> จับคู่สีหลอดไฟ/พลาสติกในสายการผลิต</li>
+      </ul>
+      <div class="tags">
+        <span class="tag tag-pink">AS7341</span>
+        <span class="tag">Spectral</span>
+        <span class="tag">Food QC</span>
+        <span class="tag tag-green">Plant IoT</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 5: RESOURCES
+═══════════════════════════════════════════ -->
+<section id="resources">
+  <div class="section-header">
+    <span class="section-icon">📚</span>
+    <h2 class="section-title">แหล่งข้อมูล Library และลิงก์อ้างอิง</h2>
+    <span class="section-count">8 แหล่ง</span>
+  </div>
+
+  <div class="resource-grid">
+    <div class="resource-card">
+      <div class="res-type" style="color: var(--accent-purple)">Framework</div>
+      <h4>ESP-VISION (Python)</h4>
+      <p>Low-Code Vision AI framework ใหม่ของ Espressif สำหรับ ESP32-P4
+         รองรับ camera, AI inference, video encode, streaming ผ่าน Python API รุ่นล่าสุด Jul 2026</p>
+    </div>
+
+    <div class="resource-card">
+      <div class="res-type" style="color: var(--accent-cyan)">Dev Kit</div>
+      <h4>ESP32-P4-EYE</h4>
+      <p>Vision Development Board คล้ายกล้องจริง ราคา ~$25 มาพร้อม camera 2MP, LCD 1.54", mic MEMS
+         รองรับ YOLOv11, face detect, pedestrian detect out-of-the-box</p>
+    </div>
+
+    <div class="resource-card">
+      <div class="res-type" style="color: var(--accent-green)">Research</div>
+      <h4>NILM on ESP32 (IJERT 2026)</h4>
+      <p>งานวิจัย Non-Intrusive Load Monitoring ด้วย TinyML บน ESP32
+         accuracy 99.49% ใช้ Edge Impulse + EON Compiler ประมวลผล local ทั้งหมด</p>
+    </div>
+
+    <div class="resource-card">
+      <div class="res-type" style="color: var(--accent-orange)">Library</div>
+      <h4>ModbusESP8266 / modbus-esp</h4>
+      <p>Library Arduino/PlatformIO รองรับ Modbus RTU (Serial) และ Modbus TCP (Wi-Fi)
+         ใช้งานได้ทั้ง ESP32 และ ESP8266 — GitHub: emelianov/modbus-esp8266</p>
+    </div>
+
+    <div class="resource-card">
+      <div class="res-type" style="color: var(--accent-pink)">Framework</div>
+      <h4>ESP-SR Speech Recognition</h4>
+      <p>Espressif speech recognition library สำหรับ ESP32-S3 รองรับ wake word, command,
+         AEC, TTS Pipeline V3 — รองรับ 5 ภาษา รวมถึงการ train wake word ไทยได้แล้ว</p>
+    </div>
+
+    <div class="resource-card">
+      <div class="res-type" style="color: var(--accent-blue)">Platform</div>
+      <h4>Edge Impulse + EON Compiler</h4>
+      <p>Cloud TinyML platform ที่รองรับ XIAO ESP32-S3 Sense อย่างเป็นทางการ
+         EON Compiler ลด RAM 30–50% เทียบ TFLite Micro ธรรมดา รองรับ INT4 quantization 2026</p>
+    </div>
+
+    <div class="resource-card">
+      <div class="res-type" style="color: var(--accent-green)">Sensor</div>
+      <h4>SEN55 All-in-One AQI</h4>
+      <p>Sensirion sensor วัดคุณภาพอากาศครบ 7 พารามิเตอร์ในตัวเดียว
+         PM1/PM2.5/PM4/PM10 + VOC + NOx + T/H — Arduino library: Sensirion_SEN5X_Arduino_Driver</p>
+    </div>
+
+    <div class="resource-card">
+      <div class="res-type" style="color: var(--accent-purple)">Sensor</div>
+      <h4>AS7341 Spectral Sensor</h4>
+      <p>11-channel spectral sensor จาก AMS-OSRAM วัดแสง 415–680 nm + NIR
+         ใช้วิเคราะห์สีและวัสดุ ราคา ~$15 — Arduino library: Adafruit_AS7341</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════ -->
+<footer>
+  <div>🤖 สร้างโดย AI Research Bot · วันที่ 17 สิงหาคม 2026</div>
+  <div class="footer-row">
+    แหล่งอ้างอิง:
+    IJERT Vol.15 NILM Research ·
+    Espressif ESP-VISION Docs (Jul 2026) ·
+    Hackster.io ESP32-P4-EYE ·
+    Springer Speech Recognition TinyML ·
+    GitHub: espressif/esp-sr, emelianov/modbus-esp8266 ·
+    Sensirion SEN55 Datasheet
+  </div>
+  <div class="footer-row" style="margin-top: 0.75rem; color: var(--text-muted);">
+    หัวข้อวันนี้: Vision AI (ESP32-P4-EYE) · TinyML NILM · Keyword Spotting · Industrial Modbus RTU · UHF RFID · Air Quality
+  </div>
+</footer>
+
+</body>
+</html>
