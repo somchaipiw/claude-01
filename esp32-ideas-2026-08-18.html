@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations — 18 สิงหาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263348;
+    --accent-blue: #38bdf8;
+    --accent-cyan: #22d3ee;
+    --accent-green: #4ade80;
+    --accent-amber: #fbbf24;
+    --accent-purple: #a78bfa;
+    --accent-rose: #fb7185;
+    --accent-orange: #fb923c;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --border-accent: #475569;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #0c1a2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% -10%, rgba(56,189,248,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-tag {
+    display: inline-block;
+    background: linear-gradient(90deg, rgba(56,189,248,0.15), rgba(34,211,238,0.15));
+    border: 1px solid rgba(56,189,248,0.35);
+    color: var(--accent-cyan);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 100px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 0.35rem 1rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .stat-chip span { color: var(--accent-blue); font-weight: 700; }
+
+  nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  nav a {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.85rem 1.2rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  nav a:hover { color: var(--text-primary); border-bottom-color: var(--border-accent); }
+  nav a.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+  section { margin-bottom: 3.5rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 2.2rem; height: 2.2rem;
+    border-radius: 0.55rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-blue  { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); }
+  .icon-green { background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.3); }
+  .icon-amber { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3); }
+  .icon-purple{ background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.3); }
+  .section-header h2 { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); }
+  .section-header .count {
+    margin-left: auto; font-size: 0.78rem; color: var(--text-muted);
+    background: var(--bg-secondary); border: 1px solid var(--border);
+    padding: 0.2rem 0.65rem; border-radius: 100px;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.85rem;
+    padding: 1.4rem;
+    transition: border-color 0.2s, transform 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    border-color: var(--border-accent);
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 0.85rem 0.85rem 0 0;
+  }
+  .card.accent-blue::before   { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); }
+  .card.accent-green::before  { background: linear-gradient(90deg, var(--accent-green), #34d399); }
+  .card.accent-amber::before  { background: linear-gradient(90deg, var(--accent-amber), var(--accent-orange)); }
+  .card.accent-purple::before { background: linear-gradient(90deg, var(--accent-purple), #c084fc); }
+  .card.accent-rose::before   { background: linear-gradient(90deg, var(--accent-rose), #f43f5e); }
+
+  .card-emoji { font-size: 2rem; margin-bottom: 0.75rem; display: block; }
+  .card h3 { font-size: 1.02rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
+  .card p  { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.75; }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.18rem 0.6rem;
+    border-radius: 100px;
+    margin-bottom: 0.6rem;
+    letter-spacing: 0.04em;
+  }
+  .badge-new   { background: rgba(74,222,128,0.15); border: 1px solid rgba(74,222,128,0.4); color: var(--accent-green); }
+  .badge-hot   { background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.4); color: var(--accent-amber); }
+  .badge-update{ background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.4); color: var(--accent-blue); }
+  .badge-lab   { background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.4); color: var(--accent-purple); }
+
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+  }
+  .spec-table td {
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .spec-table td:first-child {
+    color: var(--text-muted);
+    white-space: nowrap;
+    padding-right: 1rem;
+    width: 40%;
+  }
+  .spec-table td:last-child { color: var(--text-primary); }
+  .spec-table tr:last-child td { border-bottom: none; }
+
+  .hero-card {
+    background: linear-gradient(135deg, #1e293b 0%, #1a2744 100%);
+    border: 1px solid rgba(56,189,248,0.25);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan), var(--accent-purple));
+  }
+  .hero-card h3 { font-size: 1.25rem; font-weight: 700; color: var(--accent-blue); margin-bottom: 0.5rem; }
+  .hero-card p { color: var(--text-secondary); font-size: 0.92rem; }
+  .hero-content { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.25rem; }
+  @media (max-width: 640px) { .hero-content { grid-template-columns: 1fr; } }
+  .hero-col h4 { font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.5rem; }
+
+  .pill-list { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.5rem; }
+  .pill {
+    font-size: 0.78rem; padding: 0.22rem 0.7rem; border-radius: 100px;
+    border: 1px solid var(--border); color: var(--text-secondary);
+    background: rgba(255,255,255,0.03);
+  }
+
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.85rem;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 0.85rem;
+    display: flex;
+    gap: 1.2rem;
+    align-items: flex-start;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .sensor-card:hover { border-color: var(--border-accent); background: var(--bg-card-hover); }
+  .sensor-icon {
+    font-size: 1.8rem; flex-shrink: 0; width: 2.8rem; text-align: center;
+    padding-top: 0.1rem;
+  }
+  .sensor-body h3 { font-size: 0.98rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem; }
+  .sensor-body p { font-size: 0.87rem; color: var(--text-secondary); line-height: 1.7; }
+  .sensor-tags { margin-top: 0.5rem; }
+
+  .resource-list { list-style: none; }
+  .resource-list li {
+    border: 1px solid var(--border);
+    border-radius: 0.6rem;
+    padding: 0.85rem 1.1rem;
+    margin-bottom: 0.6rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+  .resource-list li:hover { border-color: var(--border-accent); }
+  .resource-list .r-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .resource-list .r-body h4 { font-size: 0.92rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem; }
+  .resource-list .r-body p { font-size: 0.83rem; color: var(--text-secondary); }
+  .resource-list a { color: var(--accent-blue); text-decoration: none; }
+  .resource-list a:hover { text-decoration: underline; }
+
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 2rem 1.5rem;
+    color: var(--text-muted);
+    font-size: 0.83rem;
+    line-height: 1.9;
+  }
+  footer strong { color: var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-tag">Daily Research · AI-Generated</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">18 สิงหาคม 2026 · ESP32-S31 รุ่นใหม่ · Robotics Control · Air Quality · HMI Display</p>
+  <div class="stats-row">
+    <div class="stat-chip">🔥 <span>1</span> ชิปใหม่ (Mass Production)</div>
+    <div class="stat-chip">🤖 <span>4</span> ไอเดียโปรเจกต์</div>
+    <div class="stat-chip">🌬️ <span>5</span> Sensors คุณภาพอากาศ</div>
+    <div class="stat-chip">📚 <span>6</span> แหล่งข้อมูล</div>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations" class="active">🚀 นวัตกรรม</a>
+  <a href="#projects">💡 โปรเจกต์</a>
+  <a href="#sensors">🌬️ Sensors</a>
+  <a href="#resources">📚 แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🚀</div>
+      <h2>นวัตกรรมและชิปใหม่ล่าสุด</h2>
+      <span class="count">2 รายการ</span>
+    </div>
+
+    <div class="hero-card">
+      <div class="badge badge-new">🟢 Mass Production · กรกฎาคม 2026</div>
+      <h3>ESP32-S31 — ชิปเรือธง Espressif รุ่นล่าสุด: All-in-One AIoT</h3>
+      <p>
+        Espressif ประกาศเปิดตัว ESP32-S31 เมื่อ 26 มีนาคม 2026 และเริ่มผลิตจำหน่ายจริงตั้งแต่เดือนกรกฎาคม 2026
+        ถือเป็น Mainstream SoC รุ่นใหม่สำหรับยุค AIoT โดยรวม Wi-Fi 6, Bluetooth 5.4, Zigbee/Thread และ Gigabit Ethernet
+        ไว้ในชิปตัวเดียว รองรับ Matter ทั้งผ่าน Wi-Fi และ Thread โดยไม่ต้องใช้ชิปเสริม
+      </p>
+      <div class="hero-content">
+        <div class="hero-col">
+          <h4>สเปคหลัก</h4>
+          <table class="spec-table">
+            <tr><td>CPU</td><td>Dual-core RISC-V @ 320 MHz (128-bit SIMD)</td></tr>
+            <tr><td>Coprocessor</td><td>40 MHz Low-Power Core</td></tr>
+            <tr><td>RAM</td><td>512 KB SRAM + DDR PSRAM 250 MHz</td></tr>
+            <tr><td>GPIO</td><td>60 pins</td></tr>
+            <tr><td>Wi-Fi</td><td>Wi-Fi 6 (2.4 GHz)</td></tr>
+            <tr><td>Bluetooth</td><td>BT 5.4 (LE Audio + Classic BR/EDR)</td></tr>
+            <tr><td>IEEE 802.15.4</td><td>Zigbee + Thread (Matter)</td></tr>
+            <tr><td>Ethernet</td><td>Gigabit Ethernet MAC</td></tr>
+          </table>
+        </div>
+        <div class="hero-col">
+          <h4>ความสามารถพิเศษ</h4>
+          <table class="spec-table">
+            <tr><td>Display</td><td>DVP Camera, MIPI, RGB LCD, SPI TFT</td></tr>
+            <tr><td>Touch</td><td>14 ช่อง Capacitive Touch</td></tr>
+            <tr><td>Hardware Accel</td><td>JPEG Codec, PPA, 2D-DMA</td></tr>
+            <tr><td>Audio</td><td>LC3 LE Audio, Dual I2S (BT Sync)</td></tr>
+            <tr><td>Security</td><td>TRNG, PUF, Secure Boot, AES-256, ECDSA</td></tr>
+            <tr><td>USB</td><td>USB OTG 2.0 HS</td></tr>
+            <tr><td>ราคาโดยประมาณ</td><td>ใกล้เคียง ESP32-S3 รุ่นปัจจุบัน</td></tr>
+            <tr><td>เหมาะสำหรับ</td><td>Smart Speaker, HMI Hub, Smart Home Controller</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="pill-list" style="margin-top:1.2rem;">
+        <span class="pill">Wi-Fi 6</span>
+        <span class="pill">BT LE Audio</span>
+        <span class="pill">Zigbee</span>
+        <span class="pill">Thread</span>
+        <span class="pill">Matter</span>
+        <span class="pill">Gigabit Ethernet</span>
+        <span class="pill">RISC-V</span>
+        <span class="pill">SIMD</span>
+        <span class="pill">JPEG Codec</span>
+        <span class="pill">TEE Security</span>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card accent-purple">
+        <div class="badge badge-update">🔵 Certified Platform</div>
+        <span class="card-emoji">📡</span>
+        <h3>ESP32-H2 — Thread-Certified &amp; Zigbee-Compliant Platform อย่างเป็นทางการ</h3>
+        <p>
+          ESP32-H2 ได้รับการรับรองอย่างเป็นทางการในฐานะ <strong style="color:var(--accent-purple)">&quot;Thread-Certified Component&quot;</strong>
+          และ <strong style="color:var(--accent-purple)">&quot;Zigbee-Compliant Platform&quot;</strong> จาก Thread Group และ CSA
+          ทำให้เป็นทางเลือกที่ปลอดภัยและผ่านมาตรฐานสำหรับโปรเจกต์ Matter-over-Thread และ Zigbee Mesh
+        </p>
+        <table class="spec-table" style="margin-top:0.75rem;">
+          <tr><td>Wireless</td><td>IEEE 802.15.4 + BLE 5</td></tr>
+          <tr><td>การรับรอง</td><td>Thread Group + Zigbee Alliance (CSA)</td></tr>
+          <tr><td>ราคา Dev Kit</td><td>~$5-8 USD</td></tr>
+          <tr><td>ใช้สำหรับ</td><td>End Device ใน Zigbee/Thread Mesh</td></tr>
+        </table>
+        <div class="pill-list" style="margin-top:0.75rem;">
+          <span class="pill">Thread Border Router</span>
+          <span class="pill">Zigbee End Device</span>
+          <span class="pill">Matter</span>
+          <span class="pill">Low Power</span>
+        </div>
+      </div>
+
+      <div class="card accent-blue">
+        <div class="badge badge-hot">🟡 2026 Selection Guide</div>
+        <span class="card-emoji">📊</span>
+        <h3>เปรียบเทียบชิป Espressif ปี 2026: เลือกอะไรดี?</h3>
+        <p>ตารางเปรียบเทียบคร่าวๆ สำหรับโปรเจกต์ต่างๆ:</p>
+        <table class="spec-table" style="margin-top:0.75rem;">
+          <tr><td>ESP32-S31</td><td>All-in-One · Wi-Fi 6 + BT + Zigbee + ETH</td></tr>
+          <tr><td>ESP32-P4</td><td>Vision AI · 400MHz · H.264 · USB OTG HS</td></tr>
+          <tr><td>ESP32-S3</td><td>PSRAM · AI Vector · Camera · Mature SDK</td></tr>
+          <tr><td>ESP32-C6</td><td>Wi-Fi 6 + BLE + Thread · ราคาถูก</td></tr>
+          <tr><td>ESP32-H2</td><td>Thread/Zigbee Only · Low Power · Certified</td></tr>
+          <tr><td>ESP32-C5</td><td>Dual-Band Wi-Fi 6 + BLE + IEEE 802.15.4</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-green">💡</div>
+      <h2>ไอเดียโปรเจกต์น่าสนใจ</h2>
+      <span class="count">4 โปรเจกต์</span>
+    </div>
+
+    <div class="cards-grid">
+
+      <div class="card accent-blue">
+        <div class="badge badge-new">ใหม่ · ESP32-S31</div>
+        <span class="card-emoji">🏠</span>
+        <h3>ESP32-S31 Smart Home Hub — All-Wireless ในชิปเดียว</h3>
+        <p>
+          ใช้ ESP32-S31 เป็นศูนย์กลาง Smart Home ที่รวม Wi-Fi 6, BT LE Audio, Zigbee, Thread
+          และ Matter ไว้ในชิปเดียว ไม่ต้องใช้ ESP32-H2 เพิ่มอีกต่อไป
+          Pair กับ Display LVGL สำหรับ HMI Control Panel และใช้ Gigabit Ethernet เชื่อมต่อแบบ Wired
+          เพื่อความเสถียรสูงสุด
+        </p>
+        <table class="spec-table" style="margin-top:0.75rem;">
+          <tr><td>ชิปหลัก</td><td>ESP32-S31</td></tr>
+          <tr><td>Display</td><td>CrowPanel 5" LVGL + Touch</td></tr>
+          <tr><td>Protocol</td><td>Matter over Thread + Wi-Fi 6</td></tr>
+          <tr><td>Audio</td><td>LE Audio Speaker (LC3 Codec)</td></tr>
+          <tr><td>ประมาณค่าใช้จ่าย</td><td>~$30-50 USD</td></tr>
+        </table>
+      </div>
+
+      <div class="card accent-purple">
+        <div class="badge badge-hot">Zigbee · ESP32-H2</div>
+        <span class="card-emoji">🔌</span>
+        <h3>Universal Zigbee Sensor Board — KiCad 9.0 Open Source</h3>
+        <p>
+          โปรเจกต์ Open Source PCB บน GitHub ที่ออกแบบด้วย KiCad 9.0
+          ใช้ ESP32-H2-Supermini เป็นใจกลาง รองรับ Sensor ได้หลายแบบบน Socket
+          เหมาะสำหรับสร้าง Zigbee End Device แบบ DIY ที่ยืดหยุ่น
+          นำเข้า Schema ไปแก้ไขเพิ่มเติมได้ทันที
+        </p>
+        <table class="spec-table" style="margin-top:0.75rem;">
+          <tr><td>MCU</td><td>ESP32-H2-Supermini</td></tr>
+          <tr><td>เครื่องมือ</td><td>KiCad 9.0</td></tr>
+          <tr><td>Protocol</td><td>Zigbee (IEEE 802.15.4)</td></tr>
+          <tr><td>ใช้งาน</td><td>Temperature, Motion, Door Sensor</td></tr>
+          <tr><td>Source</td><td>GitHub (MIT License)</td></tr>
+        </table>
+      </div>
+
+      <div class="card accent-amber">
+        <div class="badge badge-lab">Robotics · Inverse Kinematics</div>
+        <span class="card-emoji">🦾</span>
+        <h3>Hand-Gesture Controlled Robot Arm — MPU6050 + A4988 + ESP32</h3>
+        <p>
+          แขนหุ่นยนต์ควบคุมด้วยท่าทางมือ (Hand Gesture) โดยใช้ MPU6050 IMU ตรวจจับการเอียง
+          ส่งคำสั่งผ่าน ESP32 Wi-Fi ไปยัง Robot Arm ที่ขับด้วย A4988 Stepper Driver
+          รองรับ Inverse Kinematics คำนวณตำแหน่ง End Effector อัตโนมัติ
+        </p>
+        <table class="spec-table" style="margin-top:0.75rem;">
+          <tr><td>Controller</td><td>ESP32 (Wi-Fi Bridge)</td></tr>
+          <tr><td>IMU Sensor</td><td>MPU-6050 (Gyro + Accel)</td></tr>
+          <tr><td>Motor Driver</td><td>A4988 × 3 (Stepper)</td></tr>
+          <tr><td>Algorithm</td><td>Inverse Kinematics (IK)</td></tr>
+          <tr><td>ต้นทุน</td><td>~$20-35 USD (DIY)</td></tr>
+        </table>
+      </div>
+
+      <div class="card accent-rose">
+        <div class="badge badge-lab">PID · Self-Balancing</div>
+        <span class="card-emoji">🤸</span>
+        <h3>ESP32 Self-Balancing Robot — PID Control + MPU6050</h3>
+        <p>
+          หุ่นยนต์สองล้อทรงตัวได้เองด้วยอัลกอริธึม PID
+          อ่านมุมเอียงจาก MPU6050 แล้วส่งคำสั่ง PWM ไปยัง DC Motor พร้อม Encoder
+          ใช้ ArduPID Library สำหรับ Tuning ค่า Kp/Ki/Kd ผ่าน Web Dashboard แบบ Real-Time
+          เหมาะสำหรับเรียนรู้ Control Systems ภาคปฏิบัติ
+        </p>
+        <table class="spec-table" style="margin-top:0.75rem;">
+          <tr><td>MCU</td><td>ESP32 (Dual-Core สำหรับ PID Loop)</td></tr>
+          <tr><td>Sensor</td><td>MPU-6050 (I²C)</td></tr>
+          <tr><td>Library</td><td>ArduPID + WiFiManager</td></tr>
+          <tr><td>Motor</td><td>DC Motor + Encoder (L298N)</td></tr>
+          <tr><td>Tuning</td><td>Web UI Kp/Ki/Kd Real-Time</td></tr>
+        </table>
+      </div>
+
+      <div class="card accent-green" style="grid-column: 1 / -1;">
+        <div class="badge badge-update">HMI Display · LVGL</div>
+        <span class="card-emoji">🖥️</span>
+        <h3>ESP32 + LVGL HMI Display: Air Quality Monitor พร้อม Dashboard สวยงาม</h3>
+        <p>
+          โปรเจกต์ &quot;Project Aura&quot; รวม ESP32-S3 กับ CrowPanel 4.3&quot; Capacitive Touchscreen (800×480)
+          และ Sensirion SEN66 All-in-One Sensor แสดงผล CO₂, PM2.5/10, VOC, NOx, อุณหภูมิ และความชื้น
+          บนหน้าจอ LVGL UI สวยงาม มี Dark Mode, Night Mode อัตโนมัติ และ Multi-Language รองรับภาษาไทย
+          ไม่ต้องบัดกรีเลย — ใช้ Grove/Qwiic Cable ทั้งหมด
+        </p>
+        <div class="hero-content" style="margin-top:1rem;">
+          <div class="hero-col">
+            <h4>Hardware Components</h4>
+            <table class="spec-table">
+              <tr><td>MCU Board</td><td>Waveshare ESP32-S3 + 4.3&quot; IPS Touch</td></tr>
+              <tr><td>Sensor หลัก</td><td>Sensirion SEN66 (All-in-One)</td></tr>
+              <tr><td>Connection</td><td>Grove / STEMMA QT / Qwiic</td></tr>
+              <tr><td>Resolution</td><td>800 × 480 Capacitive Touch</td></tr>
+            </table>
+          </div>
+          <div class="hero-col">
+            <h4>Software &amp; Features</h4>
+            <table class="spec-table">
+              <tr><td>UI Framework</td><td>LVGL (Light and Versatile GL)</td></tr>
+              <tr><td>Data ที่วัดได้</td><td>PM1/2.5/4/10, CO₂, VOC, NOx, T, RH</td></tr>
+              <tr><td>Integration</td><td>Home Assistant (MQTT/API)</td></tr>
+              <tr><td>Night Mode</td><td>Auto (Adaptive Brightness)</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-amber">🌬️</div>
+      <h2>Sensors คุณภาพอากาศและสิ่งแวดล้อม</h2>
+      <span class="count">5 sensors</span>
+    </div>
+
+    <div class="sensor-card">
+      <div class="sensor-icon">🏆</div>
+      <div class="sensor-body">
+        <div class="badge badge-new">All-in-One Premium</div>
+        <h3>Sensirion SEN66 — All-in-One Environmental Module</h3>
+        <p>
+          เซ็นเซอร์ระดับอุตสาหกรรมในโมดูลเดียว วัดได้ 7 พารามิเตอร์พร้อมกัน:
+          PM1 / PM2.5 / PM4 / PM10 (Particulate Matter), CO₂ (Photoacoustic), VOC Index, NOx Index,
+          อุณหภูมิ และความชื้น — เชื่อมต่อผ่าน I²C หรือ Qwiic Cable
+          แม่นยำระดับ Lab ราคาประมาณ $40-50 USD
+        </p>
+        <div class="sensor-tags">
+          <div class="pill-list">
+            <span class="pill">PM1/2.5/4/10</span>
+            <span class="pill">CO₂</span>
+            <span class="pill">VOC Index</span>
+            <span class="pill">NOx Index</span>
+            <span class="pill">Temp+Humidity</span>
+            <span class="pill">I²C / Qwiic</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sensor-card">
+      <div class="sensor-icon">🔬</div>
+      <div class="sensor-body">
+        <div class="badge badge-hot">ยอดนิยม DIY</div>
+        <h3>Sensirion SCD41 — CO₂ Photoacoustic Sensor</h3>
+        <p>
+          วัด CO₂ ด้วยเทคโนโลยี Photoacoustic (PASens®) ที่แม่นยำกว่า NDIR ในราคาเท่ากัน
+          ± 40 ppm ช่วงวัด 400–5000 ppm ใช้ไฟ 3.3V เชื่อมต่อ I²C ง่าย
+          วัดอุณหภูมิและความชื้นในตัว — มักใช้คู่กับ PMS7003 สำหรับ Air Quality Station ครบชุด
+        </p>
+        <div class="sensor-tags">
+          <div class="pill-list">
+            <span class="pill">CO₂ 400-5000ppm</span>
+            <span class="pill">±40ppm Accuracy</span>
+            <span class="pill">Photoacoustic</span>
+            <span class="pill">I²C</span>
+            <span class="pill">3.3V / 5V</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sensor-card">
+      <div class="sensor-icon">🌫️</div>
+      <div class="sensor-body">
+        <div class="badge badge-update">Particulate Matter</div>
+        <h3>Plantower PMS7003 — PM2.5 / PM10 Laser Particle Counter</h3>
+        <p>
+          เซ็นเซอร์ Laser Particle Counter วัดฝุ่น PM1.0, PM2.5 และ PM10 แบบ Real-Time
+          ใช้งานกันอย่างแพร่หลายในโปรเจกต์ Air Quality Monitor DIY
+          มี Serial UART output ง่ายต่อการต่อกับ ESP32 — ราคา ~$15 USD
+        </p>
+        <div class="sensor-tags">
+          <div class="pill-list">
+            <span class="pill">PM1.0</span>
+            <span class="pill">PM2.5</span>
+            <span class="pill">PM10</span>
+            <span class="pill">UART</span>
+            <span class="pill">5V</span>
+            <span class="pill">~$15</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sensor-card">
+      <div class="sensor-icon">💨</div>
+      <div class="sensor-body">
+        <div class="badge badge-hot">Gas Sensor</div>
+        <h3>Bosch BME680 — Temperature / Humidity / Pressure / VOC</h3>
+        <p>
+          เซ็นเซอร์ 4-in-1 จาก Bosch วัดอุณหภูมิ, ความชื้น, ความดันบรรยากาศ และ VOC (Air Quality Index)
+          ราคาถูก ~$8-12 USD น้ำหนักเบา เหมาะสำหรับ Wearable หรือ Indoor Station
+          ใช้ I²C หรือ SPI — รองรับ Arduino, MicroPython และ ESPHome
+        </p>
+        <div class="sensor-tags">
+          <div class="pill-list">
+            <span class="pill">Temp</span>
+            <span class="pill">Humidity</span>
+            <span class="pill">Pressure</span>
+            <span class="pill">VOC / AQI</span>
+            <span class="pill">I²C / SPI</span>
+            <span class="pill">~$10</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sensor-card">
+      <div class="sensor-icon">🟫</div>
+      <div class="sensor-body">
+        <div class="badge badge-update">NDIR CO₂</div>
+        <h3>Winsen MH-Z19B — NDIR CO₂ Sensor (0–5000 ppm)</h3>
+        <p>
+          เซ็นเซอร์ CO₂ แบบ NDIR (Non-Dispersive Infrared) ยอดนิยมสำหรับ Home/Office Monitor
+          วัดได้ 0–5000 ppm, Auto-Calibration รองรับ UART และ PWM Output
+          ราคา ~$20 USD ตัวเลือกที่ดีสำหรับห้องเรียน ออฟฟิศ และห้องนอน
+        </p>
+        <div class="sensor-tags">
+          <div class="pill-list">
+            <span class="pill">0-5000 ppm CO₂</span>
+            <span class="pill">NDIR Technology</span>
+            <span class="pill">Auto-Calibration</span>
+            <span class="pill">UART + PWM</span>
+            <span class="pill">5V</span>
+            <span class="pill">~$20</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-purple">📚</div>
+      <h2>แหล่งข้อมูล Library และลิงก์อ้างอิง</h2>
+      <span class="count">6 รายการ</span>
+    </div>
+
+    <ul class="resource-list">
+      <li>
+        <div class="r-icon">🧠</div>
+        <div class="r-body">
+          <h4>ESP32-S31 Official Announcement — Espressif</h4>
+          <p>หน้าประกาศเปิดตัวอย่างเป็นทางการของ ESP32-S31 พร้อม Datasheet และ SDK support<br>
+          <a href="https://www.espressif.com/en/news/ESP32_S31_Release" target="_blank" rel="noopener">espressif.com › ESP32_S31_Release</a></p>
+        </div>
+      </li>
+      <li>
+        <div class="r-icon">📡</div>
+        <div class="r-body">
+          <h4>ESP32-H2 Zigbee and Thread Native Support Guide — Zbotic</h4>
+          <p>คู่มือเริ่มต้น Zigbee และ Thread บน ESP32-H2 พร้อม Code Example และการตั้งค่า<br>
+          <a href="https://zbotic.in/esp32-h2-zigbee-and-thread-native-support-guide/" target="_blank" rel="noopener">zbotic.in › esp32-h2-zigbee-and-thread</a></p>
+        </div>
+      </li>
+      <li>
+        <div class="r-icon">🖥️</div>
+        <div class="r-body">
+          <h4>CrowPanel ESP32 HMI Display Series — Elecrow</h4>
+          <p>ชุด Display ESP32 พร้อม LVGL ขนาด 2.4&quot; ถึง 7&quot; รองรับ Arduino IDE, ESP-IDF, MicroPython<br>
+          <a href="https://www.elecrow.com/esp32-display-series-hmi-touch-screen.html" target="_blank" rel="noopener">elecrow.com › CrowPanel Display Series</a></p>
+        </div>
+      </li>
+      <li>
+        <div class="r-icon">🤖</div>
+        <div class="r-body">
+          <h4>ESP32 Motor Control Guide: Servo vs Stepper vs DC Motor — SunFounder</h4>
+          <p>คู่มือเปรียบเทียบและเลือกใช้ Motor สำหรับ ESP32 พร้อม Code Template และ Circuit Diagram<br>
+          <a href="https://www.sunfounder.com/blogs/news/esp32-motor-control-guide-servo-vs-stepper-vs-dc-motor-how-to-choose" target="_blank" rel="noopener">sunfounder.com › esp32-motor-control-guide</a></p>
+        </div>
+      </li>
+      <li>
+        <div class="r-icon">🌬️</div>
+        <div class="r-body">
+          <h4>Home Air Quality Monitor: PM2.5, CO2 and VOC with ESP32 — esp32.co.uk</h4>
+          <p>Tutorial ครบชุดสำหรับสร้าง Air Quality Monitor พร้อม Home Assistant Integration<br>
+          <a href="https://esp32.co.uk/home-assistant-air-quality-monitor-co%E2%82%82-voc-pm2-5/" target="_blank" rel="noopener">esp32.co.uk › home-assistant-air-quality-monitor</a></p>
+        </div>
+      </li>
+      <li>
+        <div class="r-icon">📊</div>
+        <div class="r-body">
+          <h4>ESP32 Comparison Chart 2026: All Versions &amp; Models — espboards.dev</h4>
+          <p>ตารางเปรียบเทียบ ESP32 ทุกรุ่นปี 2026 พร้อมสเปคและการใช้งานที่แนะนำ<br>
+          <a href="https://www.espboards.dev/blog/esp32-soc-options/" target="_blank" rel="noopener">espboards.dev › esp32-soc-options</a></p>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+</main>
+
+<footer>
+  <p><strong>ESP32 &amp; Sensor Innovations Daily Research</strong></p>
+  <p>สร้างโดย AI Researcher · วันที่ 18 สิงหาคม 2026</p>
+  <p style="margin-top:0.5rem;">แหล่งข้อมูล: Espressif Systems · Adafruit Blog · Hackster.io · SunFounder · Elecrow · Zbotic · espboards.dev</p>
+  <p style="margin-top:0.5rem; font-size:0.75rem; color:var(--text-muted);">
+    หัวข้อประจำวัน: ESP32-S31 Mass Production · ESP32-H2 Zigbee/Thread Certified · HMI LVGL Display ·
+    Robot Arm Inverse Kinematics · Self-Balancing PID · Air Quality Sensors (SEN66, SCD41, PMS7003, BME680, MH-Z19B)
+  </p>
+</footer>
+
+</body>
+</html>
