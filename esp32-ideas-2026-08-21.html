@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 21 สิงหาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263347;
+    --accent-1: #38bdf8;
+    --accent-2: #818cf8;
+    --accent-3: #34d399;
+    --accent-4: #fb923c;
+    --accent-5: #f472b6;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --tag-bg: #1e3a5f;
+    --tag-text: #7dd3fc;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f2744 0%, #1a1040 50%, #0f172a 100%);
+    border-bottom: 1px solid #1e3a5f;
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 50% 50%, rgba(56,189,248,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(56,189,248,0.1);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent-1);
+    border-radius: 999px;
+    padding: 0.3rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.2rem;
+  }
+
+  header h1 {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #38bdf8, #818cf8, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.6rem;
+    line-height: 1.3;
+  }
+
+  .header-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent-1);
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* Nav */
+  nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  nav a {
+    display: inline-block;
+    padding: 0.9rem 1.2rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+
+  nav a:hover {
+    color: var(--accent-1);
+    border-bottom-color: var(--accent-1);
+  }
+
+  /* Main Layout */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+  }
+
+  /* Section headers */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.8rem;
+  }
+
+  .section-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .section-desc {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-top: 0.2rem;
+  }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.6rem;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--card-accent, #38bdf8), transparent);
+    border-radius: 16px 16px 0 0;
+  }
+
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(56,189,248,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+
+  .card-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    margin-bottom: 0.9rem;
+  }
+
+  .card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.7rem;
+    line-height: 1.4;
+  }
+
+  .card p {
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.7;
+    margin-bottom: 0.8rem;
+  }
+
+  .card p:last-child { margin-bottom: 0; }
+
+  /* Spec table */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin-top: 0.8rem;
+  }
+
+  .spec-table tr {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .spec-table tr:last-child {
+    border-bottom: none;
+  }
+
+  .spec-table td {
+    padding: 0.45rem 0.5rem;
+    color: var(--text-secondary);
+  }
+
+  .spec-table td:first-child {
+    color: var(--text-muted);
+    width: 38%;
+    font-size: 0.82rem;
+  }
+
+  .spec-table td strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  /* Tags */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.9rem;
+  }
+
+  .tag {
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+  }
+
+  /* Full-width card */
+  .card-wide {
+    grid-column: 1 / -1;
+  }
+
+  /* Highlight list */
+  .highlight-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+  }
+
+  .highlight-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  .highlight-list li::before {
+    content: '▸';
+    color: var(--accent-3);
+    margin-top: 0.1rem;
+    flex-shrink: 0;
+  }
+
+  /* Chip comparison table */
+  .chip-compare {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin-top: 1rem;
+  }
+
+  .chip-compare th {
+    background: rgba(56,189,248,0.08);
+    padding: 0.7rem 1rem;
+    text-align: left;
+    color: var(--accent-1);
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .chip-compare td {
+    padding: 0.65rem 1rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  .chip-compare tr:last-child td { border-bottom: none; }
+
+  .chip-compare td:first-child {
+    color: var(--text-primary);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .chip-compare tr:hover td {
+    background: rgba(56,189,248,0.03);
+  }
+
+  /* Step list for projects */
+  .step-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+    counter-reset: steps;
+  }
+
+  .step-item {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    counter-increment: steps;
+  }
+
+  .step-num {
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background: rgba(129,140,248,0.15);
+    border: 1px solid rgba(129,140,248,0.4);
+    color: var(--accent-2);
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+  }
+
+  .step-text {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  /* Resource links */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    transition: all 0.2s;
+  }
+
+  .resource-card:hover {
+    border-color: rgba(56,189,248,0.3);
+    background: var(--bg-card-hover);
+  }
+
+  .resource-icon {
+    font-size: 1.8rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .resource-info h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.3rem;
+  }
+
+  .resource-info p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* Alert banner */
+  .alert-banner {
+    background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(129,140,248,0.08));
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .alert-banner .alert-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .alert-banner p {
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+
+  .alert-banner strong {
+    color: var(--accent-1);
+  }
+
+  /* Footer */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 2rem 3rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  footer .footer-title {
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+  }
+
+  .footer-refs {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .footer-refs a {
+    color: var(--accent-1);
+    text-decoration: none;
+    font-size: 0.82rem;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+
+  .footer-refs a:hover { opacity: 1; }
+
+  /* Accent classes */
+  .accent-blue { --card-accent: #38bdf8; }
+  .accent-purple { --card-accent: #818cf8; }
+  .accent-green { --card-accent: #34d399; }
+  .accent-orange { --card-accent: #fb923c; }
+  .accent-pink { --card-accent: #f472b6; }
+
+  .label-new { background: rgba(56,189,248,0.12); color: #38bdf8; }
+  .label-project { background: rgba(52,211,153,0.12); color: #34d399; }
+  .label-sensor { background: rgba(251,146,60,0.12); color: #fb923c; }
+  .label-ai { background: rgba(129,140,248,0.12); color: #818cf8; }
+  .label-health { background: rgba(244,114,182,0.12); color: #f472b6; }
+  .label-energy { background: rgba(250,204,21,0.12); color: #fbbf24; }
+
+  .icon-innovations { background: rgba(56,189,248,0.1); }
+  .icon-projects { background: rgba(52,211,153,0.1); }
+  .icon-sensors { background: rgba(251,146,60,0.1); }
+  .icon-resources { background: rgba(129,140,248,0.1); }
+
+  @media (max-width: 640px) {
+    .card-grid { grid-template-columns: 1fr; }
+    header { padding: 2rem 1rem 1.5rem; }
+    .header-stats { gap: 1.2rem; }
+    .chip-compare { font-size: 0.8rem; }
+    .chip-compare td, .chip-compare th { padding: 0.5rem 0.6rem; }
+    nav a { font-size: 0.82rem; padding: 0.7rem 0.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">🔬 ESP32 Daily Research Brief</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="header-subtitle">21 สิงหาคม 2569 · ชิปใหม่, สุขภาพ IoT & พลังงานอัจฉริยะ</p>
+  <div class="header-stats">
+    <div class="stat-item">
+      <span class="stat-number">2</span>
+      <span class="stat-label">ชิปใหม่ CES 2026</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">5</span>
+      <span class="stat-label">ไอเดียโปรเจกต์</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">5</span>
+      <span class="stat-label">Sensors น่าสนใจ</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">6</span>
+      <span class="stat-label">แหล่งข้อมูล</span>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations">🚀 นวัตกรรม</a>
+  <a href="#projects">🛠 โปรเจกต์</a>
+  <a href="#sensors">📡 Sensors</a>
+  <a href="#resources">📚 แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- ========== INNOVATIONS ========== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-innovations">🚀</div>
+      <div>
+        <h2 class="section-title">ชิปใหม่และนวัตกรรม CES 2026</h2>
+        <p class="section-desc">Espressif เปิดตัว 2 ชิปทิศทางใหม่: Wi-Fi 6E ความเร็วสูง & Ultra-low-power BLE สำหรับ Wearable</p>
+      </div>
+    </div>
+
+    <div class="alert-banner">
+      <span class="alert-icon">📢</span>
+      <p><strong>CES 2026 Highlight:</strong> Espressif เปิดตัว ESP32-E22 และ ESP32-H21 ในงาน CES 2026 (มกราคม 2026) ถือเป็นก้าวกระโดดครั้งใหญ่ — ด้านหนึ่งคือการเพิ่ม throughput ด้วย Wi-Fi 6E และอีกด้านคือการลด power consumption สำหรับ sensor node แบตเตอรี่ขนาดเล็ก</p>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- ESP32-E22 -->
+      <div class="card accent-blue">
+        <div class="card-label label-new">🆕 ชิปใหม่ล่าสุด</div>
+        <h3>ESP32-E22 — Wi-Fi 6E Tri-Band ครั้งแรกจาก Espressif</h3>
+        <p>ชิป RISC-V dual-core ความถี่สูงสุด 500 MHz พร้อม Wi-Fi 6E สามย่านความถี่ 2.4/5/6 GHz รองรับ 160 MHz channel width และ 2×2 MIMO ให้ physical throughput สูงสุด 2.1 Gbps ในการทดสอบ iperf</p>
+        <table class="spec-table">
+          <tr><td>CPU</td><td><strong>Dual-core RISC-V @ 500 MHz</strong></td></tr>
+          <tr><td>On-chip RAM</td><td><strong>1 MB</strong></td></tr>
+          <tr><td>Wi-Fi</td><td><strong>6E (2.4 / 5 / 6 GHz), 2×2 MIMO, 160 MHz BW</strong></td></tr>
+          <tr><td>Bluetooth</td><td><strong>Bluetooth 6.0 (LE + BR/EDR)</strong></td></tr>
+          <tr><td>Interfaces</td><td><strong>PCIe, USB, SDIO</strong></td></tr>
+          <tr><td>Throughput (iperf)</td><td><strong>สูงสุด ~2.1 Gbps</strong></td></tr>
+          <tr><td>Use case</td><td><strong>Gateway, NAS, Video Analytics, AV Bridge</strong></td></tr>
+        </table>
+        <div class="tags">
+          <span class="tag">Wi-Fi 6E</span>
+          <span class="tag">RISC-V</span>
+          <span class="tag">Bluetooth 6.0</span>
+          <span class="tag">PCIe</span>
+        </div>
+      </div>
+
+      <!-- ESP32-H21 -->
+      <div class="card accent-purple">
+        <div class="card-label label-new">🆕 Ultra-Low-Power</div>
+        <h3>ESP32-H21 — BLE + Thread/Zigbee สำหรับ Wearable & Sensor Node</h3>
+        <p>ชิปพลังงานต่ำพิเศษสำหรับ BLE และ Thread/Zigbee node เน้น IoT wearable, presence sensing และ sensor node ที่ต้องใช้แบตเตอรี่นาน เป็นคู่แข่งโดยตรงกับ Nordic nRF5340/nRF52840 ในตลาด embedded IoT</p>
+        <ul class="highlight-list">
+          <li>Ultra-low-power deep sleep สำหรับอายุแบตฯ นานหลายปี</li>
+          <li>รองรับ Bluetooth LE, Thread และ Zigbee ในชิปเดียว</li>
+          <li>เหมาะกับ occupancy sensor, door/window sensor, wearable tracker</li>
+          <li>เป็นทางเลือกใหม่แทน nRF52840 ราคาต่ำกว่า เครื่องมือ development แบบ Espressif</li>
+          <li>รองรับ Matter over Thread สำหรับ smart home ecosystem</li>
+        </ul>
+        <div class="tags">
+          <span class="tag">Ultra-Low-Power</span>
+          <span class="tag">Bluetooth LE</span>
+          <span class="tag">Thread</span>
+          <span class="tag">Zigbee</span>
+          <span class="tag">Matter</span>
+        </div>
+      </div>
+
+      <!-- เปรียบเทียบ E22 vs H21 -->
+      <div class="card accent-green card-wide">
+        <div class="card-label label-new">📊 เปรียบเทียบ</div>
+        <h3>ESP32-E22 vs ESP32-H21 — สองทิศทางใหม่ของ Espressif</h3>
+        <p>ทั้งสองชิปแสดงถึงกลยุทธ์การขยายตลาดของ Espressif ในสองขั้วตรงข้าม: ความเร็วสูงสำหรับงาน multimedia/gateway และพลังงานต่ำสำหรับ IoT node/wearable</p>
+        <div style="overflow-x:auto;">
+          <table class="chip-compare">
+            <thead>
+              <tr>
+                <th>คุณสมบัติ</th>
+                <th>ESP32-E22</th>
+                <th>ESP32-H21</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>สถาปัตยกรรม</td>
+                <td>Dual-core RISC-V @ 500 MHz</td>
+                <td>Low-power RISC-V (BLE-optimized)</td>
+              </tr>
+              <tr>
+                <td>Wi-Fi</td>
+                <td>Wi-Fi 6E (2.4/5/6 GHz), 2×2 MIMO</td>
+                <td>ไม่มี (เน้น BLE/Thread)</td>
+              </tr>
+              <tr>
+                <td>Wireless</td>
+                <td>Wi-Fi 6E + Bluetooth 6.0</td>
+                <td>BLE + Thread + Zigbee</td>
+              </tr>
+              <tr>
+                <td>จุดเด่น</td>
+                <td>Throughput สูงสุด, PCIe/USB/SDIO</td>
+                <td>Deep-sleep current ต่ำมาก, อายุแบตฯ นาน</td>
+              </tr>
+              <tr>
+                <td>เทียบกับ</td>
+                <td>MediaTek MT7922, Qualcomm QCNFA7xx</td>
+                <td>Nordic nRF5340, nRF52840</td>
+              </tr>
+              <tr>
+                <td>Use Case หลัก</td>
+                <td>Gateway, NVR, Smart Display, AV/IP Camera</td>
+                <td>Wearable, Sensor Node, Smart Home Accessory</td>
+              </tr>
+              <tr>
+                <td>Matter รองรับ</td>
+                <td>Matter over Wi-Fi</td>
+                <td>Matter over Thread</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tags" style="margin-top:1rem;">
+          <span class="tag">CES 2026</span>
+          <span class="tag">Espressif Roadmap</span>
+          <span class="tag">Matter Ecosystem</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== PROJECTS ========== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-projects">🛠</div>
+      <div>
+        <h2 class="section-title">ไอเดียโปรเจกต์น่าสนใจ</h2>
+        <p class="section-desc">Wearable Health Monitor, Matter Energy Manager และ ESP32-E22 Home Gateway</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Wearable Health Watch -->
+      <div class="card accent-pink">
+        <div class="card-label label-health">❤️ Health IoT</div>
+        <h3>ESP32 DIY Wearable Health Watch — SpO₂ + ECG + อุณหภูมิ</h3>
+        <p>นาฬิกาสุขภาพ DIY บน ESP32 วัด heart rate, SpO₂ (ความเข้มข้นออกซิเจนในเลือด) และ ECG พร้อมส่งข้อมูลแบบ real-time ผ่าน BLE ไปยัง smartphone แจ้งเตือนเมื่อค่าผิดปกติ</p>
+        <div class="step-list">
+          <div class="step-item">
+            <span class="step-num">1</span>
+            <span class="step-text">ใช้ ESP32 + MAX30102 วัด heart rate & SpO₂ ด้วย PPG (Photoplethysmography)</span>
+          </div>
+          <div class="step-item">
+            <span class="step-num">2</span>
+            <span class="step-text">เพิ่ม AD8232 ECG module จับ electrical signal หัวใจ ตรวจ arrhythmia</span>
+          </div>
+          <div class="step-item">
+            <span class="step-num">3</span>
+            <span class="step-text">MPU6050 ตรวจ fall detection สำหรับผู้สูงอายุ</span>
+          </div>
+          <div class="step-item">
+            <span class="step-num">4</span>
+            <span class="step-text">ส่งข้อมูลผ่าน BLE ไปยัง app บน phone แจ้งเตือนเมื่อค่าผิดปกติ</span>
+          </div>
+          <div class="step-item">
+            <span class="step-num">5</span>
+            <span class="step-text">บันทึก log ลง SD card และ upload ขึ้น MQTT broker เพื่อ dashboard</span>
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag">MAX30102</span>
+          <span class="tag">AD8232</span>
+          <span class="tag">MPU6050</span>
+          <span class="tag">BLE</span>
+          <span class="tag">Healthcare IoT</span>
+        </div>
+      </div>
+
+      <!-- Matter 1.5 Energy Monitor -->
+      <div class="card accent-orange">
+        <div class="card-label label-energy">⚡ Smart Energy</div>
+        <h3>Matter 1.5 Home Energy Dashboard — Solar + EV Charger + Smart Plug</h3>
+        <p>ระบบจัดการพลังงานบ้านแบบ open-source บน ESP32-C6 รองรับ Matter 1.4/1.5 ที่เพิ่ม energy management device categories ใหม่ เชื่อมต่อกับ Home Assistant, Apple Home และ Google Home ได้พร้อมกัน</p>
+        <ul class="highlight-list">
+          <li>ใช้ PZEM-004T วัด AC power (voltage, current, power, energy) แม่นยำ ±1%</li>
+          <li>รองรับ Matter Energy Management Cluster ใหม่ใน spec 1.4–1.5</li>
+          <li>ติดตาม solar production vs home consumption แบบ real-time</li>
+          <li>ควบคุม EV charger ตามช่วงเวลา solar surplus (solar-smart charging)</li>
+          <li>OTA update ผ่าน ESP-IDF seamless ไม่ต้องเปิด enclosure</li>
+        </ul>
+        <div class="tags">
+          <span class="tag">Matter 1.5</span>
+          <span class="tag">PZEM-004T</span>
+          <span class="tag">ESP32-C6</span>
+          <span class="tag">Home Assistant</span>
+          <span class="tag">Solar IoT</span>
+        </div>
+      </div>
+
+      <!-- ESP32-E22 Wi-Fi 6E Gateway -->
+      <div class="card accent-blue">
+        <div class="card-label label-new">🌐 Gateway</div>
+        <h3>ESP32-E22 Wi-Fi 6E Home Gateway — Mesh Router + IoT Hub</h3>
+        <p>ใช้ความสามารถ Wi-Fi 6E ของ ESP32-E22 สร้าง home gateway ที่รวม mesh Wi-Fi router กับ IoT hub ในอุปกรณ์เดียว รองรับ MQTT broker, Node-RED และ Home Assistant ทั้งหมดใน box เดียว</p>
+        <ul class="highlight-list">
+          <li>Wi-Fi 6E 6 GHz band แบนด์วิดท์กว้าง ไม่มี congestion จาก device เก่า</li>
+          <li>PCIe interface ต่อ NVMe SSD สำหรับ local storage ข้อมูล IoT</li>
+          <li>รัน MQTT broker (Mosquitto) + InfluxDB + Grafana dashboard</li>
+          <li>Thread Border Router สำหรับ Matter over Thread devices ในบ้าน</li>
+          <li>USB port สำหรับ Zigbee stick (ConBee III) ขยายการเชื่อมต่อ</li>
+        </ul>
+        <div class="tags">
+          <span class="tag">ESP32-E22</span>
+          <span class="tag">Wi-Fi 6E</span>
+          <span class="tag">MQTT Broker</span>
+          <span class="tag">Home Assistant</span>
+        </div>
+      </div>
+
+      <!-- Fall Detection System -->
+      <div class="card accent-purple">
+        <div class="card-label label-health">🏥 Elderly Care</div>
+        <h3>ESP32 + IMU Fall Detection System สำหรับผู้สูงอายุ</h3>
+        <p>ระบบตรวจจับการล้มสำหรับผู้สูงอายุบนพื้นฐาน ESP32-H21 (ultra-low-power) + accelerometer แจ้งเตือนผ่าน BLE ไปยัง phone ผู้ดูแล และส่ง SMS/notification ผ่าน MQTT relay</p>
+        <ul class="highlight-list">
+          <li>ใช้ LSM6DSO IMU — accelerometer + gyroscope 6-axis ความแม่นยำสูง</li>
+          <li>Algorithm ตรวจจับการล้มแบบ threshold-based + ML บน ESP32</li>
+          <li>ESP32-H21 deep sleep &lt; 5 µA ทำให้แบตเตอรี่ CR2032 อยู่ได้ &gt; 1 ปี</li>
+          <li>BLE advertisement ทันทีเมื่อตรวจจับ event เวลา latency &lt; 200 ms</li>
+        </ul>
+        <div class="tags">
+          <span class="tag">ESP32-H21</span>
+          <span class="tag">LSM6DSO</span>
+          <span class="tag">BLE</span>
+          <span class="tag">Fall Detection</span>
+          <span class="tag">CR2032</span>
+        </div>
+      </div>
+
+      <!-- ECG Monitor -->
+      <div class="card accent-green">
+        <div class="card-label label-health">💓 Biometric</div>
+        <h3>ESP32 Portable ECG Monitor — AD8232 + OLED + Wi-Fi Cloud</h3>
+        <p>เครื่องวัด ECG พกพา DIY ราคาต่ำกว่า 500 บาท จับ electrical signal หัวใจ แสดงผลแบบ real-time บน OLED display และส่งข้อมูลขึ้น cloud เพื่อ trend monitoring และตรวจ arrhythmia เบื้องต้น</p>
+        <div class="step-list">
+          <div class="step-item">
+            <span class="step-num">1</span>
+            <span class="step-text">AD8232 module แปลง bio-electrical signal → ADC input ของ ESP32</span>
+          </div>
+          <div class="step-item">
+            <span class="step-num">2</span>
+            <span class="step-text">ESP32 ADC 12-bit sampling rate 1000 Hz บันทึก ECG waveform</span>
+          </div>
+          <div class="step-item">
+            <span class="step-num">3</span>
+            <span class="step-text">แสดงผล real-time บน SSD1306 OLED 128×64 px ด้วย u8g2 library</span>
+          </div>
+          <div class="step-item">
+            <span class="step-num">4</span>
+            <span class="step-text">ส่งข้อมูล JSON ผ่าน Wi-Fi → MQTT → InfluxDB → Grafana dashboard</span>
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag">AD8232</span>
+          <span class="tag">ECG</span>
+          <span class="tag">SSD1306</span>
+          <span class="tag">InfluxDB</span>
+          <span class="tag">Grafana</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== SENSORS ========== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-sensors">📡</div>
+      <div>
+        <h2 class="section-title">Biometric & Health Sensors น่าสนใจ</h2>
+        <p class="section-desc">Sensors สำหรับวัดสัญญาณชีพและสุขภาพ เหมาะกับ wearable และ health monitoring</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- MAX30102 -->
+      <div class="card accent-pink">
+        <div class="card-label label-sensor">💡 PPG Sensor</div>
+        <h3>MAX30102 — Heart Rate & SpO₂ (Pulse Oximeter on a Chip)</h3>
+        <p>IC pulse oximeter และ heart rate sensor ในชิปเดียว ใช้หลักการ PPG (Photoplethysmography) ด้วย LED สีแดง 660 nm และ IR 880 nm วัดทั้ง Heart Rate และ SpO₂ ผ่าน I2C ใช้กระแสไฟฟ้าต่ำมาก เหมาะมากสำหรับ wearable</p>
+        <table class="spec-table">
+          <tr><td>Interface</td><td><strong>I2C (400 kHz Fast Mode)</strong></td></tr>
+          <tr><td>VCC</td><td><strong>1.8V / 3.3V dual supply</strong></td></tr>
+          <tr><td>LED</td><td><strong>RED 660 nm + IR 880 nm</strong></td></tr>
+          <tr><td>วัดได้</td><td><strong>Heart Rate + SpO₂</strong></td></tr>
+          <tr><td>กระแสไฟ (low power)</td><td><strong>~600 µA</strong></td></tr>
+          <tr><td>Package</td><td><strong>OLGA-14 (5.6 × 3.3 mm)</strong></td></tr>
+          <tr><td>Library</td><td><strong>SparkFun MAX3010x (Arduino)</strong></td></tr>
+        </table>
+        <div class="tags">
+          <span class="tag">SpO₂</span>
+          <span class="tag">Heart Rate</span>
+          <span class="tag">I2C</span>
+          <span class="tag">Wearable</span>
+        </div>
+      </div>
+
+      <!-- AD8232 -->
+      <div class="card accent-orange">
+        <div class="card-label label-sensor">⚡ ECG Sensor</div>
+        <h3>AD8232 — Single-Lead ECG Front End IC</h3>
+        <p>IC front end สำหรับวัด ECG (electrocardiogram) single-lead ออกแบบสำหรับ fitness และ medical monitoring ขนาดเล็ก กรอง noise ได้ดีด้วย instrumentation amplifier ในตัว output เป็น analog signal ต่อกับ ADC ของ ESP32 โดยตรง</p>
+        <table class="spec-table">
+          <tr><td>Output</td><td><strong>Analog voltage (ต่อ ESP32 ADC โดยตรง)</strong></td></tr>
+          <tr><td>Supply</td><td><strong>3.0V–3.5V (ใช้กับ ESP32 ได้เลย)</strong></td></tr>
+          <tr><td>Gain</td><td><strong>100 V/V ปรับได้</strong></td></tr>
+          <tr><td>CMRR</td><td><strong>80 dB</strong></td></tr>
+          <tr><td>Leads Off Detection</td><td><strong>มีขา LOD+ LOD– แจ้ง electrode หลุด</strong></td></tr>
+          <tr><td>ใช้ร่วมกับ</td><td><strong>Electrode pad แบบ 3-lead (RA, LA, RL)</strong></td></tr>
+        </table>
+        <div class="tags">
+          <span class="tag">ECG</span>
+          <span class="tag">Analog Output</span>
+          <span class="tag">3-Lead</span>
+          <span class="tag">Medical IoT</span>
+        </div>
+      </div>
+
+      <!-- LSM6DSO -->
+      <div class="card accent-purple">
+        <div class="card-label label-sensor">🏃 Motion Sensor</div>
+        <h3>LSM6DSO — IMU 6-axis (Accel + Gyro) + Machine Learning Core</h3>
+        <p>IMU 6-axis จาก ST Microelectronics มี Machine Learning Core (MLC) built-in ทำให้ตรวจจับ gesture, fall, activity recognition ได้บนชิป โดยไม่ต้องใช้กำลังประมวลผลของ ESP32 เลย เหมาะมากสำหรับ wearable ประหยัดพลังงาน</p>
+        <table class="spec-table">
+          <tr><td>Axes</td><td><strong>3-axis Accel + 3-axis Gyro</strong></td></tr>
+          <tr><td>Interface</td><td><strong>I2C / SPI</strong></td></tr>
+          <tr><td>Accel Range</td><td><strong>±2 / ±4 / ±8 / ±16 g</strong></td></tr>
+          <tr><td>Gyro Range</td><td><strong>±125 ~ ±2000 dps</strong></td></tr>
+          <tr><td>ML Core</td><td><strong>4 decision tree classifiers (on-chip)</strong></td></tr>
+          <tr><td>กระแสไฟ (full)</td><td><strong>~0.55 mA @ 104 Hz ODR</strong></td></tr>
+          <tr><td>Package</td><td><strong>LGA-14 (2.5 × 3.0 mm)</strong></td></tr>
+        </table>
+        <div class="tags">
+          <span class="tag">6-axis IMU</span>
+          <span class="tag">ML Core</span>
+          <span class="tag">Fall Detection</span>
+          <span class="tag">Activity Recognition</span>
+        </div>
+      </div>
+
+      <!-- MLX90614 -->
+      <div class="card accent-green">
+        <div class="card-label label-sensor">🌡 Contactless Temp</div>
+        <h3>MLX90614 — Infrared Non-Contact Temperature Sensor</h3>
+        <p>Thermopile infrared sensor วัดอุณหภูมิแบบ non-contact (ไม่ต้องสัมผัส) ความแม่นยำ ±0.5°C เชื่อมต่อผ่าน SMBus (compatible กับ I2C) มี dual-zone thermopile ให้ทั้ง ambient temp และ object temp พร้อมกัน ใช้วัดไข้ได้อย่างรวดเร็ว</p>
+        <table class="spec-table">
+          <tr><td>Range วัตถุ</td><td><strong>-70°C ถึง 382°C</strong></td></tr>
+          <tr><td>Range ambient</td><td><strong>-40°C ถึง 125°C</strong></td></tr>
+          <tr><td>Resolution</td><td><strong>0.02°C</strong></td></tr>
+          <tr><td>Accuracy</td><td><strong>±0.5°C (0-50°C)</strong></td></tr>
+          <tr><td>Interface</td><td><strong>SMBus / PWM</strong></td></tr>
+          <tr><td>VCC</td><td><strong>3.3V หรือ 5V</strong></td></tr>
+          <tr><td>Library</td><td><strong>mlx90614-arduino</strong></td></tr>
+        </table>
+        <div class="tags">
+          <span class="tag">Infrared</span>
+          <span class="tag">Non-Contact</span>
+          <span class="tag">I2C/SMBus</span>
+          <span class="tag">Body Temp</span>
+        </div>
+      </div>
+
+      <!-- PZEM-004T -->
+      <div class="card accent-orange">
+        <div class="card-label label-energy">⚡ Power Meter</div>
+        <h3>PZEM-004T v3.0 — AC Power Monitor (Voltage + Current + Power + Energy)</h3>
+        <p>โมดูลวัด AC power ครบชุด voltage, current, power (W), energy (kWh), frequency และ power factor ผ่าน UART/Modbus RTU เชื่อมต่อ ESP32 ได้ง่าย ใช้ใน smart plug, solar monitoring, home energy dashboard ความแม่นยำดีและราคาถูก</p>
+        <table class="spec-table">
+          <tr><td>Voltage Range</td><td><strong>80–260V AC</strong></td></tr>
+          <tr><td>Current Max</td><td><strong>100A (ผ่าน current transformer)</strong></td></tr>
+          <tr><td>Power</td><td><strong>0.1W resolution</strong></td></tr>
+          <tr><td>Energy</td><td><strong>1 Wh resolution (สะสมได้ 9999.99 kWh)</strong></td></tr>
+          <tr><td>Accuracy</td><td><strong>±1% (current), ±0.5% (voltage)</strong></td></tr>
+          <tr><td>Interface</td><td><strong>UART / Modbus RTU (9600 baud)</strong></td></tr>
+          <tr><td>Library</td><td><strong>mandulef/PZEM-004T-v30 (Arduino)</strong></td></tr>
+        </table>
+        <div class="tags">
+          <span class="tag">PZEM-004T</span>
+          <span class="tag">AC Power Monitor</span>
+          <span class="tag">Modbus RTU</span>
+          <span class="tag">Energy Management</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== RESOURCES ========== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-resources">📚</div>
+      <div>
+        <h2 class="section-title">แหล่งข้อมูล Library และลิงก์อ้างอิง</h2>
+        <p class="section-desc">Documentation, library และแหล่งข้อมูลสำหรับ ESP32-E22, ESP32-H21 และ Health IoT</p>
+      </div>
+    </div>
+
+    <div class="resource-grid">
+      <div class="resource-card">
+        <div class="resource-icon">🔧</div>
+        <div class="resource-info">
+          <h4>ESP32-E22 Official Page</h4>
+          <p>espressif.com/en/products/socs/esp32-e22 — ข้อมูล spec และ datasheet ชิป Wi-Fi 6E ตัวใหม่จาก Espressif</p>
+        </div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">📰</div>
+        <div class="resource-info">
+          <h4>CNX Software — ESP32-E22 & H21 CES Report</h4>
+          <p>cnx-software.com — รายงานข่าวครบถ้วนจากงาน CES 2026 เกี่ยวกับชิปใหม่ทั้ง 2 ตัว</p>
+        </div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">📦</div>
+        <div class="resource-info">
+          <h4>SparkFun MAX3010x Arduino Library</h4>
+          <p>github.com/sparkfun/SparkFun_MAX3010x_Sensor_Library — library อ่าน MAX30102 heart rate & SpO₂ ง่ายมาก</p>
+        </div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">💓</div>
+        <div class="resource-info">
+          <h4>ESP32 ECG Monitor Tutorial (IEEE Research)</h4>
+          <p>ieeexplore.ieee.org/document/10544910 — งานวิจัย ESP32 + AD8232 wearable health monitoring ปี 2026</p>
+        </div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">⚡</div>
+        <div class="resource-info">
+          <h4>PZEM-004T Arduino Library</h4>
+          <p>github.com/mandulef/PZEM-004T-v30 — library อ่านค่า AC power meter ผ่าน UART/Modbus บน ESP32</p>
+        </div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">🌐</div>
+        <div class="resource-info">
+          <h4>Elektor Magazine — New Espressif MCU CES 2026</h4>
+          <p>elektormagazine.com — บทความ overview ESP32-E22 และ ESP32-H21 พร้อมเปรียบเทียบชิปคู่แข่ง</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p class="footer-title">ESP32 & Sensor Research Daily Brief</p>
+  <p>สร้างเมื่อ: 21 สิงหาคม 2569 · ข้อมูลอ้างอิงจาก Espressif, CNX Software, Elektor Magazine, IEEE Xplore, SparkFun</p>
+  <div class="footer-refs">
+    <a href="https://www.espressif.com/en/news/ESP32_E22_Announcement">ESP32-E22 Announcement</a>
+    <a href="https://www.cnx-software.com/2026/01/07/espressif-systems-showcases-esp32-e22-wi-fi-6e-soc-and-esp32-h21-ble-mcu-for-battery-powered-devices/">CNX-Software CES 2026</a>
+    <a href="https://www.elektormagazine.com/news/new-espressif-microcontrollers-ces-2026">Elektor CES Report</a>
+    <a href="https://ieeexplore.ieee.org/document/10544910/">IEEE ESP32 Health Monitor</a>
+    <a href="https://www.eenewseurope.com/en/espressif-esp32-e22-wifi-6e-esp32-h21-ces-2026/">EE News Europe</a>
+  </div>
+</footer>
+
+</body>
+</html>
