@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 22 สิงหาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-main: #0a0f1e;
+    --bg-card: #111827;
+    --bg-card-hover: #1a2236;
+    --border: #1e2d45;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-blue: #38bdf8;
+    --accent-cyan: #22d3ee;
+    --accent-green: #4ade80;
+    --accent-purple: #a78bfa;
+    --accent-orange: #fb923c;
+    --accent-yellow: #facc15;
+    --accent-pink: #f472b6;
+    --gradient-1: linear-gradient(135deg, #0ea5e9, #6366f1);
+    --gradient-2: linear-gradient(135deg, #10b981, #0ea5e9);
+    --gradient-3: linear-gradient(135deg, #f59e0b, #ef4444);
+    --gradient-4: linear-gradient(135deg, #8b5cf6, #ec4899);
+    --gradient-5: linear-gradient(135deg, #06b6d4, #10b981);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(180deg, #050d1f 0%, #0a1628 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(56,189,248,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: var(--gradient-1);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 9999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #38bdf8, #818cf8, #22d3ee);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .header-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+  }
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(10,15,30,0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    justify-content: center;
+  }
+  nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 0.4rem 1rem;
+    border-radius: 9999px;
+    white-space: nowrap;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  nav a:hover {
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+    background: rgba(56,189,248,0.08);
+  }
+
+  /* ===== MAIN ===== */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  /* ===== SECTION ===== */
+  section {
+    margin-bottom: 3.5rem;
+  }
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+  .icon-innovations { background: linear-gradient(135deg,rgba(56,189,248,0.2),rgba(99,102,241,0.2)); border: 1px solid rgba(56,189,248,0.3); }
+  .icon-projects    { background: linear-gradient(135deg,rgba(74,222,128,0.2),rgba(16,185,129,0.2)); border: 1px solid rgba(74,222,128,0.3); }
+  .icon-sensors     { background: linear-gradient(135deg,rgba(251,146,60,0.2),rgba(234,179,8,0.2));  border: 1px solid rgba(251,146,60,0.3); }
+  .icon-resources   { background: linear-gradient(135deg,rgba(167,139,250,0.2),rgba(236,72,153,0.2)); border: 1px solid rgba(167,139,250,0.3); }
+  .section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+  }
+  .section-desc {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  /* ===== CARDS ===== */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .card.blue::before   { background: var(--gradient-1); }
+  .card.green::before  { background: var(--gradient-2); }
+  .card.orange::before { background: var(--gradient-3); }
+  .card.purple::before { background: var(--gradient-4); }
+  .card.teal::before   { background: var(--gradient-5); }
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(56,189,248,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+  }
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+  .card-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    white-space: nowrap;
+    margin-left: 0.5rem;
+    flex-shrink: 0;
+  }
+  .badge-new     { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+  .badge-hot     { background: rgba(251,146,60,0.15); color: #fb923c; border: 1px solid rgba(251,146,60,0.3); }
+  .badge-ai      { background: rgba(167,139,250,0.15); color: #a78bfa; border: 1px solid rgba(167,139,250,0.3); }
+  .badge-iot     { background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); }
+  .badge-diy     { background: rgba(250,204,21,0.15); color: #facc15; border: 1px solid rgba(250,204,21,0.3); }
+  .badge-space   { background: rgba(236,72,153,0.15); color: #f472b6; border: 1px solid rgba(236,72,153,0.3); }
+  .card p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+  }
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+  .tag {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+    color: var(--text-muted);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* ===== SPEC TABLE ===== */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.75rem 0;
+    font-size: 0.85rem;
+  }
+  .spec-table td {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .spec-table td:first-child {
+    color: var(--text-muted);
+    width: 40%;
+  }
+  .spec-table td:last-child {
+    color: var(--accent-cyan);
+    font-weight: 600;
+  }
+
+  /* ===== STEP LIST ===== */
+  .step-list {
+    list-style: none;
+    margin: 0.75rem 0;
+  }
+  .step-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+  }
+  .step-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--gradient-1);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* ===== HIGHLIGHT BOX ===== */
+  .highlight-box {
+    background: rgba(56,189,248,0.06);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+    font-size: 0.85rem;
+    color: var(--accent-cyan);
+  }
+  .highlight-box strong {
+    color: #fff;
+  }
+
+  .warn-box {
+    background: rgba(251,146,60,0.06);
+    border: 1px solid rgba(251,146,60,0.2);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+    font-size: 0.85rem;
+    color: var(--accent-orange);
+  }
+
+  /* ===== CODE ===== */
+  code {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 5px;
+    padding: 0.1rem 0.4rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    color: #7dd3fc;
+  }
+  pre {
+    background: #060d1a;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: #93c5fd;
+  }
+
+  /* ===== RESOURCES ===== */
+  .resource-list {
+    list-style: none;
+  }
+  .resource-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 0.6rem;
+    font-size: 0.88rem;
+    background: var(--bg-card);
+    transition: all 0.2s;
+  }
+  .resource-list li:hover {
+    border-color: rgba(56,189,248,0.3);
+    background: var(--bg-card-hover);
+  }
+  .resource-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .resource-list li .res-title {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .resource-list li .res-desc {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+  .resource-list li a {
+    color: var(--accent-blue);
+    text-decoration: none;
+  }
+  .resource-list li a:hover { text-decoration: underline; }
+
+  /* ===== POWER DIAGRAM ===== */
+  .power-bars {
+    margin: 0.75rem 0;
+  }
+  .power-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.82rem;
+  }
+  .power-bar-label {
+    width: 130px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .power-bar-track {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border-radius: 9999px;
+    height: 10px;
+    overflow: hidden;
+  }
+  .power-bar-fill {
+    height: 100%;
+    border-radius: 9999px;
+  }
+  .power-bar-value {
+    width: 80px;
+    color: var(--accent-cyan);
+    font-weight: 600;
+    font-size: 0.8rem;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: #060d1a;
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  .footer-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+  }
+  .footer-refs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.5rem;
+    margin-top: 1rem;
+    font-size: 0.78rem;
+  }
+  .footer-refs a {
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  .footer-refs a:hover {
+    color: var(--accent-blue);
+    text-decoration: underline;
+  }
+
+  @media (max-width: 640px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .header-stats { gap: 1.2rem; }
+    nav { justify-content: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-badge">Daily ESP32 Research Brief</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="header-subtitle">22 สิงหาคม 2569 · Vision AI, Water Quality IoT & Low-Power Design</p>
+  <div class="header-stats">
+    <div class="stat-item">
+      <div class="stat-number">5</div>
+      <div class="stat-label">นวัตกรรมใหม่</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">5</div>
+      <div class="stat-label">ไอเดียโปรเจกต์</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">5</div>
+      <div class="stat-label">Sensors น่าสนใจ</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">8</div>
+      <div class="stat-label">แหล่งข้อมูล</div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== NAV ===== -->
+<nav>
+  <a href="#innovations">🚀 นวัตกรรม</a>
+  <a href="#projects">🛠 โปรเจกต์</a>
+  <a href="#sensors">📡 Sensors</a>
+  <a href="#resources">📚 Resources</a>
+</nav>
+
+<main>
+
+<!-- ===== SECTION 1: INNOVATIONS ===== -->
+<section id="innovations">
+  <div class="section-header">
+    <div class="section-icon icon-innovations">🚀</div>
+    <div>
+      <h2 class="section-title">นวัตกรรมและเฟรมเวิร์กใหม่ล่าสุด</h2>
+      <p class="section-desc">ESP-VISION framework, ESPAgrarian board และ TinyGS satellite network — สิ่งใหม่ที่เพิ่งเกิดขึ้นในโลก ESP32</p>
+    </div>
+  </div>
+  <div class="cards-grid">
+
+    <div class="card blue">
+      <div class="card-header">
+        <h3>ESP-VISION — Edge AI Vision Framework แบบ Low-Code</h3>
+        <span class="card-badge badge-new">NEW Jul 2026</span>
+      </div>
+      <p>Espressif เปิดตัว <strong>ESP-VISION</strong> เมื่อวันที่ 2 กรกฎาคม 2569 ซึ่งเป็น low-code framework สำหรับงาน machine vision บน edge โดยเฉพาะ รองรับ <strong>ESP32-P4, ESP32-S31 และ ESP32-S3</strong></p>
+      <div class="highlight-box">
+        <strong>จุดเด่น:</strong> เขียน Python แค่ไม่กี่บรรทัดก็ได้ camera capture → image processing → on-device inference ครบในครั้งเดียว ไม่ต้องพึ่ง Cloud เลย
+      </div>
+      <ul class="step-list">
+        <li><span class="step-num">1</span>ครอบคลุม camera capture, image processing, video codec และ ESP-DL inference</li>
+        <li><span class="step-num">2</span>มี built-in MCP service — ใช้งานร่วมกับ Claude และ Cursor ได้ทันที</li>
+        <li><span class="step-num">3</span>มี official models สำเร็จรูป: face detection, object detection, pose estimation</li>
+        <li><span class="step-num">4</span>มี Web Programming Platform สำหรับเขียนโค้ดออนไลน์</li>
+      </ul>
+      <div class="card-tags">
+        <span class="tag">ESP32-P4</span><span class="tag">ESP32-S3</span><span class="tag">Edge AI</span><span class="tag">Python</span><span class="tag">TinyML</span>
+      </div>
+    </div>
+
+    <div class="card green">
+      <div class="card-header">
+        <h3>ESPAgrarian — ESP32-C6 + LoRa + GNSS สำหรับเกษตรกรรม</h3>
+        <span class="card-badge badge-hot">2026 Board</span>
+      </div>
+      <p>บอร์ดใหม่จาก DitroniX ที่รวม <strong>ESP32-C6 + LoRa + GNSS</strong> เข้าด้วยกัน ออกแบบมาเพื่องาน smart agriculture โดยเฉพาะ สามารถตรวจสอบสภาพแวดล้อมไร่นาจากระยะไกลได้</p>
+      <table class="spec-table">
+        <tr><td>CPU</td><td>ESP32-C6 RISC-V 160 MHz + LP Core 20 MHz</td></tr>
+        <tr><td>Wireless</td><td>Wi-Fi 6 + BLE 5.3 + Zigbee/Thread</td></tr>
+        <tr><td>Long Range</td><td>LoRa module (868/915 MHz)</td></tr>
+        <tr><td>Positioning</td><td>GNSS (GPS/GLONASS/BeiDou)</td></tr>
+        <tr><td>CO₂ Sensor</td><td>SCD40 (400–2000 ppm) หรือ SCD41 (400–5000 ppm)</td></tr>
+        <tr><td>Connectivity</td><td>Matter/Thread ready</td></tr>
+      </table>
+      <div class="card-tags">
+        <span class="tag">ESP32-C6</span><span class="tag">LoRa</span><span class="tag">GNSS</span><span class="tag">Agriculture</span><span class="tag">CO₂</span>
+      </div>
+    </div>
+
+    <div class="card purple">
+      <div class="card-header">
+        <h3>TinyGS — เครือข่ายสถานีรับสัญญาณดาวเทียมแบบ Open Source</h3>
+        <span class="card-badge badge-space">Space IoT</span>
+      </div>
+      <p><strong>TinyGS</strong> คือโปรเจกต์ open source ที่ให้คุณสร้าง ground station รับสัญญาณดาวเทียมด้วย <strong>ESP32 + LoRa module</strong> ราคาไม่แพง เชื่อมต่อกับเครือข่ายสถานีทั่วโลกได้</p>
+      <div class="highlight-box">
+        <strong>ล่าสุด (ส.ค. 2569):</strong> ชุมชนแก้ปัญหาการรับสัญญาณที่ 800/900 MHz, ค้นพบความแตกต่างของ SX1262 sync-word สำหรับ LoRaWAN satellites และแลกเปลี่ยนความรู้เรื่องเสาอากาศ
+      </div>
+      <ul class="step-list">
+        <li><span class="step-num">1</span>ใช้ ESP32 + SX1262/SX1278 LoRa module เป็น hardware หลัก</li>
+        <li><span class="step-num">2</span>Flash firmware TinyGS แล้วเชื่อมต่อ MQTT broker กลาง</li>
+        <li><span class="step-num">3</span>ดูข้อมูลดาวเทียมผ่าน TinyGS Dashboard บนเว็บ</li>
+        <li><span class="step-num">4</span>รองรับดาวเทียม cubesat หลายดวงทั่วโลก</li>
+      </ul>
+      <div class="card-tags">
+        <span class="tag">ESP32</span><span class="tag">LoRa</span><span class="tag">Satellite</span><span class="tag">SX1262</span><span class="tag">Open Source</span>
+      </div>
+    </div>
+
+    <div class="card teal">
+      <div class="card-header">
+        <h3>LoRaWAN + Satellite Backhaul — IoT ไร้ขีดจำกัดพื้นที่</h3>
+        <span class="card-badge badge-iot">Infrastructure</span>
+      </div>
+      <p>ปี 2569 LoRaWAN ก้าวข้ามขีดจำกัดของ gateway ด้วยการใช้ <strong>satellite backhaul</strong> ทำให้ sensor node ในพื้นที่ห่างไกลที่ไม่มี Internet ส่งข้อมูลขึ้น cloud ได้</p>
+      <div class="highlight-box">
+        <strong>Case Study — Banalytics:</strong> ใช้ LoRaWAN + satellite ตรวจจับโรค Black Sigatoka ในไร่กล้วย ด้วย environmental sensing + soil nutrient + AI imaging
+      </div>
+      <p>ปัจจุบันมี <strong>125+ ล้านอุปกรณ์</strong> เชื่อมต่อด้วย LoRaWAN ทั่วโลก และ ecosystem มี 650+ certified devices จาก 334 บริษัท (ข้อมูล ปลายปี 2568)</p>
+      <div class="card-tags">
+        <span class="tag">LoRaWAN</span><span class="tag">Satellite</span><span class="tag">Smart Agriculture</span><span class="tag">Low Power</span>
+      </div>
+    </div>
+
+    <div class="card orange">
+      <div class="card-header">
+        <h3>ESP32-P4 + H.264 Hardware Encoder — Video IoT ราคาประหยัด</h3>
+        <span class="card-badge badge-new">ESP32-P4</span>
+      </div>
+      <p>ESP32-P4 กลายเป็นตัวเลือกหลักสำหรับ <strong>video-based IoT</strong> เพราะมี ISP ในตัว + Hardware H.264 Encoder ทำให้ส่ง video stream ได้อย่างมีประสิทธิภาพ และ ESP-VISION รองรับแล้ว</p>
+      <table class="spec-table">
+        <tr><td>CPU</td><td>Dual RISC-V 400 MHz</td></tr>
+        <tr><td>RAM</td><td>768 KB SRAM + 32 MB PSRAM</td></tr>
+        <tr><td>Video</td><td>ISP + H.264 HW encoder</td></tr>
+        <tr><td>Camera I/F</td><td>MIPI CSI-2 (สูงสุด 8 MP)</td></tr>
+        <tr><td>ราคา module</td><td>~$8–12 USD</td></tr>
+      </table>
+      <div class="card-tags">
+        <span class="tag">ESP32-P4</span><span class="tag">H.264</span><span class="tag">ISP</span><span class="tag">Video IoT</span><span class="tag">MIPI CSI</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== SECTION 2: PROJECTS ===== -->
+<section id="projects">
+  <div class="section-header">
+    <div class="section-icon icon-projects">🛠</div>
+    <div>
+      <h2 class="section-title">ไอเดียโปรเจกต์น่าสนใจ</h2>
+      <p class="section-desc">Water Quality Monitor, DIY Satellite Station, Long-Life IoT Sensor และ Vision AI ที่สร้างได้จริงในบ้าน</p>
+    </div>
+  </div>
+  <div class="cards-grid">
+
+    <div class="card blue">
+      <div class="card-header">
+        <h3>ESP32 Smart Water Quality Monitor — pH + TDS + Turbidity + DO</h3>
+        <span class="card-badge badge-diy">DIY Build</span>
+      </div>
+      <p>ระบบวิเคราะห์คุณภาพน้ำแบบครบวงจรใช้ ESP32 เป็น controller รวม sensor 4 ชนิดเพื่อวัด pH, ความขุ่น, ของแข็งละลาย และออกซิเจนละลายน้ำ ส่งข้อมูลขึ้น cloud แบบ real-time</p>
+      <ul class="step-list">
+        <li><span class="step-num">1</span>pH Sensor Module (Analog) — วัดค่า 0–14 ด้วย calibration 2 จุด</li>
+        <li><span class="step-num">2</span>TDS/EC Sensor — วัดของแข็งละลายน้ำ 0–1000 ppm</li>
+        <li><span class="step-num">3</span>Turbidity Sensor (DFROBOT SEN0189) — วัดความขุ่น 0–3000 NTU</li>
+        <li><span class="step-num">4</span>DO Sensor (Atlas Scientific) — วัด Dissolved Oxygen 0–20 mg/L</li>
+        <li><span class="step-num">5</span>ESP32 ส่งข้อมูลขึ้น Firebase + แสดงผลบน OLED 128×64</li>
+      </ul>
+      <div class="highlight-box">
+        <strong>ประยุกต์ใช้:</strong> บ่อเลี้ยงปลา, ระบบน้ำดื่ม, ตรวจมลพิษแม่น้ำ, greenhouse hydroponics
+      </div>
+      <div class="card-tags">
+        <span class="tag">pH Sensor</span><span class="tag">TDS</span><span class="tag">Turbidity</span><span class="tag">DO</span><span class="tag">Firebase</span>
+      </div>
+    </div>
+
+    <div class="card purple">
+      <div class="card-header">
+        <h3>TinyGS DIY Satellite Station ด้วย ESP32 + LoRa SX1262</h3>
+        <span class="card-badge badge-space">Space</span>
+      </div>
+      <p>สร้างสถานีรับสัญญาณดาวเทียมราคา $20–30 USD เข้าร่วมเครือข่าย TinyGS ทั่วโลก รับ telemetry จากดาวเทียม cubesat และ relay ข้อมูลขึ้น server กลาง</p>
+      <ul class="step-list">
+        <li><span class="step-num">1</span>ใช้ TTGO LoRa32 V2.1 (ESP32 + SX1276) หรือ Heltec V3 (ESP32-S3 + SX1262)</li>
+        <li><span class="step-num">2</span>เชื่อมต่อเสาอากาศ 1/4 wave dipole หรือ Yagi สำหรับ 433/868 MHz</li>
+        <li><span class="step-num">3</span>Flash firmware จาก TinyGS GitHub repository</li>
+        <li><span class="step-num">4</span>ลงทะเบียนสถานีบน tinygs.com และตั้ง MQTT credentials</li>
+        <li><span class="step-num">5</span>ดู pass schedule ของดาวเทียมและรอรับ packet</li>
+      </ul>
+      <div class="card-tags">
+        <span class="tag">TinyGS</span><span class="tag">SX1262</span><span class="tag">Heltec V3</span><span class="tag">MQTT</span><span class="tag">Cubesat</span>
+      </div>
+    </div>
+
+    <div class="card green">
+      <div class="card-header">
+        <h3>ESP32 Ultra Low-Power Field Sensor — อายุแบต 1 ปี+</h3>
+        <span class="card-badge badge-iot">Low Power</span>
+      </div>
+      <p>ออกแบบ sensor node ที่ใช้ deep sleep เป็นหลัก ส่งข้อมูลทุก 15 นาทีแต่ใช้พลังงานน้อยมาก เหมาะสำหรับ remote monitoring ในพื้นที่ไม่มีไฟฟ้า</p>
+      <div class="power-bars">
+        <div class="power-bar-row">
+          <div class="power-bar-label">Active + Wi-Fi</div>
+          <div class="power-bar-track"><div class="power-bar-fill" style="width:100%;background:linear-gradient(90deg,#ef4444,#f97316)"></div></div>
+          <div class="power-bar-value">~150 mA</div>
+        </div>
+        <div class="power-bar-row">
+          <div class="power-bar-label">Light Sleep</div>
+          <div class="power-bar-track"><div class="power-bar-fill" style="width:15%;background:linear-gradient(90deg,#f59e0b,#facc15)"></div></div>
+          <div class="power-bar-value">~0.8 mA</div>
+        </div>
+        <div class="power-bar-row">
+          <div class="power-bar-label">Deep Sleep</div>
+          <div class="power-bar-track"><div class="power-bar-fill" style="width:1%;background:linear-gradient(90deg,#4ade80,#22d3ee)"></div></div>
+          <div class="power-bar-value">~10 µA</div>
+        </div>
+        <div class="power-bar-row">
+          <div class="power-bar-label">ULP Coprocessor</div>
+          <div class="power-bar-track"><div class="power-bar-fill" style="width:0.5%;background:linear-gradient(90deg,#06b6d4,#3b82f6)"></div></div>
+          <div class="power-bar-value">~150 µA</div>
+        </div>
+      </div>
+      <div class="warn-box">⚠️ ระวัง: บอร์ด dev board ทั่วไปมี LDO + USB-UART chip ที่กิน 1–2 mA แม้ deep sleep อยู่ — ต้องใช้ bare module เช่น ESP32-WROOM-32 แทน</div>
+      <div class="card-tags">
+        <span class="tag">Deep Sleep</span><span class="tag">ULP</span><span class="tag">Battery</span><span class="tag">18650</span><span class="tag">LiPo</span>
+      </div>
+    </div>
+
+    <div class="card orange">
+      <div class="card-header">
+        <h3>ESP32-S3 + ESP-VISION Pet Monitoring Camera</h3>
+        <span class="card-badge badge-ai">Edge AI</span>
+      </div>
+      <p>ใช้ ESP-VISION framework รัน face/object detection บน ESP32-S3 เพื่อสร้างกล้องตรวจจับสัตว์เลี้ยงที่ <strong>ไม่ต้องพึ่ง cloud</strong> ราคาไม่แพง inference ด้วย Python ไม่กี่บรรทัด</p>
+      <pre>
+import esp_vision as ev
+
+cam = ev.Camera(resolution="VGA")
+detector = ev.load_model("person_detection")
+
+while True:
+    frame = cam.capture()
+    results = detector.run(frame)
+    if results.count > 0:
+        ev.notify("pet_detected", frame)
+      </pre>
+      <ul class="step-list">
+        <li><span class="step-num">1</span>เลือก board ที่มี OV2640 / OV5640 camera module</li>
+        <li><span class="step-num">2</span>Flash MicroPython + ESP-VISION firmware</li>
+        <li><span class="step-num">3</span>เขียน Python script ด้วย esp_vision API</li>
+        <li><span class="step-num">4</span>ส่ง snapshot ขึ้น Telegram bot เมื่อตรวจพบสัตว์เลี้ยง</li>
+      </ul>
+      <div class="card-tags">
+        <span class="tag">ESP-VISION</span><span class="tag">ESP32-S3</span><span class="tag">OV5640</span><span class="tag">MicroPython</span><span class="tag">Telegram</span>
+      </div>
+    </div>
+
+    <div class="card teal">
+      <div class="card-header">
+        <h3>ESP32-C6 Smart Agricultural Node — CO₂ + Soil + LoRa</h3>
+        <span class="card-badge badge-diy">Smart Farm</span>
+      </div>
+      <p>ใช้ ESPAgrarian board หรือสร้างเอง รวม sensor วัดสภาพแวดล้อมไร่นา ส่งข้อมูลด้วย LoRaWAN ระยะ 5–15 km แบต AA 2 ก้อนอยู่ได้ 6–12 เดือน</p>
+      <ul class="step-list">
+        <li><span class="step-num">1</span>Sensirion SCD41 — CO₂ + Temp + Humidity (I2C)</li>
+        <li><span class="step-num">2</span>Capacitive Soil Moisture Sensor (Analog)</li>
+        <li><span class="step-num">3</span>DS18B20 — Soil Temperature (OneWire)</li>
+        <li><span class="step-num">4</span>NPK Sensor (RS485 Modbus) — วัด N, P, K ในดิน</li>
+        <li><span class="step-num">5</span>RFM95W LoRa module — ส่งขึ้น The Things Network</li>
+        <li><span class="step-num">6</span>Solar Panel 0.5W + 18650 — Power autonomous</li>
+      </ul>
+      <div class="card-tags">
+        <span class="tag">ESP32-C6</span><span class="tag">SCD41</span><span class="tag">NPK</span><span class="tag">RFM95W</span><span class="tag">Solar</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== SECTION 3: SENSORS ===== -->
+<section id="sensors">
+  <div class="section-header">
+    <div class="section-icon icon-sensors">📡</div>
+    <div>
+      <h2 class="section-title">Water Quality & Environmental Sensors น่าสนใจ</h2>
+      <p class="section-desc">Sensors สำหรับวิเคราะห์น้ำและสภาพแวดล้อม เหมาะกับ water monitoring, smart farm และ environmental IoT</p>
+    </div>
+  </div>
+  <div class="cards-grid">
+
+    <div class="card blue">
+      <div class="card-header">
+        <h3>Atlas Scientific EZO-pH — Industrial-Grade pH Circuit</h3>
+        <span class="card-badge badge-iot">Water</span>
+      </div>
+      <p>IC วัด pH ระดับ industrial จาก Atlas Scientific ที่ใช้ใน lab และ aquaculture มีความแม่นยำสูงกว่า sensor ราคาถูกทั่วไปมาก</p>
+      <table class="spec-table">
+        <tr><td>ช่วงวัด</td><td>0.001–14.000 pH</td></tr>
+        <tr><td>ความแม่นยำ</td><td>±0.002 pH</td></tr>
+        <tr><td>Interface</td><td>I2C, UART, USB</td></tr>
+        <tr><td>Supply</td><td>3.3V / 5V</td></tr>
+        <tr><td>ราคา</td><td>~$45 USD (circuit)</td></tr>
+      </table>
+      <div class="highlight-box">
+        Arduino library: <code>Ezo_I2c_lib</code> — อ่านค่า pH ด้วย I2C ง่ายมาก
+      </div>
+      <div class="card-tags">
+        <span class="tag">pH</span><span class="tag">Atlas Scientific</span><span class="tag">I2C</span><span class="tag">Aquaculture</span>
+      </div>
+    </div>
+
+    <div class="card green">
+      <div class="card-header">
+        <h3>DFRobot SEN0189 — Turbidity Sensor (Analog)</h3>
+        <span class="card-badge badge-diy">Water</span>
+      </div>
+      <p>Sensor วัดความขุ่นของน้ำแบบ optical ใช้ principle ของการกระเจิงแสง อ่านค่าผ่าน ADC ของ ESP32 ได้ตรงๆ ราคาถูกและใช้งานง่าย</p>
+      <table class="spec-table">
+        <tr><td>หลักการ</td><td>Light scattering (optical)</td></tr>
+        <tr><td>ช่วงวัด</td><td>0–3000 NTU</td></tr>
+        <tr><td>Output</td><td>Analog 0–4.5V</td></tr>
+        <tr><td>Supply</td><td>5V DC</td></tr>
+        <tr><td>ราคา</td><td>~$10 USD</td></tr>
+      </table>
+      <pre>
+int rawVal = analogRead(34);
+float voltage = rawVal * (3.3 / 4095.0);
+float ntu = -1120.4 * sq(voltage)
+           + 5742.3 * voltage - 4352.9;
+      </pre>
+      <div class="card-tags">
+        <span class="tag">Turbidity</span><span class="tag">Analog</span><span class="tag">ADC</span><span class="tag">NTU</span>
+      </div>
+    </div>
+
+    <div class="card orange">
+      <div class="card-header">
+        <h3>Gravity TDS Sensor — วัดของแข็งละลายน้ำ (EC/TDS)</h3>
+        <span class="card-badge badge-diy">Water</span>
+      </div>
+      <p>วัด Total Dissolved Solids และ Electrical Conductivity ของน้ำ บอกความบริสุทธิ์และเหมาะสมสำหรับดื่มหรือรดน้ำพืช ใช้ analog output ต่อ ESP32 ได้โดยตรง</p>
+      <table class="spec-table">
+        <tr><td>ช่วงวัด TDS</td><td>0–1000 ppm</td></tr>
+        <tr><td>ช่วงวัด EC</td><td>0–2000 µS/cm</td></tr>
+        <tr><td>ความแม่นยำ</td><td>±10%</td></tr>
+        <tr><td>Supply</td><td>3.3–5V DC</td></tr>
+        <tr><td>ราคา</td><td>~$8–12 USD</td></tr>
+      </table>
+      <div class="highlight-box">
+        <strong>เกณฑ์น้ำดื่ม WHO:</strong> TDS &lt; 300 ppm = excellent, 300–600 = good, &gt;1200 = ไม่ปลอดภัย
+      </div>
+      <div class="card-tags">
+        <span class="tag">TDS</span><span class="tag">EC</span><span class="tag">Conductivity</span><span class="tag">Water Quality</span>
+      </div>
+    </div>
+
+    <div class="card teal">
+      <div class="card-header">
+        <h3>Atlas Scientific EZO-DO — Dissolved Oxygen Sensor</h3>
+        <span class="card-badge badge-iot">Aquaculture</span>
+      </div>
+      <p>วัดปริมาณออกซิเจนที่ละลายในน้ำ (DO) ซึ่งจำเป็นมากสำหรับการเลี้ยงปลาและ aquaponics หากค่า DO ต่ำเกินไปปลาจะตาย</p>
+      <table class="spec-table">
+        <tr><td>ช่วงวัด</td><td>0–100 mg/L</td></tr>
+        <tr><td>ความแม่นยำ</td><td>±0.05 mg/L</td></tr>
+        <tr><td>Interface</td><td>I2C, UART</td></tr>
+        <tr><td>Calibration</td><td>1 หรือ 2 จุด (อากาศ + zero)</td></tr>
+        <tr><td>ราคา</td><td>~$200 USD (circuit + probe)</td></tr>
+      </table>
+      <div class="highlight-box">
+        <strong>เกณฑ์ปลา:</strong> DO &gt; 5 mg/L = ปลอดภัย, &lt; 3 mg/L = อันตราย, &lt; 2 mg/L = ปลาตาย
+      </div>
+      <div class="card-tags">
+        <span class="tag">DO</span><span class="tag">Dissolved Oxygen</span><span class="tag">Aquaponics</span><span class="tag">Fish Farm</span>
+      </div>
+    </div>
+
+    <div class="card purple">
+      <div class="card-header">
+        <h3>NPK Sensor (RS485 Modbus) — วัดธาตุอาหารหลักในดิน</h3>
+        <span class="card-badge badge-diy">Agriculture</span>
+      </div>
+      <p>Sensor วัด Nitrogen (N), Phosphorus (P), Potassium (K) ในดิน — ธาตุอาหารหลักที่พืชต้องการ ช่วยให้ชาวไร่ใส่ปุ๋ยได้อย่างแม่นยำและประหยัด</p>
+      <table class="spec-table">
+        <tr><td>วัด</td><td>N, P, K (mg/kg)</td></tr>
+        <tr><td>Interface</td><td>RS485 Modbus RTU</td></tr>
+        <tr><td>Supply</td><td>9–24V DC (ต้องใช้ DC-DC)</td></tr>
+        <tr><td>Probe</td><td>Stainless steel 5-pin</td></tr>
+        <tr><td>ราคา</td><td>~$40–60 USD</td></tr>
+      </table>
+      <div class="warn-box">⚠️ ต้องใช้ RS485-to-UART converter (MAX485) กับ ESP32 และ level shifter สำหรับ 5V logic</div>
+      <div class="card-tags">
+        <span class="tag">NPK</span><span class="tag">RS485</span><span class="tag">Modbus</span><span class="tag">Soil</span><span class="tag">MAX485</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== SECTION 4: RESOURCES ===== -->
+<section id="resources">
+  <div class="section-header">
+    <div class="section-icon icon-resources">📚</div>
+    <div>
+      <h2 class="section-title">แหล่งข้อมูล Library และลิงก์อ้างอิง</h2>
+      <p class="section-desc">Resources สำหรับ ESP-VISION, Water Quality IoT, TinyGS, LoRaWAN และ Deep Sleep power optimization</div>
+  </div>
+  <ul class="resource-list">
+
+    <li>
+      <div class="resource-icon" style="background:rgba(56,189,248,0.15)">🎥</div>
+      <div>
+        <div class="res-title">ESP-VISION Official Website</div>
+        <div class="res-desc">Low-code edge AI vision framework สำหรับ ESP32-P4, ESP32-S31, ESP32-S3 จาก Espressif Systems</div>
+        <a href="https://vision.espressif.com/en" target="_blank" rel="noopener">vision.espressif.com/en</a>
+      </div>
+    </li>
+
+    <li>
+      <div class="resource-icon" style="background:rgba(74,222,128,0.15)">🌊</div>
+      <div>
+        <div class="res-title">ESP32 Water Quality Monitoring — How2Electronics</div>
+        <div class="res-desc">Tutorial ครบ: IoT-based drinking water quality monitoring ด้วย ESP32 + TDS + Temperature</div>
+        <a href="https://how2electronics.com/iot-based-drinking-water-quality-monitoring-with-esp32/" target="_blank" rel="noopener">how2electronics.com</a>
+      </div>
+    </li>
+
+    <li>
+      <div class="resource-icon" style="background:rgba(236,72,153,0.15)">🛰</div>
+      <div>
+        <div class="res-title">TinyGS — Open Source Satellite Ground Station</div>
+        <div class="res-desc">เครือข่าย DIY satellite station ด้วย ESP32 + LoRa สำหรับรับ telemetry จาก cubesat</div>
+        <a href="https://tinygs.com/" target="_blank" rel="noopener">tinygs.com</a>
+      </div>
+    </li>
+
+    <li>
+      <div class="resource-icon" style="background:rgba(167,139,250,0.15)">📡</div>
+      <div>
+        <div class="res-title">LoRaWAN Smart Agriculture 2026 — IoT Business News</div>
+        <div class="res-desc">ภาพรวม LoRaWAN + satellite connectivity สำหรับ smart agriculture ในปี 2569</div>
+        <a href="https://iotbusinessnews.com/2026/07/08/lorawan-pushes-deeper-into-smart-agriculture-with-satellite-backed-connectivity/" target="_blank" rel="noopener">iotbusinessnews.com</a>
+      </div>
+    </li>
+
+    <li>
+      <div class="resource-icon" style="background:rgba(251,146,60,0.15)">🔋</div>
+      <div>
+        <div class="res-title">ESP32 Deep Sleep 2026 Guide — Esp32.co.uk</div>
+        <div class="res-desc">คู่มือออกแบบ battery-powered sensor ด้วย deep sleep: เทคนิค, โค้ดตัวอย่าง, hardware tips</div>
+        <a href="https://esp32.co.uk/esp32-battery-powered-sensors-deep-sleep-low-power-design-guide/" target="_blank" rel="noopener">esp32.co.uk</a>
+      </div>
+    </li>
+
+    <li>
+      <div class="resource-icon" style="background:rgba(56,189,248,0.15)">📷</div>
+      <div>
+        <div class="res-title">ESP32 Camera Guide 2026 — Seeed Studio Blog</div>
+        <div class="res-desc">ภาพรวมบอร์ด ESP32-CAM ที่ดีที่สุด การตั้งค่า และโปรเจกต์ camera ที่น่าสนใจในปี 2569</div>
+        <a href="https://www.seeedstudio.com/blog/2026/05/06/esp32-camera-guide/" target="_blank" rel="noopener">seeedstudio.com</a>
+      </div>
+    </li>
+
+    <li>
+      <div class="resource-icon" style="background:rgba(74,222,128,0.15)">🌱</div>
+      <div>
+        <div class="res-title">ESPAgrarian — ESP32-C6 LoRa GNSS Agriculture Board</div>
+        <div class="res-desc">บอร์ดสำหรับ smart farming ที่รวม ESP32-C6 + LoRa + GNSS + CO₂ sensor จาก DitroniX</div>
+        <a href="https://www.hackster.io/DitroniX/espagrarian-esp32-c6-lora-gnss-farming-agriculture-board-b4518c" target="_blank" rel="noopener">hackster.io — ESPAgrarian</a>
+      </div>
+    </li>
+
+    <li>
+      <div class="resource-icon" style="background:rgba(250,204,21,0.15)">⚡</div>
+      <div>
+        <div class="res-title">ESP32 Sleep Modes Power Consumption — Last Minute Engineers</div>
+        <div class="res-desc">อธิบาย sleep modes ทุกโหมดของ ESP32 พร้อมค่าการใช้พลังงานจริงที่วัดได้</div>
+        <a href="https://lastminuteengineers.com/esp32-sleep-modes-power-consumption/" target="_blank" rel="noopener">lastminuteengineers.com</a>
+      </div>
+    </li>
+
+  </ul>
+</section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p class="footer-title">ESP32 & Sensor Research Daily Brief</p>
+  <p>สร้างโดย AI Researcher อัตโนมัติ · 22 สิงหาคม 2569</p>
+  <p style="margin-top:0.3rem; color: var(--text-muted); font-size:0.8rem;">หัวข้อวันนี้: ESP-VISION Framework · Water Quality IoT · TinyGS Satellite · Deep Sleep Power Optimization · ESPAgrarian</p>
+  <div class="footer-refs">
+    <a href="https://vision.espressif.com/en" target="_blank" rel="noopener">ESP-VISION</a>
+    <a href="https://tinygs.com/" target="_blank" rel="noopener">TinyGS</a>
+    <a href="https://how2electronics.com/iot-based-drinking-water-quality-monitoring-with-esp32/" target="_blank" rel="noopener">Water Quality Tutorial</a>
+    <a href="https://iotbusinessnews.com/2026/07/08/lorawan-pushes-deeper-into-smart-agriculture-with-satellite-backed-connectivity/" target="_blank" rel="noopener">LoRaWAN Agriculture 2026</a>
+    <a href="https://esp32.co.uk/esp32-battery-powered-sensors-deep-sleep-low-power-design-guide/" target="_blank" rel="noopener">Deep Sleep Guide 2026</a>
+    <a href="https://www.seeedstudio.com/blog/2026/05/06/esp32-camera-guide/" target="_blank" rel="noopener">Camera Guide 2026</a>
+  </div>
+</footer>
+
+</body>
+</html>
