@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 24 สิงหาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0b1120;
+    --bg-secondary: #111827;
+    --bg-card: #1a2440;
+    --bg-card-hover: #1e2b4a;
+    --accent-blue: #3b82f6;
+    --accent-cyan: #06b6d4;
+    --accent-violet: #8b5cf6;
+    --accent-emerald: #10b981;
+    --accent-amber: #f59e0b;
+    --accent-rose: #f43f5e;
+    --accent-orange: #f97316;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #1e3a5f;
+    --border-bright: #2563eb;
+    --tag-bg: #172144;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #0b1120 0%, #0f2044 40%, #0d1a38 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 1.5rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; right: -40px;
+    width: 250px; height: 250px;
+    background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 999px;
+    padding: 0.25rem 0.85rem;
+    font-size: 0.75rem;
+    color: var(--accent-cyan);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  .header-title {
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 60%, #34d399 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+  }
+  .header-subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+  }
+  .header-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+  .meta-chip .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent-emerald);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+  .highlight-box {
+    margin-top: 1.25rem;
+    background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(139,92,246,0.1));
+    border: 1px solid rgba(59,130,246,0.25);
+    border-left: 4px solid var(--accent-blue);
+    border-radius: 10px;
+    padding: 0.9rem 1.2rem;
+    font-size: 0.92rem;
+    color: var(--text-primary);
+  }
+  .highlight-box strong { color: var(--accent-cyan); }
+
+  /* ===== MAIN LAYOUT ===== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  /* ===== SECTION ===== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .section-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+  }
+  .icon-blue  { background: rgba(59,130,246,0.15); }
+  .icon-violet{ background: rgba(139,92,246,0.15); }
+  .icon-emerald{background: rgba(16,185,129,0.15); }
+  .icon-amber { background: rgba(245,158,11,0.15); }
+  .icon-rose  { background: rgba(244,63,94,0.15);  }
+  .icon-orange{ background: rgba(249,115,22,0.15); }
+
+  .section-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border) 0%, transparent 100%);
+  }
+
+  /* ===== CARDS GRID ===== */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem 1.4rem 1.1rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+    background: linear-gradient(90deg, var(--card-color, var(--accent-blue)), transparent);
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: var(--card-color, var(--border-bright));
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    background: var(--bg-card-hover);
+  }
+  .card-blue   { --card-color: var(--accent-blue); }
+  .card-violet { --card-color: var(--accent-violet); }
+  .card-emerald{ --card-color: var(--accent-emerald); }
+  .card-amber  { --card-color: var(--accent-amber); }
+  .card-rose   { --card-color: var(--accent-rose); }
+  .card-cyan   { --card-color: var(--accent-cyan); }
+  .card-orange { --card-color: var(--accent-orange); }
+
+  .card-tag {
+    display: inline-block;
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.6rem;
+  }
+  .card-title {
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+  }
+  .card-body {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+  }
+  .card-body ul {
+    margin: 0.5rem 0 0.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .spec-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem 0.75rem;
+    margin-top: 0.6rem;
+    font-size: 0.82rem;
+  }
+  .spec-row {
+    display: flex;
+    flex-direction: column;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 0.4rem 0.6rem;
+  }
+  .spec-label { font-size: 0.72rem; color: var(--text-muted); }
+  .spec-value { color: var(--text-primary); font-weight: 600; }
+  .price-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 8px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.8rem;
+    color: var(--accent-emerald);
+    font-weight: 700;
+    margin-top: 0.75rem;
+  }
+  .new-badge {
+    display: inline-block;
+    background: rgba(244,63,94,0.15);
+    border: 1px solid rgba(244,63,94,0.3);
+    border-radius: 6px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.65rem;
+    color: var(--accent-rose);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-left: 0.4rem;
+    vertical-align: middle;
+  }
+
+  /* ===== NEWS HIGHLIGHT ===== */
+  .news-card {
+    background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(139,92,246,0.06));
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 14px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .news-card::before {
+    content: '📰 ข่าวใหม่ประจำวัน';
+    position: absolute;
+    top: -1px; right: -1px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0 14px 0 10px;
+  }
+  .news-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    margin-bottom: 0.75rem;
+  }
+  .news-body {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.8;
+  }
+  .news-body strong { color: var(--text-primary); }
+
+  /* ===== CODE BLOCK ===== */
+  .code-wrap {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 0.75rem;
+  }
+  .code-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #161b22;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    border-bottom: 1px solid #21262d;
+  }
+  .code-dots { display: flex; gap: 5px; }
+  .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-red { background: #ff5f57; }
+  .dot-yellow { background: #febc2e; }
+  .dot-green { background: #28c840; }
+  pre {
+    padding: 1rem 1.2rem;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.8rem;
+    line-height: 1.65;
+    color: #e6edf3;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .kw { color: #ff7b72; }
+  .str { color: #a5d6ff; }
+  .cm { color: #8b949e; font-style: italic; }
+  .fn { color: #d2a8ff; }
+  .num { color: #79c0ff; }
+  .var { color: #ffa657; }
+
+  /* ===== COMPARISON TABLE ===== */
+  .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  thead { background: rgba(59,130,246,0.1); }
+  thead th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.78rem;
+    color: var(--accent-cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.03); }
+  tbody td {
+    padding: 0.65rem 1rem;
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  tbody td:first-child { color: var(--text-primary); font-weight: 600; }
+  .check { color: var(--accent-emerald); }
+  .cross { color: var(--accent-rose); }
+  .na { color: var(--text-muted); }
+
+  /* ===== STEPS ===== */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+  .step {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(59,130,246,0.2);
+    border: 2px solid var(--accent-blue);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .step-body { font-size: 0.88rem; color: var(--text-secondary); line-height: 1.7; }
+  .step-body strong { color: var(--text-primary); }
+
+  /* ===== RESOURCES ===== */
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  .res-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .res-card:hover {
+    border-color: var(--accent-blue);
+    transform: translateY(-2px);
+  }
+  .res-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
+  }
+  .res-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .res-tag {
+    display: inline-block;
+    margin-top: 0.5rem;
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 5px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.68rem;
+    color: var(--accent-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.9;
+  }
+  footer a {
+    color: var(--accent-blue);
+    text-decoration: none;
+  }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 640px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .resources-grid { grid-template-columns: 1fr; }
+    .spec-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-badge">
+      <span class="dot"></span>
+      Daily ESP32 Research · 24 ส.ค. 2569
+    </div>
+    <h1 class="header-title">ESP32-C61-MINI: ยุคใหม่ของ Wi-Fi 6 ราคา $2<br>+ AI Predictive Maintenance & Sensor Fusion</h1>
+    <p class="header-subtitle">ESP32-C61-MINI สำหรับ Matter/Wi-Fi 6 ประหยัดงบ · TinyML วิเคราะห์เซ็นเซอร์บน Edge · โปรเจกต์ Air Quality Monitor แบบ Open-Source</p>
+    <div class="header-meta">
+      <span class="meta-chip"><span class="dot"></span>4 หัวข้อหลัก</span>
+      <span class="meta-chip">🔥 ข่าว ESP32-C61-MINI เพิ่งวางขาย</span>
+      <span class="meta-chip">🧠 TinyML + Predictive Maintenance</span>
+      <span class="meta-chip">📡 Wi-Fi 6 · BLE 5.3 · Matter</span>
+    </div>
+    <div class="highlight-box">
+      🚀 <strong>ไฮไลต์วันนี้:</strong> Espressif เปิดขาย <strong>ESP32-C61-MINI-1</strong> แล้วในราคา <strong>~$2/ชิ้น</strong> (สิงหาคม 2569) — รองรับ Wi-Fi 6, BLE 5.3, Matter ครบ แต่ไม่มี Thread/Zigbee ทำให้ราคาถูกกว่า ESP32-C6 มาก เหมาะที่สุดสำหรับโปรเจกต์ Smart Home Budget
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- SECTION 1: ข่าวใหม่ -->
+  <section id="news">
+    <div class="section-header">
+      <div class="section-icon icon-blue">📰</div>
+      <h2 class="section-title">นวัตกรรมและข่าวใหม่ล่าสุด</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="news-card">
+      <div class="news-title">🎉 ESP32-C61-MINI-1/1U — โมดูล Wi-Fi 6 + BLE 5.3 ราคา ~$2 เพิ่งเปิดขายเดือนนี้!</div>
+      <div class="news-body">
+        <strong>Espressif</strong> เพิ่งเริ่มจำหน่ายโมดูล <strong>ESP32-C61-MINI-1</strong> และ <strong>ESP32-C61-MINI-1U</strong> (แบบ External Antenna) อย่างเป็นทางการในเดือนสิงหาคม 2569 ในราคาเริ่มต้นเพียงประมาณ <strong>$2 ต่อชิ้น</strong> (ซื้อ pack 5 ชิ้น ราว $10.70)<br><br>
+        ESP32-C61 เป็นชิป RISC-V 32-bit ความเร็ว <strong>160 MHz</strong> รองรับ Wi-Fi 6 (802.11ax) 2.4 GHz พร้อม OFDMA, MU-MIMO, Target Wake Time (TWT) สำหรับประหยัดพลังงาน และ Bluetooth 5.3 LE<br><br>
+        จุดแตกต่างหลักจาก ESP32-C6 คือ <strong>ไม่มีวิทยุ 802.15.4</strong> (Thread/Zigbee) ทำให้ราคาถูกลงอย่างมีนัยสำคัญ แต่ยังรองรับ <strong>Matter over Wi-Fi</strong> ได้ครบถ้วน ถ้าโปรเจกต์ต้องการแค่ Wi-Fi + BLE ไม่ต้องการ Mesh Protocol ตัวนี้คือตัวเลือกสุดประหยัด
+      </div>
+    </div>
+
+    <div class="cards-grid" style="margin-top:1.25rem;">
+      <div class="card card-blue">
+        <div class="card-tag">New Module · Aug 2026</div>
+        <div class="card-title">ESP32-C61: RISC-V ราคาประหยัด Wi-Fi 6 <span class="new-badge">NEW</span></div>
+        <div class="card-body">
+          โมดูลรุ่นน้องของ ESP32-C6 ที่ตัด 802.15.4 ออก ลดราคาลงอย่างมาก
+          <div class="spec-grid">
+            <div class="spec-row"><span class="spec-label">Core</span><span class="spec-value">RISC-V 160 MHz</span></div>
+            <div class="spec-row"><span class="spec-label">SRAM</span><span class="spec-value">320 KB</span></div>
+            <div class="spec-row"><span class="spec-label">Flash</span><span class="spec-value">4 MB (Module)</span></div>
+            <div class="spec-row"><span class="spec-label">Wi-Fi</span><span class="spec-value">Wi-Fi 6 (802.11ax)</span></div>
+            <div class="spec-row"><span class="spec-label">BLE</span><span class="spec-value">BLE 5.3</span></div>
+            <div class="spec-row"><span class="spec-label">Security</span><span class="spec-value">Secure Boot + TEE</span></div>
+          </div>
+          <div class="price-badge">💰 ~$2/ชิ้น (pack 5)</div>
+        </div>
+      </div>
+
+      <div class="card card-violet">
+        <div class="card-tag">Dual SoC · AIoT Board</div>
+        <div class="card-title">ESP32P4C61-TINY — P4 + C61 รวมในบอร์ดเดียว</div>
+        <div class="card-body">
+          Wireless-Tag ออกบอร์ด <strong>ESP32P4C61-TINY</strong> รวมชิป 2 ตัวในหนึ่งบอร์ด: ESP32-P4 (High-Performance, 400 MHz dual-core) ทำงาน AI/Multimedia และ ESP32-C61 ทำหน้าที่ Wireless
+          <ul>
+            <li>MIPI CSI สำหรับกล้อง / MIPI DSI สำหรับ Display</li>
+            <li>microSD card slot สำหรับเก็บข้อมูล</li>
+            <li>Hardware H.264 Video Encoder (จาก P4)</li>
+            <li>Wi-Fi 6 + BLE 5.3 (จาก C61)</li>
+            <li>เหมาะกับงาน AIoT, Edge AI, Video IoT</li>
+          </ul>
+          <div class="price-badge">🔗 Crowdfunding เปิดแล้ว</div>
+        </div>
+      </div>
+
+      <div class="card card-emerald">
+        <div class="card-tag">Framework · ESP-IDF v6.0</div>
+        <div class="card-title">ESP-IDF 6.0 — รองรับ C61 อย่างเป็นทางการ</div>
+        <div class="card-body">
+          Espressif ปล่อย <strong>ESP-IDF v6.0</strong> เมื่อมีนาคม 2569 พร้อม software support สำหรับ ESP32-C61 อย่างเป็นทางการ รวมถึงการปรับปรุงหลายด้าน:
+          <ul>
+            <li>Wi-Fi 6 TWT (Target Wake Time) API ใหม่</li>
+            <li>Matter SDK integration ที่ stable กว่าเดิม</li>
+            <li>Memory optimization สำหรับชิป SRAM น้อย</li>
+            <li>TEE (Trusted Execution Environment) ทำงานได้บน C61</li>
+            <li>PlatformIO และ Arduino Framework ตามมาไม่นาน</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card card-amber">
+        <div class="card-tag">ESPHome · April 2026</div>
+        <div class="card-title">ESPHome 2026.4.0 — ความเร็วเพิ่ม 46× สำหรับ Sensor Publishing</div>
+        <div class="card-body">
+          ESPHome เวอร์ชั่นล่าสุดปรับปรุงประสิทธิภาพครั้งใหญ่สำหรับ ESP32:
+          <ul>
+            <li>ESP32 ทำงานที่ความถี่ CPU สูงสุดเป็นค่า default (เร็วขึ้น 33%)</li>
+            <li>ปลดล็อก 40 KB IRAM เพิ่มเติม</li>
+            <li><strong>Client-side state logging</strong> — Sensor publishing เร็วขึ้นถึง <strong>46×</strong></li>
+            <li>Breaking changes: ต้องอัปเดต configuration file ด้วย</li>
+            <li>รองรับ ESP32-C61 เป็นชิปใหม่ล่าสุด</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: ไอเดียโปรเจกต์ -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-violet">💡</div>
+      <h2 class="section-title">ไอเดียโปรเจกต์น่าสร้างประจำวัน</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card card-blue">
+        <div class="card-tag">Project #1 · Open Source</div>
+        <div class="card-title">🌬️ Project Aura v1.1 — ESP32-S3 Air Quality Monitor แบบ Open Source</div>
+        <div class="card-body">
+          โปรเจกต์ <strong>Project Aura</strong> บน Hackster.io ใช้ ESP32-S3 วัดคุณภาพอากาศด้วยเซ็นเซอร์ Sensirion ระดับ Industrial พร้อมหน้าจอ 4.3" IPS Touchscreen และ native integration กับ Home Assistant ผ่าน MQTT
+          <ul>
+            <li>CO₂ + TVOC + ฝุ่น PM2.5/PM10 (Sensirion sensors)</li>
+            <li>Temperature + Humidity (SHT40)</li>
+            <li>CO monitoring (electrochemical sensor)</li>
+            <li>ควบคุมพัดลมระบาย 0–10V output signal</li>
+            <li>แอสเซมบลีแบบ Solderless</li>
+            <li>Enclosure ให้เลือก 2 แบบ</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card card-rose">
+        <div class="card-tag">Project #2 · TinyML</div>
+        <div class="card-title">🏭 Predictive Maintenance ด้วย ESP32-S3 + Vibration Sensor</div>
+        <div class="card-body">
+          ใช้ ESP32-S3 (มี Vector Instructions สำหรับ NN) ร่วมกับ accelerometer 3-axis วัดการสั่นสะเทือนของเครื่องจักร แล้วรัน TinyML model เพื่อทำนายความผิดปกติก่อนเครื่องพัง
+          <div class="steps">
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-body"><strong>เก็บข้อมูล:</strong> ADXL345 หรือ MPU-6050 วัด vibration ที่ 1kHz สร้าง dataset "ปกติ vs ผิดปกติ"</div>
+            </div>
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-body"><strong>Train Model:</strong> ใช้ Edge Impulse หรือ TensorFlow Lite สร้าง anomaly detector</div>
+            </div>
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-body"><strong>Deploy:</strong> Flash model ลง ESP32-S3 ทำงาน inference &lt;20ms ส่ง alert ผ่าน Wi-Fi/MQTT</div>
+            </div>
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-body"><strong>Dashboard:</strong> Grafana + InfluxDB แสดง vibration trend + ประวัติ alert</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-orange">
+        <div class="card-tag">Project #3 · Edge AI Vision</div>
+        <div class="card-title">📷 ESP32-CAM + Edge AI Currency Recognition ไม่ต้องใช้ Cloud</div>
+        <div class="card-body">
+          ระบบจดจำธนบัตรบน ESP32-CAM โดยใช้ AI Model ที่รันบนตัวชิปเอง ไม่ต้องส่งภาพขึ้น Cloud — เหมาะสำหรับอุปกรณ์ช่วยเหลือผู้พิการทางสายตา หรือ POS ประหยัดต้นทุน
+          <ul>
+            <li>ใช้ ESP32-CAM (OV2640) + Arduino Framework</li>
+            <li>Model: MobileNet V2 quantized to INT8 (~200KB)</li>
+            <li>Inference time: ~150ms per frame</li>
+            <li>ข้อดี: Private, offline, latency ต่ำ</li>
+            <li>เสียงอ่านธนบัตรผ่าน DFPlayer Mini MP3</li>
+            <li>Power: 3.7V LiPo แบตเดียวได้ทั้งวัน</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card card-cyan">
+        <div class="card-tag">Project #4 · Smart Home</div>
+        <div class="card-title">🏠 ESP32-C61 Smart Plug ประหยัดงบ — Matter over Wi-Fi 6</div>
+        <div class="card-body">
+          ใช้ ESP32-C61-MINI-1 สร้าง Smart Plug Matter-compatible ราคาต่ำที่สุด ไม่ต้องการ Hub พิเศษ ทำงานกับ Apple Home, Google Home, Amazon Alexa ได้เลย
+          <ul>
+            <li>วัดกระแส AC ด้วย ACS712 หรือ CT Sensor</li>
+            <li>วัดแรงดัน + คำนวณ Power Factor</li>
+            <li>ปุ่มสัมผัส Capacitive สำหรับ manual control</li>
+            <li>LED indicator แสดงสถานะ</li>
+            <li>Wi-Fi 6 TWT ประหยัดไฟสุดๆ ในโหมด standby</li>
+            <li>ต้นทุนวัสดุรวม BOM ต่ำกว่า $5</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card card-emerald">
+        <div class="card-tag">Project #5 · Soil + IoT</div>
+        <div class="card-title">🌱 ESP32 Robot Soil Sampler — EC + Humidity + Pressure + Light</div>
+        <div class="card-body">
+          หุ่นยนต์เก็บตัวอย่างดินอัตโนมัติที่ผสาน ESP32 กับเซ็นเซอร์ดินหลายชนิดและแขนกล 4-DOF จาก Hackster.io
+          <ul>
+            <li>เซ็นเซอร์ Soil EC + Moisture (RS485)</li>
+            <li>Pressure sensor (BMP390)</li>
+            <li>Ambient light (BH1750)</li>
+            <li>แขนกล 4-DOF Servo พร้อมพลั่วเก็บตัวอย่าง</li>
+            <li>กล้อง OV2640 บันทึกภาพจุดเก็บตัวอย่าง</li>
+            <li>GPS (NEO-M8N) บันทึกพิกัดโดยอัตโนมัติ</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: ESP32-C6 vs C61 Comparison -->
+  <section id="comparison">
+    <div class="section-header">
+      <div class="section-icon icon-amber">⚖️</div>
+      <h2 class="section-title">ESP32-C6 vs ESP32-C61 — เลือกตัวไหนดี?</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="card card-amber" style="margin-bottom:1.25rem;">
+      <div class="card-title" style="margin-bottom:0.5rem;">สรุปความแตกต่างระหว่าง C6 กับ C61 ที่เพิ่งเปิดตัว</div>
+      <div class="card-body">ทั้งสองตัวใช้ RISC-V core เหมือนกัน แต่ C61 ลดต้นทุนด้วยการตัด 802.15.4 (Thread/Zigbee) ออก ทำให้ราคาถูกลงอย่างมาก เหมาะกับโปรเจกต์ที่ต้องการแค่ Wi-Fi + BLE</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>คุณสมบัติ</th>
+            <th>ESP32-C6</th>
+            <th>ESP32-C61 <span class="new-badge">NEW</span></th>
+            <th>ดีกว่าสำหรับ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CPU Core</td>
+            <td>RISC-V 32-bit 160 MHz</td>
+            <td>RISC-V 32-bit 160 MHz</td>
+            <td class="na">เท่ากัน</td>
+          </tr>
+          <tr>
+            <td>SRAM</td>
+            <td>512 KB</td>
+            <td>320 KB</td>
+            <td>C6 สำหรับ app ใหญ่</td>
+          </tr>
+          <tr>
+            <td>Wi-Fi 6 (802.11ax)</td>
+            <td class="check">✔ รองรับ</td>
+            <td class="check">✔ รองรับ</td>
+            <td class="na">เท่ากัน</td>
+          </tr>
+          <tr>
+            <td>Bluetooth 5.3 LE</td>
+            <td class="check">✔ รองรับ</td>
+            <td class="check">✔ รองรับ</td>
+            <td class="na">เท่ากัน</td>
+          </tr>
+          <tr>
+            <td>Thread / Zigbee (802.15.4)</td>
+            <td class="check">✔ รองรับ</td>
+            <td class="cross">✗ ไม่มี</td>
+            <td>C6 สำหรับ Mesh/Thread</td>
+          </tr>
+          <tr>
+            <td>Matter over Wi-Fi</td>
+            <td class="check">✔ รองรับ</td>
+            <td class="check">✔ รองรับ</td>
+            <td class="na">เท่ากัน</td>
+          </tr>
+          <tr>
+            <td>Wi-Fi 6 TWT (Low Power)</td>
+            <td class="check">✔ รองรับ</td>
+            <td class="check">✔ รองรับ</td>
+            <td class="na">เท่ากัน</td>
+          </tr>
+          <tr>
+            <td>Secure Boot + TEE</td>
+            <td class="check">✔ รองรับ</td>
+            <td class="check">✔ รองรับ</td>
+            <td class="na">เท่ากัน</td>
+          </tr>
+          <tr>
+            <td>ราคาโมดูล (ประมาณ)</td>
+            <td>~$4–6</td>
+            <td>~$2</td>
+            <td>C61 ราคาถูกกว่า 2–3×</td>
+          </tr>
+          <tr>
+            <td>เหมาะกับงาน</td>
+            <td>Smart Home Hub, Thread Border Router</td>
+            <td>Smart Plug, Sensor, Mass-production IoT</td>
+            <td class="na">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 4: Sensors -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-emerald">🔬</div>
+      <h2 class="section-title">Sensors น่าสนใจสำหรับ Predictive Maintenance</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card card-blue">
+        <div class="card-tag">Vibration / Motion</div>
+        <div class="card-title">ADXL345 — 3-Axis Digital Accelerometer</div>
+        <div class="card-body">
+          Accelerometer digital 3 แกน ความละเอียดสูงสุด 13-bit ย่านวัดปรับได้ ±2g ถึง ±16g ต่อกับ ESP32 ผ่าน SPI หรือ I2C ได้ทันที
+          <ul>
+            <li>Output Rate สูงสุด 3200 Hz สำหรับ FFT analysis</li>
+            <li>Built-in FIFO 32-level ลดภาระ MCU</li>
+            <li>Tap/Double-tap detection hardware</li>
+            <li>Free-fall detection</li>
+            <li>Supply: 2.0–3.6V, กระแสแค่ 40 µA (standby)</li>
+            <li>ราคา: ~$1–3 (DIP breakout)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card card-violet">
+        <div class="card-tag">Acoustic / Microphone</div>
+        <div class="card-title">ICS-43434 — I2S MEMS Microphone ความไว High</div>
+        <div class="card-body">
+          MEMS microphone I2S สำหรับวิเคราะห์เสียงเครื่องจักร ต่อกับ ESP32 โดยตรงผ่าน I2S ไม่ต้องแปลง ADC
+          <ul>
+            <li>Frequency: 20 Hz – 20 kHz, SNR: 65 dB</li>
+            <li>I2S output (24-bit, 16 kHz – 48 kHz)</li>
+            <li>ใช้งานวิเคราะห์ sound anomaly ด้วย FFT</li>
+            <li>เหมาะสำหรับ motor noise / bearing fault detection</li>
+            <li>Supply: 1.8–3.3V, กระแส &lt;600 µA</li>
+            <li>ราคา: ~$2–5 (breakout board)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card card-rose">
+        <div class="card-tag">Temperature · Industrial</div>
+        <div class="card-title">MAX31865 — PT100/PT1000 RTD Temperature Converter</div>
+        <div class="card-body">
+          IC converter สำหรับ Platinum RTD (PT100/PT1000) ให้ความแม่นยำระดับ ±0.5°C ที่ 0°C ใช้กับ ESP32 ผ่าน SPI
+          <ul>
+            <li>วัดอุณหภูมิ: -200°C ถึง +850°C</li>
+            <li>ADC 15-bit (0.03125°C resolution)</li>
+            <li>Fault detection: open circuit, short circuit</li>
+            <li>สำหรับวัดอุณหภูมิมอเตอร์, ท่อ, เครื่องจักรอุตสาหกรรม</li>
+            <li>Breakout board พร้อม PT100 sensor: ~$5–10</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card card-amber">
+        <div class="card-tag">Current / Power</div>
+        <div class="card-title">INA226 — Bidirectional Current/Power Monitor I2C</div>
+        <div class="card-body">
+          IC วัดกระแสและพลังงานแบบ bidirectional ผ่าน I2C ใช้ shunt resistor เพื่อวัดกระแส DC ของมอเตอร์หรืออุปกรณ์ไฟฟ้า
+          <ul>
+            <li>Voltage range: 0–36V (bus), กระแสขึ้นกับ shunt</li>
+            <li>Resolution: 1.25 mV (voltage), 2.5 µV (shunt)</li>
+            <li>Alert pin เมื่อเกิน threshold</li>
+            <li>วัด power consumption real-time ของมอเตอร์</li>
+            <li>เหมาะงาน predictive: anomalous current = เครื่องพัง</li>
+            <li>ราคา breakout: ~$2–4</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card card-cyan">
+        <div class="card-tag">Gas / Air Quality</div>
+        <div class="card-title">SGP41 — VOC + NOₓ Gas Sensor (Sensirion)</div>
+        <div class="card-body">
+          เซ็นเซอร์ก๊าซ VOC + NOₓ จาก Sensirion รุ่นใหม่ ต่อกับ ESP32 ผ่าน I2C และมี algorithm ในตัว
+          <ul>
+            <li>วัด VOC Index (0–500) + NOₓ Index (0–500)</li>
+            <li>Self-calibration อัตโนมัติ</li>
+            <li>Compensation อุณหภูมิ + ความชื้น (ต้องใส่ค่า SHT)</li>
+            <li>Response time &lt;10 วินาที</li>
+            <li>ใช้ใน Project Aura v1.1 (ข้างต้น)</li>
+            <li>ราคา breakout: ~$15–25</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card card-orange">
+        <div class="card-tag">Ultrasonic · Distance</div>
+        <div class="card-title">JSN-SR04T — Waterproof Ultrasonic Distance Sensor</div>
+        <div class="card-body">
+          เซ็นเซอร์วัดระยะ ultrasonic แบบกันน้ำ เหมาะสำหรับวัดระดับน้ำ, ถังเก็บน้ำ, หรือ liquid level ในสภาพแวดล้อมชื้น
+          <ul>
+            <li>ระยะวัด: 25 cm – 450 cm</li>
+            <li>ความแม่นยำ: ±2 mm</li>
+            <li>กันน้ำ IP67 (Probe หัววัด)</li>
+            <li>Interface: UART หรือ Trigger/Echo เหมือน HC-SR04</li>
+            <li>ทำงานที่ 5V, ใช้คู่กับ level shifter สำหรับ ESP32</li>
+            <li>ราคา: ~$5–8</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: Code Example -->
+  <section id="code">
+    <div class="section-header">
+      <div class="section-icon icon-rose">💻</div>
+      <h2 class="section-title">ตัวอย่างโค้ด — ESP32-C61 Wi-Fi 6 TWT Low-Power Mode</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="card card-blue">
+      <div class="card-title" style="margin-bottom:0.75rem;">เปิดใช้งาน Target Wake Time (TWT) บน ESP32-C61 ผ่าน ESP-IDF v6.0</div>
+      <div class="code-wrap">
+        <div class="code-header">
+          <div class="code-dots">
+            <div class="code-dot dot-red"></div>
+            <div class="code-dot dot-yellow"></div>
+            <div class="code-dot dot-green"></div>
+          </div>
+          <span>main.c — ESP32-C61 Wi-Fi 6 TWT Setup (ESP-IDF v6.0)</span>
+        </div>
+        <pre><span class="cm">// ESP32-C61 Wi-Fi 6 TWT (Target Wake Time) — ลดการใช้ไฟใน standby</span>
+<span class="kw">#include</span> <span class="str">"esp_wifi.h"</span>
+<span class="kw">#include</span> <span class="str">"esp_log.h"</span>
+<span class="kw">#include</span> <span class="str">"esp_netif.h"</span>
+
+<span class="kw">#define</span> <span class="var">TAG</span> <span class="str">"TWT_DEMO"</span>
+
+<span class="cm">// Callback เมื่อ TWT session setup สำเร็จ</span>
+<span class="kw">static void</span> <span class="fn">wifi_twt_callback</span>(<span class="kw">void</span> *arg, esp_event_base_t base,
+                               <span class="num">int32_t</span> event_id, <span class="kw">void</span> *event_data) {
+    <span class="kw">if</span> (event_id == WIFI_EVENT_ITWT_SETUP) {
+        wifi_event_sta_itwt_setup_t *twt = event_data;
+        ESP_LOGI(<span class="var">TAG</span>, <span class="str">"TWT Setup: wake=%dms, interval=%dms"</span>,
+                 twt->actual_wake_duration_ms,
+                 twt->actual_wake_interval_ms);
+    }
+}
+
+<span class="kw">void</span> <span class="fn">setup_twt_low_power</span>(<span class="kw">void</span>) {
+    <span class="cm">// กำหนดค่า TWT: ตื่น 10ms ทุก 5,000ms (5 วินาที)</span>
+    wifi_config_twt_t twt_cfg = {
+        .setup_cmd        = TWT_REQUEST,
+        .trigger          = <span class="num">0</span>,       <span class="cm">// 0 = unannounced</span>
+        .flow_type        = <span class="num">0</span>,       <span class="cm">// 0 = solicited</span>
+        .wake_duration_us = <span class="num">10000</span>,   <span class="cm">// ตื่น 10ms</span>
+        .wake_interval_us = <span class="num">5000000</span>, <span class="cm">// ทุก 5 วินาที</span>
+        .min_wake_duration_us = <span class="num">4096</span>,
+    };
+
+    esp_err_t ret = esp_wifi_sta_itwt_setup(&amp;twt_cfg);
+    <span class="kw">if</span> (ret == ESP_OK) {
+        ESP_LOGI(<span class="var">TAG</span>, <span class="str">"TWT requested successfully"</span>);
+    } <span class="kw">else</span> {
+        ESP_LOGW(<span class="var">TAG</span>, <span class="str">"TWT setup failed: %s"</span>, esp_err_to_name(ret));
+    }
+}
+
+<span class="kw">void</span> <span class="fn">app_main</span>(<span class="kw">void</span>) {
+    <span class="cm">// Init Wi-Fi → Connect AP → เมื่อ connected แล้วจึงเปิด TWT</span>
+    esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_ITWT_SETUP,
+                                wifi_twt_callback, <span class="num">NULL</span>);
+    <span class="fn">wifi_init_and_connect</span>();     <span class="cm">// connect AP ด้วย WPA3 SAE</span>
+    <span class="fn">setup_twt_low_power</span>();        <span class="cm">// เปิด TWT หลัง connect</span>
+    <span class="cm">// ตอนนี้ ESP32-C61 จะ wake 10ms ทุก 5 วินาที</span>
+    <span class="cm">// กระแสเฉลี่ย deep idle &lt;1 mA</span>
+}</pre>
+      </div>
+      <div class="card-body" style="margin-top:0.75rem; font-size:0.82rem; color:var(--text-muted);">
+        TWT ช่วยให้ ESP32-C61 ประหยัดพลังงานได้มากในโหมด standby เนื่องจากวิทยุ Wi-Fi ไม่ต้องคอย beacon ตลอดเวลา — เหมาะมากสำหรับ sensor node ที่ส่งข้อมูลเป็นรอบๆ
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6: Resources -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔗</div>
+      <h2 class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="resources-grid">
+      <div class="res-card">
+        <div class="res-title">ESP32-C61-MINI Module Launch</div>
+        <div class="res-desc">ข่าวเปิดตัวโมดูล ESP32-C61-MINI-1/1U รายละเอียด spec และแหล่งซื้อ</div>
+        <span class="res-tag">Hackster.io · Aug 2026</span>
+      </div>
+      <div class="res-card">
+        <div class="res-title">ESP32P4C61-TINY AIoT Board</div>
+        <div class="res-desc">บอร์ด dual-chip ที่รวม ESP32-P4 + ESP32-C61 พร้อม MIPI CSI/DSI</div>
+        <span class="res-tag">electronics-lab.com</span>
+      </div>
+      <div class="res-card">
+        <div class="res-title">ESPHome 2026.4.0 Release Notes</div>
+        <div class="res-desc">Sensor publishing เร็วขึ้น 46×, 40KB IRAM unlock, ESP32-C61 support</div>
+        <span class="res-tag">esphome.io</span>
+      </div>
+      <div class="res-card">
+        <div class="res-title">Project Aura v1.1 — Open Source AQ Monitor</div>
+        <div class="res-desc">ESP32-S3 + Sensirion + 4.3" Touch + Home Assistant MQTT</div>
+        <span class="res-tag">Hackster.io</span>
+      </div>
+      <div class="res-card">
+        <div class="res-title">TinyML Predictive Maintenance on ESP32-S3</div>
+        <div class="res-desc">งานวิจัย MDPI: Lightweight Edge-AI สำหรับ predictive maintenance</div>
+        <span class="res-tag">MDPI Applied Sciences</span>
+      </div>
+      <div class="res-card">
+        <div class="res-title">ESP32 Selection Guide 2026</div>
+        <div class="res-desc">DroneBot Workshop: เปรียบ ESP32-S3 vs C6 vs C61 vs P4 ฉบับปัจจุบัน</div>
+        <span class="res-tag">dronebotworkshop.com</span>
+      </div>
+      <div class="res-card">
+        <div class="res-title">ESP32-CAM Edge AI Currency Recognition</div>
+        <div class="res-desc">ตัวอย่าง MobileNet V2 INT8 บน ESP32-CAM ไม่ต้องพึ่ง Cloud</div>
+        <span class="res-tag">Medium · Circuit Digest</span>
+      </div>
+      <div class="res-card">
+        <div class="res-title">M5Stack Global Innovation Contest 2026</div>
+        <div class="res-desc">ประกวดโปรเจกต์ ESP32/M5Stack ชิงรางวัล เผยแพร่ผ่าน Hackster.io</div>
+        <span class="res-tag">m5stack.com</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div>สร้างโดยระบบอัตโนมัติ AI Research Agent · วันที่สร้าง: <strong>24 สิงหาคม 2569</strong></div>
+  <div style="margin-top:0.4rem;">ข้อมูลอ้างอิงจาก: Hackster.io, CNX Software, electronics-lab.com, ESPHome, MDPI, DroneBot Workshop, Espressif Systems</div>
+  <div style="margin-top:0.4rem; font-size:0.75rem; color:#475569;">
+    หัวข้อหลักวันนี้: ESP32-C61-MINI Launch · ESP32P4C61-TINY · TinyML Predictive Maintenance · Project Aura v1.1 · ESPHome 2026.4.0
+  </div>
+</footer>
+
+</body>
+</html>
