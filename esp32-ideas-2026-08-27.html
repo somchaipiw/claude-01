@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 27 สิงหาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1a2540;
+    --bg-card-hover: #1e2f50;
+    --accent-blue: #38bdf8;
+    --accent-cyan: #22d3ee;
+    --accent-purple: #a78bfa;
+    --accent-green: #4ade80;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --accent-yellow: #fbbf24;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #2d3f5e;
+    --gradient-1: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+    --gradient-2: linear-gradient(135deg, #1a1a3e 0%, #0f172a 100%);
+    --gradient-3: linear-gradient(135deg, #1a2f1a 0%, #0f172a 100%);
+    --gradient-4: linear-gradient(135deg, #2a1a1a 0%, #0f172a 100%);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f2040 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(56,189,248,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.12);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent-blue);
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+  }
+
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #e2e8f0 0%, #38bdf8 50%, #22d3ee 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+  }
+
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+
+  .stat-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+
+  .stat-chip strong {
+    color: var(--text-primary);
+  }
+
+  /* ===== MAIN ===== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.2rem 3rem;
+  }
+
+  /* ===== SECTION TITLE ===== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 2.5rem 0 1.2rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-header .icon {
+    font-size: 1.4rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .section-header .tag {
+    margin-left: auto;
+    background: rgba(56,189,248,0.1);
+    border: 1px solid rgba(56,189,248,0.25);
+    color: var(--accent-blue);
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ===== CARD GRID ===== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.2rem;
+  }
+
+  .card-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+    gap: 1.2rem;
+  }
+
+  /* ===== INNOVATION CARD ===== */
+  .inno-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.4rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .inno-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(56,189,248,0.4);
+    box-shadow: 0 8px 30px rgba(56,189,248,0.08);
+  }
+
+  .inno-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .inno-card.blue::before  { background: linear-gradient(90deg, #38bdf8, #0ea5e9); }
+  .inno-card.purple::before { background: linear-gradient(90deg, #a78bfa, #7c3aed); }
+  .inno-card.green::before  { background: linear-gradient(90deg, #4ade80, #16a34a); }
+  .inno-card.orange::before { background: linear-gradient(90deg, #fb923c, #ea580c); }
+  .inno-card.pink::before   { background: linear-gradient(90deg, #f472b6, #ec4899); }
+  .inno-card.cyan::before   { background: linear-gradient(90deg, #22d3ee, #0891b2); }
+  .inno-card.yellow::before { background: linear-gradient(90deg, #fbbf24, #d97706); }
+
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .card-subtitle {
+    font-size: 0.82rem;
+    color: var(--accent-blue);
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+  }
+
+  .card-body {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .card-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 1rem;
+  }
+
+  .tag-chip {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 0.2rem 0.55rem;
+    border-radius: 5px;
+    font-size: 0.72rem;
+  }
+
+  .tag-chip.highlight {
+    background: rgba(56,189,248,0.1);
+    border-color: rgba(56,189,248,0.25);
+    color: var(--accent-blue);
+  }
+
+  /* ===== HIGHLIGHT CARD (FULL WIDTH) ===== */
+  .highlight-card {
+    background: linear-gradient(135deg, rgba(56,189,248,0.06) 0%, var(--bg-secondary) 100%);
+    border: 1px solid rgba(56,189,248,0.25);
+    border-radius: 14px;
+    padding: 1.5rem 1.8rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .highlight-card::after {
+    content: '★ ไฮไลต์';
+    position: absolute;
+    top: 1rem;
+    right: 1.2rem;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent-blue);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+  }
+
+  .highlight-card h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--accent-cyan);
+  }
+
+  .highlight-card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+  }
+
+  /* ===== SENSOR TABLE ===== */
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    display: flex;
+    gap: 1.2rem;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+
+  .sensor-card:hover {
+    border-color: rgba(167,139,250,0.4);
+  }
+
+  .sensor-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .sensor-icon-box.purple { background: rgba(167,139,250,0.12); }
+  .sensor-icon-box.blue   { background: rgba(56,189,248,0.12); }
+  .sensor-icon-box.green  { background: rgba(74,222,128,0.12); }
+  .sensor-icon-box.orange { background: rgba(251,146,60,0.12); }
+
+  .sensor-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.2rem;
+  }
+
+  .sensor-desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .sensor-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+  }
+
+  /* ===== CODE BLOCK ===== */
+  .code-section {
+    background: #0a0f1e;
+    border: 1px solid #1e3a5f;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 1rem;
+  }
+
+  .code-header {
+    background: #131c30;
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid #1e3a5f;
+  }
+
+  .code-header span {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-family: monospace;
+  }
+
+  .code-header .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .dot-red    { background: #ff5f57; }
+  .dot-yellow { background: #febc2e; }
+  .dot-green  { background: #28c840; }
+
+  pre {
+    padding: 1.2rem;
+    font-size: 0.78rem;
+    line-height: 1.7;
+    overflow-x: auto;
+    color: #cdd6f4;
+    font-family: 'Courier New', Courier, monospace;
+  }
+
+  .kw  { color: #cba6f7; }
+  .fn  { color: #89dceb; }
+  .st  { color: #a6e3a1; }
+  .cm  { color: #6c7086; font-style: italic; }
+  .nm  { color: #fab387; }
+  .op  { color: #89b4fa; }
+
+  /* ===== COMPARISON TABLE ===== */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    background: var(--bg-card);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .compare-table th {
+    background: #1e3a5f;
+    color: var(--accent-blue);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+  }
+
+  .compare-table td {
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(56,189,248,0.04); }
+
+  .compare-table td:first-child {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  /* ===== PROJECT STEP ===== */
+  .steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-top: 0.8rem;
+  }
+
+  .step-item {
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent-blue);
+    font-size: 0.78rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+
+  .step-text {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .step-text strong {
+    color: var(--text-primary);
+  }
+
+  /* ===== INFO BOX ===== */
+  .info-box {
+    background: rgba(74,222,128,0.07);
+    border: 1px solid rgba(74,222,128,0.2);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    font-size: 0.87rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-top: 1rem;
+  }
+
+  .info-box strong { color: #4ade80; }
+
+  .warn-box {
+    background: rgba(251,146,60,0.07);
+    border: 1px solid rgba(251,146,60,0.2);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    font-size: 0.87rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-top: 1rem;
+  }
+
+  .warn-box strong { color: #fb923c; }
+
+  /* ===== RESOURCE LINKS ===== */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 0.8rem;
+  }
+
+  .resource-link {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s, transform 0.15s;
+    display: block;
+  }
+
+  .resource-link:hover {
+    border-color: rgba(56,189,248,0.4);
+    transform: translateY(-2px);
+  }
+
+  .resource-link .rl-type {
+    font-size: 0.72rem;
+    color: var(--accent-blue);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.3rem;
+  }
+
+  .resource-link .rl-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.2rem;
+  }
+
+  .resource-link .rl-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* ===== TIMELINE ===== */
+  .timeline {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--border);
+  }
+
+  .tl-item {
+    position: relative;
+    padding-bottom: 1rem;
+    font-size: 0.87rem;
+    color: var(--text-secondary);
+  }
+
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -1.5rem;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    border: 2px solid var(--bg-primary);
+  }
+
+  .tl-item strong { color: var(--text-primary); }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 1.5rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  footer a { color: var(--accent-blue); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 640px) {
+    .card-grid-2 { grid-template-columns: 1fr; }
+    .stats-row { gap: 0.8rem; }
+    .compare-table { font-size: 0.75rem; }
+    .compare-table th, .compare-table td { padding: 0.5rem 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">🔬 ESP32 Daily Research</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">27 สิงหาคม 2569 · ค้นคว้าโดย AI Researcher</p>
+  <div class="stats-row">
+    <div class="stat-chip"><strong>4</strong> หัวข้อหลัก</div>
+    <div class="stat-chip"><strong>4</strong> Sensors ใหม่</div>
+    <div class="stat-chip"><strong>3</strong> ตัวอย่างโค้ด</div>
+    <div class="stat-chip"><strong>10+</strong> แหล่งข้อมูล</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <div class="section-header">
+    <span class="icon">🚀</span>
+    <h2>นวัตกรรมและเทรนด์ใหม่ล่าสุด</h2>
+    <span class="tag">August 2026</span>
+  </div>
+
+  <!-- Highlight Card -->
+  <div class="highlight-card">
+    <h3>🎯 ESP32 + UWB — ตำแหน่ง Indoor แม่นยำระดับ 10 ซม.</h3>
+    <p>
+      Ultra-Wideband (UWB) คือเทคโนโลยีที่เปลี่ยนเกมสำหรับ Indoor Positioning ในปี 2026
+      โดยใช้ ESP32 ร่วมกับ chip DW1000 หรือ DWM3000 ของ Qorvo สามารถระบุตำแหน่งได้ภายใน <strong>10 ซม.</strong>
+      ซึ่งแม่นยำกว่า GPS, Wi-Fi, และ BLE หลายเท่า — เหมาะสำหรับหุ่นยนต์โกดัง, การติดตามคนในโรงพยาบาล,
+      และระบบ Asset Tracking ในโรงงาน
+    </p>
+  </div>
+
+  <div class="card-grid">
+    <div class="inno-card blue">
+      <div class="card-title">🛰️ ESP32 + UWB Indoor RTLS</div>
+      <div class="card-subtitle">DW1000 / DWM3000 · ±10 cm Accuracy</div>
+      <div class="card-body">
+        ระบบ Real-Time Location System ในอาคาร โดยใช้ ESP32 + DWM3000 module จาก Qorvo
+        ส่งสัญญาณ Ultra-Wideband แบบ Time-of-Flight (ToF) เพื่อคำนวณระยะทางด้วย pulse นาโนวินาที
+        สามารถ track ได้หลายอุปกรณ์พร้อมกัน ผ่าน Wi-Fi ส่งข้อมูลแบบ real-time
+      </div>
+      <div class="card-footer">
+        <span class="tag-chip highlight">UWB</span>
+        <span class="tag-chip">DWM3000</span>
+        <span class="tag-chip">RTLS</span>
+        <span class="tag-chip">ToF</span>
+        <span class="tag-chip">±10cm</span>
+      </div>
+    </div>
+
+    <div class="inno-card green">
+      <div class="card-title">🔋 E-Ink Display + ESP32 Deep Sleep</div>
+      <div class="card-subtitle">Inkplate / M5Paper · 22µA Sleep · อายุแบตหลายเดือน</div>
+      <div class="card-body">
+        E-Paper Display ร่วมกับ ESP32 Deep Sleep สร้าง IoT Dashboard ที่ประหยัดพลังงานสุดขีด
+        — กินไฟเพียง <strong>22µA</strong> ขณะ sleep ทำให้แบต 18650 อยู่ได้เป็นเดือน
+        Inkplate 6 และ M5Paper ล้วน built-in Wi-Fi ให้อัปเดตข้อมูล OTA ได้ทันที
+      </div>
+      <div class="card-footer">
+        <span class="tag-chip highlight">E-Paper</span>
+        <span class="tag-chip">Inkplate</span>
+        <span class="tag-chip">M5Paper</span>
+        <span class="tag-chip">22µA</span>
+        <span class="tag-chip">Deep Sleep</span>
+      </div>
+    </div>
+
+    <div class="inno-card orange">
+      <div class="card-title">🏭 TinyML Predictive Maintenance บน ESP32</div>
+      <div class="card-subtitle">FFT + Autoencoder · Edge AI · ไม่ต้องส่ง Cloud</div>
+      <div class="card-body">
+        ESP32 dual-core 240 MHz รัน FFT ได้ที่ 3,200 samples/sec วิเคราะห์ vibration ของเครื่องจักร
+        ตรวจจับความผิดปกติจาก signature ความถี่ (imbalance, bearing defect, misalignment)
+        โดย TinyML autoencoder เทรนบน healthy data แล้ว deploy บน chip — แม่นยำ 73%+
+      </div>
+      <div class="card-footer">
+        <span class="tag-chip highlight">TinyML</span>
+        <span class="tag-chip">FFT</span>
+        <span class="tag-chip">Autoencoder</span>
+        <span class="tag-chip">Vibration</span>
+        <span class="tag-chip">Edge AI</span>
+      </div>
+    </div>
+
+    <div class="inno-card purple">
+      <div class="card-title">🏠 Zigbee + ESPHome 2026.5 — Native Support</div>
+      <div class="card-subtitle">ESP32-C6 + IEEE 802.15.4 · DIY Smart Home</div>
+      <div class="card-body">
+        ESPHome 2026.5.0 เพิ่ม native Zigbee end-device support สำหรับ ESP32 แล้ว
+        ร่วมกับ ESP32-C6 ที่มี 802.15.4 built-in สามารถสร้าง Zigbee sensor ราคาถูก
+        เชื่อม Home Assistant โดยตรง — mesh network ซ่อมตัวเองได้ อายุแบต 1-3 ปี
+      </div>
+      <div class="card-footer">
+        <span class="tag-chip highlight">ESPHome 2026.5</span>
+        <span class="tag-chip">Zigbee</span>
+        <span class="tag-chip">ESP32-C6</span>
+        <span class="tag-chip">Home Assistant</span>
+      </div>
+    </div>
+
+    <div class="inno-card cyan">
+      <div class="card-title">🔐 ESP32 Smart Lock — RFID + NFC + Keypad</div>
+      <div class="card-subtitle">MFRC522 / PN532 · OTA Update · Multi-Factor Auth</div>
+      <div class="card-body">
+        ระบบ Access Control ครบวงจรด้วย ESP32: รองรับทั้ง RFID card, NFC smartphone,
+        และ Keypad รหัส 4-8 หลัก — ส่ง MQTT ทุก event, unlock ผ่าน app ได้ระยะไกล
+        รองรับ Servo motor และ Solenoid lock พร้อม OLED แสดง status
+      </div>
+      <div class="card-footer">
+        <span class="tag-chip highlight">RFID</span>
+        <span class="tag-chip">NFC</span>
+        <span class="tag-chip">MFRC522</span>
+        <span class="tag-chip">MQTT</span>
+        <span class="tag-chip">MFA</span>
+      </div>
+    </div>
+
+    <div class="inno-card pink">
+      <div class="card-title">📊 ESP32 + E-Ink Smart Price Tag / Label</div>
+      <div class="card-subtitle">ร้านค้า · โรงงาน · ห้องแล็บ · อัปเดตไร้สาย</div>
+      <div class="card-body">
+        Electronic Shelf Label (ESL) ด้วย ESP32-S3 + E-Ink 2.9" รับข้อมูลราคาผ่าน Wi-Fi ESP-NOW
+        อัปเดตได้ภายใน 3 วินาที กินไฟต่ำมาก ไม่ต้องเปลี่ยนแบตนาน 2+ ปี
+        ใช้ได้ทั้งร้านค้าปลีก, คลังสินค้า, และห้องแล็บที่ต้องการ label แบบ dynamic
+      </div>
+      <div class="card-footer">
+        <span class="tag-chip highlight">ESL</span>
+        <span class="tag-chip">E-Ink 2.9"</span>
+        <span class="tag-chip">ESP-NOW</span>
+        <span class="tag-chip">2+ ปี</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 2: PROJECT IDEAS ===== -->
+  <div class="section-header">
+    <span class="icon">💡</span>
+    <h2>ไอเดียโปรเจกต์ที่น่าสร้างประจำวัน</h2>
+    <span class="tag">Build Ideas</span>
+  </div>
+
+  <div class="card-grid-2">
+
+    <div class="inno-card blue">
+      <div class="card-title">🏭 Predictive Maintenance Node สำหรับปั๊มน้ำ</div>
+      <div class="card-subtitle">ESP32 + ADXL345 + FFT + MQTT Alert</div>
+      <div class="card-body">
+        <p>ติดตั้ง node บนมอเตอร์ปั๊มน้ำเพื่อวิเคราะห์การสั่นสะเทือน และแจ้งเตือนก่อนชำรุด</p>
+        <div class="steps-list" style="margin-top:0.8rem">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>Sampling:</strong> ADXL345 ส่ง vibration data ที่ 1.6 kHz ผ่าน SPI</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>FFT Analysis:</strong> Core 0 รัน FFT หา peak frequency ของ bearing</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>Anomaly Detection:</strong> เปรียบเทียบกับ baseline ที่เทรนไว้ ด้วย Z-score</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>Alert:</strong> ส่ง MQTT → Node-RED → Line Notify ทันที</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="tag-chip">ADXL345</span>
+        <span class="tag-chip">FFT</span>
+        <span class="tag-chip">MQTT</span>
+        <span class="tag-chip">Node-RED</span>
+        <span class="tag-chip highlight">Bearing Detection</span>
+      </div>
+    </div>
+
+    <div class="inno-card green">
+      <div class="card-title">🏷️ ระบบ E-Ink Visitor Badge ที่งานประชุม</div>
+      <div class="card-subtitle">ESP32-S3 + 2.9" E-Paper + BLE Check-in</div>
+      <div class="card-body">
+        <p>Badge ดิจิทัลสำหรับงานอีเวนท์ รับชื่อ-ตำแหน่ง-QR code ผ่าน BLE ตอนลงทะเบียน</p>
+        <div class="steps-list" style="margin-top:0.8rem">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>Registration:</strong> Scan QR → Server ส่ง BLE packet หา Badge ที่ใกล้ที่สุด</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Display:</strong> E-Ink แสดงชื่อ, บริษัท, QR, และ session ที่ลงทะเบียน</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>Battery:</strong> Deep sleep ตลอดงาน 2-3 วัน ด้วยแบต LiPo 400mAh</div>
+          </div>
+        </div>
+        <div class="info-box">
+          <strong>ข้อดีเด่น:</strong> ผู้เข้างาน 500 คน ใช้ badge ซ้ำได้ ลดขยะกระดาษ — อัปเดตข้อมูลไร้สายได้ตลอด
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="tag-chip">E-Paper 2.9"</span>
+        <span class="tag-chip">BLE</span>
+        <span class="tag-chip">QR Code</span>
+        <span class="tag-chip highlight">Event Badge</span>
+      </div>
+    </div>
+
+    <div class="inno-card purple">
+      <div class="card-title">📍 UWB Asset Tracker สำหรับโรงพยาบาล</div>
+      <div class="card-subtitle">ESP32 + DW1000 · ±10cm · Real-Time Dashboard</div>
+      <div class="card-body">
+        <p>ติดตาม wheelchair, อุปกรณ์แพทย์, และเปลผู้ป่วยในอาคารแบบ real-time</p>
+        <div class="steps-list" style="margin-top:0.8rem">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>Anchor nodes:</strong> ติดตั้ง 4+ anchor ESP32+DW1000 ตามมุมอาคาร</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Tag:</strong> อุปกรณ์แต่ละชิ้นติด ESP32+DW1000 tag ขนาดเล็ก</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>Trilateration:</strong> Server คำนวณตำแหน่ง X,Y,Z จาก ToF 4 anchor</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>Dashboard:</strong> Floor plan แสดง dot ตำแหน่ง update ทุก 1 วินาที</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="tag-chip">DW1000</span>
+        <span class="tag-chip">Trilateration</span>
+        <span class="tag-chip">WebSocket</span>
+        <span class="tag-chip highlight">Hospital RTLS</span>
+      </div>
+    </div>
+
+    <div class="inno-card orange">
+      <div class="card-title">🏠 DIY Zigbee mmWave Presence Sensor</div>
+      <div class="card-subtitle">ESP32-C6 + LD2410 + ESPHome 2026.5</div>
+      <div class="card-body">
+        <p>Sensor ตรวจจับคนอยู่ในห้องด้วย mmWave radar ที่แม่นยำกว่า PIR — ตรวจได้แม้นั่งนิ่ง</p>
+        <div class="steps-list" style="margin-top:0.8rem">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>Hardware:</strong> XIAO ESP32-C6 + LD2410 mmWave sensor</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Firmware:</strong> Flash ESPHome 2026.5 เลือก zigbee component</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>Pair:</strong> จับคู่กับ Coordinator (ZHA/Z2M ใน Home Assistant)</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>Automation:</strong> หยุดแอร์, ดับไฟ เมื่อไม่มีคน — ประหยัดพลังงาน 30%+</div>
+          </div>
+        </div>
+        <div class="warn-box">
+          <strong>หมายเหตุ:</strong> Zigbee native ใน ESPHome ยังเป็น beta — ทดสอบกับ ZHA ก่อน Z2M
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="tag-chip">LD2410</span>
+        <span class="tag-chip">mmWave</span>
+        <span class="tag-chip">ESP32-C6</span>
+        <span class="tag-chip highlight">Presence Detection</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <div class="section-header">
+    <span class="icon">🔬</span>
+    <h2>Sensors น่าสนใจประจำวันนี้</h2>
+    <span class="tag">Spotlight Sensors</span>
+  </div>
+
+  <div class="card-grid">
+
+    <div class="sensor-card">
+      <div class="sensor-icon-box blue">📡</div>
+      <div>
+        <div class="sensor-name">DW1000 / DWM3000</div>
+        <div class="sensor-desc">UWB Ranging & Positioning chip จาก Qorvo — ส่ง pulse ความกว้าง 500 MHz ผ่าน 3.5–6.5 GHz
+        คำนวณ Time-of-Flight ด้วยความละเอียด 15 ps (picosecond) ทำให้วัดระยะได้ ±10 cm</div>
+        <div class="sensor-specs">
+          <span class="tag-chip highlight">±10 cm</span>
+          <span class="tag-chip">SPI Interface</span>
+          <span class="tag-chip">3.3V</span>
+          <span class="tag-chip">~500 MHz BW</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sensor-card">
+      <div class="sensor-icon-box purple">⚡</div>
+      <div>
+        <div class="sensor-name">ADXL345</div>
+        <div class="sensor-desc">3-Axis MEMS Accelerometer ราคาถูก สำหรับ vibration analysis — range ±16g,
+        output rate สูงสุด 3,200 Hz, รองรับ SPI และ I2C ใช้ร่วมกับ ESP32 FFT เพื่อตรวจจับ bearing fault</div>
+        <div class="sensor-specs">
+          <span class="tag-chip highlight">3200 Hz ODR</span>
+          <span class="tag-chip">±16g</span>
+          <span class="tag-chip">I2C / SPI</span>
+          <span class="tag-chip">3.3V / 5V</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sensor-card">
+      <div class="sensor-icon-box green">🔑</div>
+      <div>
+        <div class="sensor-name">PN532 NFC Module</div>
+        <div class="sensor-desc">NFC/RFID reader/writer รองรับ ISO 14443A/B, Mifare, FeliCa, และ ISO 18092 (P2P)
+        สื่อสารผ่าน I2C, SPI, หรือ UART — ระยะอ่านสูงสุด 5-7 cm เหมาะสำหรับ Smart Lock
+        และ NFC tag programming</div>
+        <div class="sensor-specs">
+          <span class="tag-chip highlight">NFC P2P</span>
+          <span class="tag-chip">Mifare</span>
+          <span class="tag-chip">I2C/SPI/UART</span>
+          <span class="tag-chip">5-7cm Range</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sensor-card">
+      <div class="sensor-icon-box orange">🌫️</div>
+      <div>
+        <div class="sensor-name">BME688</div>
+        <div class="sensor-desc">4-in-1 Environmental sensor จาก Bosch: Temperature, Humidity, Pressure, และ Gas/VOC
+        พร้อม AI feature extraction onboard ด้วย BSEC 2.x library — ตรวจ IAQ (Indoor Air Quality Index)
+        ได้โดยตรง ไม่ต้องคำนวณเอง</div>
+        <div class="sensor-specs">
+          <span class="tag-chip highlight">4-in-1</span>
+          <span class="tag-chip">IAQ Index</span>
+          <span class="tag-chip">BSEC 2.x</span>
+          <span class="tag-chip">I2C / SPI</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== CODE EXAMPLES ===== -->
+  <div class="section-header" style="margin-top: 2.5rem">
+    <span class="icon">⌨️</span>
+    <h2>ตัวอย่างโค้ด — ESP32 Vibration FFT (Predictive Maintenance)</h2>
+    <span class="tag">Arduino / C++</span>
+  </div>
+
+  <div class="code-section">
+    <div class="code-header">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+      <span>predictive_maintenance.ino — FFT Vibration Analysis บน ESP32</span>
+    </div>
+    <pre><span class="cm">// ESP32 Predictive Maintenance — FFT Vibration Analysis</span>
+<span class="cm">// Hardware: ESP32 + ADXL345 (SPI) + MQTT Alert</span>
+<span class="kw">#include</span> <span class="st">&lt;SPI.h&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;WiFi.h&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;PubSubClient.h&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;arduinoFFT.h&gt;</span>
+
+<span class="kw">#define</span> <span class="nm">SAMPLES</span>       <span class="nm">1024</span>
+<span class="kw">#define</span> <span class="nm">SAMPLING_HZ</span>  <span class="nm">3200</span>
+<span class="kw">#define</span> <span class="nm">ADXL_CS</span>      <span class="nm">5</span>
+
+<span class="op">double</span> vReal[<span class="nm">SAMPLES</span>], vImag[<span class="nm">SAMPLES</span>];
+<span class="op">float</span>  baselineRMS = <span class="nm">0</span>;        <span class="cm">// เก็บ baseline ตอน normal operation</span>
+
+ArduinoFFT FFT = <span class="fn">ArduinoFFT</span>(vReal, vImag, SAMPLES, SAMPLING_HZ);
+WiFiClient     espClient;
+PubSubClient   mqtt(espClient);
+
+<span class="op">float</span> <span class="fn">readADXL345_Z</span>() {
+  <span class="cm">// อ่าน Z-axis acceleration จาก ADXL345 ผ่าน SPI</span>
+  <span class="fn">digitalWrite</span>(ADXL_CS, LOW);
+  <span class="fn">SPI.transfer</span>(<span class="nm">0x36</span> | <span class="nm">0xC0</span>);  <span class="cm">// register DATAZ0 + read + multi</span>
+  <span class="op">int16_t</span> raw = <span class="fn">SPI.transfer16</span>(<span class="nm">0</span>);
+  <span class="fn">digitalWrite</span>(ADXL_CS, HIGH);
+  <span class="kw">return</span> raw * <span class="nm">0.0039f</span>;          <span class="cm">// แปลงเป็น g (4mg/LSB @ ±2g)</span>
+}
+
+<span class="op">void</span> <span class="fn">analyzeVibration</span>() {
+  <span class="op">unsigned long</span> ts = <span class="fn">micros</span>();
+  <span class="kw">for</span> (<span class="op">int</span> i = <span class="nm">0</span>; i &lt; SAMPLES; i++) {
+    <span class="kw">while</span> (<span class="fn">micros</span>() - ts &lt; (<span class="op">unsigned long</span>)i * (<span class="nm">1000000</span>/SAMPLING_HZ));
+    vReal[i] = <span class="fn">readADXL345_Z</span>();
+    vImag[i] = <span class="nm">0</span>;
+  }
+
+  FFT.<span class="fn">windowing</span>(FFT_WIN_TYP_HANN, FFT_FORWARD);
+  FFT.<span class="fn">compute</span>(FFT_FORWARD);
+  FFT.<span class="fn">complexToMagnitude</span>();
+
+  <span class="cm">// คำนวณ RMS และหา dominant frequency</span>
+  <span class="op">double</span> rms = <span class="nm">0</span>, peakFreq = FFT.<span class="fn">majorPeak</span>();
+  <span class="kw">for</span> (<span class="op">int</span> i = <span class="nm">1</span>; i &lt; SAMPLES/<span class="nm">2</span>; i++) rms += vReal[i] * vReal[i];
+  rms = <span class="fn">sqrt</span>(rms / (SAMPLES/<span class="nm">2</span>));
+
+  <span class="cm">// ตรวจสอบความผิดปกติ — ถ้า RMS เกิน 3x baseline แจ้งเตือน</span>
+  <span class="kw">if</span> (baselineRMS &gt; <span class="nm">0</span> &amp;&amp; rms &gt; baselineRMS * <span class="nm">3.0f</span>) {
+    <span class="op">char</span> msg[<span class="nm">128</span>];
+    <span class="fn">sprintf</span>(msg,
+      <span class="st">"{\"rms\":%.3f,\"peak_hz\":%.1f,\"baseline\":%.3f,\"ratio\":%.1f}"</span>,
+      rms, peakFreq, baselineRMS, rms/baselineRMS);
+    mqtt.<span class="fn">publish</span>(<span class="st">"factory/pump01/alert"</span>, msg);
+  }
+}</pre>
+  </div>
+
+  <div class="code-section" style="margin-top: 1rem">
+    <div class="code-header">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+      <span>uwb_anchor.ino — ESP32 + DW1000 Anchor Node</span>
+    </div>
+    <pre><span class="cm">// ESP32 UWB Anchor Node — รับ ranging request จาก Tag</span>
+<span class="cm">// Library: DW1000 by thotro (Arduino)</span>
+<span class="kw">#include</span> <span class="st">&lt;SPI.h&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;DW1000.h&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;DW1000Ranging.h&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;WiFi.h&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;ArduinoJson.h&gt;</span>
+
+<span class="kw">#define</span> <span class="nm">ANCHOR_ID</span>  <span class="st">"01"</span>          <span class="cm">// ID ของ anchor node นี้</span>
+<span class="kw">#define</span> <span class="nm">ANCHOR_X</span>   <span class="nm">0.0f</span>         <span class="cm">// ตำแหน่ง X จริงในอาคาร (เมตร)</span>
+<span class="kw">#define</span> <span class="nm">ANCHOR_Y</span>   <span class="nm">0.0f</span>         <span class="cm">// ตำแหน่ง Y จริงในอาคาร (เมตร)</span>
+
+<span class="op">void</span> <span class="fn">newRangeHandler</span>() {
+  DW1000Device* dev = DW1000Ranging.<span class="fn">getDistantDevice</span>();
+  <span class="op">float</span> dist = dev-&gt;<span class="fn">getRange</span>();   <span class="cm">// ระยะทาง (เมตร)</span>
+
+  <span class="cm">// ส่งระยะทางไปยัง RTLS server ผ่าน UDP</span>
+  StaticJsonDocument&lt;<span class="nm">128</span>&gt; doc;
+  doc[<span class="st">"anchor"</span>]  = ANCHOR_ID;
+  doc[<span class="st">"tag"</span>]     = dev-&gt;<span class="fn">getShortAddress</span>();
+  doc[<span class="st">"dist_m"</span>]  = (int)(dist * <span class="nm">1000</span>) / <span class="nm">1000.0f</span>;
+  doc[<span class="st">"ax"</span>]      = ANCHOR_X;
+  doc[<span class="st">"ay"</span>]      = ANCHOR_Y;
+  doc[<span class="st">"ts"</span>]      = <span class="fn">millis</span>();
+
+  <span class="op">char</span> buf[<span class="nm">128</span>];
+  <span class="fn">serializeJson</span>(doc, buf);
+  <span class="cm">// udp.broadcastTo(buf, SERVER_IP, 5000);</span>
+}
+
+<span class="op">void</span> <span class="fn">setup</span>() {
+  DW1000Ranging.<span class="fn">initCommunication</span>(<span class="nm">SPI_CS</span>, DW1000.<span class="fn">SELECT_PIN</span>(<span class="nm">27</span>), <span class="nm">34</span>);
+  DW1000Ranging.<span class="fn">attachNewRange</span>(newRangeHandler);
+  DW1000Ranging.<span class="fn">startAsAnchor</span>(<span class="st">"82:17:5B:D5:A9:9A:E2:9C"</span>,
+                               DW1000.<span class="fn">TRX_RATE_6800KBPS</span>);
+}
+
+<span class="op">void</span> <span class="fn">loop</span>() {
+  DW1000Ranging.<span class="fn">loop</span>();
+}</pre>
+  </div>
+
+  <!-- ===== COMPARISON TABLE ===== -->
+  <div class="section-header" style="margin-top:2.5rem">
+    <span class="icon">📊</span>
+    <h2>เปรียบเทียบ Indoor Positioning Technologies</h2>
+    <span class="tag">Technology Compare</span>
+  </div>
+
+  <div style="overflow-x:auto">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>เทคโนโลยี</th>
+          <th>ความแม่นยำ</th>
+          <th>ต้นทุน HW</th>
+          <th>Battery Impact</th>
+          <th>ใช้กับ ESP32</th>
+          <th>Use Case หลัก</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>UWB (DW1000/DWM3000)</td>
+          <td style="color:#4ade80">±10 cm</td>
+          <td>สูง (~$15-25/node)</td>
+          <td>ปานกลาง</td>
+          <td style="color:#4ade80">✓ via SPI</td>
+          <td>Robot, Asset, Hospital</td>
+        </tr>
+        <tr>
+          <td>BLE RSSI (Fingerprint)</td>
+          <td style="color:#fbbf24">±1-3 ม.</td>
+          <td>ต่ำ (~$3/node)</td>
+          <td>ต่ำมาก</td>
+          <td style="color:#4ade80">✓ Built-in</td>
+          <td>Smart Home, Retail</td>
+        </tr>
+        <tr>
+          <td>Wi-Fi FTM (RTT)</td>
+          <td style="color:#fbbf24">±1-2 ม.</td>
+          <td>ต่ำ (Wi-Fi AP)</td>
+          <td>สูง</td>
+          <td style="color:#4ade80">✓ ESP32-S / C</td>
+          <td>Building Navigation</td>
+        </tr>
+        <tr>
+          <td>Zigbee RSSI</td>
+          <td style="color:#fb923c">±3-5 ม.</td>
+          <td>ต่ำ (~$4/node)</td>
+          <td>ต่ำมาก</td>
+          <td style="color:#4ade80">✓ C6 / H2</td>
+          <td>Smart Home Zone</td>
+        </tr>
+        <tr>
+          <td>GPS</td>
+          <td style="color:#f472b6">ไม่ทำงาน indoor</td>
+          <td>ปานกลาง</td>
+          <td>สูงมาก</td>
+          <td style="color:#fb923c">ต้องเพิ่ม Module</td>
+          <td>Outdoor only</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== SECTION 4: RESOURCES ===== -->
+  <div class="section-header">
+    <span class="icon">📚</span>
+    <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+    <span class="tag">Resources</span>
+  </div>
+
+  <div class="resource-grid">
+    <a class="resource-link" href="https://github.com/DhamuVkl/ESP32-DWM3000-UWB-Indoor-RTLS-Tracker" target="_blank" rel="noopener">
+      <div class="rl-type">GitHub</div>
+      <div class="rl-name">ESP32 DWM3000 RTLS Tracker</div>
+      <div class="rl-desc">Real-time indoor positioning ด้วย ESP32 + Qorvo DWM3000 — centimeter-level precision</div>
+    </a>
+    <a class="resource-link" href="https://circuitdigest.com/microcontrollers-projects/diy-indoor-uwb-positioning-system-using-esp32-and-qorvo-dwm3000" target="_blank" rel="noopener">
+      <div class="rl-type">Tutorial</div>
+      <div class="rl-name">DIY UWB Indoor Positioning</div>
+      <div class="rl-desc">Circuit Digest: สร้างระบบ UWB positioning ทีละขั้น พร้อม wiring diagram</div>
+    </a>
+    <a class="resource-link" href="https://developer.espressif.com/blog/2026/05/inkplate-esp32-epaper-development-boards/" target="_blank" rel="noopener">
+      <div class="rl-type">Espressif Blog</div>
+      <div class="rl-name">Inkplate ESP32 E-Paper Boards</div>
+      <div class="rl-desc">รีวิว Inkplate family — open-source ESP32 e-paper development boards อย่างเป็นทางการ</div>
+    </a>
+    <a class="resource-link" href="https://www.researchgate.net/publication/395334243_Embedded_TinyML_for_Predictive_Maintenance" target="_blank" rel="noopener">
+      <div class="rl-type">Research Paper</div>
+      <div class="rl-name">TinyML Predictive Maintenance</div>
+      <div class="rl-desc">งานวิจัย: Vibration Analysis บน ESP32 ด้วย TinyML + FFT สำหรับ Industrial Equipment</div>
+    </a>
+    <a class="resource-link" href="https://smarthomescene.com/guides/diy-zigbee-mmwave-presence-sensor-with-esp32-c6-and-ld2410/" target="_blank" rel="noopener">
+      <div class="rl-type">DIY Guide</div>
+      <div class="rl-name">Zigbee mmWave Presence Sensor</div>
+      <div class="rl-desc">สร้าง DIY Zigbee presence sensor ด้วย ESP32-C6 + LD2410 mmWave</div>
+    </a>
+    <a class="resource-link" href="https://zbotic.in/iot-predictive-maintenance-vibration-sensors-on-esp32/" target="_blank" rel="noopener">
+      <div class="rl-type">Tutorial</div>
+      <div class="rl-name">Vibration Sensors on ESP32</div>
+      <div class="rl-desc">IoT Predictive Maintenance ทีละขั้นตอน — ADXL345 + ESP32 + ThingSpeak</div>
+    </a>
+    <a class="resource-link" href="https://esp32io.com/tutorials/esp32-rfid-nfc-door-lock-system" target="_blank" rel="noopener">
+      <div class="rl-type">Tutorial</div>
+      <div class="rl-name">ESP32 RFID/NFC Door Lock</div>
+      <div class="rl-desc">ระบบล็อคประตูด้วย RFID+NFC บน ESP32 — code ครบ พร้อม wiring</div>
+    </a>
+    <a class="resource-link" href="https://mischianti.org/precision-indoor-positioning-with-ultra-wideband-uwb-esp32-arduino-hardware-basics/" target="_blank" rel="noopener">
+      <div class="rl-type">Article</div>
+      <div class="rl-name">UWB Hardware & Basics</div>
+      <div class="rl-desc">Mischianti: อธิบาย UWB hardware, basics, และการ setup ESP32+DW1000</div>
+    </a>
+    <a class="resource-link" href="https://zbotic.in/e-paper-display-with-esp32-low-power-iot-dashboard-project/" target="_blank" rel="noopener">
+      <div class="rl-type">Project</div>
+      <div class="rl-name">E-Paper Low Power Dashboard</div>
+      <div class="rl-desc">สร้าง Low Power IoT Dashboard ด้วย ESP32 + E-Paper — อยู่ได้เป็นเดือน</div>
+    </a>
+    <a class="resource-link" href="https://github.com/espressif/esp-zigbee-sdk/discussions/809" target="_blank" rel="noopener">
+      <div class="rl-type">GitHub Discussion</div>
+      <div class="rl-name">ESPHome Zigbee Native Support</div>
+      <div class="rl-desc">ESPHome 2026.5: Native Zigbee component สำหรับ ESP32 end-devices</div>
+    </a>
+  </div>
+
+  <!-- ===== DEEP DIVE: E-INK POWER ===== -->
+  <div class="section-header" style="margin-top:2.5rem">
+    <span class="icon">🔋</span>
+    <h2>Deep Dive: E-Ink + ESP32 — สูตรประหยัดพลังงานสูงสุด</h2>
+    <span class="tag">Power Optimization</span>
+  </div>
+
+  <div class="card-grid-2">
+    <div class="inno-card green">
+      <div class="card-title">📐 คำนวณอายุแบตเตอรี่ E-Ink Node</div>
+      <div class="card-body">
+        <div class="steps-list">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text"><strong>Active (อัปเดต display):</strong> ~80 mA × 5 วินาที = 0.111 mAh</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text"><strong>Deep Sleep (ส่วนใหญ่):</strong> 0.022 mA × 3,595 วินาที = 21.97 mAh/วัน</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text"><strong>อัปเดตทุกชั่วโมง:</strong> 0.111 × 24 + 21.97 ≈ <strong>24.6 mAh/วัน</strong></div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-text"><strong>แบต 18650 (3,000 mAh):</strong> 3000 / 24.6 ≈ <strong>122 วัน (~4 เดือน)</strong></div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="tag-chip highlight">4 เดือน/แบต</span>
+        <span class="tag-chip">22µA Sleep</span>
+        <span class="tag-chip">80mA Active</span>
+      </div>
+    </div>
+
+    <div class="inno-card blue">
+      <div class="card-title">⚙️ E-Paper Platforms เปรียบเทียบ</div>
+      <div class="card-body">
+        <div class="timeline">
+          <div class="tl-item">
+            <strong>Inkplate 6 (Soldered)</strong> — 6" mono, 800×600, ESP32, RTC, SD card, Qwiic — ราคา ~$50
+          </div>
+          <div class="tl-item">
+            <strong>Inkplate 6COLOR</strong> — 5.85" 7-color, ESP32, Qwiic — เหมาะ price tag หรือ artwork display ราคา ~$70
+          </div>
+          <div class="tl-item">
+            <strong>M5Paper (M5Stack)</strong> — 4.7" touchscreen 540×960, ESP32-D0WDQ6, 1000mAh LiPo built-in — ~$55
+          </div>
+          <div class="tl-item">
+            <strong>ESP32 + Waveshare 2.9"</strong> — DIY budget option ราคา ~$10, I2C/SPI, 296×128 — เหมาะ shelf label
+          </div>
+          <div class="tl-item">
+            <strong>ESP32-S3 + 7.5" E-Ink</strong> — Dashboard ขนาดใหญ่, 800×480, partial refresh 1 วินาที
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>🔬 ESP32 & Sensor Innovations · <strong>27 สิงหาคม 2569</strong></p>
+  <p style="margin-top:0.4rem">สร้างโดย AI Researcher อัตโนมัติ · ข้อมูลจาก:
+    <a href="https://circuitdigest.com" target="_blank" rel="noopener">Circuit Digest</a> ·
+    <a href="https://github.com" target="_blank" rel="noopener">GitHub</a> ·
+    <a href="https://smarthomescene.com" target="_blank" rel="noopener">SmartHomeScene</a> ·
+    <a href="https://zbotic.in" target="_blank" rel="noopener">Zbotic</a> ·
+    <a href="https://researchgate.net" target="_blank" rel="noopener">ResearchGate</a> ·
+    <a href="https://developer.espressif.com" target="_blank" rel="noopener">Espressif Dev Portal</a>
+  </p>
+  <p style="margin-top:0.5rem;font-size:0.72rem">
+    หัวข้อประจำวันนี้: UWB Indoor Positioning · E-Ink Ultra Low Power · Predictive Maintenance FFT · Zigbee ESPHome 2026.5
+  </p>
+</footer>
+
+</body>
+</html>
