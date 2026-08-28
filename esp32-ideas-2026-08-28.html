@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 28 สิงหาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1a2540;
+    --accent-blue: #38bdf8;
+    --accent-teal: #2dd4bf;
+    --accent-violet: #a78bfa;
+    --accent-orange: #fb923c;
+    --accent-green: #4ade80;
+    --accent-pink: #f472b6;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+  }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+    border-bottom: 1px solid #1e40af;
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(56,189,248,0.08) 0%, transparent 60%);
+    animation: pulse 6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+  }
+  header .badge {
+    display: inline-block;
+    background: linear-gradient(90deg, #1e40af, #7c3aed);
+    color: #bfdbfe;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #38bdf8, #a78bfa, #2dd4bf);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+    position: relative;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-item .num {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+  }
+  .stat-item .label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* NAV */
+  nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 2rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  nav a:hover {
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+    background: rgba(56,189,248,0.08);
+  }
+
+  /* MAIN */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    font-size: 1.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+  }
+  .section-header h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-header p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+  }
+
+  section { margin-bottom: 3rem; }
+
+  /* GRID LAYOUTS */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; }
+
+  /* CARDS */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+  .card:hover { border-color: rgba(56,189,248,0.4); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+
+  .card.blue::before { background: linear-gradient(90deg, #38bdf8, #818cf8); }
+  .card.teal::before { background: linear-gradient(90deg, #2dd4bf, #34d399); }
+  .card.violet::before { background: linear-gradient(90deg, #a78bfa, #f472b6); }
+  .card.orange::before { background: linear-gradient(90deg, #fb923c, #fbbf24); }
+  .card.green::before { background: linear-gradient(90deg, #4ade80, #2dd4bf); }
+  .card.pink::before { background: linear-gradient(90deg, #f472b6, #fb923c); }
+
+  .card-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+  }
+  .tag-blue { background: rgba(56,189,248,0.15); color: #38bdf8; }
+  .tag-teal { background: rgba(45,212,191,0.15); color: #2dd4bf; }
+  .tag-violet { background: rgba(167,139,250,0.15); color: #a78bfa; }
+  .tag-orange { background: rgba(251,146,60,0.15); color: #fb923c; }
+  .tag-green { background: rgba(74,222,128,0.15); color: #4ade80; }
+  .tag-pink { background: rgba(244,114,182,0.15); color: #f472b6; }
+
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+  }
+  .card p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+  }
+
+  /* SPEC TABLE */
+  .spec-table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; }
+  .spec-table tr { border-bottom: 1px solid rgba(51,65,85,0.5); }
+  .spec-table tr:last-child { border-bottom: none; }
+  .spec-table td { padding: 0.35rem 0; font-size: 0.82rem; }
+  .spec-table td:first-child { color: var(--text-muted); width: 45%; }
+  .spec-table td:last-child { color: var(--accent-teal); font-weight: 600; }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 0.75rem;
+    overflow-x: auto;
+  }
+  .code-block pre {
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: #79c0ff;
+    white-space: pre;
+    line-height: 1.6;
+  }
+  .code-block .comment { color: #8b949e; }
+  .code-block .string { color: #a5d6ff; }
+  .code-block .keyword { color: #ff7b72; }
+  .code-block .number { color: #f78166; }
+
+  /* HIGHLIGHT BOX */
+  .highlight-box {
+    background: rgba(56,189,248,0.08);
+    border-left: 3px solid var(--accent-blue);
+    border-radius: 0 8px 8px 0;
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .highlight-box.green { background: rgba(74,222,128,0.08); border-color: var(--accent-green); }
+  .highlight-box.orange { background: rgba(251,146,60,0.08); border-color: var(--accent-orange); }
+  .highlight-box.violet { background: rgba(167,139,250,0.08); border-color: var(--accent-violet); }
+
+  /* CHIP/BADGE */
+  .chip {
+    display: inline-block;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin: 0.15rem;
+  }
+
+  /* USE CASE LIST */
+  .use-case-list { list-style: none; margin-top: 0.5rem; }
+  .use-case-list li {
+    padding: 0.3rem 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .use-case-list li::before { content: '→'; color: var(--accent-teal); flex-shrink: 0; margin-top: 0.05rem; }
+
+  /* FEATURED PROJECT */
+  .featured-project {
+    background: linear-gradient(135deg, rgba(30,58,138,0.3), rgba(67,20,104,0.2));
+    border: 1px solid rgba(56,189,248,0.25);
+    border-radius: 14px;
+    padding: 2rem;
+    margin-bottom: 1.25rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 600px) { .featured-project { grid-template-columns: 1fr; } }
+  .featured-project h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .featured-meta { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-end; min-width: 140px; }
+  .featured-meta .difficulty {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+  }
+  .diff-medium { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .diff-hard { background: rgba(248,113,113,0.15); color: #f87171; }
+  .diff-easy { background: rgba(74,222,128,0.15); color: #4ade80; }
+  .cost-tag { font-size: 0.85rem; color: var(--accent-orange); font-weight: 600; }
+
+  /* LINK */
+  a.ext-link {
+    color: var(--accent-blue);
+    text-decoration: none;
+    font-size: 0.82rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+    opacity: 0.85;
+    transition: opacity 0.2s;
+  }
+  a.ext-link:hover { opacity: 1; text-decoration: underline; }
+
+  /* NETWORK DIAGRAM (CSS-based) */
+  .network-diagram {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-top: 0.75rem;
+    text-align: center;
+  }
+  .net-row { display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap; margin: 0.5rem 0; }
+  .net-node {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+  .net-node.center { border-color: var(--accent-blue); color: var(--accent-blue); }
+  .net-arrow { color: var(--text-muted); font-size: 1.2rem; }
+
+  /* FOOTER */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+  footer .sources { max-width: 800px; margin: 1rem auto 0; text-align: left; }
+  footer .sources h4 { color: var(--text-secondary); margin-bottom: 0.5rem; font-size: 0.85rem; }
+  footer .sources a { color: var(--accent-blue); text-decoration: none; display: block; margin: 0.2rem 0; font-size: 0.78rem; opacity: 0.8; }
+  footer .sources a:hover { opacity: 1; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">🤖 AI Research Daily • ESP32 & IoT</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">28 สิงหาคม 2569 | UWB Positioning • Thread Mesh • Cold Chain • Air Quality</p>
+  <div class="stats-bar">
+    <div class="stat-item"><div class="num">4</div><div class="label">นวัตกรรมใหม่</div></div>
+    <div class="stat-item"><div class="num">4</div><div class="label">ไอเดียโปรเจกต์</div></div>
+    <div class="stat-item"><div class="num">4</div><div class="label">Sensors น่าสนใจ</div></div>
+    <div class="stat-item"><div class="num">10+</div><div class="label">แหล่งอ้างอิง</div></div>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations">🔬 นวัตกรรม</a>
+  <a href="#projects">🛠️ โปรเจกต์</a>
+  <a href="#sensors">📡 Sensors</a>
+  <a href="#resources">🔗 แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- ===== INNOVATIONS ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(56,189,248,0.15);">🔬</div>
+      <div>
+        <h2>นวัตกรรมและเทรนด์ใหม่ล่าสุด</h2>
+        <p>เทคโนโลยีและระบบ ESP32 ที่กำลังได้รับความสนใจในปี 2026</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+
+      <!-- UWB -->
+      <div class="card blue">
+        <span class="card-tag tag-blue">Ultra-Wideband</span>
+        <h3>ESP32 + UWB DW3000 — Indoor Positioning แม่นยำ 10 ซม.</h3>
+        <p>การรวม ESP32 กับชิป Decawave DW3000 กำลังปฏิวัติวงการ Real-Time Location System (RTLS) ด้วยความแม่นยำระดับเซนติเมตร เหนือกว่า BLE (1-3 ม.) และ Wi-Fi หลายเท่า</p>
+
+        <table class="spec-table">
+          <tr><td>ความแม่นยำ</td><td>~10 ซม. (เฉลี่ย)</td></tr>
+          <tr><td>ช่องสัญญาณ</td><td>Channel 5 (6.5GHz) / 9 (8GHz)</td></tr>
+          <tr><td>หลักการ</td><td>Time-of-Flight (ToF) + TWR</td></tr>
+          <tr><td>กินไฟ</td><td>1/3 ของ DW1000 รุ่นเก่า</td></tr>
+          <tr><td>ใช้กับ</td><td>Apple U1 interoperable</td></tr>
+        </table>
+
+        <div class="highlight-box">
+          <strong>ทำไมถึงสำคัญ:</strong> UWB ทะลุผ่านวัตถุได้ดี ไม่ได้รับผลกระทบจาก multipath เหมาะกับโกดัง โรงงาน และโรงพยาบาล
+        </div>
+
+        <div class="code-block">
+          <pre><span class="comment">// ESP32 + DW3000 — Double-Sided TWR</span>
+<span class="keyword">#include</span> <span class="string">"DW3000.h"</span>
+
+<span class="keyword">void</span> setup() {
+  DW3000.begin();
+  DW3000.setChannel(DW3000_CHANNEL_5);
+  DW3000.setTxAntennaDelay(<span class="number">16385</span>);
+  DW3000.setRxAntennaDelay(<span class="number">16385</span>);
+}
+
+<span class="comment">// หน่วย: picoseconds → เมตร</span>
+<span class="keyword">float</span> distance = timeOfFlight * SPEED_OF_LIGHT;</pre>
+        </div>
+
+        <ul class="use-case-list" style="margin-top:0.75rem;">
+          <li>ติดตามพนักงาน/สินทรัพย์ในโรงงาน</li>
+          <li>หุ่นยนต์ AGV นำทางอัตโนมัติ</li>
+          <li>ระบบ Access Control ด้วยตำแหน่ง</li>
+          <li>กีฬา — วิเคราะห์ตำแหน่งนักกีฬา</li>
+        </ul>
+      </div>
+
+      <!-- Thread Mesh -->
+      <div class="card violet">
+        <span class="card-tag tag-violet">Thread / OpenThread</span>
+        <h3>ESP32-C6 — $5 Matter Border Router ด้วย OpenThread</h3>
+        <p>ESP32-C6 กลายเป็นตัวเลือกอันดับต้นๆ สำหรับสร้าง Thread Border Router ราคาประหยัด ด้วย dual-radio (Wi-Fi 6 + 802.15.4) บนชิปเดียว</p>
+
+        <div class="network-diagram">
+          <div class="net-row">
+            <div class="net-node">☁️ Cloud / Home Assistant</div>
+          </div>
+          <div class="net-row"><div class="net-arrow">↕</div></div>
+          <div class="net-row">
+            <div class="net-node center">📡 ESP32-C6<br>Thread Border Router</div>
+          </div>
+          <div class="net-row"><div class="net-arrow">↕ Thread Mesh (802.15.4)</div></div>
+          <div class="net-row">
+            <div class="net-node">🌡️ Node 1</div>
+            <div class="net-node">💧 Node 2</div>
+            <div class="net-node">🔌 Node 3</div>
+            <div class="net-node">🔒 Node N</div>
+          </div>
+        </div>
+
+        <table class="spec-table" style="margin-top:0.75rem;">
+          <tr><td>โปรโตคอล</td><td>Thread 1.3 / Matter 1.5</td></tr>
+          <tr><td>Radio</td><td>Wi-Fi 6 + 802.15.4 (Zigbee/Thread)</td></tr>
+          <tr><td>Framework</td><td>ESP-IDF v6 + ESP-Matter SDK</td></tr>
+          <tr><td>ESPHome</td><td>OpenThread component รองรับ</td></tr>
+          <tr><td>ราคา</td><td>~$3-5 USD (Seeed XIAO C6)</td></tr>
+        </table>
+
+        <div class="highlight-box violet">
+          <strong>เคล็ดลับ:</strong> ESP32-C6 เป็น ESP เพียงรุ่นเดียว (ร่วมกับ H2) ที่มี 802.15.4 ในตัว ใช้ ESPHome flashได้เลย ไม่ต้องเขียนโค้ดเอง
+        </div>
+      </div>
+
+      <!-- Cold Chain -->
+      <div class="card teal">
+        <span class="card-tag tag-teal">Cold Chain IoT</span>
+        <h3>ESP32 Cold Chain Monitor — ห่วงโซ่ความเย็นอัจฉริยะสำหรับโลจิสติกส์</h3>
+        <p>ระบบ IoT ติดตามอุณหภูมิห่วงโซ่ความเย็นแบบ Real-time ด้วย ESP32 + cellular เพื่อขจัดจุดบอดในการขนส่ง — รูปแบบ cellular autonomous reporting กำลังครองตลาด 37% ในปี 2026</p>
+
+        <table class="spec-table">
+          <tr><td>การเชื่อมต่อ</td><td>4G LTE (SIM7600) + Wi-Fi fallback</td></tr>
+          <tr><td>อัตราวัด</td><td>ทุก 60–120 วินาที</td></tr>
+          <tr><td>Sensors</td><td>DS18B20, SHT40, MQ135, ประตู/กันชน</td></tr>
+          <tr><td>Cloud</td><td>AWS IoT Core / MQTT</td></tr>
+          <tr><td>AI Feature</td><td>พยากรณ์ temperature deviation</td></tr>
+        </table>
+
+        <div class="highlight-box green">
+          <strong>Use Case ไทย:</strong> ขนส่งอาหารแช่แข็ง ยา วัคซีน ดอกไม้ส่งออก และเนื้อสัตว์ — ลดของเสียในการขนส่งได้ 15-25%
+        </div>
+
+        <ul class="use-case-list" style="margin-top:0.5rem;">
+          <li>ตู้เย็นขนส่ง / รถห้องเย็น</li>
+          <li>คลังสินค้าแช่เย็นหลายจุด</li>
+          <li>ร้านสะดวกซื้อ — ตู้แช่ระบบแจ้งเตือน</li>
+          <li>ห้องแล็บ / ตู้เก็บตัวอย่างชีวภาพ</li>
+        </ul>
+      </div>
+
+      <!-- Project Aura / Air Quality -->
+      <div class="card green">
+        <span class="card-tag tag-green">Open Source</span>
+        <h3>Project Aura — สถานีตรวจวัดอากาศ ESP32-S3 แบบ Open Source</h3>
+        <p>โปรเจกต์ชุมชน Hackaday.io ที่สร้างสถานีตรวจวัดคุณภาพอากาศครบวงจรบน ESP32-S3 + หน้าจอ 4.3" IPS พร้อม Home Assistant integration โดยอัตโนมัติ</p>
+
+        <table class="spec-table">
+          <tr><td>MCU</td><td>ESP32-S3 (Waveshare + 4.3" Capacitive Touch)</td></tr>
+          <tr><td>UI</td><td>LVGL — Dark/Light theme, multi-language</td></tr>
+          <tr><td>PM Sensor</td><td>SPS30 / PMS7003 (PM1/2.5/4/10)</td></tr>
+          <tr><td>CO₂ / VOC</td><td>SCD41 + SGP41 (NOx index)</td></tr>
+          <tr><td>Env</td><td>BME680 (Temp/Humidity/Pressure/VOC)</td></tr>
+          <tr><td>HA Integration</td><td>MQTT Auto-Discovery — 20+ entities</td></tr>
+        </table>
+
+        <div class="highlight-box">
+          <strong>จุดเด่น:</strong> ไม่ต้องเขียน YAML เพิ่ม — ESP32 ส่ง discovery payload ให้ Home Assistant รับ sensor ใหม่โดยอัตโนมัติ 20+ entities ด้วย topic เดียว
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== PROJECTS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,146,60,0.15);">🛠️</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์น่าสร้าง</h2>
+        <p>โปรเจกต์ที่ทำได้จริง พร้อมข้อมูลงบประมาณและระดับความยาก</p>
+      </div>
+    </div>
+
+    <!-- Project 1 — UWB Asset Tracker -->
+    <div class="featured-project">
+      <div>
+        <span class="card-tag tag-blue">UWB + BLE</span>
+        <h3>🏷️ UWB Asset Tracking System สำหรับโรงงาน/โกดัง</h3>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:0.5rem;">สร้างระบบติดตามสินทรัพย์แม่นยำ 10 ซม. โดยวาง Anchor (ESP32+DW3000) 4 ตัวที่มุมห้อง และ Tag (ESP32+DW3000) ติดกับวัตถุที่ต้องการติดตาม ระบบคำนวณตำแหน่งด้วย Trilateration และแสดงผลบน Web Dashboard</p>
+
+        <div class="grid-2" style="margin-top:0.75rem; gap:0.75rem;">
+          <div>
+            <p style="font-size:0.82rem;color:var(--text-muted);font-weight:600;margin-bottom:0.4rem;">HARDWARE</p>
+            <ul class="use-case-list">
+              <li>ESP32+DW3000 Module × 5 (4 Anchor + 1 Tag)</li>
+              <li>PoE Splitter สำหรับ Anchor</li>
+              <li>LiPo แบต 1000mAh สำหรับ Tag</li>
+              <li>เคสกันน้ำ IP65</li>
+            </ul>
+          </div>
+          <div>
+            <p style="font-size:0.82rem;color:var(--text-muted);font-weight:600;margin-bottom:0.4rem;">SOFTWARE STACK</p>
+            <ul class="use-case-list">
+              <li>ESP-IDF + DW3000 library (Makerfabs)</li>
+              <li>MQTT → Node-RED</li>
+              <li>InfluxDB + Grafana Dashboard</li>
+              <li>WebSocket real-time floor map</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="code-block" style="margin-top:0.75rem;">
+          <pre><span class="comment">// Trilateration — คำนวณ XY จาก 3 Anchor distances</span>
+<span class="keyword">void</span> trilaterate(<span class="keyword">float</span> d1, <span class="keyword">float</span> d2, <span class="keyword">float</span> d3,
+                 Point a1, Point a2, Point a3,
+                 <span class="keyword">float</span> &x, <span class="keyword">float</span> &y) {
+  <span class="keyword">float</span> A = <span class="number">2</span>*(a2.x - a1.x), B = <span class="number">2</span>*(a2.y - a1.y);
+  <span class="keyword">float</span> C = d1*d1 - d2*d2 - a1.x*a1.x + a2.x*a2.x
+           - a1.y*a1.y + a2.y*a2.y;
+  <span class="comment">// ... solve linear system ...</span>
+}</pre>
+        </div>
+      </div>
+      <div class="featured-meta">
+        <span class="difficulty diff-hard">ขั้นสูง</span>
+        <div class="cost-tag">฿3,500–5,500</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);text-align:right;margin-top:0.5rem;">ระยะเวลา<br>3–4 สัปดาห์</div>
+        <div style="margin-top:0.75rem;">
+          <div class="chip">DW3000</div>
+          <div class="chip">MQTT</div>
+          <div class="chip">Grafana</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project 2 — Smart Parking -->
+    <div class="featured-project">
+      <div>
+        <span class="card-tag tag-orange">Smart City</span>
+        <h3>🚗 Smart Parking System — ที่จอดรถอัจฉริยะ MQTT + Web App</h3>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:0.5rem;">ระบบจอดรถอัจฉริยะด้วย HC-SR04 ultrasonic ตรวจจับรถ + Servo ควบคุมไม้กั้น + LED แสดงสถานะ + Web App แบบ Real-time สำหรับอาคารพาณิชย์ หอพัก หรือโรงแรมขนาดเล็ก</p>
+
+        <div class="grid-2" style="margin-top:0.75rem; gap:0.75rem;">
+          <div>
+            <p style="font-size:0.82rem;color:var(--text-muted);font-weight:600;margin-bottom:0.4rem;">อุปกรณ์ต่อช่องจอด</p>
+            <ul class="use-case-list">
+              <li>HC-SR04 Ultrasonic × 1 ตัว/ช่อง</li>
+              <li>LED RGB แสดงสถานะ (ว่าง/ไม่ว่าง)</li>
+              <li>ESP32 1 ตัว ต่อได้ 4–8 ช่องจอด</li>
+              <li>SG90 Servo สำหรับไม้กั้นทางเข้า</li>
+            </ul>
+          </div>
+          <div>
+            <p style="font-size:0.82rem;color:var(--text-muted);font-weight:600;margin-bottom:0.4rem;">ฟีเจอร์ระบบ</p>
+            <ul class="use-case-list">
+              <li>MQTT publish สถานะทุก 5 วินาที</li>
+              <li>Web Dashboard แผนผังที่จอดรถ</li>
+              <li>แจ้งเตือน Line/Telegram เมื่อเต็ม</li>
+              <li>บันทึกสถิติการใช้งาน (InfluxDB)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="highlight-box orange" style="margin-top:0.75rem;">
+          <strong>เพิ่มระดับ:</strong> เพิ่มกล้อง ESP32-CAM + OCR จดจำทะเบียนรถ เชื่อมกับระบบบัตรสมาชิก ประยุกต์ใช้กับ AWS Rekognition สำหรับ License Plate Recognition
+        </div>
+      </div>
+      <div class="featured-meta">
+        <span class="difficulty diff-medium">ระดับกลาง</span>
+        <div class="cost-tag">฿800–1,500</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);text-align:right;margin-top:0.5rem;">ระยะเวลา<br>1–2 สัปดาห์</div>
+        <div style="margin-top:0.75rem;">
+          <div class="chip">HC-SR04</div>
+          <div class="chip">MQTT</div>
+          <div class="chip">Servo</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project 3 — Environmental Noise + AQ -->
+    <div class="featured-project">
+      <div>
+        <span class="card-tag tag-teal">เมืองน่าอยู่</span>
+        <h3>🌿 สถานีตรวจวัดสิ่งแวดล้อมเต็มรูปแบบ — PM2.5 + CO₂ + VOC + เสียง</h3>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:0.5rem;">รวมทุก environmental sensor ไว้ในเครื่องเดียว ส่งข้อมูลทั้ง 2 channels ไปยัง ThingSpeak / Home Assistant พร้อม OLED แสดงผลแบบ real-time สำหรับติดตั้งในชั้นเรียน สำนักงาน หรือชุมชน</p>
+
+        <table class="spec-table">
+          <tr><td>PM2.5 / PM10</td><td>PMS7003 หรือ SPS30</td></tr>
+          <tr><td>CO₂ แม่นยำ</td><td>SCD41 (NDIR, ±40 ppm)</td></tr>
+          <tr><td>VOC / NOx</td><td>SGP41 (VOC Index + NOx Index)</td></tr>
+          <tr><td>สภาพแวดล้อม</td><td>BME680 (T/H/P/VOC รวม)</td></tr>
+          <tr><td>ระดับเสียง</td><td>MAX4466 Microphone + dB calculation</td></tr>
+          <tr><td>การแสดงผล</td><td>OLED 128×64 + Web Serial Plotter</td></tr>
+        </table>
+
+        <div class="highlight-box green" style="margin-top:0.75rem;">
+          <strong>ข้อมูลอ้างอิง:</strong> WHO กำหนด PM2.5 ≤ 15 µg/m³ (ค่า 24h เฉลี่ย), CO₂ &gt;1000 ppm ส่งผลต่อการตัดสินใจ และความเข้มข้น VOC สูงในที่ปิดเสี่ยง SBS (Sick Building Syndrome)
+        </div>
+      </div>
+      <div class="featured-meta">
+        <span class="difficulty diff-medium">ระดับกลาง</span>
+        <div class="cost-tag">฿2,000–3,200</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);text-align:right;margin-top:0.5rem;">ระยะเวลา<br>1–2 สัปดาห์</div>
+        <div style="margin-top:0.75rem;">
+          <div class="chip">SCD41</div>
+          <div class="chip">PMS7003</div>
+          <div class="chip">BME680</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project 4 — NullTag NFC -->
+    <div class="featured-project">
+      <div>
+        <span class="card-tag tag-pink">NFC / RFID</span>
+        <h3>🔖 NullTag DIY NFC Toolkit — อ่าน/เขียน/วิเคราะห์ Tag ด้วย ESP32 + PN532</h3>
+        <p style="color:var(--text-secondary);font-size:0.9rem;margin-top:0.5rem;">NullTag เป็น open-source toolkit บน ESP32 + PN532 NFC module สำหรับนักวิจัยด้านความปลอดภัยและ maker อ่าน MIFARE Classic, NTAG, ISO 14443 ได้หลากหลาย พร้อม P2P mode รับส่งข้อมูลกับมือถือ Android</p>
+
+        <div class="grid-2" style="margin-top:0.75rem; gap:0.75rem;">
+          <div>
+            <p style="font-size:0.82rem;color:var(--text-muted);font-weight:600;margin-bottom:0.4rem;">ความสามารถ PN532</p>
+            <ul class="use-case-list">
+              <li>อ่าน/เขียน MIFARE Classic (1K/4K)</li>
+              <li>NTAG 213/215/216 (NFC Business Card)</li>
+              <li>ISO 14443 Type A & B</li>
+              <li>NFC Peer-to-Peer (P2P) กับ Android</li>
+            </ul>
+          </div>
+          <div>
+            <p style="font-size:0.82rem;color:var(--text-muted);font-weight:600;margin-bottom:0.4rem;">ประยุกต์ใช้</p>
+            <ul class="use-case-list">
+              <li>ระบบ Access Control ห้องสำนักงาน</li>
+              <li>NFC Business Card แบบ Interactive</li>
+              <li>ติดตามสินทรัพย์ด้วย NFC Tag</li>
+              <li>เพย์เมนต์ prototype / Loyalty card</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="highlight-box violet" style="margin-top:0.75rem;">
+          <strong>Interface:</strong> PN532 รองรับ I2C, SPI, UART — สำหรับ ESP32 แนะนำ SPI (เร็วที่สุด) ใช้ library Adafruit PN532 ซึ่ง compatible กับ Arduino core ESP32
+        </div>
+      </div>
+      <div class="featured-meta">
+        <span class="difficulty diff-easy">เริ่มต้นง่าย</span>
+        <div class="cost-tag">฿350–600</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);text-align:right;margin-top:0.5rem;">ระยะเวลา<br>3–5 วัน</div>
+        <div style="margin-top:0.75rem;">
+          <div class="chip">PN532</div>
+          <div class="chip">NFC</div>
+          <div class="chip">SPI</div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ===== SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(45,212,191,0.15);">📡</div>
+      <div>
+        <h2>Sensors น่าสนใจ</h2>
+        <p>เซนเซอร์ที่ใช้งานร่วมกับ ESP32 ได้ดีเป็นพิเศษในเดือนนี้</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+
+      <!-- SCD41 -->
+      <div class="card teal">
+        <span class="card-tag tag-teal">CO₂ Sensor</span>
+        <h3>SCD41 — True CO₂ Sensor (Sensirion)</h3>
+        <p>เซนเซอร์วัด CO₂ แบบ NDIR ขนาดเล็กที่สุดในตลาด วัดแม่นยำถึง ±40 ppm พร้อม temperature/humidity ในตัว เดียว — ไม่ใช่ eCO₂ จาก VOC แต่เป็น CO₂ จริง</p>
+
+        <table class="spec-table">
+          <tr><td>หลักการ</td><td>PASens® (NDIR photoacoustic)</td></tr>
+          <tr><td>Range</td><td>400–5,000 ppm</td></tr>
+          <tr><td>ความแม่นยำ</td><td>±40 ppm ±5% reading</td></tr>
+          <tr><td>Interface</td><td>I2C (0x62)</td></tr>
+          <tr><td>กินไฟ</td><td>3.2 mA เฉลี่ย (5s interval)</td></tr>
+          <tr><td>ราคา</td><td>~$15–20 USD</td></tr>
+        </table>
+
+        <div class="code-block">
+          <pre><span class="comment">// Sensirion Arduino Library</span>
+<span class="keyword">#include</span> <span class="string">"SensirionI2CScd4x.h"</span>
+SensirionI2CScd4x scd4x;
+
+<span class="keyword">uint16_t</span> co2; <span class="keyword">float</span> temp, humidity;
+scd4x.readMeasurement(co2, temp, humidity);
+Serial.printf(<span class="string">"CO2: %d ppm\n"</span>, co2);</pre>
+        </div>
+
+        <div class="highlight-box green" style="margin-top:0.75rem;">
+          รองรับ ASC (Automatic Self-Calibration) — วางที่โปร่งอากาศ 7 วัน สอบเทียบอัตโนมัติ
+        </div>
+      </div>
+
+      <!-- PMS7003 -->
+      <div class="card blue">
+        <span class="card-tag tag-blue">Particle Sensor</span>
+        <h3>PMS7003 — PM1 / PM2.5 / PM10 Particle Counter</h3>
+        <p>Laser particle counter จาก Plantower วัดอนุภาคฝุ่นละเอียด 3 ขนาดพร้อมกัน ใช้กันแพร่หลายในโปรเจกต์คุณภาพอากาศ ราคาถูก ข้อมูลแม่นยำ</p>
+
+        <table class="spec-table">
+          <tr><td>วัดได้</td><td>PM1.0, PM2.5, PM10 (µg/m³)</td></tr>
+          <tr><td>Range</td><td>0–1,000 µg/m³</td></tr>
+          <tr><td>ความแม่นยำ</td><td>±15% หรือ ±10 µg/m³</td></tr>
+          <tr><td>Interface</td><td>UART 9600 baud</td></tr>
+          <tr><td>Response time</td><td>&lt;1 วินาที</td></tr>
+          <tr><td>ราคา</td><td>~$10–15 USD</td></tr>
+        </table>
+
+        <div class="code-block">
+          <pre><span class="comment">// ESP32 รับข้อมูล PMS7003 ผ่าน UART2</span>
+Serial2.begin(<span class="number">9600</span>, SERIAL_8N1, <span class="number">16</span>, <span class="number">17</span>);
+
+<span class="keyword">struct</span> PMSData {
+  <span class="keyword">uint16_t</span> pm1_0, pm2_5, pm10;
+  <span class="keyword">uint16_t</span> n_0_3um, n_0_5um, n_1_0um;
+};
+<span class="comment">// ไบต์แรก 0x42 0x4D = frame start</span></pre>
+        </div>
+      </div>
+
+      <!-- DW3000 -->
+      <div class="card violet">
+        <span class="card-tag tag-violet">UWB Chip</span>
+        <h3>Qorvo DW3000 — UWB Transceiver (ตัวต่อจาก DW1000)</h3>
+        <p>ชิป UWB รุ่นล่าสุดจาก Qorvo (เดิม Decawave) สำหรับงาน Ranging &amp; Positioning ความแม่นยำ cm ใช้ไฟน้อยกว่า DW1000 ถึง 3 เท่า และ compatible กับ Apple U1/AirTag ecosystem</p>
+
+        <table class="spec-table">
+          <tr><td>Channel</td><td>5 (6.5GHz) และ 9 (8GHz)</td></tr>
+          <tr><td>ความแม่นยำ</td><td>&lt;10 ซม. (ในที่ LOS)</td></tr>
+          <tr><td>กินไฟ (Rx)</td><td>65 mA @3.3V</td></tr>
+          <tr><td>Interface</td><td>SPI (up to 36 MHz)</td></tr>
+          <tr><td>รองรับ</td><td>TWR, TDOA, PDoA, AoA</td></tr>
+          <tr><td>ราคา module</td><td>~$15–25 USD (Makerfabs)</td></tr>
+        </table>
+
+        <div class="highlight-box violet" style="margin-top:0.75rem;">
+          <strong>PDoA (Phase Difference of Arrival):</strong> DW3000 รองรับ Angle of Arrival (AoA) หาทิศทางได้ นอกจากระยะทาง — ใช้ 2 antenna ต่อตัว
+        </div>
+      </div>
+
+      <!-- BME680 -->
+      <div class="card orange">
+        <span class="card-tag tag-orange">Multi-Parameter</span>
+        <h3>BME688 — Environmental Sensor + AI Nose (Bosch)</h3>
+        <p>รุ่นต่อจาก BME680 เพิ่ม AI mode ด้วย Bosch BME AI-Studio สอนให้รู้จักกลิ่น/ก๊าซได้สูงสุด 4 pattern บนชิปตัวเดียว ไม่ต้องใช้ Cloud</p>
+
+        <table class="spec-table">
+          <tr><td>วัดได้</td><td>Temperature, Humidity, Pressure, Gas (VOC)</td></tr>
+          <tr><td>Gas sensor</td><td>Metal oxide (MOX) ตอบสนอง VOC, CO, NOx</td></tr>
+          <tr><td>AI Feature</td><td>BME AI-Studio — สอน Gas Classifier</td></tr>
+          <tr><td>Interface</td><td>I2C หรือ SPI</td></tr>
+          <tr><td>ราคา</td><td>~$5–8 USD (breakout board)</td></tr>
+        </table>
+
+        <div class="highlight-box orange" style="margin-top:0.75rem;">
+          <strong>Upgrade จาก BME680:</strong> BME688 สำหรับงานที่ต้องการ classify กลิ่น เช่น ตรวจจับกลิ่นควัน อาหารบูด แก๊ส — ฝึก model ด้วย BME AI-Studio แล้ว deploy บน ESP32
+        </div>
+
+        <ul class="use-case-list" style="margin-top:0.5rem;">
+          <li>ตรวจจับกลิ่นอาหารบูดในตู้แช่</li>
+          <li>Indoor Air Quality Index (IAQ)</li>
+          <li>ตรวจก๊าซรั่วและสารระเหยอันตราย</li>
+          <li>ระบุชนิดสุรา / น้ำหอม (prototype)</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(167,139,250,0.15);">🔗</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์น่าสนใจ</h2>
+        <p>GitHub, บทความ, และ community ที่น่าติดตามสำหรับ ESP32 &amp; IoT</p>
+      </div>
+    </div>
+
+    <div class="grid-3">
+
+      <div class="card blue">
+        <span class="card-tag tag-blue">UWB</span>
+        <h3>ESP32 + UWB Resources</h3>
+        <ul class="use-case-list">
+          <li><a class="ext-link" href="https://www.makerfabs.com/esp32-uwb-dw3000.html">Makerfabs ESP32 UWB DW3000 Module</a></li>
+          <li><a class="ext-link" href="https://github.com/Makerfabs/Makerfabs-ESP32-UWB-DW3000">GitHub: Makerfabs ESP32-UWB-DW3000</a></li>
+          <li><a class="ext-link" href="https://circuitdigest.com/microcontrollers-projects/diy-indoor-uwb-positioning-system-using-esp32-and-qorvo-dwm3000">Circuit Digest: DIY UWB Positioning</a></li>
+          <li><a class="ext-link" href="https://www.electromaker.io/project/view/real-time-uwb-indoor-positioning-system-using-esp32">Electromaker: Real-Time UWB Positioning</a></li>
+        </ul>
+      </div>
+
+      <div class="card violet">
+        <span class="card-tag tag-violet">Thread / Matter</span>
+        <h3>ESP32-C6 Thread Mesh</h3>
+        <ul class="use-case-list">
+          <li><a class="ext-link" href="https://makeronsite.com/blog/2026/08/esp32-c6-matter-smart-home-guide-2026-en/">ESP32-C6 Matter Smart Home Guide 2026</a></li>
+          <li><a class="ext-link" href="https://smarthomescene.com/guides/how-to-create-thread-devices-with-esphome/">ESPHome: Thread Devices Guide</a></li>
+          <li><a class="ext-link" href="https://github.com/attaxia/esp32-thread-repeater">GitHub: ESP32 Thread Repeater</a></li>
+          <li><a class="ext-link" href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32c6/api-reference/network/esp_openthread.html">ESP-IDF: OpenThread API Reference</a></li>
+        </ul>
+      </div>
+
+      <div class="card teal">
+        <span class="card-tag tag-teal">Air Quality</span>
+        <h3>Environmental Monitoring</h3>
+        <ul class="use-case-list">
+          <li><a class="ext-link" href="https://hackaday.io/project/204993-project-aura-open-source-esp32-air-quality">Hackaday: Project Aura (ESP32-S3)</a></li>
+          <li><a class="ext-link" href="https://github.com/TitaniumMonkey/ESP32-Air-Quality-Sensor">GitHub: ESP32 Air Quality Sensor (BME680+PMS7003+SCD41)</a></li>
+          <li><a class="ext-link" href="https://zbotic.in/home-air-quality-monitor-pm2-5-co2-and-voc-with-esp32/">Zbotic: Home Air Quality Monitor</a></li>
+          <li><a class="ext-link" href="https://www.sciencedirect.com/science/article/pii/S2468067224001019">ScienceDirect: Aquality32 — Low-cost AQ Monitor</a></li>
+        </ul>
+      </div>
+
+      <div class="card orange">
+        <span class="card-tag tag-orange">Smart Parking</span>
+        <h3>Smart Parking Projects</h3>
+        <ul class="use-case-list">
+          <li><a class="ext-link" href="https://www.hackster.io/techgyanset/esp32-smart-parking-detection-system-d68660">Hackster: ESP32 Smart Parking Detection</a></li>
+          <li><a class="ext-link" href="https://ieeexplore.ieee.org/document/9946608/1000">IEEE: IoT-Based Smart Parking (ESP32)</a></li>
+          <li><a class="ext-link" href="https://github.com/O2sa/Car-Parking-System">GitHub: ESP32 Car Parking System</a></li>
+          <li><a class="ext-link" href="https://github.com/eyer1951/Parking-Assist">GitHub: ESP32 Parking Assist (LED array)</a></li>
+        </ul>
+      </div>
+
+      <div class="card pink">
+        <span class="card-tag tag-pink">NFC</span>
+        <h3>ESP32 NFC / RFID</h3>
+        <ul class="use-case-list">
+          <li><a class="ext-link" href="https://hackaday.io/project/203196-nulltag-my-accidental-rfid-toolkit-built-on-esp32">Hackaday: NullTag — RFID Toolkit ESP32</a></li>
+          <li><a class="ext-link" href="https://www.espboards.dev/sensors/pn532/">ESP32 PN532 NFC Pinout & Wiring</a></li>
+          <li><a class="ext-link" href="https://resources.altium.com/p/iso-14443-nfc-reader-project-esp32">Altium: ISO 14443 NFC Reader ESP32</a></li>
+          <li><a class="ext-link" href="https://github.com/geo-tp/ESP32-Bit-Pirate/wiki/20-RFID">GitHub: ESP32-Bit-Pirate RFID Wiki</a></li>
+        </ul>
+      </div>
+
+      <div class="card green">
+        <span class="card-tag tag-green">Cold Chain</span>
+        <h3>Cold Chain IoT</h3>
+        <ul class="use-case-list">
+          <li><a class="ext-link" href="https://nanoient.org/upload/pdf/ENT241492.pdf">Research: ESP32 + Telegram Cold Chain Security</a></li>
+          <li><a class="ext-link" href="https://fleetrabbit.com/article/cold-chain-logistics-technology-compliance">Fleet Rabbit: Cold Chain Logistics 2026</a></li>
+          <li><a class="ext-link" href="https://envigilance.com/temperature-monitoring/cold-chain-monitoring/">Envigilance: Cold Chain Monitoring Solutions</a></li>
+          <li><a class="ext-link" href="https://ijeetr.com/index.php/ijeetr/article/view/499">IJEETR: IoT Risk Monitoring for Cold Supply Chain</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Research Bot • 28 สิงหาคม 2569 • ESP32 &amp; IoT Daily Research</p>
+  <p style="margin-top:0.25rem;color:var(--text-muted);">หัวข้อวันนี้: UWB Positioning • Thread/Matter Mesh • Cold Chain IoT • Air Quality (PM2.5/CO₂/VOC) • Smart Parking • NFC Toolkit</p>
+  <div class="sources">
+    <h4>แหล่งอ้างอิงหลัก</h4>
+    <a href="https://hackaday.io/project/204993-project-aura-open-source-esp32-air-quality">Project Aura — Open-Source ESP32 Air Quality (Hackaday.io)</a>
+    <a href="https://www.makerfabs.com/esp32-uwb-dw3000.html">Makerfabs ESP32 UWB DW3000 Module</a>
+    <a href="https://makeronsite.com/blog/2026/08/esp32-c6-matter-smart-home-guide-2026-en/">ESP32-C6 Matter Smart Home Guide 2026</a>
+    <a href="https://fleetrabbit.com/article/cold-chain-logistics-technology-compliance">Cold Chain Logistics 2026 Technology (Fleet Rabbit)</a>
+    <a href="https://hackaday.io/project/203196-nulltag-my-accidental-rfid-toolkit-built-on-esp32">NullTag RFID Toolkit (Hackaday.io)</a>
+    <a href="https://github.com/TitaniumMonkey/ESP32-Air-Quality-Sensor">ESP32 Air Quality Sensor (GitHub)</a>
+    <a href="https://smarthomescene.com/guides/how-to-create-thread-devices-with-esphome/">Create Thread Devices with ESPHome (SmartHomeScene)</a>
+  </div>
+</footer>
+
+</body>
+</html>
