@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 29 สิงหาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #243147;
+    --border: #334155;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-blue: #38bdf8;
+    --accent-teal: #2dd4bf;
+    --accent-violet: #a78bfa;
+    --accent-orange: #fb923c;
+    --accent-green: #4ade80;
+    --accent-rose: #fb7185;
+    --accent-yellow: #fbbf24;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    position: relative;
+    overflow: hidden;
+    padding: 4rem 2rem 3rem;
+    text-align: center;
+    background: linear-gradient(135deg, #0f172a 0%, #1a1f3a 40%, #0f2a1a 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 30%, rgba(56,189,248,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 80% 70%, rgba(74,222,128,0.10) 0%, transparent 60%);
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(74,222,128,0.15);
+    border: 1px solid rgba(74,222,128,0.3);
+    color: var(--accent-green);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.25rem 0.85rem;
+    border-radius: 99px;
+    letter-spacing: 0.08em;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent-blue) 0%, var(--accent-teal) 50%, var(--accent-green) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header .date {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .stat-chip span { color: var(--text-primary); font-weight: 700; margin-right: 4px; }
+
+  /* ===== LAYOUT ===== */
+  main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+  /* ===== SECTION HEADER ===== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .section-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+  .section-header p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 0.15rem;
+  }
+  section { margin-bottom: 3.5rem; }
+
+  /* ===== CARDS ===== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: all 0.2s ease;
+  }
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(56,189,248,0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .card-icon { font-size: 1.6rem; margin-bottom: 0.75rem; }
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .card .tags {
+    display: flex; flex-wrap: wrap; gap: 0.4rem;
+    margin-top: 0.9rem;
+  }
+  .tag {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 99px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .tag-blue   { background: rgba(56,189,248,0.12); color: var(--accent-blue);   border: 1px solid rgba(56,189,248,0.25); }
+  .tag-teal   { background: rgba(45,212,191,0.12); color: var(--accent-teal);   border: 1px solid rgba(45,212,191,0.25); }
+  .tag-violet { background: rgba(167,139,250,0.12); color: var(--accent-violet); border: 1px solid rgba(167,139,250,0.25); }
+  .tag-orange { background: rgba(251,146,60,0.12); color: var(--accent-orange); border: 1px solid rgba(251,146,60,0.25); }
+  .tag-green  { background: rgba(74,222,128,0.12); color: var(--accent-green);  border: 1px solid rgba(74,222,128,0.25); }
+  .tag-rose   { background: rgba(251,113,133,0.12); color: var(--accent-rose);  border: 1px solid rgba(251,113,133,0.25); }
+  .tag-yellow { background: rgba(251,191,36,0.12); color: var(--accent-yellow); border: 1px solid rgba(251,191,36,0.25); }
+
+  /* ===== FEATURED (wide) card ===== */
+  .card-featured {
+    background: linear-gradient(135deg, #1e293b 0%, #1a2537 100%);
+    border: 1px solid rgba(56,189,248,0.25);
+    border-radius: 16px;
+    padding: 1.8rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-featured::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(56,189,248,0.08) 0%, transparent 70%);
+  }
+  .card-featured h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    margin-bottom: 0.6rem;
+  }
+  .card-featured .featured-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  @media (max-width: 620px) { .card-featured .featured-body { grid-template-columns: 1fr; } }
+  .card-featured p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+  }
+
+  /* ===== CODE BLOCK ===== */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 1.2rem 1.4rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #c9d1d9;
+    overflow-x: auto;
+    line-height: 1.7;
+    white-space: pre;
+    margin-top: 0.8rem;
+  }
+  .code-comment { color: #8b949e; }
+  .code-keyword { color: #ff7b72; }
+  .code-string  { color: #a5d6ff; }
+  .code-number  { color: #79c0ff; }
+  .code-func    { color: #d2a8ff; }
+
+  /* ===== COMPARE TABLE ===== */
+  .table-wrap { overflow-x: auto; margin-top: 0.8rem; border-radius: 12px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  thead { background: rgba(255,255,255,0.04); }
+  th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 700;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 0.7rem 1rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .good  { color: var(--accent-green); font-weight: 600; }
+  .warn  { color: var(--accent-yellow); font-weight: 600; }
+  .badge-pill {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  /* ===== HIGHLIGHT BOX ===== */
+  .highlight-box {
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    font-size: 0.875rem;
+    margin-top: 0.8rem;
+    line-height: 1.7;
+  }
+  .highlight-green {
+    background: rgba(74,222,128,0.07);
+    border: 1px solid rgba(74,222,128,0.2);
+    color: var(--text-secondary);
+  }
+  .highlight-blue {
+    background: rgba(56,189,248,0.07);
+    border: 1px solid rgba(56,189,248,0.2);
+    color: var(--text-secondary);
+  }
+  .highlight-orange {
+    background: rgba(251,146,60,0.07);
+    border: 1px solid rgba(251,146,60,0.2);
+    color: var(--text-secondary);
+  }
+  .highlight-violet {
+    background: rgba(167,139,250,0.07);
+    border: 1px solid rgba(167,139,250,0.2);
+    color: var(--text-secondary);
+  }
+  .hl-title {
+    font-weight: 700;
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+
+  /* ===== RESOURCES ===== */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.2rem;
+  }
+  .resource-card h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+  }
+  .resource-card ul {
+    list-style: none;
+    padding: 0;
+  }
+  .resource-card ul li {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    padding: 0.25rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .resource-card ul li:last-child { border-bottom: none; }
+  .resource-card ul li::before {
+    content: '→ ';
+    color: var(--accent-teal);
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  footer strong { color: var(--text-secondary); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 500px) {
+    .card-grid { grid-template-columns: 1fr; }
+    main { padding: 1.5rem 1rem 3rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="position:relative;z-index:1;">
+    <div class="header-badge">Daily Research — 29 สิงหาคม 2569</div>
+    <h1>ESP32 &amp; Sensor Innovations</h1>
+    <p class="date">ประจำวันที่ 29 สิงหาคม พ.ศ. 2569 &nbsp;|&nbsp; ESP Mesh · mmWave Radar · Hydroponics IoT · Modbus RTU</p>
+    <div class="header-stats">
+      <div class="stat-chip"><span>4</span>นวัตกรรมหลัก</div>
+      <div class="stat-chip"><span>8</span>ไอเดียโปรเจกต์</div>
+      <div class="stat-chip"><span>6</span>Sensors ใหม่</div>
+      <div class="stat-chip"><span>12+</span>แหล่งข้อมูล</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(56,189,248,0.15);">🔬</div>
+      <div>
+        <h2>นวัตกรรมและเทรนด์ใหม่ล่าสุด</h2>
+        <p>ESP Mesh Networking, mmWave Presence Radar, Hydroponics Automation &amp; Modbus RTU</p>
+      </div>
+    </div>
+
+    <!-- FEATURED: ESP Mesh -->
+    <div class="card-featured">
+      <h3>🕸️ ESP-MESH + ESP-NOW: สร้าง Self-Healing IoT Network ไม่ต้องพึ่ง Router</h3>
+      <div class="featured-body">
+        <div>
+          <p>ESP-MESH เป็น stack ที่ Espressif พัฒนาบน Wi-Fi โดยเฉพาะ ทำให้ ESP32 หลายตัวรวมตัวกันเป็น mesh network แบบ self-organizing — ทุกโหนดเชื่อมต่อถึงกันได้โดยไม่ต้องผ่าน router กลาง เหมาะมากสำหรับโรงงาน, คลังสินค้า, หรือพื้นที่ขนาดใหญ่ที่ Wi-Fi signal ไม่ทั่วถึง</p>
+          <p style="margin-top:0.6rem;">ปี 2026 Espressif ออก <strong style="color:var(--accent-blue);">ESP-IDF 5.3</strong> ที่ปรับปรุง ESP-MESH ให้รองรับ <em>Dynamic Root Node</em> — หากโหนด root ล่ม โหนดอื่นจะเลือก root ใหม่โดยอัตโนมัติภายใน 3–5 วินาที ทำให้ระบบทนทานต่อความล้มเหลวได้ดีขึ้นมาก</p>
+          <div class="tags" style="margin-top:0.8rem;">
+            <span class="tag tag-blue">ESP-MESH</span>
+            <span class="tag tag-teal">ESP-NOW</span>
+            <span class="tag tag-green">Self-Healing</span>
+            <span class="tag tag-violet">ESP-IDF 5.3</span>
+          </div>
+        </div>
+        <div>
+          <p><strong style="color:var(--accent-teal);">ESP-NOW vs ESP-MESH — เลือกตัวไหน?</strong></p>
+          <div class="table-wrap" style="margin-top:0.5rem;">
+            <table>
+              <thead><tr><th>คุณสมบัติ</th><th>ESP-NOW</th><th>ESP-MESH</th></tr></thead>
+              <tbody>
+                <tr><td>Max โหนด</td><td>20 peers/node</td><td class="good">1000+ โหนด</td></tr>
+                <tr><td>Range</td><td>~250 m LOS</td><td class="good">Multi-hop ไม่จำกัด</td></tr>
+                <tr><td>Latency</td><td class="good">~2–3 ms</td><td>10–50 ms</td></tr>
+                <tr><td>IP routing</td><td class="warn">ไม่มี</td><td class="good">มี</td></tr>
+                <tr><td>ใช้ RAM</td><td class="good">น้อยมาก</td><td>ปานกลาง</td></tr>
+                <tr><td>เหมาะกับ</td><td>Sensor swarm</td><td>Full IoT network</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="highlight-blue" style="margin-top:0.8rem;">
+            <span class="hl-title">💡 เคล็ดลับผสมผสาน</span>
+            ใช้ ESP-NOW สำหรับ leaf sensor nodes (กิน power น้อย) แล้วส่งข้อมูลมาที่ ESP-MESH gateway ซึ่งทำหน้าที่ relay ต่อไปยัง MQTT broker — ได้ทั้ง latency ต่ำ และ scale ขนาดใหญ่
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEATURED: mmWave -->
+    <div class="card-featured" style="border-color:rgba(74,222,128,0.25);">
+      <h3 style="color:var(--accent-green);">📡 mmWave Radar Sensor บน ESP32 — ตรวจจับการมีอยู่แบบ Privacy-First</h3>
+      <div class="featured-body">
+        <div>
+          <p>เซ็นเซอร์ mmWave (60–77 GHz) รุ่นใหม่อย่าง <strong style="color:var(--accent-green);">HLK-LD2410C</strong> และ <strong style="color:var(--accent-green);">HLK-LD2450</strong> สามารถตรวจจับ <em>การหายใจ</em>, <em>การเคลื่อนไหวเล็กน้อย</em>, และ <em>จำนวนคน</em> ได้โดยไม่ต้องใช้กล้อง — ความเป็นส่วนตัวสมบูรณ์ 100% เหมาะกับห้องนอน, ห้องน้ำ, ห้องผู้สูงอายุ</p>
+          <p style="margin-top:0.6rem;">เชื่อมต่อกับ ESP32 ผ่าน UART (115200 baud) ใช้เพียง 2 สาย TX/RX — library ที่แนะนำคือ <code style="background:#0d1117;padding:2px 6px;border-radius:4px;font-size:0.8rem;">ncmreynolds/ld2410</code> ที่รองรับทุก mode ของ LD2410 series รวมถึง Engineering mode ที่แสดงค่า energy ในแต่ละ gate</p>
+          <div class="tags" style="margin-top:0.8rem;">
+            <span class="tag tag-green">mmWave</span>
+            <span class="tag tag-blue">60 GHz</span>
+            <span class="tag tag-teal">UART</span>
+            <span class="tag tag-orange">Privacy Sensor</span>
+          </div>
+        </div>
+        <div>
+          <p><strong style="color:var(--accent-green);">HLK-LD2410C — Quick Spec</strong></p>
+          <div class="table-wrap" style="margin-top:0.5rem;">
+            <table>
+              <thead><tr><th>Parameter</th><th>Value</th></tr></thead>
+              <tbody>
+                <tr><td>Frequency</td><td class="good">60 GHz FMCW</td></tr>
+                <tr><td>Detection range</td><td>Static: 0–6 m, Moving: 0–9 m</td></tr>
+                <tr><td>Angle coverage</td><td>±60° Horizontal, ±40° Vertical</td></tr>
+                <tr><td>Breathing detect</td><td class="good">ได้ แม้นอนนิ่ง</td></tr>
+                <tr><td>Multi-target</td><td>HLK-LD2450 รองรับ 3 คน</td></tr>
+                <tr><td>ราคา</td><td>~120–250 บาท</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="highlight-green" style="margin-top:0.8rem;">
+            <span class="hl-title">🏠 Use Case ยอดนิยม</span>
+            Smart lighting ที่ไม่ดับไฟแม้นั่งนิ่งอ่านหนังสือ, ระบบตรวจจับผู้สูงอายุล้มในห้อง, และ HVAC ที่ปรับอุณหภูมิตามจำนวนคนในห้องแบบ real-time
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🌿</div>
+        <h3>Hydroponics Automation ด้วย ESP32 — ฟาร์มในห้องอัจฉริยะ</h3>
+        <p>ESP32 ควบคุมระบบน้ำ, แสง, และสารอาหารในฟาร์มไฮโดรโปนิกส์แบบอัตโนมัติ รองรับ sensor loop ที่ตรวจ pH, EC (Electrical Conductivity), อุณหภูมิน้ำ, DO (Dissolved Oxygen) ทุก 5 นาที และปรับ dosing pump โดยอัตโนมัติ ผ่าน PID controller บน RTOS task</p>
+        <div class="tags">
+          <span class="tag tag-green">Hydroponics</span>
+          <span class="tag tag-teal">pH Sensor</span>
+          <span class="tag tag-blue">EC Meter</span>
+          <span class="tag tag-violet">FreeRTOS</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🏭</div>
+        <h3>ESP32 + Modbus RTU — เชื่อม PLC/VFD ในโรงงานแบบ Wireless</h3>
+        <p>ESP32 ทำหน้าที่เป็น Modbus RTU Master ผ่าน RS-485 (MAX485 module) สื่อสารกับ PLC, VFD, energy meter และอุปกรณ์อุตสาหกรรมที่ใช้ protocol Modbus — แล้ว bridge ข้อมูลไปยัง MQTT/HTTP API เพื่อ visualization บน Grafana หรือ Node-RED โดยไม่ต้องแตะ legacy system</p>
+        <div class="tags">
+          <span class="tag tag-orange">Modbus RTU</span>
+          <span class="tag tag-blue">RS-485</span>
+          <span class="tag tag-violet">MQTT Bridge</span>
+          <span class="tag tag-green">Industry 4.0</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,146,60,0.15);">🛠️</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์น่าสร้าง</h2>
+        <p>8 โปรเจกต์ที่นำเอา ESP Mesh, mmWave Radar, และ Modbus มาประยุกต์ใช้จริง</p>
+      </div>
+    </div>
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-icon">🕸️</div>
+        <h3>ESP-NOW Wireless Sensor Swarm — ตรวจสภาพแวดล้อมทั่วโกดัง 100 จุด</h3>
+        <p>ใช้ ESP32-C3 mini (ราคา ~60 บาท) เป็น sensor node 100 ตัว วัด อุณหภูมิ + ความชื้น ส่งข้อมูลผ่าน ESP-NOW ไปยัง ESP32-S3 gateway ทุก 30 วินาที ข้อมูลส่งต่อผ่าน Wi-Fi ไปยัง InfluxDB — แบตเตอรี 18650 อยู่ได้นาน 6+ เดือนด้วย deep sleep</p>
+        <div class="tags">
+          <span class="tag tag-teal">ESP-NOW</span>
+          <span class="tag tag-blue">ESP32-C3</span>
+          <span class="tag tag-green">Deep Sleep</span>
+          <span class="tag tag-violet">InfluxDB</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🚶</div>
+        <h3>Smart Office Occupancy System — นับคนและ Map Room ด้วย mmWave</h3>
+        <p>ติด HLK-LD2450 ที่ประตูทุกห้องในออฟฟิศ นับคนเข้า-ออกแบบ real-time และส่งข้อมูลผ่าน ESP-MESH ไปยัง dashboard กลาง เห็นแผนผังห้องว่าง/เต็มได้ทันที ใช้ข้อมูลปรับ HVAC และแสงสว่างอัตโนมัติ ประหยัดพลังงาน 30–40%</p>
+        <div class="tags">
+          <span class="tag tag-green">mmWave LD2450</span>
+          <span class="tag tag-blue">ESP-MESH</span>
+          <span class="tag tag-orange">Occupancy</span>
+          <span class="tag tag-teal">Energy Saving</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🌱</div>
+        <h3>Vertical Farm Controller — ควบคุมฟาร์มแนวตั้ง 4 ชั้น</h3>
+        <p>ESP32-S3 หนึ่งตัวควบคุมแสง LED (PPFD), ปั๊มน้ำ, dosing pump สารอาหาร A/B, และ pH adjuster โดย PID loop อิงค่า pH 5.8–6.2 และ EC 1.2–2.0 mS/cm แสดงผลบน 3.5" touchscreen LVGL ดู trend ย้อนหลัง 7 วัน และส่ง alert ผ่าน LINE Notify เมื่อค่าเกิน threshold</p>
+        <div class="tags">
+          <span class="tag tag-green">Vertical Farm</span>
+          <span class="tag tag-teal">PID Control</span>
+          <span class="tag tag-violet">LVGL</span>
+          <span class="tag tag-yellow">LINE Notify</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3>Modbus Energy Monitor Gateway — รวม Sub-meter ทั้งโรงงานไว้จุดเดียว</h3>
+        <p>ESP32 อ่านค่า kWh, voltage, current, power factor จาก energy meter หลายตัว (DTSU666, SDM120, PM2100) ผ่าน Modbus RTU แล้ว forward ไปยัง MQTT broker ให้ Home Assistant หรือ Node-RED สร้าง dashboard ติดตามค่าไฟแบบ real-time และคำนวณต้นทุนค่าไฟต่อเครื่องจักร</p>
+        <div class="tags">
+          <span class="tag tag-orange">Modbus RTU</span>
+          <span class="tag tag-yellow">Energy Meter</span>
+          <span class="tag tag-violet">Home Assistant</span>
+          <span class="tag tag-teal">Node-RED</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🛏️</div>
+        <h3>Elder Care Radar Monitor — ดูแลผู้สูงอายุ 24/7 โดยไม่ใช้กล้อง</h3>
+        <p>ติด HLK-LD2410C ในห้องนอนและห้องน้ำ ตรวจจับการล้ม, นอนนิ่งเกิน 30 นาที, หรือออกจากห้องน้ำนานผิดปกติ ESP32 ส่ง alert ไปยังสมาร์ทโฟนของญาติผ่าน Telegram bot และบันทึก activity log รายวัน — ปลอดภัยต่อความเป็นส่วนตัวสูงสุด ไม่มีภาพ/เสียง</p>
+        <div class="tags">
+          <span class="tag tag-green">mmWave Radar</span>
+          <span class="tag tag-rose">Elder Care</span>
+          <span class="tag tag-blue">Telegram Bot</span>
+          <span class="tag tag-orange">Fall Detection</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🐝</div>
+        <h3>Smart Beehive Monitor — ติดตามสุขภาพรังผึ้งด้วย ESP32</h3>
+        <p>ใช้ load cell (HX711) วัดน้ำหนักรัง, DHT22 วัดอุณหภูมิภายใน, microphone ตรวจ acoustic signature ของผึ้ง (เปรียบเทียบกับ TFLite model ที่ train ไว้) บ่งบอก swarming, queenless state, Varroa mite infection ระบบทำงาน solar-powered ส่งข้อมูลผ่าน LoRa ทุก 15 นาที</p>
+        <div class="tags">
+          <span class="tag tag-yellow">Beehive IoT</span>
+          <span class="tag tag-violet">TFLite Micro</span>
+          <span class="tag tag-green">HX711</span>
+          <span class="tag tag-teal">Solar LoRa</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🚰</div>
+        <h3>Aquaponics Controller — ปลา + ผัก ระบบอัตโนมัติสมบูรณ์</h3>
+        <p>ESP32 ควบคุมระบบ Aquaponics (ปลา + ผัก): ตรวจ pH น้ำ, อุณหภูมิ, DO, Ammonia (NH₃), ระดับน้ำ (ultrasonic) และปรัีบ aerator, heater, ปั๊มน้ำ อัตโนมัติ รองรับ feeding schedule อัตโนมัติด้วย servo motor และแจ้งเตือนฉุกเฉิน NH₃ surge ที่อันตรายต่อปลา</p>
+        <div class="tags">
+          <span class="tag tag-blue">Aquaponics</span>
+          <span class="tag tag-teal">pH + DO</span>
+          <span class="tag tag-green">Ammonia Sensor</span>
+          <span class="tag tag-orange">FreeRTOS</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">🏗️</div>
+        <h3>Building Automation Mesh — Modbus + ESP-MESH สำหรับอาคาร 20 ชั้น</h3>
+        <p>แต่ละชั้นมี ESP32 node ทำหน้าที่ Modbus master อ่านค่าจาก BMS sub-controller (แสง, HVAC, ประตู) แล้วส่งผ่าน ESP-MESH ขึ้นมายัง server ชั้นบนสุด — ลดสายเดินสัญญาณ, ติดตั้งง่าย, แก้ไขได้โดยไม่ต้องหยุดระบบ รองรับ BACnet-over-MQTT wrapper</p>
+        <div class="tags">
+          <span class="tag tag-orange">Modbus RTU</span>
+          <span class="tag tag-blue">ESP-MESH</span>
+          <span class="tag tag-violet">BACnet</span>
+          <span class="tag tag-green">Smart Building</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CODE BLOCK: mmWave LD2410 with ESP32 -->
+    <div style="margin-top:1.5rem;">
+      <div class="highlight-orange" style="margin-bottom:0.6rem;">
+        <span class="hl-title">💻 ตัวอย่างโค้ด — ESP32 อ่านค่า HLK-LD2410C (UART) + MQTT Report</span>
+        ใช้ library <code style="background:#0d1117;padding:2px 6px;border-radius:4px;font-size:0.78rem;">ncmreynolds/ld2410</code> เชื่อม UART2 (GPIO16=RX, GPIO17=TX) แล้วส่งสถานะไปยัง MQTT
+      </div>
+      <div class="code-block"><span class="code-comment">// ESP32 + HLK-LD2410C mmWave Presence Sensor via UART</span>
+<span class="code-comment">// Library: ncmreynolds/ld2410 (PlatformIO / Arduino IDE)</span>
+
+<span class="code-keyword">#include</span> <span class="code-string">&lt;Arduino.h&gt;</span>
+<span class="code-keyword">#include</span> <span class="code-string">&lt;WiFi.h&gt;</span>
+<span class="code-keyword">#include</span> <span class="code-string">&lt;PubSubClient.h&gt;</span>
+<span class="code-keyword">#include</span> <span class="code-string">&lt;ld2410.h&gt;</span>
+
+<span class="code-keyword">#define</span> RADAR_RX  <span class="code-number">16</span>
+<span class="code-keyword">#define</span> RADAR_TX  <span class="code-number">17</span>
+
+ld2410  radar;
+HardwareSerial radarSerial(<span class="code-number">2</span>);
+WiFiClient    wifiClient;
+PubSubClient  mqtt(wifiClient);
+
+<span class="code-keyword">void</span> <span class="code-func">setup</span>() {
+  Serial.begin(<span class="code-number">115200</span>);
+  radarSerial.begin(<span class="code-number">256000</span>, SERIAL_8N1, RADAR_RX, RADAR_TX);
+  radar.begin(radarSerial, <span class="code-keyword">true</span>);   <span class="code-comment">// true = print debug</span>
+
+  WiFi.begin(<span class="code-string">"YOUR_SSID"</span>, <span class="code-string">"YOUR_PASS"</span>);
+  <span class="code-keyword">while</span> (WiFi.status() != WL_CONNECTED) delay(<span class="code-number">500</span>);
+
+  mqtt.setServer(<span class="code-string">"192.168.1.100"</span>, <span class="code-number">1883</span>);
+  mqtt.connect(<span class="code-string">"esp32-radar"</span>);
+}
+
+<span class="code-keyword">void</span> <span class="code-func">loop</span>() {
+  radar.read();   <span class="code-comment">// อ่านข้อมูลจาก sensor</span>
+
+  <span class="code-keyword">if</span> (radar.isConnected() &amp;&amp; millis() % <span class="code-number">1000</span> &lt; <span class="code-number">50</span>) {
+    String payload = <span class="code-string">"{"</span>;
+    payload += <span class="code-string">"\"presence\":"</span>  + String(radar.presenceDetected() ? <span class="code-string">"true"</span> : <span class="code-string">"false"</span>);
+    payload += <span class="code-string">",\"moving\":"</span>   + String(radar.movingTargetDetected() ? <span class="code-string">"true"</span> : <span class="code-string">"false"</span>);
+    payload += <span class="code-string">",\"static\":"</span>   + String(radar.stationaryTargetDetected() ? <span class="code-string">"true"</span> : <span class="code-string">"false"</span>);
+    payload += <span class="code-string">",\"move_dist\":"</span> + String(radar.movingTargetDistance());
+    payload += <span class="code-string">",\"stat_dist\":"</span> + String(radar.stationaryTargetDistance());
+    payload += <span class="code-string">"}"</span>;
+
+    mqtt.publish(<span class="code-string">"home/radar/bedroom"</span>, payload.c_str());
+  }
+  mqtt.loop();
+}</div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(45,212,191,0.15);">📡</div>
+      <div>
+        <h2>Sensors น่าสนใจประจำวันนี้</h2>
+        <p>mmWave Radar, EC/pH สำหรับ Hydroponics, Modbus-compatible Sensors</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Sensor / Module</th>
+            <th>หมวด</th>
+            <th>Interface</th>
+            <th>Key Feature</th>
+            <th>ราคา (บาท)</th>
+            <th>เหมาะกับ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>HLK-LD2410C</strong></td>
+            <td><span class="badge-pill" style="background:rgba(74,222,128,0.15);color:var(--accent-green);">mmWave</span></td>
+            <td>UART</td>
+            <td>ตรวจจับการหายใจ, Range 6 m</td>
+            <td class="good">120–180</td>
+            <td>ห้องนอน, Elder Care, Smart Light</td>
+          </tr>
+          <tr>
+            <td><strong>HLK-LD2450</strong></td>
+            <td><span class="badge-pill" style="background:rgba(74,222,128,0.15);color:var(--accent-green);">mmWave</span></td>
+            <td>UART</td>
+            <td>Multi-target 3 คน, ระบุพิกัด X/Y</td>
+            <td class="good">200–280</td>
+            <td>Office Occupancy, People Counter</td>
+          </tr>
+          <tr>
+            <td><strong>Atlas Scientific pH EZO</strong></td>
+            <td><span class="badge-pill" style="background:rgba(56,189,248,0.15);color:var(--accent-blue);">Chemistry</span></td>
+            <td>UART / I²C</td>
+            <td>±0.001 pH accuracy, temp compensated</td>
+            <td class="warn">2500–3500</td>
+            <td>Hydroponics, Aquaponics, Water QC</td>
+          </tr>
+          <tr>
+            <td><strong>DFRobot EC Sensor V2</strong></td>
+            <td><span class="badge-pill" style="background:rgba(56,189,248,0.15);color:var(--accent-blue);">Chemistry</span></td>
+            <td>Analog</td>
+            <td>Electrical conductivity 0–20 mS/cm</td>
+            <td class="good">800–1200</td>
+            <td>Nutrient level ใน Hydroponics</td>
+          </tr>
+          <tr>
+            <td><strong>Gravity: DO Sensor</strong></td>
+            <td><span class="badge-pill" style="background:rgba(56,189,248,0.15);color:var(--accent-blue);">Chemistry</span></td>
+            <td>UART</td>
+            <td>Dissolved Oxygen 0–20 mg/L</td>
+            <td class="warn">1800–2500</td>
+            <td>Aquaponics, Fish farm, Shrimp pond</td>
+          </tr>
+          <tr>
+            <td><strong>MAX485 RS-485 Module</strong></td>
+            <td><span class="badge-pill" style="background:rgba(251,146,60,0.15);color:var(--accent-orange);">Industrial</span></td>
+            <td>UART → RS-485</td>
+            <td>Half-duplex, ระยะ 1200 m, ทนทาน</td>
+            <td class="good">15–30</td>
+            <td>Modbus RTU, RS-485 bus</td>
+          </tr>
+          <tr>
+            <td><strong>PZEM-004T v3.0</strong></td>
+            <td><span class="badge-pill" style="background:rgba(251,146,60,0.15);color:var(--accent-orange);">Energy</span></td>
+            <td>UART (Modbus-like)</td>
+            <td>V, A, W, kWh, PF, Hz ในชิปเดียว</td>
+            <td class="good">280–450</td>
+            <td>Energy monitoring, Smart meter DIY</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Hydroponics Sensor Details -->
+    <div class="card-grid" style="margin-top:1.5rem;">
+      <div class="card">
+        <div class="card-icon">🧪</div>
+        <h3>Atlas Scientific EZO Circuits — มาตรฐานระดับ Lab บน ESP32</h3>
+        <p>EZO-pH, EZO-EC, EZO-DO, EZO-ORP ของ Atlas Scientific เป็น circuit แปลง probe เคมีให้ออกมาเป็น digital ผ่าน UART/I²C ง่ายมาก — ใช้ตั้งค่า via serial command เช่น <code style="background:#0d1117;padding:2px 5px;border-radius:3px;font-size:0.75rem;">R</code> เพื่ออ่านค่า, <code style="background:#0d1117;padding:2px 5px;border-radius:3px;font-size:0.75rem;">Cal,mid,7.00</code> เพื่อ calibrate pH 7 — ง่ายและแม่นยำมาก</p>
+        <div class="tags">
+          <span class="tag tag-blue">Atlas Scientific</span>
+          <span class="tag tag-teal">I²C / UART</span>
+          <span class="tag tag-green">Lab Grade</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔋</div>
+        <h3>PZEM-004T — DIY Smart Energy Monitor ราคาประหยัด</h3>
+        <p>PZEM-004T v3 เป็นโมดูลวัดไฟฟ้า AC ที่วัดได้ครบ: Voltage (80–260V), Current (0–100A ด้วย CT clamp), Power, Energy (kWh), Frequency, และ Power Factor — ราคาเพียง 280–450 บาท ต่อกับ ESP32 ผ่าน UART และใช้ library ModbusMaster หรือ PZEM004T library โดยตรง</p>
+        <div class="tags">
+          <span class="tag tag-yellow">PZEM-004T</span>
+          <span class="tag tag-orange">AC Monitor</span>
+          <span class="tag tag-blue">kWh Meter</span>
+          <span class="tag tag-green">DIY</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: DEEP DIVE ===== -->
+  <section id="deepdive">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,0.15);">⚡</div>
+      <div>
+        <h2>Deep Dive: ESP32 Modbus RTU Master — ขั้นตอนเชื่อมต่อ VFD จริง</h2>
+        <p>คู่มือย่อสำหรับนักพัฒนาที่จะ bridge อุปกรณ์อุตสาหกรรม Modbus RTU เข้าสู่โลก IoT</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">1️⃣</div>
+        <h3>Hardware Setup — MAX485 กับ ESP32</h3>
+        <p>เชื่อม MAX485 module: <strong>DI → GPIO17 (TX)</strong>, <strong>RO → GPIO16 (RX)</strong>, <strong>DE+RE → GPIO4</strong> (Direction control) เพิ่ม pull-up 120Ω ที่ปลายสาย A/B เพื่อป้องกัน reflections ใช้สายแบบ twisted pair (CAT5/CAT6 ตัดมา) สำหรับการ run สาย RS-485</p>
+        <div class="tags"><span class="tag tag-orange">MAX485</span><span class="tag tag-blue">RS-485</span><span class="tag tag-green">Hardware</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">2️⃣</div>
+        <h3>Software — Library ModbusMaster บน Arduino/ESP-IDF</h3>
+        <p>ใช้ library <strong>4-20ma/ModbusMaster</strong> (Arduino) หรือ Espressif's built-in <strong>ESP-Modbus</strong> (ESP-IDF) ตั้งค่า baud rate ให้ตรงกับ device (ทั่วไป 9600 หรือ 19200 baud), parity: None, stop bits: 1 และ node address ของ device (ดูจาก datasheet)</p>
+        <div class="tags"><span class="tag tag-violet">ModbusMaster</span><span class="tag tag-blue">ESP-Modbus</span><span class="tag tag-teal">Arduino</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">3️⃣</div>
+        <h3>อ่าน Register — VFD Inverter (เช่น Delta C2000)</h3>
+        <p>VFD ส่วนมากเก็บ output frequency ที่ holding register <code style="background:#0d1117;padding:2px 5px;border-radius:3px;font-size:0.75rem;">0x2103</code>, motor current ที่ <code style="background:#0d1117;padding:2px 5px;border-radius:3px;font-size:0.75rem;">0x2104</code> และ DC bus voltage ที่ <code style="background:#0d1117;padding:2px 5px;border-radius:3px;font-size:0.75rem;">0x2107</code> — แต่ละ brand ต่างกัน ต้องดู Modbus table ใน manual ด้วยเสมอ</p>
+        <div class="tags"><span class="tag tag-orange">VFD Inverter</span><span class="tag tag-yellow">Holding Register</span><span class="tag tag-rose">Delta C2000</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-icon">4️⃣</div>
+        <h3>MQTT Bridge — ส่งข้อมูลสู่ Grafana / HA</h3>
+        <p>หลังอ่าน register ได้แล้ว serialize เป็น JSON payload แล้ว publish ไปยัง topic เช่น <code style="background:#0d1117;padding:2px 5px;border-radius:3px;font-size:0.75rem;">factory/line1/vfd01</code> ใช้ Telegraf อ่านจาก MQTT แล้วเขียนลง InfluxDB และสร้าง dashboard Grafana — เพิ่ม alert rule เมื่อ current สูงผิดปกติ (อาจบ่งบอก motor fault)</p>
+        <div class="tags"><span class="tag tag-violet">Grafana</span><span class="tag tag-blue">InfluxDB</span><span class="tag tag-teal">Telegraf</span></div>
+      </div>
+    </div>
+
+    <div class="highlight-violet" style="margin-top:1.5rem;">
+      <span class="hl-title">🔒 ความปลอดภัย Modbus บน Industrial Network</span>
+      Modbus RTU เป็น protocol ที่ไม่มี authentication — หากนำ ESP32 ไปวางบนเครือข่ายโรงงานควร isolate ด้วย VLAN แยกจาก Wi-Fi ทั่วไป, ใช้ firewall บน router ป้องกัน unauthorized access ไปยัง MQTT broker และเพิ่ม TLS บน MQTT connection เสมอ (MQTT over SSL port 8883)
+    </div>
+  </section>
+
+  <!-- ===== SECTION 5: RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(167,139,250,0.15);">🔗</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+        <p>GitHub repos, tutorial sites, datasheet และ community สำหรับ ESP Mesh, mmWave, Hydroponics &amp; Modbus</p>
+      </div>
+    </div>
+    <div class="resource-grid">
+      <div class="resource-card">
+        <h4>🕸️ ESP Mesh / ESP-NOW</h4>
+        <ul>
+          <li>ESP-IDF ESP-MESH Programming Guide (docs.espressif.com)</li>
+          <li>GitHub: ESP-NOW Examples (espressif/esp-idf)</li>
+          <li>GitHub: painlessMesh — Easy mesh library for Arduino</li>
+          <li>YouTube: Andreas Spiess ESP-NOW series</li>
+          <li>ESP32 Mesh Network Tutorial — Random Nerd Tutorials</li>
+        </ul>
+      </div>
+      <div class="resource-card">
+        <h4>📡 mmWave Radar Sensors</h4>
+        <ul>
+          <li>GitHub: ncmreynolds/ld2410 (Arduino library)</li>
+          <li>HLK-LD2410 Datasheet &amp; Docs (hlktech.net)</li>
+          <li>Home Assistant ESPHome LD2410 integration</li>
+          <li>YouTube: Everything Smart Home — LD2410 setup</li>
+          <li>HLK-LD2450 Multi-target GitHub examples</li>
+        </ul>
+      </div>
+      <div class="resource-card">
+        <h4>🌿 Hydroponics / Aquaponics IoT</h4>
+        <ul>
+          <li>Atlas Scientific EZO Datasheets &amp; Sample Code</li>
+          <li>GitHub: DFRobot Gravity Sensor libraries</li>
+          <li>OpenFarm — Open database for growing guides</li>
+          <li>Instructables: ESP32 Hydroponics Controller</li>
+          <li>Reddit: r/Hydroponics — DIY automation threads</li>
+        </ul>
+      </div>
+      <div class="resource-card">
+        <h4>🏭 Modbus RTU / Industrial IoT</h4>
+        <ul>
+          <li>GitHub: 4-20ma/ModbusMaster Arduino Library</li>
+          <li>ESP-IDF ESP-Modbus Component (Espressif)</li>
+          <li>Modbus.org — Official protocol specification</li>
+          <li>PZEM-004T Library — olehs/PZEM004Tv30</li>
+          <li>Node-RED node-red-contrib-modbus node</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Extra: Community Highlights -->
+    <div style="margin-top:1.5rem;">
+      <div class="highlight-blue">
+        <span class="hl-title">🔥 GitHub Projects น่าสนใจสัปดาห์นี้</span>
+        <ul style="margin-top:0.5rem;padding-left:1rem;font-size:0.875rem;line-height:2;">
+          <li><strong>ESP-Mesh-Lite</strong> (Espressif Labs) — Lightweight ESP-MESH สำหรับ ESP32-C series ใช้ RAM น้อยกว่า MESH เดิม 40%</li>
+          <li><strong>OpenHydroponics</strong> — Open source framework สำหรับ hydroponics controller รองรับ ESPHome และ MQTT</li>
+          <li><strong>ld2410-esphome</strong> — ESPHome custom component สำหรับ LD2410 radar พร้อม auto-config</li>
+          <li><strong>esp32-modbus-gateway</strong> — Bridge Modbus RTU → MQTT โดยตรง ตั้งค่าผ่าน Web UI บน ESP32</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p><strong>ESP32 &amp; Sensor Innovations</strong> — รายงานประจำวันที่ 29 สิงหาคม พ.ศ. 2569</p>
+  <p style="margin-top:0.4rem;">หัวข้อวันนี้: ESP Mesh Networking · mmWave Radar (LD2410/LD2450) · Hydroponics &amp; Aquaponics IoT · Modbus RTU Industrial Bridge</p>
+  <p style="margin-top:0.4rem;color:#475569;">สร้างโดย AI Research Bot อัตโนมัติ &nbsp;|&nbsp; ข้อมูลอ้างอิงจาก Espressif Docs, GitHub, Atlas Scientific, HLK Tech, Modbus.org</p>
+</footer>
+
+</body>
+</html>
