@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 31 สิงหาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-base: #0b1120;
+    --bg-card: #111827;
+    --bg-card2: #1a2235;
+    --border: #1e2d45;
+    --accent1: #22d3ee;
+    --accent2: #818cf8;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --tag-bg: #1e293b;
+    --gradient1: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+    --gradient2: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%);
+    --gradient3: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+    --gradient4: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+  a { color: var(--accent1); text-decoration: none; }
+  a:hover { text-decoration: underline; opacity: 0.85; }
+
+  /* ──────── HEADER ──────── */
+  header {
+    background: linear-gradient(160deg, #0d1f3c 0%, #0b1120 60%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(34,211,238,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: var(--gradient1);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 0.28rem 0.9rem;
+    border-radius: 100px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.4rem;
+    line-height: 1.3;
+  }
+  header h1 span { color: var(--accent1); }
+  .header-sub {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.45rem 1.1rem;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+  }
+  .stat-chip strong { color: var(--text-primary); font-weight: 700; }
+
+  /* ──────── LAYOUT ──────── */
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem 3rem; }
+
+  .section { margin-bottom: 3rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-blue  { background: rgba(34,211,238,0.15); }
+  .icon-green { background: rgba(52,211,153,0.15); }
+  .icon-orange{ background: rgba(251,146,60,0.15); }
+  .icon-purple{ background: rgba(129,140,248,0.15); }
+  .section-header h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-count {
+    margin-left: auto;
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 0.78rem;
+    padding: 0.2rem 0.7rem;
+    color: var(--text-secondary);
+  }
+
+  /* ──────── CARDS ──────── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover { border-color: var(--accent1); transform: translateY(-2px); }
+  .card-accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 14px 14px 0 0; }
+  .ca-blue   { background: var(--gradient1); }
+  .ca-green  { background: var(--gradient2); }
+  .ca-orange { background: var(--gradient3); }
+  .ca-purple { background: var(--gradient4); }
+  .card h3 { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; line-height: 1.4; margin-top: 0.4rem; }
+  .card p  { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.9rem; }
+  .tag {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 0.73rem;
+    padding: 0.18rem 0.6rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .tag.t-blue   { color: var(--accent1); border-color: rgba(34,211,238,0.25); background: rgba(34,211,238,0.08); }
+  .tag.t-green  { color: var(--accent3); border-color: rgba(52,211,153,0.25); background: rgba(52,211,153,0.08); }
+  .tag.t-orange { color: var(--accent4); border-color: rgba(251,146,60,0.25); background: rgba(251,146,60,0.08); }
+  .tag.t-purple { color: var(--accent2); border-color: rgba(129,140,248,0.25); background: rgba(129,140,248,0.08); }
+  .tag.t-pink   { color: var(--accent5); border-color: rgba(244,114,182,0.25); background: rgba(244,114,182,0.08); }
+
+  /* ──────── FEATURED PROJECT ──────── */
+  .featured-project {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .fp-header {
+    background: var(--gradient1);
+    padding: 1.2rem 1.5rem;
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .fp-header h3 { font-size: 1.15rem; font-weight: 700; color: #fff; }
+  .fp-body { padding: 1.4rem; }
+  .fp-body p { font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 0.8rem; }
+  .fp-specs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  .spec-box {
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+  }
+  .spec-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.2rem; }
+  .spec-value { font-size: 0.9rem; color: var(--text-primary); font-weight: 600; }
+
+  /* ──────── SENSOR TABLE ──────── */
+  .sensor-table-wrap { overflow-x: auto; }
+  .sensor-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    min-width: 540px;
+  }
+  .sensor-table thead tr { background: var(--bg-card2); }
+  .sensor-table th {
+    text-align: left;
+    padding: 0.7rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .sensor-table td {
+    padding: 0.7rem 1rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .sensor-table tbody tr:hover { background: rgba(255,255,255,0.025); }
+  .sensor-table td:first-child { color: var(--text-primary); font-weight: 700; }
+  .sensor-table td .price { color: var(--accent3); font-weight: 700; font-size: 0.82rem; }
+
+  /* ──────── RESOURCES ──────── */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    transition: border-color 0.2s;
+  }
+  .resource-card:hover { border-color: var(--accent2); }
+  .resource-cat {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 0.4rem;
+  }
+  .resource-card h4 { font-size: 0.93rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.3rem; }
+  .resource-card p  { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.6; }
+
+  /* ──────── HIGHLIGHT BOX ──────── */
+  .highlight-box {
+    background: rgba(34,211,238,0.07);
+    border: 1px solid rgba(34,211,238,0.22);
+    border-radius: 12px;
+    padding: 1rem 1.3rem;
+    margin-top: 1rem;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+  }
+  .highlight-box strong { color: var(--accent1); }
+
+  /* ──────── FOOTER ──────── */
+  footer {
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 1.5rem 1.25rem;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    line-height: 1.9;
+  }
+  footer a { color: var(--accent1); }
+
+  @media (max-width: 600px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .fp-specs  { grid-template-columns: 1fr 1fr; }
+    .resource-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily ESP32 Research · 31 สิงหาคม 2026</div>
+  <h1>ESP32 &amp; <span>Sensor</span> Innovations</h1>
+  <p class="header-sub">LoRaWAN · Water Quality AI · Energy Harvesting · Gas &amp; Safety Sensing</p>
+  <div class="stats-row">
+    <div class="stat-chip"><strong>4</strong> นวัตกรรมหลัก</div>
+    <div class="stat-chip"><strong>7</strong> ไอเดียโปรเจกต์</div>
+    <div class="stat-chip"><strong>8</strong> Sensors ใหม่</div>
+    <div class="stat-chip"><strong>6</strong> แหล่งอ้างอิง</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION 1 · INNOVATIONS
+       ═══════════════════════════════════════════════════════ -->
+  <section class="section" id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🚀</div>
+      <h2>นวัตกรรมและเทรนด์ใหม่ล่าสุด</h2>
+      <span class="section-count">4 หัวข้อ</span>
+    </div>
+
+    <!-- Featured: LoRaWAN -->
+    <div class="featured-project">
+      <div class="fp-header">
+        <span style="font-size:1.5rem">📡</span>
+        <h3>ESP32 + LoRaWAN — เครือข่าย IoT ระยะไกลไร้สาย 10+ กม.</h3>
+      </div>
+      <div class="fp-body">
+        <p>LoRaWAN (Long Range Wide Area Network) คือโปรโตคอลการสื่อสารไร้สายที่ออกแบบมาสำหรับ IoT โดยเฉพาะ ส่งข้อมูลได้ไกล <strong>10–15 กม.</strong> ในพื้นที่โล่ง ด้วยพลังงานต่ำมาก ทำให้แบตเตอรี่ AA ใช้งานได้นานหลายปี การรวม ESP32 กับ SX1278/SX1276 LoRa Module เปิดประตูสู่การตรวจวัดระยะไกลทุกประเภท ตั้งแต่ฟาร์มไปถึงเมือง</p>
+        <p>ปี 2026 การพัฒนา TTN (The Things Network) v3 และ Helium Network ทำให้ส่ง Data ผ่าน LoRaWAN Gateway สาธารณะได้ฟรี รองรับ Class A/B/C Device และ OTAA/ABP Activation</p>
+        <div class="fp-specs">
+          <div class="spec-box">
+            <div class="spec-label">ระยะส่งข้อมูล</div>
+            <div class="spec-value">10–15 กม. (LOS)</div>
+          </div>
+          <div class="spec-box">
+            <div class="spec-label">อายุแบตเตอรี่</div>
+            <div class="spec-value">2–10 ปี (AA x2)</div>
+          </div>
+          <div class="spec-box">
+            <div class="spec-label">LoRa Module</div>
+            <div class="spec-value">SX1276 / SX1278 / Ra-02</div>
+          </div>
+          <div class="spec-box">
+            <div class="spec-label">ค่าบริการ Network</div>
+            <div class="spec-value">ฟรี (TTN / Helium)</div>
+          </div>
+          <div class="spec-box">
+            <div class="spec-label">Board ยอดนิยม</div>
+            <div class="spec-value">TTGO LoRa32 / Heltec ESP32</div>
+          </div>
+          <div class="spec-box">
+            <div class="spec-label">Bandwidth</div>
+            <div class="spec-value">0.3–50 kbps (SF7-SF12)</div>
+          </div>
+        </div>
+        <div class="highlight-box">
+          <strong>เคล็ดลับ:</strong> ใช้ Spreading Factor (SF) สูงขึ้น เพื่อระยะไกลขึ้น แลกกับ Data Rate ที่ช้าลง สำหรับ Sensor Node ที่ส่งข้อมูลทุก 10 นาที SF12 ก็เพียงพอและประหยัดแบตที่สุด
+        </div>
+      </div>
+    </div>
+
+    <!-- Card grid -->
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-accent ca-green"></div>
+        <h3>💧 Water Quality AI — ESP32 + ML ตรวจน้ำแบบ Offline</h3>
+        <p>งานวิจัยล่าสุดใช้ ESP32 รัน TinyML โมเดลทำนายคุณภาพน้ำในฟาร์มปลาตะเพียน (Tilapia Aquaculture) โดยไม่ต้องพึ่ง Cloud วัดพารามิเตอร์ pH, DO, Temperature, Turbidity แล้ว infer ผลคุณภาพน้ำได้ทันที ความแม่นยำ &gt;93%</p>
+        <div class="card-tags">
+          <span class="tag t-green">TinyML</span>
+          <span class="tag t-blue">Aquaculture</span>
+          <span class="tag t-orange">pH + DO Sensor</span>
+          <span class="tag t-green">Offline Inference</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent ca-orange"></div>
+        <h3>☀️ FireBeetle 2 ESP32-C5 — Solar Charging + Wi-Fi 6 Dual-Band</h3>
+        <p>DFRobot เปิดตัว FireBeetle 2 ESP32-C5 ที่รวม Wi-Fi 6 Dual-Band (2.4/5 GHz), BLE 5, Thread, Zigbee และ Solar Charging Function ในบอร์ดเดียว เหมาะมากสำหรับ Outdoor Sensor Node ที่ต้องการ Self-Powered และ Multi-Protocol ในตัว</p>
+        <div class="card-tags">
+          <span class="tag t-orange">ESP32-C5</span>
+          <span class="tag t-blue">Wi-Fi 6</span>
+          <span class="tag t-green">Solar Charging</span>
+          <span class="tag t-purple">Thread/Zigbee</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent ca-purple"></div>
+        <h3>🏭 Industrial Gas Safety — ESP32 + Multi-Gas Sensor Array</h3>
+        <p>การใช้ MICS-6814 (Triple-Gas Sensor: CO, NO₂, NH₃), MQ-7 (CO), และ MH-Z19B (CO₂ NDIR) ร่วมกันบน ESP32 สร้างระบบ Gas Safety Monitor สำหรับโรงงาน ห้องปฏิบัติการ และพื้นที่อับอากาศ ส่ง Alert ผ่าน MQTT ทันทีเมื่อค่าเกินขีดอันตราย</p>
+        <div class="card-tags">
+          <span class="tag t-purple">MICS-6814</span>
+          <span class="tag t-orange">MH-Z19B</span>
+          <span class="tag t-pink">Industrial Safety</span>
+          <span class="tag t-blue">MQTT Alert</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION 2 · PROJECTS
+       ═══════════════════════════════════════════════════════ -->
+  <section class="section" id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-green">💡</div>
+      <h2>ไอเดียโปรเจกต์น่าสร้าง</h2>
+      <span class="section-count">7 โปรเจกต์</span>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-accent ca-blue"></div>
+        <h3>🌾 Smart Farm LoRaWAN — ตรวจสภาพแปลงปลูก 50 จุด ด้วย Node เดียว</h3>
+        <p>ติด ESP32 + SX1278 LoRa Node บนเสาทุก 200 ม. วัดอุณหภูมิ, ความชื้นดิน (Capacitive Soil), EC Meter และ LDR แสง ส่งข้อมูลผ่าน LoRaWAN ไปยัง TTN → Node-RED Dashboard ทุก 15 นาที ประหยัดกว่า Wi-Fi Farm 10–20 เท่า</p>
+        <div class="card-tags">
+          <span class="tag t-green">LoRaWAN</span>
+          <span class="tag t-green">Soil Moisture</span>
+          <span class="tag t-blue">TTN Gateway</span>
+          <span class="tag t-orange">Node-RED</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent ca-green"></div>
+        <h3>🐟 ระบบตรวจสอบบ่อปลาอัจฉริยะ — pH + DO + Temp + TDS แบบ Real-Time</h3>
+        <p>ใช้ ESP32 กับ Atlas Scientific EZO Sensors วัด pH, Dissolved Oxygen, Conductivity, Temperature พร้อมระบบ auto-dosing ปรับค่าน้ำอัตโนมัติ ส่งข้อมูลผ่าน Wi-Fi ไป Grafana แจ้งเตือน Line เมื่อ DO ต่ำวิกฤต</p>
+        <div class="card-tags">
+          <span class="tag t-green">Aquaculture</span>
+          <span class="tag t-blue">Atlas Scientific</span>
+          <span class="tag t-green">DO Sensor</span>
+          <span class="tag t-purple">Grafana</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent ca-orange"></div>
+        <h3>☀️ Solar-Powered Weather Station ไม่ต้องเดินสายไฟ</h3>
+        <p>ESP32 + Solar Panel 5W + Supercapacitor 10F (แทนแบตเตอรี่ อายุ 10+ ปี) + BME680 + Rain Gauge + Wind Speed Sensor ทำงาน Deep Sleep ตื่นทุก 10 นาที ส่งข้อมูล MQTT แล้วนอนต่อ ติดตั้งได้ทุกที่ไม่ต้องพึ่งไฟฟ้า</p>
+        <div class="card-tags">
+          <span class="tag t-orange">Solar + Supercap</span>
+          <span class="tag t-blue">Deep Sleep</span>
+          <span class="tag t-green">BME680</span>
+          <span class="tag t-purple">Weather Station</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent ca-purple"></div>
+        <h3>🔥 ระบบแจ้งเตือนก๊าซรั่ว Multi-Zone สำหรับครัวร้านอาหาร</h3>
+        <p>วาง ESP32 + MQ-2 (LPG/CH₄) หลายจุดทั่วครัว เชื่อมกัน ESP-NOW แบบ Mesh แล้วรวมที่ Gateway กลาง ถ้าจุดไหนตรวจพบก๊าซ ทุกจุดในโซนจะดังไซเรน พร้อมตัดวาล์วก๊าซอัตโนมัติผ่าน Relay และส่ง Line Notify</p>
+        <div class="card-tags">
+          <span class="tag t-orange">MQ-2</span>
+          <span class="tag t-purple">ESP-NOW Mesh</span>
+          <span class="tag t-pink">Gas Safety</span>
+          <span class="tag t-blue">Line Notify</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent ca-blue"></div>
+        <h3>🚰 ระบบตรวจสอบคุณภาพน้ำประปาชุมชน — TDS + Turbidity + pH</h3>
+        <p>ติด ESP32 + TDS Meter + Turbidity Sensor + pH Probe ที่จุดจ่ายน้ำชุมชน บันทึกค่าตลอด 24 ชั่วโมง แจ้งเตือนเมื่อค่า TDS เกิน 500 ppm หรือความขุ่นเกิน WHO Standard โปรเจกต์นี้ต้นทุนต่ำกว่าอุปกรณ์ตรวจวัดมาตรฐาน 10 เท่า</p>
+        <div class="card-tags">
+          <span class="tag t-blue">TDS Sensor</span>
+          <span class="tag t-green">Water Quality</span>
+          <span class="tag t-orange">Community IoT</span>
+          <span class="tag t-purple">WHO Standard</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent ca-green"></div>
+        <h3>🏭 Industrial CO₂ Monitor พร้อม Predictive Ventilation</h3>
+        <p>ใช้ SCD41 (True CO₂ NDIR) ติดทุกห้องในโรงงาน ส่งค่าผ่าน MQTT → InfluxDB วิเคราะห์แนวโน้ม ถ้า CO₂ กำลังขึ้นเกิน 800 ppm จะเปิด exhaust fan ล่วงหน้า ก่อนที่คนงานจะรู้สึกง่วงหรือประสิทธิภาพการทำงานลด</p>
+        <div class="card-tags">
+          <span class="tag t-green">SCD41 NDIR</span>
+          <span class="tag t-blue">InfluxDB</span>
+          <span class="tag t-orange">Predictive</span>
+          <span class="tag t-purple">Smart Ventilation</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent ca-purple"></div>
+        <h3>🌊 River Water Pollution Monitor — ESP32 + Edge Impulse AI</h3>
+        <p>ติดตั้งระบบตรวจวัดแม่น้ำ ใช้ ESP32 + Ultrasonic + Turbidity + pH + ORP Sensor ร่วมกับ ML Model จาก Edge Impulse ฝึกตรวจจับ Pattern มลพิษที่ผิดปกติ (เช่น ของเสียจากโรงงาน) แยกออกจากความขุ่นธรรมชาติช่วงฝนตก</p>
+        <div class="card-tags">
+          <span class="tag t-blue">Edge Impulse</span>
+          <span class="tag t-green">River Monitor</span>
+          <span class="tag t-orange">ORP Sensor</span>
+          <span class="tag t-pink">Pollution Detection</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION 3 · SENSORS
+       ═══════════════════════════════════════════════════════ -->
+  <section class="section" id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔬</div>
+      <h2>Sensors น่าสนใจประจำวันนี้</h2>
+      <span class="section-count">8 ตัว</span>
+    </div>
+
+    <div class="sensor-table-wrap">
+      <table class="sensor-table">
+        <thead>
+          <tr>
+            <th>Sensor</th>
+            <th>วัดอะไร</th>
+            <th>Interface</th>
+            <th>ประมาณราคา</th>
+            <th>จุดเด่น</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Atlas Scientific EZO-pH</td>
+            <td>pH (0–14)</td>
+            <td>UART / I²C</td>
+            <td><span class="price">฿1,800–2,500</span></td>
+            <td>ความแม่นยำสูง ±0.002 มาตรฐาน Lab</td>
+          </tr>
+          <tr>
+            <td>Atlas Scientific EZO-DO</td>
+            <td>Dissolved Oxygen</td>
+            <td>UART / I²C</td>
+            <td><span class="price">฿2,200–3,000</span></td>
+            <td>ใช้กับสัตว์น้ำ ไม่ต้องเติม electrolyte</td>
+          </tr>
+          <tr>
+            <td>MICS-6814</td>
+            <td>CO, NO₂, NH₃</td>
+            <td>Analog (3 ขา)</td>
+            <td><span class="price">฿350–500</span></td>
+            <td>Triple gas ชิปเดียว ขนาดเล็กมาก</td>
+          </tr>
+          <tr>
+            <td>MH-Z19B</td>
+            <td>CO₂ NDIR (400–5000 ppm)</td>
+            <td>UART / PWM</td>
+            <td><span class="price">฿450–650</span></td>
+            <td>True CO₂ ไม่ใช่ eCO₂ เสถียรระยะยาว</td>
+          </tr>
+          <tr>
+            <td>TDS-3/TDS Meter Probe</td>
+            <td>Total Dissolved Solids</td>
+            <td>Analog</td>
+            <td><span class="price">฿120–250</span></td>
+            <td>ราคาถูก ตรวจคุณภาพน้ำเบื้องต้น</td>
+          </tr>
+          <tr>
+            <td>Gravity Turbidity Sensor</td>
+            <td>ความขุ่นน้ำ (NTU)</td>
+            <td>Analog / Digital</td>
+            <td><span class="price">฿280–450</span></td>
+            <td>ตรวจ Turbidity 0–1000 NTU มาตรฐาน WHO</td>
+          </tr>
+          <tr>
+            <td>Capacitive Soil Moisture v2.0</td>
+            <td>ความชื้นดิน</td>
+            <td>Analog</td>
+            <td><span class="price">฿80–150</span></td>
+            <td>ไม่กัดกร่อน อายุยาวกว่า Resistive 10 เท่า</td>
+          </tr>
+          <tr>
+            <td>SX1278 LoRa Ra-02</td>
+            <td>LoRa Transceiver 433 MHz</td>
+            <td>SPI</td>
+            <td><span class="price">฿120–200</span></td>
+            <td>ส่งข้อมูลไกล 10 กม. ราคาถูกที่สุด</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION 4 · RESOURCES
+       ═══════════════════════════════════════════════════════ -->
+  <section class="section" id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-purple">🔗</div>
+      <h2>แหล่งข้อมูลและลิงก์น่าสนใจ</h2>
+      <span class="section-count">6 แหล่ง</span>
+    </div>
+
+    <div class="resource-grid">
+      <div class="resource-card">
+        <div class="resource-cat">LoRaWAN Guide</div>
+        <h4>LoRaWAN: Simple Guide for 2026</h4>
+        <p>คู่มืออธิบาย Architecture, Class A/B/C, OTAA vs ABP และ Coverage Planning สำหรับ IoT Network</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-cat">Tutorial</div>
+        <h4>ESP32 LoRa Sensor Web Server — Random Nerd Tutorials</h4>
+        <p>บทเรียน step-by-step สร้าง LoRa Sender + Receiver พร้อม Web Server บน ESP32 ฉบับสมบูรณ์</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-cat">Research Paper</div>
+        <h4>ML on ESP32 for Water Quality — Tilapia Aquaculture (NCBI 2026)</h4>
+        <p>งานวิจัยใช้ TinyML ทำนายคุณภาพน้ำ Offline บน ESP32 สำหรับฟาร์มเพาะเลี้ยงสัตว์น้ำ ความแม่นยำ &gt;93%</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-cat">GitHub</div>
+        <h4>ESP32 Air Quality Sensor (BME680 + PMS7003 + SCD41)</h4>
+        <p>โค้ดสมบูรณ์ Multi-sensor Air Quality Station รวม VOC, PM2.5, CO₂ และ OLED Display</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-cat">Sensor Guide</div>
+        <h4>Best Gas &amp; Air Quality Sensors 2026 — MicrocontrollersLab</h4>
+        <p>คู่มือเลือก Gas Sensor สำหรับ ESP32/Arduino ครอบคลุม BME688, SCD41, SGP30, MICS-6814</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-cat">Hardware Review</div>
+        <h4>FireBeetle 2 ESP32-C5 Review — DigiKey Maker.io</h4>
+        <p>รีวิวบอร์ด ESP32-C5 ที่มี Solar Charging และ Wi-Fi 6 Dual-Band จาก DFRobot ปี 2026</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>📅 สร้างเมื่อ: 31 สิงหาคม 2569 (2026) &nbsp;|&nbsp; 🤖 สร้างโดย AI Research Routine อัตโนมัติ</p>
+  <p style="margin-top:0.4rem;">
+    แหล่งอ้างอิง:
+    <a href="https://iotbeat.com/blog/lorawan-a-simple-guide-for-2026" target="_blank">IoTBeat LoRaWAN</a> ·
+    <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12526668/" target="_blank">NCBI Water Quality ML</a> ·
+    <a href="https://randomnerdtutorials.com/esp32-lora-sensor-web-server/" target="_blank">Random Nerd Tutorials</a> ·
+    <a href="https://microcontrollerslab.com/best-gas-air-quality-sensors-embedded-devices-buying-guide/" target="_blank">Gas Sensor Guide 2026</a> ·
+    <a href="https://www.digikey.com/en/maker/blogs/2025/firebeetle-2-esp32-c5-review-dual-band-wi-fi-6-and-solar-charging" target="_blank">FireBeetle ESP32-C5</a> ·
+    <a href="https://github.com/RyuHiiragi/Simple-Water-Quality-Monitoring-System-Using-ESP32" target="_blank">GitHub Water Quality</a>
+  </p>
+</footer>
+
+</body>
+</html>
