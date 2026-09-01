@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 1 กันยายน 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263349;
+    --border: #334155;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-purple: #a855f7;
+    --accent-blue: #38bdf8;
+    --accent-green: #34d399;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --accent-yellow: #fbbf24;
+    --accent-red: #f87171;
+    --accent-teal: #2dd4bf;
+    --grad-health: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+    --grad-zigbee: linear-gradient(135deg, #0369a1 0%, #0891b2 100%);
+    --grad-auto: linear-gradient(135deg, #d97706 0%, #dc2626 100%);
+    --grad-header: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #0c1628 100%);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--grad-header);
+    border-bottom: 1px solid #312e81;
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 30% 40%, rgba(168,85,247,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 60%, rgba(56,189,248,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(168,85,247,0.15);
+    border: 1px solid rgba(168,85,247,0.4);
+    color: var(--accent-purple);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 1rem;
+    border-radius: 999px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+  }
+  header h1 span { color: var(--accent-purple); }
+  .header-sub {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 999px;
+    padding: 0.35rem 1.2rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .stat-pill strong { color: var(--text-primary); }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(15,23,42,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+  }
+  nav a {
+    display: inline-block;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.85rem 1.2rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  nav a:hover { color: var(--text-primary); border-bottom-color: var(--accent-purple); }
+
+  /* MAIN */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  /* SECTION HEADERS */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: 0.875rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.625rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-header .section-desc {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+  }
+
+  /* CARDS GRID */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.35);
+  }
+  .card-accent {
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px;
+    height: 100%;
+    border-radius: 1rem 0 0 1rem;
+  }
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.625rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 0.75rem;
+  }
+  .card p:last-child { margin-bottom: 0; }
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-top: 0.875rem;
+  }
+  .tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    letter-spacing: 0.03em;
+  }
+
+  /* COLOR VARIANTS */
+  .accent-purple .card-accent { background: var(--accent-purple); }
+  .accent-blue   .card-accent { background: var(--accent-blue); }
+  .accent-green  .card-accent { background: var(--accent-green); }
+  .accent-orange .card-accent { background: var(--accent-orange); }
+  .accent-pink   .card-accent { background: var(--accent-pink); }
+  .accent-teal   .card-accent { background: var(--accent-teal); }
+  .accent-yellow .card-accent { background: var(--accent-yellow); }
+  .accent-red    .card-accent { background: var(--accent-red); }
+
+  .tag-purple { background: rgba(168,85,247,0.15); color: var(--accent-purple); }
+  .tag-blue   { background: rgba(56,189,248,0.15); color: var(--accent-blue); }
+  .tag-green  { background: rgba(52,211,153,0.15); color: var(--accent-green); }
+  .tag-orange { background: rgba(251,146,60,0.15); color: var(--accent-orange); }
+  .tag-pink   { background: rgba(244,114,182,0.15); color: var(--accent-pink); }
+  .tag-teal   { background: rgba(45,212,191,0.15); color: var(--accent-teal); }
+  .tag-yellow { background: rgba(251,191,36,0.15); color: var(--accent-yellow); }
+  .tag-red    { background: rgba(248,113,113,0.15); color: var(--accent-red); }
+
+  /* FEATURE CARD (full-width highlight) */
+  .feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .feature-card.health::before  { background: var(--grad-health); }
+  .feature-card.zigbee::before  { background: var(--grad-zigbee); }
+  .feature-card.auto::before    { background: var(--grad-auto); }
+  .feature-card h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .feature-card p { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.75rem; }
+  .feature-card .highlight-box {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 0.625rem;
+    padding: 1rem 1.25rem;
+    margin-top: 1rem;
+  }
+  .feature-card .highlight-box h4 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+  .feature-card .highlight-box ul {
+    list-style: none;
+    padding: 0;
+  }
+  .feature-card .highlight-box ul li {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    padding: 0.25rem 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .feature-card .highlight-box ul li::before {
+    content: '→';
+    color: var(--accent-teal);
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+  }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 0.5rem;
+    padding: 1rem 1.25rem;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.8rem;
+    color: #c9d1d9;
+    overflow-x: auto;
+    margin: 0.875rem 0;
+    line-height: 1.6;
+  }
+  .code-block .kw  { color: #ff7b72; }
+  .code-block .fn  { color: #d2a8ff; }
+  .code-block .str { color: #a5d6ff; }
+  .code-block .num { color: #79c0ff; }
+  .code-block .cmt { color: #8b949e; font-style: italic; }
+
+  /* SENSOR TABLE */
+  .sensor-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border);
+  }
+  .sensor-table th {
+    background: #162032;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.75rem 1rem;
+    text-align: left;
+  }
+  .sensor-table td {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  .sensor-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .sensor-table td:first-child { color: var(--text-primary); font-weight: 600; }
+  .badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge-new     { background: rgba(52,211,153,0.15); color: var(--accent-green); }
+  .badge-popular { background: rgba(251,191,36,0.15); color: var(--accent-yellow); }
+  .badge-low     { background: rgba(56,189,248,0.15); color: var(--accent-blue); }
+
+  /* PROJECTS GRID */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .project-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+  .project-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.35);
+  }
+  .project-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+  .project-card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+  .project-card p { font-size: 0.875rem; color: var(--text-secondary); line-height: 1.7; }
+  .difficulty-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  .diff-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+  .diff-easy   { background: var(--accent-green); }
+  .diff-medium { background: var(--accent-yellow); }
+  .diff-hard   { background: var(--accent-red); }
+
+  /* RESOURCES */
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.875rem;
+    padding: 1.25rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    transition: background 0.2s;
+  }
+  .resource-card:hover { background: var(--bg-card-hover); }
+  .resource-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .resource-card h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .resource-card p  { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+  .resource-card a  {
+    font-size: 0.78rem;
+    color: var(--accent-blue);
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 0.4rem;
+  }
+  .resource-card a:hover { text-decoration: underline; }
+
+  /* SECTION SPACING */
+  section { margin-bottom: 3.5rem; }
+
+  /* ZIGBEE DIAGRAM */
+  .zigbee-diagram {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin: 1.25rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: center;
+  }
+  .zb-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .zb-node {
+    background: rgba(56,189,248,0.1);
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.875rem;
+    color: var(--accent-blue);
+    font-weight: 600;
+    font-size: 0.78rem;
+  }
+  .zb-node.coordinator {
+    background: rgba(168,85,247,0.15);
+    border-color: rgba(168,85,247,0.4);
+    color: var(--accent-purple);
+  }
+  .zb-node.ha {
+    background: rgba(52,211,153,0.1);
+    border-color: rgba(52,211,153,0.3);
+    color: var(--accent-green);
+  }
+  .zb-arrow { color: var(--text-muted); font-size: 1.1rem; }
+  .zb-label {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-top: -0.5rem;
+  }
+
+  /* FOOTER */
+  footer {
+    background: #080f1f;
+    border-top: 1px solid var(--border);
+    padding: 2rem 2rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.83rem;
+  }
+  footer .footer-refs { margin-top: 0.875rem; display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; }
+  footer .footer-refs a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.625rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  footer .footer-refs a:hover { color: var(--accent-blue); border-color: rgba(56,189,248,0.4); }
+
+  @media (max-width: 640px) {
+    main { padding: 1.5rem 1rem 3rem; }
+    .cards-grid, .projects-grid, .resources-grid { grid-template-columns: 1fr; }
+    header { padding: 2rem 1rem 1.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">ESP32 Daily Research — September 2026</div>
+  <h1>🏥 <span>Health, Zigbee</span> & Automotive IoT</h1>
+  <p class="header-sub">ESP32 สำหรับ Wearable Healthcare · Smart Home Zigbee · CAN Bus Automotive — 1 กันยายน 2569</p>
+  <div class="header-stats">
+    <div class="stat-pill"><strong>4</strong> นวัตกรรม</div>
+    <div class="stat-pill"><strong>8</strong> ไอเดียโปรเจกต์</div>
+    <div class="stat-pill"><strong>6</strong> Sensors</div>
+    <div class="stat-pill"><strong>3</strong> หัวข้อหลัก</div>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations">นวัตกรรม</a>
+  <a href="#projects">ไอเดียโปรเจกต์</a>
+  <a href="#sensors">Sensors</a>
+  <a href="#deepdive">Deep Dive</a>
+  <a href="#resources">แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- ========== INNOVATIONS ========== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(168,85,247,0.15);">🚀</div>
+      <div>
+        <h2>นวัตกรรมและเทรนด์ใหม่ล่าสุด</h2>
+        <div class="section-desc">Health Wearable · ESP32-H2 Zigbee · TWAI CAN Bus · Remote Patient Monitoring</div>
+      </div>
+    </div>
+
+    <!-- Feature: Health Wearable -->
+    <div class="feature-card health">
+      <h3>❤️ ESP32 + MAX30102 — Wearable Health Station แบบ Open Source</h3>
+      <p>
+        MAX30102 คือ PPG (Photoplethysmography) Sensor ที่สามารถวัด <strong>Heart Rate (HR)</strong>,
+        <strong>SpO₂</strong> (ออกซิเจนในเลือด) และ <strong>Heart Rate Variability (HRV)</strong>
+        ได้พร้อมกัน ราคาเพียง 30-50 บาท ต่อกับ ESP32 ผ่าน I²C เพียง 2 สาย เหมาะสำหรับทำ
+        wearable ต้นทุนต่ำสำหรับ Remote Patient Monitoring และ Sport Performance Tracking
+      </p>
+      <p>
+        ในปี 2026 มีการนำ MAX30102 มารวมกับ <strong>AD8232 ECG Biopotential Amplifier</strong>
+        และ <strong>GSR Sensor</strong> (Galvanic Skin Response) บนบอร์ดเดียวกัน ทำให้ ESP32
+        สามารถทำ Stress Index Detection แบบ multi-modal ได้โดยไม่ต้องพึ่งระบบ Cloud
+      </p>
+      <div class="highlight-box">
+        <h4>ความสามารถของ Health Wearable Stack บน ESP32</h4>
+        <ul>
+          <li>วัด HR + SpO₂ ด้วย MAX30102 ผ่าน I²C — ความแม่นยำ ±2 bpm</li>
+          <li>วัด ECG Single-Lead ด้วย AD8232 — ดู P-QRS-T waveform จริง</li>
+          <li>คำนวณ HRV (SDNN, RMSSD) แบบ Real-time บน MCU</li>
+          <li>ตรวจ Stress Level ด้วย GSR + HRV Fusion Algorithm</li>
+          <li>ส่งข้อมูลผ่าน BLE ไปยัง App หรือ WiFi ไปยัง MQTT Broker</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature: Zigbee -->
+    <div class="feature-card zigbee">
+      <h3>🏠 ESP32-H2 — Native Zigbee Coordinator ราคา $2 สำหรับ Home Assistant</h3>
+      <p>
+        ESP32-H2 มี <strong>Zigbee 3.0 + Thread radio ในตัว</strong> ทำให้สามารถเป็น
+        Zigbee Coordinator หรือ End Device ได้โดยไม่ต้องใช้ chip ภายนอก
+        ตั้งแต่ต้นปี 2026 ESPHome รองรับ Zigbee natively ทำให้การตั้งค่า
+        ESP32-H2 เป็น Zigbee Coordinator ใน Home Assistant ทำได้ภายใน 10 นาที
+      </p>
+      <p>
+        ข้อดีเหนือ Zigbee dongle ทั่วไป: แก้ไข firmware ได้เอง, ขยาย GPIO ได้,
+        และรวม Zigbee กับ WiFi/Ethernet bridge ในตัวเครื่องเดียว
+      </p>
+      <div class="zigbee-diagram">
+        <div class="zb-row">
+          <div class="zb-node">Door Sensor<br><small>Zigbee End</small></div>
+          <div class="zb-node">Smart Plug<br><small>Zigbee Router</small></div>
+          <div class="zb-node">Temp Sensor<br><small>Zigbee End</small></div>
+        </div>
+        <div class="zb-label">Zigbee 3.0 Radio (2.4 GHz, IEEE 802.15.4)</div>
+        <div class="zb-arrow">↓ ↓ ↓</div>
+        <div class="zb-row">
+          <div class="zb-node coordinator">ESP32-H2<br>Zigbee Coordinator</div>
+        </div>
+        <div class="zb-arrow">↕ WiFi / USB Serial</div>
+        <div class="zb-row">
+          <div class="zb-node ha">Home Assistant<br>Server (zigbee2mqtt)</div>
+        </div>
+        <div class="zb-label">สั่งงาน → Dashboard / Automation / Voice Control</div>
+      </div>
+    </div>
+
+    <!-- Feature: CAN Bus -->
+    <div class="feature-card auto">
+      <h3>🚗 ESP32 TWAI — CAN Bus / OBD-II Automotive Data Logger แบบ DIY</h3>
+      <p>
+        ESP32 มี <strong>TWAI (Two-Wire Automotive Interface)</strong> controller ในตัว
+        ที่รองรับ CAN 2.0B specification ทำให้เชื่อมต่อกับ OBD-II port ของรถยนต์
+        ได้โดยตรงผ่าน CAN transceiver (SN65HVD230 หรือ TJA1050) ราคา 30-50 บาท
+      </p>
+      <p>
+        สามารถอ่านข้อมูล real-time เช่น RPM, Speed, Throttle, Coolant Temp,
+        MAF, Fuel Trim และ Diagnostic Trouble Codes (DTCs) แล้วส่งไปยัง
+        Cloud Dashboard ผ่าน WiFi หรือ 4G ทำให้สร้าง Fleet Monitoring
+        สำหรับรถยนต์หลายคันในราคาถูกมาก
+      </p>
+      <div class="highlight-box">
+        <h4>ESP32 TWAI — Pin Mapping</h4>
+        <ul>
+          <li>TX Pin: GPIO 5 (ต่อกับ TXD ของ CAN Transceiver)</li>
+          <li>RX Pin: GPIO 4 (ต่อกับ RXD ของ CAN Transceiver)</li>
+          <li>Baud Rate: 250 kbps (OBD-II standard) หรือ 500 kbps</li>
+          <li>Library: ESP32-Arduino TWAI driver + arduino-OBD2 library</li>
+          <li>Power: 12V→5V buck converter จากสาย OBD-II Pin 16</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Innovation 4 -->
+    <div class="cards-grid">
+      <div class="card accent-pink">
+        <div class="card-accent"></div>
+        <h3>💗 ESP32 Contactless Vital Signs — Radar + ML</h3>
+        <p>
+          ผสมระหว่าง mmWave Radar (LD2410 หรือ RCWL-0516) กับ
+          ESP32-S3 สำหรับตรวจวัด Respiration Rate และ Heart Rate
+          ผ่านการสั่นสะเทือนของร่างกายแบบไม่สัมผัส เหมาะสำหรับ
+          ดูแลผู้สูงอายุในห้องนอนโดยไม่ละเมิดความเป็นส่วนตัว
+        </p>
+        <p>
+          ใช้ Edge Impulse ฝึก ML Model บน ESP32-S3 ให้แยกแยะ
+          การหายใจปกติ / นอนกรน / หยุดหายใจ (Sleep Apnea)
+        </p>
+        <div class="tag-row">
+          <span class="tag tag-pink">mmWave</span>
+          <span class="tag tag-purple">ML/AI</span>
+          <span class="tag tag-blue">Privacy-First</span>
+          <span class="tag tag-green">Sleep Health</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PROJECTS ========== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,0.15);">💡</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์น่าสร้าง</h2>
+        <div class="section-desc">8 ไอเดียพร้อม BOM + ระดับความยาก</div>
+      </div>
+    </div>
+
+    <div class="projects-grid">
+
+      <div class="project-card" style="border-top: 3px solid var(--accent-pink);">
+        <span class="project-num" style="color:var(--accent-pink);">Project 01 · Health</span>
+        <h3>💗 DIY Smart Health Band ด้วย ESP32-C3 Mini + MAX30102</h3>
+        <p>
+          สร้าง Wearable Health Band ขนาดเล็กโดยใช้ ESP32-C3 Mini หรือ Seeed XIAO ESP32-C3
+          รวมกับ MAX30102 PPG Sensor, MPU6050 IMU และ SSD1306 OLED 0.96" แสดงผล
+          HR/SpO₂/Steps แบบ Real-time พร้อมส่ง BLE notification ไปยังมือถือ
+        </p>
+        <p>
+          <strong>BOM หลัก:</strong> XIAO ESP32-C3 (~120฿), MAX30102 (~50฿),
+          MPU6050 (~50฿), 300mAh LiPo (~60฿), TP4056 (~15฿)
+        </p>
+        <div class="difficulty-row">
+          <div class="diff-dot diff-medium"></div>
+          <span>ปานกลาง | ~350 บาท | 3-5 วัน</span>
+        </div>
+      </div>
+
+      <div class="project-card" style="border-top: 3px solid var(--accent-red);">
+        <span class="project-num" style="color:var(--accent-red);">Project 02 · Health</span>
+        <h3>🫀 ESP32 ECG Monitor + Telegram Alert</h3>
+        <p>
+          ใช้ AD8232 ECG Module ต่อกับ ESP32 วัดคลื่นไฟฟ้าหัวใจ Single-Lead
+          แสดงผลบน Web Dashboard แบบ Real-time ผ่าน WebSocket
+          และส่ง Alert ผ่าน Telegram Bot หาก HR เกิน threshold ที่กำหนด
+        </p>
+        <p>
+          <strong>การใช้งาน:</strong> ติดตาม Cardiac Rehabilitation ที่บ้าน,
+          ดูแลผู้ป่วยหัวใจหลังออกกำลังกาย, วิจัย HRV ส่วนตัว
+        </p>
+        <div class="difficulty-row">
+          <div class="diff-dot diff-medium"></div>
+          <span>ปานกลาง | ~250 บาท | 2-3 วัน</span>
+        </div>
+      </div>
+
+      <div class="project-card" style="border-top: 3px solid var(--accent-purple);">
+        <span class="project-num" style="color:var(--accent-purple);">Project 03 · Zigbee</span>
+        <h3>🏠 ESP32-H2 Zigbee Coordinator + zigbee2mqtt Server</h3>
+        <p>
+          เปลี่ยน ESP32-H2 DevKitC-1 ให้เป็น Zigbee Coordinator ราคา ~200 บาท
+          แทน ZigBee USB Dongle ราคา 700-1,500 บาท Flash firmware ด้วย Espressif
+          Zigbee SDK แล้วต่อ USB เข้า Home Assistant Server
+          รองรับ Zigbee End Device / Router ได้กว่า 100 ตัว
+        </p>
+        <p>
+          <strong>ข้อดี:</strong> Firmware อัปเดตได้เอง, custom GPIO สำหรับ LED status,
+          ต่อ Reset Button จากภายนอกได้
+        </p>
+        <div class="difficulty-row">
+          <div class="diff-dot diff-medium"></div>
+          <span>ปานกลาง | ~200 บาท | 1-2 วัน</span>
+        </div>
+      </div>
+
+      <div class="project-card" style="border-top: 3px solid var(--accent-blue);">
+        <span class="project-num" style="color:var(--accent-blue);">Project 04 · Zigbee</span>
+        <h3>🌡️ ESP32-H2 DIY Zigbee Temperature + Humidity Sensor</h3>
+        <p>
+          สร้าง Zigbee End Device ด้วย ESP32-H2 + SHT40 Temperature/Humidity Sensor
+          ทำงานจากแบตเตอรี่ AA 2 ก้อนนาน 2-3 ปี ด้วย Deep Sleep 55 µA
+          Pair กับ Zigbee2MQTT แล้วแสดงผลใน Home Assistant ทันที
+        </p>
+        <p>
+          <strong>Zigbee Cluster:</strong> Temperature Measurement (0x0402) +
+          Relative Humidity (0x0405) + Power Configuration (0x0001)
+        </p>
+        <div class="difficulty-row">
+          <div class="diff-dot diff-easy"></div>
+          <span>ง่าย | ~180 บาท | 1 วัน</span>
+        </div>
+      </div>
+
+      <div class="project-card" style="border-top: 3px solid var(--accent-orange);">
+        <span class="project-num" style="color:var(--accent-orange);">Project 05 · Automotive</span>
+        <h3>🚗 ESP32 OBD-II WiFi Logger สำหรับ Fleet Management</h3>
+        <p>
+          เสียบ ESP32 + SN65HVD230 เข้า OBD-II Port รถยนต์
+          อ่านข้อมูล Real-time: RPM, Speed, Coolant Temp, Fuel Level, DTCs
+          แล้วส่งไปยัง MQTT Broker และ Grafana Dashboard ผ่าน WiFi Hotspot
+          หรือ 4G module (SIM800L)
+        </p>
+        <p>
+          <strong>OBD-II PIDs ที่อ่านได้:</strong> 0x0C (RPM), 0x0D (Speed),
+          0x05 (Coolant), 0x11 (Throttle), 0x2F (Fuel Level)
+        </p>
+        <div class="difficulty-row">
+          <div class="diff-dot diff-medium"></div>
+          <span>ปานกลาง | ~400 บาท | 3-4 วัน</span>
+        </div>
+      </div>
+
+      <div class="project-card" style="border-top: 3px solid var(--accent-yellow);">
+        <span class="project-num" style="color:var(--accent-yellow);">Project 06 · Automotive</span>
+        <h3>🔧 ESP32 CAN Bus Analyzer สำหรับงานอุตสาหกรรม</h3>
+        <p>
+          ใช้ ESP32 + TJA1050 CAN transceiver สร้าง CAN Bus Sniffer/Analyzer
+          แบบ Portable ด้วยหน้าจอ TFT 2.4" แสดง CAN Frame real-time
+          บันทึก log ลง SD Card และส่งไปยัง PC ผ่าน WiFi Serial Terminal
+        </p>
+        <p>
+          เหมาะสำหรับ Debug PLC, VFD, Robot Arm ที่ใช้ CAN Bus Protocol
+          ในสายการผลิต ราคาถูกกว่า CAN Analyzer ทางการมาก 10-20 เท่า
+        </p>
+        <div class="difficulty-row">
+          <div class="diff-dot diff-hard"></div>
+          <span>ยาก | ~600 บาท | 5-7 วัน</span>
+        </div>
+      </div>
+
+      <div class="project-card" style="border-top: 3px solid var(--accent-pink);">
+        <span class="project-num" style="color:var(--accent-pink);">Project 07 · Health</span>
+        <h3>😴 Sleep Apnea Detector บน ESP32-S3 + mmWave Radar</h3>
+        <p>
+          ติด LD2410C mmWave Radar ไว้บนเพดานห้องนอน เชื่อมต่อกับ ESP32-S3
+          ที่รัน TensorFlow Lite Micro Model ตรวจจับ Pattern การหายใจ
+          แจ้งเตือนอัตโนมัติผ่าน Buzzer + Line Notify เมื่อ detect ภาวะ Sleep Apnea
+        </p>
+        <p>
+          <strong>ข้อดี:</strong> ไม่ใช้กล้อง ไม่แปะ sensor บนร่างกาย
+          ความแม่นยำ ~85% เทียบกับ PSG ในการตรวจ Apnea-Hypopnea Index
+        </p>
+        <div class="difficulty-row">
+          <div class="diff-dot diff-hard"></div>
+          <span>ยาก | ~500 บาท | 1-2 สัปดาห์</span>
+        </div>
+      </div>
+
+      <div class="project-card" style="border-top: 3px solid var(--accent-teal);">
+        <span class="project-num" style="color:var(--accent-teal);">Project 08 · Smart Home</span>
+        <h3>🔔 ESP32-H2 Zigbee Smart Doorbell พร้อม Home Assistant</h3>
+        <p>
+          เปลี่ยนกริ่งประตูธรรมดาให้เป็น Smart Doorbell ด้วย ESP32-H2
+          Zigbee Binary Sensor ตรวจจับการกดกริ่ง แจ้งเตือนใน Home Assistant,
+          มือถือ, และ Google/Alexa ประกาศเสียง โดยไม่ต้องเดินสายใหม่
+        </p>
+        <p>
+          ESPHome Zigbee Mode รองรับ Binary Sensor Cluster (IAS Zone 0x0500)
+          ตั้งแต่ต้นปี 2026 Flash ง่าย ใช้เวลาไม่เกิน 1 ชั่วโมง
+        </p>
+        <div class="difficulty-row">
+          <div class="diff-dot diff-easy"></div>
+          <span>ง่าย | ~200 บาท | 2-4 ชั่วโมง</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== SENSORS ========== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(56,189,248,0.15);">📡</div>
+      <div>
+        <h2>Sensors น่าสนใจประจำวันนี้</h2>
+        <div class="section-desc">Biometric · Cardiac · Automotive · Smart Home</div>
+      </div>
+    </div>
+
+    <div style="overflow-x:auto;">
+    <table class="sensor-table">
+      <thead>
+        <tr>
+          <th>Sensor/IC</th>
+          <th>ประเภท</th>
+          <th>Interface</th>
+          <th>ราคา (บาท)</th>
+          <th>ไฮไลต์</th>
+          <th>สถานะ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>MAX30102</td>
+          <td>PPG — Heart Rate + SpO₂</td>
+          <td>I²C (400 kHz)</td>
+          <td>~40–60</td>
+          <td>Red + IR LED internal, 18-bit ADC, interrupt pin, low power 600 µA</td>
+          <td><span class="badge badge-popular">Popular</span></td>
+        </tr>
+        <tr>
+          <td>AD8232</td>
+          <td>ECG Biopotential Amplifier</td>
+          <td>Analog OUT → ADC</td>
+          <td>~80–150</td>
+          <td>Single-Lead ECG, Lead-Off Detection, 3.3V operation, FDA-cleared chip</td>
+          <td><span class="badge badge-popular">Popular</span></td>
+        </tr>
+        <tr>
+          <td>GSR / EDA Sensor</td>
+          <td>Galvanic Skin Response</td>
+          <td>Analog OUT → ADC</td>
+          <td>~30–80</td>
+          <td>ตรวจ Electrodermal Activity สำหรับวัด Stress + Arousal State</td>
+          <td><span class="badge badge-new">New Use</span></td>
+        </tr>
+        <tr>
+          <td>MLX90614</td>
+          <td>IR Contactless Thermometer</td>
+          <td>I²C (SMBus)</td>
+          <td>~120–200</td>
+          <td>ช่วง -70°C ถึง 380°C, ความแม่นยำ ±0.5°C ที่อุณหภูมิร่างกาย</td>
+          <td><span class="badge badge-popular">Popular</span></td>
+        </tr>
+        <tr>
+          <td>SN65HVD230</td>
+          <td>CAN Bus Transceiver</td>
+          <td>CAN H / CAN L</td>
+          <td>~30–50</td>
+          <td>3.3V compatible กับ ESP32 TWAI, ISO 11898-2, 1 Mbps, ESD ±16 kV</td>
+          <td><span class="badge badge-new">Hot Pick</span></td>
+        </tr>
+        <tr>
+          <td>SHT40</td>
+          <td>Temp + Humidity (Sensirion)</td>
+          <td>I²C</td>
+          <td>~80–120</td>
+          <td>±0.2°C / ±1.8% RH, รุ่นใหม่กว่า SHT30, มี heater anti-condensation</td>
+          <td><span class="badge badge-new">New</span></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ========== DEEP DIVE ========== -->
+  <section id="deepdive">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,0.15);">🔬</div>
+      <div>
+        <h2>Deep Dive: ESP32 TWAI CAN Bus — ขั้นตอนอ่าน OBD-II จริง</h2>
+        <div class="section-desc">Hardware Wiring + Code + PID Request ครบจบในที่เดียว</div>
+      </div>
+    </div>
+
+    <div class="feature-card" style="border:1px solid var(--border);">
+      <h3>⚙️ Hardware Setup — ESP32 + SN65HVD230 + OBD-II Connector</h3>
+      <p>
+        ต่อวงจรง่ายๆ 4 สาย: ESP32 GPIO5 (TX) → TXD ของ SN65HVD230, GPIO4 (RX) → RXD,
+        CANH/CANL ต่อกับ Pin 6/14 ของ OBD-II connector และต่อ 12V จาก Pin 16 ผ่าน buck converter
+      </p>
+
+      <div class="code-block">
+<span class="cmt">// ESP32 Arduino — อ่าน RPM จาก OBD-II ผ่าน TWAI/CAN Bus</span>
+<span class="kw">#include</span> <span class="str">"driver/twai.h"</span>
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  Serial.<span class="fn">begin</span>(<span class="num">115200</span>);
+
+  <span class="cmt">// กำหนด CAN config</span>
+  twai_general_config_t g_config = TWAI_GENERAL_CONFIG_DEFAULT(
+    (<span class="fn">gpio_num_t</span>)<span class="num">5</span>,  <span class="cmt">// TX pin</span>
+    (<span class="fn">gpio_num_t</span>)<span class="num">4</span>,  <span class="cmt">// RX pin</span>
+    TWAI_MODE_NORMAL
+  );
+  twai_timing_config_t t_config = TWAI_TIMING_CONFIG_500KBITS();
+  twai_filter_config_t f_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();
+
+  twai_driver_install(&amp;g_config, &amp;t_config, &amp;f_config);
+  twai_start();
+}
+
+<span class="kw">void</span> <span class="fn">requestOBD</span>(<span class="kw">uint8_t</span> pid) {
+  twai_message_t msg;
+  msg.identifier = <span class="num">0x7DF</span>;   <span class="cmt">// OBD-II Functional Request ID</span>
+  msg.data_length_code = <span class="num">8</span>;
+  msg.data[<span class="num">0</span>] = <span class="num">0x02</span>;       <span class="cmt">// Number of bytes to follow</span>
+  msg.data[<span class="num">1</span>] = <span class="num">0x01</span>;       <span class="cmt">// Mode 01 — Current data</span>
+  msg.data[<span class="num">2</span>] = pid;         <span class="cmt">// PID (เช่น 0x0C = RPM)</span>
+  <span class="kw">for</span>(<span class="kw">int</span> i=<span class="num">3</span>; i&lt;<span class="num">8</span>; i++) msg.data[i] = <span class="num">0x00</span>;
+  twai_transmit(&amp;msg, pdMS_TO_TICKS(<span class="num">100</span>));
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="fn">requestOBD</span>(<span class="num">0x0C</span>);  <span class="cmt">// ขอ RPM</span>
+
+  twai_message_t response;
+  <span class="kw">if</span>(twai_receive(&amp;response, pdMS_TO_TICKS(<span class="num">200</span>)) == ESP_OK) {
+    <span class="cmt">// RPM = ((A*256) + B) / 4</span>
+    <span class="kw">int</span> rpm = ((response.data[<span class="num">3</span>] * <span class="num">256</span>) + response.data[<span class="num">4</span>]) / <span class="num">4</span>;
+    Serial.printf(<span class="str">"RPM: %d\n"</span>, rpm);
+  }
+  delay(<span class="num">500</span>);
+}
+      </div>
+
+      <p>
+        <strong>OBD-II PID สำคัญๆ ที่ต้องรู้:</strong> 0x0C (RPM), 0x0D (Vehicle Speed km/h),
+        0x05 (Engine Coolant Temp), 0x11 (Throttle Position %), 0x2F (Fuel Tank Level %),
+        0x33 (Barometric Pressure), 0x5C (Oil Temperature)
+      </p>
+    </div>
+
+    <div class="cards-grid" style="margin-top:1.25rem;">
+      <div class="card accent-purple">
+        <div class="card-accent"></div>
+        <h3>ESP32-H2 Zigbee — Library ที่ต้องรู้</h3>
+        <p>ใช้ <strong>Espressif Zigbee SDK</strong> (esp-zigbee-sdk) บน ESP-IDF หรือ
+        <strong>ESPHome Zigbee component</strong> สำหรับ no-code configuration
+        รองรับ Cluster: On/Off, Level Control, Temperature, Humidity, IAS Zone</p>
+        <div class="tag-row">
+          <span class="tag tag-purple">ESP-IDF</span>
+          <span class="tag tag-blue">ESPHome</span>
+          <span class="tag tag-green">Arduino (beta)</span>
+        </div>
+      </div>
+      <div class="card accent-pink">
+        <div class="card-accent"></div>
+        <h3>MAX30102 — Library และ Algorithm</h3>
+        <p>ใช้ <strong>SparkFun MAX3010x Library</strong> บน Arduino/PlatformIO
+        หรือ Maxim's Reference Algorithm สำหรับ SpO₂ (อัลกอริทึม R-ratio)
+        และ HR (Pan-Tompkins QRS Detection Algorithm)</p>
+        <div class="tag-row">
+          <span class="tag tag-pink">SparkFun Lib</span>
+          <span class="tag tag-red">Pan-Tompkins</span>
+          <span class="tag tag-orange">R-ratio SpO₂</span>
+        </div>
+      </div>
+      <div class="card accent-orange">
+        <div class="card-accent"></div>
+        <h3>CAN Bus — Tools และ Software</h3>
+        <p><strong>SavvyCAN</strong> (open source) ใช้สำหรับ visualize CAN frames บน PC
+        <strong>python-can + cantools</strong> สำหรับ decode DBC files ของรถยนต์
+        <strong>ESP32-CAN-Tool</strong> บน GitHub สำหรับ Web-based monitoring</p>
+        <div class="tag-row">
+          <span class="tag tag-orange">SavvyCAN</span>
+          <span class="tag tag-yellow">python-can</span>
+          <span class="tag tag-blue">cantools</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== RESOURCES ========== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(45,212,191,0.15);">🔗</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์น่าสนใจ</h2>
+        <div class="section-desc">Documentation · Libraries · Projects · Community</div>
+      </div>
+    </div>
+
+    <div class="resources-grid">
+
+      <div class="resource-card">
+        <div class="resource-icon" style="background:rgba(168,85,247,0.15);">🏠</div>
+        <div>
+          <h4>ESP32-H2 Zigbee Tutorial</h4>
+          <p>คู่มือการตั้งค่า ESP32-H2 เป็น Zigbee Coordinator + Home Assistant integration</p>
+          <a href="https://blog.usro.net/2025/05/esp32-with-zigbee-home-assistant-detailed-tutorial/" target="_blank">blog.usro.net →</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon" style="background:rgba(56,189,248,0.15);">📱</div>
+        <div>
+          <h4>ESP32-C6 Zigbee Coordinator/End Device Overview</h4>
+          <p>บทความ Medium อธิบาย Zigbee Stack บน ESP32-C6 ครบถ้วน</p>
+          <a href="https://medium.com/@androidcrypto/how-to-use-an-esp32-c6-as-zigbee-coordinator-or-end-device-overview-e70cfa7f45f9" target="_blank">medium.com →</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon" style="background:rgba(248,113,113,0.15);">❤️</div>
+        <div>
+          <h4>ESP32 Stress Detector + MAX30100</h4>
+          <p>โปรเจกต์ตรวจ Stress ด้วย ESP32 + MAX30100 + GSR พร้อม Code</p>
+          <a href="https://quartzcomponents.com/blogs/electronics-projects/esp32-based-stress-detector-with-max30100-heart-rate-sensor-full-guide" target="_blank">quartzcomponents.com →</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon" style="background:rgba(251,146,60,0.15);">🚗</div>
+        <div>
+          <h4>ESP32 CAN Bus Interface for Automotive Diagnostics</h4>
+          <p>คู่มือ Hardware + Software สำหรับ ESP32 CAN Bus / OBD-II Diagnostics</p>
+          <a href="https://zbotic.in/esp32-can-bus-interface-automotive-diagnostics-projects/" target="_blank">zbotic.in →</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon" style="background:rgba(251,191,36,0.15);">🔧</div>
+        <div>
+          <h4>ESP32 Embedded CAN Bus Development</h4>
+          <p>บทความ Copperhill Tech — ลึกสุดเรื่อง TWAI driver บน ESP-IDF</p>
+          <a href="https://copperhilltech.com/blog/embedded-can-bus-development-with-the-esp32-processor/" target="_blank">copperhilltech.com →</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon" style="background:rgba(52,211,153,0.15);">📡</div>
+        <div>
+          <h4>Zigbee Coordinator Setup Guide</h4>
+          <p>คู่มือ Step-by-step การสร้าง Zigbee Smart Home Network ด้วย ESP32</p>
+          <a href="https://zbotic.in/zigbee-coordinator-with-esp32-smart-home-network-setup/" target="_blank">zbotic.in →</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon" style="background:rgba(244,114,182,0.15);">💗</div>
+        <div>
+          <h4>ESP32 Fitness Wristband Prototype Guide</h4>
+          <p>คู่มือสร้าง Fitness Wristband ด้วย ESP32 + MAX30102 + MPU6050</p>
+          <a href="https://www.schematik.io/projects/build-a-fitness-wristband" target="_blank">schematik.io →</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon" style="background:rgba(168,85,247,0.15);">⭐</div>
+        <div>
+          <h4>Best ESP32 Projects 2026</h4>
+          <p>รวมโปรเจกต์ ESP32 ที่น่าสร้างในปี 2026 จาก Ampheo Blog</p>
+          <a href="https://www.ampheo.com/blog/best-esp32-projects-you-can-build-in-2026" target="_blank">ampheo.com →</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div style="font-weight:600; color:var(--text-secondary); margin-bottom:0.5rem;">
+    ESP32 &amp; Sensor Innovations Daily Research
+  </div>
+  <div>สร้างเมื่อ: 1 กันยายน พ.ศ. 2569 &nbsp;|&nbsp; หัวข้อ: Health Wearable · Zigbee · CAN Bus Automotive</div>
+  <div class="footer-refs">
+    <a href="https://quartzcomponents.com" target="_blank">QuartzComponents</a>
+    <a href="https://zbotic.in" target="_blank">Zbotic</a>
+    <a href="https://blog.usro.net" target="_blank">blog.usro.net</a>
+    <a href="https://copperhilltech.com" target="_blank">Copperhill Tech</a>
+    <a href="https://schematik.io" target="_blank">Schematik</a>
+    <a href="https://medium.com/@androidcrypto" target="_blank">AndroidCrypto</a>
+  </div>
+</footer>
+
+</body>
+</html>
