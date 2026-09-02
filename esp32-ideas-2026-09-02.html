@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 2 กันยายน 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #263348;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent1: #38bdf8;
+    --accent2: #a78bfa;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+  }
+  body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); line-height: 1.8; min-height: 100vh; }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(99,102,241,0.2);
+    border: 1px solid rgba(99,102,241,0.4);
+    color: #a5b4fc;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+  }
+  header h1 {
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #38bdf8, #a78bfa, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.6rem;
+    line-height: 1.2;
+  }
+  header .subtitle {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    margin-bottom: 1.8rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.5rem 1.1rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  .stat-chip strong { color: var(--text); }
+
+  /* Layout */
+  main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+  section { margin-bottom: 3.5rem; }
+
+  /* Section header */
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.8rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .section-header h2 { font-size: 1.45rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+  .section-header .section-desc { font-size: 0.88rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+  /* Cards grid */
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.4rem; }
+
+  /* Base card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover { border-color: rgba(56,189,248,0.4); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.35); }
+  .card h3 { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 0.7rem; line-height: 1.4; }
+  .card p { font-size: 0.92rem; color: var(--text-muted); margin-bottom: 0.8rem; }
+
+  /* Tags */
+  .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.9rem; }
+  .tag {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.18rem 0.6rem;
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .tag.blue { background: rgba(56,189,248,0.12); border-color: rgba(56,189,248,0.3); color: #7dd3fc; }
+  .tag.purple { background: rgba(167,139,250,0.12); border-color: rgba(167,139,250,0.3); color: #c4b5fd; }
+  .tag.green { background: rgba(52,211,153,0.12); border-color: rgba(52,211,153,0.3); color: #6ee7b7; }
+  .tag.orange { background: rgba(251,146,60,0.12); border-color: rgba(251,146,60,0.3); color: #fdba74; }
+  .tag.pink { background: rgba(244,114,182,0.12); border-color: rgba(244,114,182,0.3); color: #f9a8d4; }
+  .tag.red { background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.3); color: #fca5a5; }
+
+  /* Feature highlight card */
+  .feature-card {
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.6rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .feature-card:hover { transform: translateY(-3px); }
+  .feature-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    border-radius: 16px 16px 0 0;
+  }
+  .feature-card.accent-blue::before { background: linear-gradient(90deg, #38bdf8, #818cf8); }
+  .feature-card.accent-purple::before { background: linear-gradient(90deg, #a78bfa, #ec4899); }
+  .feature-card.accent-green::before { background: linear-gradient(90deg, #34d399, #22d3ee); }
+  .feature-card.accent-orange::before { background: linear-gradient(90deg, #fb923c, #fbbf24); }
+  .feature-card h3 { font-size: 1.08rem; font-weight: 700; color: var(--text); margin-bottom: 0.7rem; line-height: 1.4; }
+  .feature-card p { font-size: 0.92rem; color: var(--text-muted); margin-bottom: 0.6rem; }
+
+  /* Spec table inside card */
+  .spec-table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.87rem; }
+  .spec-table td { padding: 0.35rem 0.5rem; border-bottom: 1px solid var(--border); }
+  .spec-table td:first-child { color: var(--text-muted); width: 40%; font-weight: 600; }
+  .spec-table td:last-child { color: var(--text); font-family: 'Courier New', monospace; font-size: 0.83rem; }
+  .spec-table tr:last-child td { border-bottom: none; }
+
+  /* Project card */
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.4rem 1.5rem;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  }
+  .project-card:hover { border-color: rgba(167,139,250,0.4); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .project-card h3 { font-size: 1.02rem; font-weight: 700; color: var(--text); margin-bottom: 0.6rem; }
+  .project-card p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.8rem; }
+  .bom-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.7rem; }
+  .bom-item {
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 8px;
+    padding: 0.22rem 0.7rem;
+    font-size: 0.78rem;
+    color: #a5b4fc;
+  }
+  .difficulty { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 6px; }
+  .diff-easy { background: rgba(52,211,153,0.12); color: #34d399; }
+  .diff-medium { background: rgba(251,191,36,0.12); color: #fbbf24; }
+  .diff-hard { background: rgba(248,113,113,0.12); color: #f87171; }
+
+  /* Sensor card */
+  .sensor-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.4rem;
+    display: flex;
+    gap: 1rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .sensor-card:hover { border-color: rgba(52,211,153,0.4); transform: translateY(-3px); }
+  .sensor-icon { font-size: 2rem; flex-shrink: 0; margin-top: 0.2rem; }
+  .sensor-info h3 { font-size: 0.97rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
+  .sensor-info p { font-size: 0.87rem; color: var(--text-muted); margin-bottom: 0.6rem; }
+  .sensor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
+
+  /* Code block */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #7dd3fc;
+    overflow-x: auto;
+    margin: 0.8rem 0;
+    line-height: 1.6;
+  }
+  .code-block .cmt { color: #4b5563; }
+  .code-block .kw { color: #c084fc; }
+  .code-block .str { color: #86efac; }
+  .code-block .num { color: #fdba74; }
+
+  /* Resource links */
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.1rem; }
+  .resource-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    transition: border-color 0.2s;
+  }
+  .resource-card:hover { border-color: rgba(56,189,248,0.3); }
+  .resource-card .resource-type { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .resource-card h4 { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; line-height: 1.3; }
+  .resource-card p { font-size: 0.85rem; color: var(--text-muted); }
+  .resource-link { display: inline-block; margin-top: 0.6rem; font-size: 0.82rem; color: var(--accent1); text-decoration: none; }
+  .resource-link:hover { text-decoration: underline; }
+
+  /* Alert box */
+  .alert-box {
+    background: rgba(99,102,241,0.08);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 12px;
+    padding: 1rem 1.3rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.91rem;
+    color: #c7d2fe;
+  }
+  .alert-box strong { color: #a5b4fc; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 1.5rem; }
+  .timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, #38bdf8, #a78bfa, #34d399); border-radius: 2px; }
+  .timeline-item { position: relative; margin-bottom: 1.4rem; padding-left: 1rem; }
+  .timeline-item::before { content: ''; position: absolute; left: -1.55rem; top: 0.55rem; width: 10px; height: 10px; border-radius: 50%; background: var(--accent1); border: 2px solid var(--bg); }
+  .timeline-item h4 { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+  .timeline-item p { font-size: 0.87rem; color: var(--text-muted); }
+  .timeline-item .tl-date { font-size: 0.78rem; color: var(--accent1); font-weight: 600; margin-bottom: 0.2rem; }
+
+  /* Footer */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  footer strong { color: var(--text); }
+  footer .footer-sources { margin-top: 1rem; font-size: 0.78rem; color: #475569; line-height: 1.7; }
+  footer a { color: var(--accent1); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .cards-grid, .sensor-grid, .resource-grid { grid-template-columns: 1fr; }
+    main { padding: 1.5rem 1rem; }
+    header { padding: 2rem 1rem 1.8rem; }
+    .stats-row { gap: 0.8rem; }
+    .stat-chip { font-size: 0.82rem; padding: 0.4rem 0.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">🤖 AI Research Daily · ESP32 & IoT</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">2 กันยายน 2569 · ชิปรุ่นใหม่ · Matter/Thread · Edge AI · Water Quality IoT</p>
+  <div class="stats-row">
+    <div class="stat-chip">🔧 <strong>4</strong> หัวข้อหลัก</div>
+    <div class="stat-chip">💡 <strong>8</strong> ไอเดียโปรเจกต์</div>
+    <div class="stat-chip">📡 <strong>6</strong> Sensors ใหม่</div>
+    <div class="stat-chip">📚 <strong>7</strong> แหล่งอ้างอิง</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ====== INNOVATIONS ====== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(56,189,248,0.12);">🚀</div>
+      <div>
+        <h2>นวัตกรรมและชิปใหม่ล่าสุด</h2>
+        <div class="section-desc">ESP32-E22 Wi-Fi 6E · ESP32-H21 Ultra-Low Power · Matter/Thread Ecosystem · Edge AI</div>
+      </div>
+    </div>
+
+    <div class="alert-box">
+      <strong>ข่าวสำคัญ CES 2026:</strong> Espressif เปิดตัวชิปใหม่ 2 รุ่นพร้อมกัน — ESP32-E22 Wi-Fi 6E tri-band ที่เร็วสุดในตระกูล และ ESP32-H21 สำหรับ IoT บน Bluetooth LE + Thread ที่ใช้พลังงานต่ำมาก พร้อมกับ ESP32-E22 ได้รับการรับรอง Wi-Fi 6E Certificate แล้วในปี 2026
+    </div>
+
+    <div class="cards-grid">
+      <!-- ESP32-E22 -->
+      <div class="feature-card accent-blue">
+        <h3>⚡ ESP32-E22 — Wi-Fi 6E Tri-Band Co-Processor</h3>
+        <p>ชิปรุ่นใหม่ที่ทรงพลังที่สุดในตระกูล ESP32 ปัจจุบัน ออกแบบเป็น connectivity co-processor รองรับ 3 ย่านความถี่พร้อมกัน</p>
+        <table class="spec-table">
+          <tr><td>CPU</td><td>Dual-core RISC-V @ 500 MHz</td></tr>
+          <tr><td>RAM</td><td>1 MB on-chip</td></tr>
+          <tr><td>Wi-Fi</td><td>6E tri-band 2.4/5/6 GHz, 160 MHz ch, 2×2 MIMO</td></tr>
+          <tr><td>Throughput</td><td>สูงสุด 2.1 Gbps (iperf)</td></tr>
+          <tr><td>Bluetooth</td><td>6.0 dual-mode (LE + BR/EDR)</td></tr>
+          <tr><td>Interface</td><td>PCIe, USB, SDIO</td></tr>
+        </table>
+        <div class="tags">
+          <span class="tag blue">Wi-Fi 6E</span>
+          <span class="tag blue">Tri-Band</span>
+          <span class="tag purple">RISC-V</span>
+          <span class="tag green">BT 6.0</span>
+          <span class="tag orange">2.1 Gbps</span>
+        </div>
+      </div>
+
+      <!-- ESP32-H21 -->
+      <div class="feature-card accent-purple">
+        <h3>🔋 ESP32-H21 — Ultra-Low Power BLE + Thread</h3>
+        <p>ทายาทของ ESP32-H2 ออกแบบมาเพื่องาน IoT nodes พลังงานต่ำ รองรับ Bluetooth LE และ 802.15.4 (Zigbee/Thread) มี on-chip DC-DC converter</p>
+        <table class="spec-table">
+          <tr><td>CPU</td><td>Single-core RISC-V @ 96 MHz</td></tr>
+          <tr><td>RAM</td><td>320 KB</td></tr>
+          <tr><td>Radio</td><td>BLE 5.x + 802.15.4 (Thread/Zigbee)</td></tr>
+          <tr><td>GPIO</td><td>19 GPIO</td></tr>
+          <tr><td>Power</td><td>Ultra-low, on-chip DC-DC converter</td></tr>
+          <tr><td>Use case</td><td>Battery-powered sensor nodes</td></tr>
+        </table>
+        <div class="tags">
+          <span class="tag purple">BLE 5.x</span>
+          <span class="tag blue">Thread</span>
+          <span class="tag green">Zigbee</span>
+          <span class="tag green">Ultra-Low Power</span>
+          <span class="tag orange">Battery IoT</span>
+        </div>
+      </div>
+
+      <!-- Matter/Thread Ecosystem -->
+      <div class="feature-card accent-green">
+        <h3>🏠 ESP32-C6 — Thread Border Router + Matter ราคา $5</h3>
+        <p>IKEA ประกาศยกเลิก Zigbee หันมาใช้ Matter/Thread — ส่งผลให้ ESP32-C6 กลายเป็นชิปสำคัญสำหรับ DIY smart home ในปี 2026</p>
+        <p>สามารถทำงานเป็น standalone Thread Border Router แบบ single-chip โดยไม่ต้องใช้ OTBR add-on รองรับอุปกรณ์จาก IKEA, Aqara และ Nanoleaf พร้อมกัน</p>
+        <div class="code-block">
+<span class="cmt"># Flash ESP32-C6 เป็น Thread RCP</span>
+idf.py -D SDKCONFIG_DEFAULTS=<span class="str">"sdkconfig.rcp"</span> build
+idf.py flash -p /dev/ttyUSB0
+<span class="cmt"># เพิ่มใน Home Assistant</span>
+Settings → Add-ons → OpenThread Border Router
+        </div>
+        <div class="tags">
+          <span class="tag green">Matter</span>
+          <span class="tag blue">Thread</span>
+          <span class="tag purple">Home Assistant</span>
+          <span class="tag orange">IKEA Compatible</span>
+        </div>
+      </div>
+
+      <!-- Edge AI -->
+      <div class="feature-card accent-orange">
+        <h3>🧠 ESP32-S3 + TinyML — Edge AI ไม่ต้องใช้ Cloud</h3>
+        <p>ESP32-S3 มี Vector Instructions ที่เร่งการคำนวณ Neural Network ทำให้ TensorFlow Lite Micro ทำงานได้เร็วกว่า ESP32 รุ่นเก่าหลายเท่า</p>
+        <p>ในปี 2026 มี framework ให้เลือก 3 ทาง: <strong>Edge Impulse</strong> (เร็วที่สุด สำหรับ prototype), <strong>TFLite Micro</strong> (ควบคุมได้มาก), <strong>ESP-DL</strong> (ของ Espressif เอง tuned สำหรับ S3)</p>
+        <div class="tags">
+          <span class="tag orange">TinyML</span>
+          <span class="tag blue">TFLite Micro</span>
+          <span class="tag purple">ESP-DL</span>
+          <span class="tag green">Edge Impulse</span>
+          <span class="tag pink">No Cloud</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== PROJECTS ====== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(167,139,250,0.12);">💡</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์น่าสร้าง</h2>
+        <div class="section-desc">8 ไอเดียพร้อม BOM + ระดับความยาก — เน้นหัวข้อที่ไม่เคยทำมาก่อน</div>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <div class="project-card">
+        <h3>📡 ESP32-C6 DIY Thread Border Router</h3>
+        <p>ทำ Thread Border Router ราคาถูกจาก ESP32-C6-WROOM ใช้เป็น gateway สำหรับอุปกรณ์ IKEA DIRIGERA, Aqara Thread ในบ้าน เชื่อมต่อกับ Home Assistant ผ่าน OpenThread</p>
+        <div class="bom-row">
+          <span class="bom-item">ESP32-C6-WROOM ($5)</span>
+          <span class="bom-item">USB-C cable</span>
+          <span class="bom-item">ESP-IDF v5.4.1</span>
+          <span class="bom-item">Home Assistant</span>
+        </div>
+        <span class="difficulty diff-medium">⚡ ปานกลาง</span>
+        <div class="tags">
+          <span class="tag blue">Thread</span>
+          <span class="tag green">Matter</span>
+          <span class="tag purple">Home Assistant</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <h3>🧠 ESP32-S3 Anomaly Detector ด้วย TinyML</h3>
+        <p>ใช้ Edge Impulse เทรน autoencoder จากข้อมูล vibration sensor ปกติ เมื่อตรวจพบ anomaly (เครื่องจักรผิดปกติ) ส่ง alert ผ่าน LINE Notify ทำงานแบบ offline 100%</p>
+        <div class="bom-row">
+          <span class="bom-item">ESP32-S3</span>
+          <span class="bom-item">MPU6050 IMU</span>
+          <span class="bom-item">Edge Impulse SDK</span>
+          <span class="bom-item">LINE Notify</span>
+        </div>
+        <span class="difficulty diff-hard">🔥 ยาก</span>
+        <div class="tags">
+          <span class="tag orange">TinyML</span>
+          <span class="tag blue">Predictive Maintenance</span>
+          <span class="tag green">Offline AI</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <h3>💧 ESP32 ระบบตรวจสอบคุณภาพน้ำในนาข้าว</h3>
+        <p>วัด pH, EC (ความเค็ม), TDS, อุณหภูมิ และความขุ่นของน้ำในนาข้าว ส่งข้อมูลขึ้น Firebase Realtime DB แสดงผลบน Dashboard LINE OA พร้อมแจ้งเตือนอัตโนมัติ</p>
+        <div class="bom-row">
+          <span class="bom-item">ESP32 DevKit</span>
+          <span class="bom-item">pH Sensor Module</span>
+          <span class="bom-item">TDS/EC Sensor</span>
+          <span class="bom-item">DS18B20</span>
+          <span class="bom-item">Firebase</span>
+        </div>
+        <span class="difficulty diff-medium">⚡ ปานกลาง</span>
+        <div class="tags">
+          <span class="tag blue">Agriculture IoT</span>
+          <span class="tag green">Water Quality</span>
+          <span class="tag orange">Firebase</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <h3>🌊 ESP32 Smart Aquaculture Monitor</h3>
+        <p>ระบบตรวจสอบบ่อกุ้ง/ปลา แบบ wireless multi-sensor วัด DO (Dissolved Oxygen), pH, อุณหภูมิ, ความเค็ม พร้อมปั้มออกซิเจนอัตโนมัติเมื่อค่า DO ต่ำ รายงานผ่าน Blynk IoT</p>
+        <div class="bom-row">
+          <span class="bom-item">ESP32 + ESP32-H21</span>
+          <span class="bom-item">DO Sensor Atlas Scientific</span>
+          <span class="bom-item">Relay Module</span>
+          <span class="bom-item">Blynk IoT</span>
+        </div>
+        <span class="difficulty diff-hard">🔥 ยาก</span>
+        <div class="tags">
+          <span class="tag blue">Aquaculture</span>
+          <span class="tag green">DO Sensor</span>
+          <span class="tag purple">Automation</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <h3>🔊 ESP32-S3 Sound Classifier ด้วย TFLite</h3>
+        <p>แยกประเภทเสียง (สุนัขเห่า, ระฆัง, กระดิ่ง, เสียงแตก) ด้วย MFCC + Neural Network บน ESP32-S3 ทำงานแบบ real-time ไม่ต้องส่ง audio ขึ้น cloud</p>
+        <div class="bom-row">
+          <span class="bom-item">ESP32-S3 + INMP441 mic</span>
+          <span class="bom-item">TFLite Micro</span>
+          <span class="bom-item">Edge Impulse</span>
+        </div>
+        <span class="difficulty diff-hard">🔥 ยาก</span>
+        <div class="tags">
+          <span class="tag orange">TinyML</span>
+          <span class="tag blue">Audio AI</span>
+          <span class="tag green">MFCC</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <h3>🏭 Bosch + ESP32-C5 Multi-Sensor Prototype Kit</h3>
+        <p>ใช้ประโยชน์จาก Bosch-Espressif collaboration platform บน ESP32-C5 สร้าง environmental monitoring ด้วย Bosch BME688 (อุณหภูมิ ความชื้น ความดัน VOC) พร้อม AI ตรวจสอบคุณภาพอากาศ</p>
+        <div class="bom-row">
+          <span class="bom-item">ESP32-C5 Dev Board</span>
+          <span class="bom-item">Bosch BME688</span>
+          <span class="bom-item">BSEC2 Library</span>
+        </div>
+        <span class="difficulty diff-medium">⚡ ปานกลาง</span>
+        <div class="tags">
+          <span class="tag blue">Bosch BSEC2</span>
+          <span class="tag green">Air Quality</span>
+          <span class="tag orange">VOC AI</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <h3>📱 ESP32-H21 BLE Beacon + Indoor Positioning</h3>
+        <p>ใช้ ESP32-H21 ราคาถูก ultra-low power เป็น BLE beacon หลายจุด + ESP32-S3 เป็น scanner คำนวณ RSSI trilateration หาตำแหน่งในอาคาร แสดงผล floor map บนมือถือ</p>
+        <div class="bom-row">
+          <span class="bom-item">ESP32-H21 (3+ nodes)</span>
+          <span class="bom-item">ESP32-S3 gateway</span>
+          <span class="bom-item">React Native App</span>
+        </div>
+        <span class="difficulty diff-hard">🔥 ยาก</span>
+        <div class="tags">
+          <span class="tag purple">Indoor Positioning</span>
+          <span class="tag blue">BLE Beacon</span>
+          <span class="tag green">RSSI</span>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <h3>🌿 ESP32 ระบบรดน้ำอัจฉริยะเชื่อม Matter</h3>
+        <p>วาล์วรดน้ำอัตโนมัติ 4 โซน เชื่อมต่อ Matter protocol ผ่าน ESP32-C6 สามารถควบคุมได้ผ่าน Apple Home, Google Home, Amazon Alexa และ Home Assistant ด้วย app เดียว</p>
+        <div class="bom-row">
+          <span class="bom-item">ESP32-C6</span>
+          <span class="bom-item">Solenoid Valve x4</span>
+          <span class="bom-item">Soil Moisture Sensor</span>
+          <span class="bom-item">ESP-Matter SDK</span>
+        </div>
+        <span class="difficulty diff-medium">⚡ ปานกลาง</span>
+        <div class="tags">
+          <span class="tag green">Matter</span>
+          <span class="tag blue">Smart Irrigation</span>
+          <span class="tag orange">Apple Home</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ====== SENSORS ====== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,0.12);">📡</div>
+      <div>
+        <h2>Sensors น่าสนใจประจำวันนี้</h2>
+        <div class="section-desc">Water Quality · Environmental · Audio · Power Monitoring</div>
+      </div>
+    </div>
+
+    <div class="sensor-grid">
+      <div class="sensor-card">
+        <div class="sensor-icon">💧</div>
+        <div class="sensor-info">
+          <h3>Atlas Scientific EZO-pH</h3>
+          <p>Industrial-grade pH sensor สำหรับการเกษตรและบ่อเลี้ยงสัตว์น้ำ ความแม่นยำ ±0.002 pH รองรับ I2C/UART อายุ probe 5+ ปี ราคา ~$150</p>
+          <div class="tags"><span class="tag blue">I2C/UART</span><span class="tag green">±0.002 pH</span><span class="tag orange">Industrial</span></div>
+        </div>
+      </div>
+      <div class="sensor-card">
+        <div class="sensor-icon">⚡</div>
+        <div class="sensor-info">
+          <h3>PZEM-004T v3.0 Energy Monitor</h3>
+          <p>วัดไฟฟ้า AC ได้ทั้ง voltage, current, power, energy, frequency, power factor ผ่าน UART ราคาถูก ~$8 นิยมมากใน ESP32 energy monitoring projects</p>
+          <div class="tags"><span class="tag purple">UART</span><span class="tag blue">100A CT</span><span class="tag green">Energy Meter</span></div>
+        </div>
+      </div>
+      <div class="sensor-card">
+        <div class="sensor-icon">🎙️</div>
+        <div class="sensor-info">
+          <h3>INMP441 MEMS Microphone</h3>
+          <p>Digital I2S microphone ราคา ~$2 sensitivity -26 dBFS SNR 61 dB เหมาะสำหรับ TinyML audio classification บน ESP32-S3 มี library รองรับ Arduino และ ESP-IDF</p>
+          <div class="tags"><span class="tag blue">I2S</span><span class="tag green">61 dB SNR</span><span class="tag orange">TinyML Ready</span></div>
+        </div>
+      </div>
+      <div class="sensor-card">
+        <div class="sensor-icon">🌊</div>
+        <div class="sensor-info">
+          <h3>Gravity TDS Sensor (DFRobot)</h3>
+          <p>วัด Total Dissolved Solids ในน้ำ range 0–1000 ppm ราคา ~$10 ใช้งานง่ายกับ Arduino/ESP32 analog input เหมาะสำหรับตรวจสอบคุณภาพน้ำดื่มและน้ำในนา</p>
+          <div class="tags"><span class="tag blue">Analog</span><span class="tag green">0-1000 ppm</span><span class="tag orange">Water Quality</span></div>
+        </div>
+      </div>
+      <div class="sensor-card">
+        <div class="sensor-icon">🌡️</div>
+        <div class="sensor-info">
+          <h3>Bosch BME688 (4-in-1 + AI)</h3>
+          <p>วัดอุณหภูมิ ความชื้น ความดันบรรยากาศ และ VOC gas ใน IC เดียว มี built-in AI สำหรับ air quality index ผ่าน BSEC2 library รองรับ I2C/SPI</p>
+          <div class="tags"><span class="tag purple">I2C/SPI</span><span class="tag blue">4-in-1</span><span class="tag orange">BSEC2 AI</span></div>
+        </div>
+      </div>
+      <div class="sensor-card">
+        <div class="sensor-icon">☀️</div>
+        <div class="sensor-info">
+          <h3>SCD40 CO₂ Sensor (Sensirion)</h3>
+          <p>วัด CO₂ (400–2000 ppm), อุณหภูมิ และความชื้นในชิปเดียว ใช้ photoacoustic sensing ขนาดเล็กราคา ~$30 เหมาะสำหรับ indoor air quality + demand-controlled ventilation</p>
+          <div class="tags"><span class="tag blue">I2C</span><span class="tag green">CO₂ 400-2000ppm</span><span class="tag orange">Indoor AQ</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== DEEP DIVE ====== -->
+  <section id="deepdive">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,146,60,0.12);">🔬</div>
+      <div>
+        <h2>Deep Dive: Timeline ESP32 ครอบครัว 2026</h2>
+        <div class="section-desc">พัฒนาการของ Espressif SoC family ตั้งแต่ต้นปีจนถึงกันยายน 2569</div>
+      </div>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="tl-date">มกราคม 2026 — CES 2026</div>
+        <h4>เปิดตัว ESP32-E22 และ ESP32-H21</h4>
+        <p>Espressif ประกาศชิปสองรุ่นใหม่ — E22 เป็น Wi-Fi 6E tri-band 2.1 Gbps, H21 เป็น ultra-low power BLE+Thread สำหรับ battery nodes</p>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-date">มกราคม 2026</div>
+        <h4>ESP32-E22 ได้รับ Wi-Fi 6E Certification</h4>
+        <p>Espressif ได้รับใบรับรองอย่างเป็นทางการและปล่อย open-source Linux driver สำหรับ ESP32-E22</p>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-date">ต้นปี 2026</div>
+        <h4>Bosch-Espressif Partnership</h4>
+        <p>ประกาศความร่วมมือ สร้าง hardware platform บน ESP32-C5 สำหรับ multi-sensor prototyping เร็วขึ้น เน้น industrial IoT</p>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-date">สิงหาคม 2026</div>
+        <h4>IKEA ประกาศยกเลิก Zigbee หันมา Matter/Thread</h4>
+        <p>ส่งผลให้ ESP32-C6 เป็นชิปยอดนิยมสำหรับ DIY Thread Border Router และ Matter device ecosystem</p>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-date">กันยายน 2026 — ปัจจุบัน</div>
+        <h4>ESP32 ครบ 11 variants ในตระกูล</h4>
+        <p>ปัจจุบัน Espressif มี 11 SoC variants ครอบคลุม Wi-Fi 6/6E, 5 GHz, BLE, Zigbee, Thread, Matter, Edge AI, HMI, Camera และ audio</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== CODE SNIPPET ====== -->
+  <section id="code">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(244,114,182,0.12);">💻</div>
+      <div>
+        <h2>ตัวอย่าง Code สำคัญ</h2>
+        <div class="section-desc">ESP32-C6 Thread RCP · TFLite Micro inference · Water Quality reading</div>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <h3>📡 ESP32-C6 OpenThread RCP Config</h3>
+        <p>ตั้งค่า ESP-IDF menuconfig สำหรับ Thread Radio Co-Processor:</p>
+        <div class="code-block">
+<span class="cmt"># sdkconfig สำคัญสำหรับ Thread RCP</span>
+Component config → OpenThread
+  → Thread Core Features
+    → Thread Radio Co-Processor Feature
+      → The RCP ✓
+      → USB RCP ✓ (deselect UART RCP)
+<span class="cmt"># Build & Flash</span>
+idf.py set-target esp32c6
+idf.py -D SDKCONFIG_DEFAULTS=<span class="str">"sdkconfig.rcp"</span> build
+idf.py flash
+        </div>
+        <div class="tags"><span class="tag blue">ESP-IDF</span><span class="tag green">Thread RCP</span></div>
+      </div>
+
+      <div class="card">
+        <h3>🧠 TFLite Micro Inference บน ESP32-S3</h3>
+        <p>ใช้ EloquentTinyML library รัน inference model ที่เทรนจาก Edge Impulse:</p>
+        <div class="code-block">
+<span class="kw">#include</span> <span class="str">&lt;EloquentTinyML.h&gt;</span>
+<span class="kw">#include</span> <span class="str">"model.h"</span>  <span class="cmt">// จาก Edge Impulse export</span>
+
+Eloquent::TinyML::TfLite&lt;<span class="num">NUM_INPUTS</span>, <span class="num">NUM_OUTPUTS</span>,
+  <span class="num">TENSOR_ARENA_SIZE</span>&gt; ml;
+
+<span class="kw">void</span> setup() {
+  ml.begin(model);
+}
+<span class="kw">void</span> loop() {
+  <span class="kw">float</span> input[NUM_INPUTS] = { ... };
+  <span class="kw">float</span> output[NUM_OUTPUTS];
+  ml.predict(input, output);
+}
+        </div>
+        <div class="tags"><span class="tag orange">TFLite</span><span class="tag blue">EloquentTinyML</span></div>
+      </div>
+
+      <div class="card">
+        <h3>💧 อ่านค่า TDS + pH พร้อมกัน</h3>
+        <p>อ่านค่า TDS sensor และ pH sensor บน ESP32 พร้อม temperature compensation:</p>
+        <div class="code-block">
+<span class="kw">float</span> readTDS(int pin, <span class="kw">float</span> temp) {
+  <span class="kw">int</span> raw = analogRead(pin);
+  <span class="kw">float</span> v = raw * <span class="num">3.3f</span> / <span class="num">4095.0f</span>;
+  <span class="kw">float</span> comp = <span class="num">1.0f</span> + <span class="num">0.02f</span> * (temp - <span class="num">25.0f</span>);
+  <span class="kw">float</span> cv = v / comp;
+  <span class="kw">return</span> (<span class="num">133.42f</span>*cv*cv*cv
+    - <span class="num">255.86f</span>*cv*cv
+    + <span class="num">857.39f</span>*cv) * <span class="num">0.5f</span>;
+}
+<span class="cmt">// ค่าที่ได้เป็น ppm (parts per million)</span>
+        </div>
+        <div class="tags"><span class="tag blue">TDS</span><span class="tag green">Temp Compensation</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== RESOURCES ====== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(56,189,248,0.12);">📚</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์ที่เกี่ยวข้อง</h2>
+        <div class="section-desc">Official · GitHub · Tutorials · Community</div>
+      </div>
+    </div>
+    <div class="resource-grid">
+      <div class="resource-card">
+        <div class="resource-type">Official</div>
+        <h4>Espressif ESP32-E22 Announcement</h4>
+        <p>ประกาศอย่างเป็นทางการ ESP32-E22 Wi-Fi 6E Co-Processor จาก Espressif Systems</p>
+        <a class="resource-link" href="https://www.espressif.com/en/news/ESP32_E22_Announcement" target="_blank">→ espressif.com</a>
+      </div>
+      <div class="resource-card">
+        <div class="resource-type">News</div>
+        <h4>ESP32-E22 Wi-Fi 6E & ESP32-H21 at CES 2026</h4>
+        <p>รายละเอียด spec และข่าวเปิดตัวจาก CNX Software และ Hackaday</p>
+        <a class="resource-link" href="https://www.cnx-software.com/2026/01/07/espressif-systems-showcases-esp32-e22-wi-fi-6e-soc-and-esp32-h21-ble-mcu-for-battery-powered-devices/" target="_blank">→ cnx-software.com</a>
+      </div>
+      <div class="resource-card">
+        <div class="resource-type">GitHub</div>
+        <h4>ESP32-C6 Native Thread Border Router</h4>
+        <p>standalone single-chip Thread Border Router + Matter guide รองรับ ESP-IDF v5.4.1</p>
+        <a class="resource-link" href="https://github.com/techo35/esp32-c6-native-thread-border-router" target="_blank">→ github.com/techo35</a>
+      </div>
+      <div class="resource-card">
+        <div class="resource-type">Tutorial</div>
+        <h4>ESP32-C6 OpenThread RCP for Home Assistant</h4>
+        <p>คู่มือทำ Thread Border Router ราคา €5 เชื่อมกับ Home Assistant ใน Docker</p>
+        <a class="resource-link" href="https://derekmolloy.ie/a-low-cost-thread-border-router-esp32-c6-wroom-as-an-openthread-rcp-for-home-assistant-in-docker/" target="_blank">→ derekmolloy.ie</a>
+      </div>
+      <div class="resource-card">
+        <div class="resource-type">Blog</div>
+        <h4>ESP32-S3 TinyML Edge AI Security System</h4>
+        <p>สร้าง home security system ด้วย TFLite Micro บน ESP32-S3 แบบ offline 100%</p>
+        <a class="resource-link" href="https://dev.to/bittobuild/esp32-s3-tinyml-build-a-real-time-edge-ai-home-security-system-that-runs-without-the-cloud-3c22" target="_blank">→ dev.to</a>
+      </div>
+      <div class="resource-card">
+        <div class="resource-type">Tutorial</div>
+        <h4>ESP32 TDS Water Quality Sensor</h4>
+        <p>Random Nerd Tutorials — วิธีเชื่อม TDS sensor กับ ESP32 พร้อม code ตัวอย่างครบ</p>
+        <a class="resource-link" href="https://randomnerdtutorials.com/esp32-tds-water-quality-sensor/" target="_blank">→ randomnerdtutorials.com</a>
+      </div>
+      <div class="resource-card">
+        <div class="resource-type">Guide</div>
+        <h4>Zigbee vs Matter vs Thread 2026</h4>
+        <p>เปรียบเทียบ protocol ทั้ง 3 แบบ ช่วยตัดสินใจเลือก stack สำหรับ smart home project</p>
+        <a class="resource-link" href="https://zbotic.in/zigbee-vs-matter-vs-thread-smart-home-protocol-2026-guide/" target="_blank">→ zbotic.in</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <strong>ESP32 & Sensor Innovations Daily</strong> — สร้างโดย AI Research Bot<br>
+  วันที่สร้าง: 2 กันยายน 2569 (2 September 2026) · หัวข้อ: ESP32-E22/H21 · Matter/Thread · TinyML · Water Quality IoT
+  <div class="footer-sources">
+    แหล่งอ้างอิง:
+    <a href="https://www.espressif.com/en/news/ESP32_E22_Announcement">Espressif ESP32-E22</a> ·
+    <a href="https://www.cnx-software.com/2026/01/07/espressif-systems-showcases-esp32-e22-wi-fi-6e-soc-and-esp32-h21-ble-mcu-for-battery-powered-devices/">CNX Software</a> ·
+    <a href="https://hackaday.com/2026/01/21/espressif-introduces-the-esp32-e22-wi-fi-6e-and-bluetooth-co-processor/">Hackaday</a> ·
+    <a href="https://github.com/techo35/esp32-c6-native-thread-border-router">GitHub techo35</a> ·
+    <a href="https://zbotic.in/zigbee-vs-matter-vs-thread-smart-home-protocol-2026-guide/">Zbotic</a> ·
+    <a href="https://randomnerdtutorials.com/esp32-tds-water-quality-sensor/">Random Nerd Tutorials</a>
+  </div>
+</footer>
+
+</body>
+</html>
