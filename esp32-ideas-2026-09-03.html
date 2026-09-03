@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 3 กันยายน 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263045;
+    --accent-1: #6366f1;
+    --accent-2: #06b6d4;
+    --accent-3: #10b981;
+    --accent-4: #f59e0b;
+    --accent-5: #ec4899;
+    --text-primary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --tag-bg: #0f172a;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    font-size: 16px;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 40%, #0c2340 100%);
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 500px; height: 300px;
+    background: radial-gradient(ellipse, rgba(99,102,241,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.4);
+    border-radius: 100px;
+    padding: 0.35rem 1rem;
+    font-size: 0.85rem;
+    color: #a5b4fc;
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.02em;
+  }
+  .dot-live {
+    width: 8px; height: 8px;
+    background: #6366f1;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+  }
+
+  header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #a5b4fc, #67e8f9, #6ee7b7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header .subtitle {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    margin-bottom: 1.5rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  .stat-chip strong { color: var(--text-primary); }
+
+  /* NAV */
+  nav {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 1rem 1.3rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  nav a:hover { color: var(--text-primary); border-bottom-color: var(--accent-1); }
+
+  /* MAIN */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  /* SECTION HEADERS */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .icon-indigo { background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.35); }
+  .icon-cyan   { background: rgba(6,182,212,0.2);  border: 1px solid rgba(6,182,212,0.35);  }
+  .icon-green  { background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.35); }
+  .icon-amber  { background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.35); }
+  .icon-pink   { background: rgba(236,72,153,0.2); border: 1px solid rgba(236,72,153,0.35); }
+
+  .section-header h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-header p { color: var(--text-muted); font-size: 0.9rem; }
+
+  section { margin-bottom: 3.5rem; }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 1.2rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.2rem; }
+
+  /* CARD */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(99,102,241,0.4);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 0.9rem;
+  }
+  .card-emoji { font-size: 1.6rem; flex-shrink: 0; }
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.2rem;
+  }
+  .card-subtitle { font-size: 0.82rem; color: var(--text-muted); }
+  .card-body { font-size: 0.9rem; color: #cbd5e1; line-height: 1.7; }
+  .card-body p { margin-bottom: 0.6rem; }
+  .card-body p:last-child { margin-bottom: 0; }
+
+  /* TAGS */
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 1rem; }
+  .tag {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 0.2rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .tag.indigo { border-color: rgba(99,102,241,0.5); color: #a5b4fc; }
+  .tag.cyan   { border-color: rgba(6,182,212,0.5);  color: #67e8f9;  }
+  .tag.green  { border-color: rgba(16,185,129,0.5); color: #6ee7b7; }
+  .tag.amber  { border-color: rgba(245,158,11,0.5); color: #fcd34d; }
+  .tag.pink   { border-color: rgba(236,72,153,0.5); color: #f9a8d4; }
+
+  /* HIGHLIGHT BOX */
+  .highlight-box {
+    border-radius: 12px;
+    padding: 1.4rem 1.5rem;
+    margin-bottom: 1.2rem;
+    border-left: 3px solid;
+  }
+  .highlight-indigo { background: rgba(99,102,241,0.08); border-color: var(--accent-1); }
+  .highlight-cyan   { background: rgba(6,182,212,0.08);  border-color: var(--accent-2); }
+  .highlight-green  { background: rgba(16,185,129,0.08); border-color: var(--accent-3); }
+  .highlight-amber  { background: rgba(245,158,11,0.08); border-color: var(--accent-4); }
+
+  .highlight-box h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+  }
+  .highlight-box ul { padding-left: 1.2rem; }
+  .highlight-box li { font-size: 0.88rem; color: #cbd5e1; margin-bottom: 0.35rem; }
+  .highlight-box code {
+    background: rgba(255,255,255,0.1);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    font-family: 'Courier New', monospace;
+    color: #a5b4fc;
+  }
+
+  /* SPEC TABLE */
+  .spec-table { width: 100%; border-collapse: collapse; font-size: 0.87rem; margin-top: 0.8rem; }
+  .spec-table th {
+    background: rgba(99,102,241,0.15);
+    color: #a5b4fc;
+    padding: 0.6rem 0.9rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+  .spec-table td {
+    padding: 0.55rem 0.9rem;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    color: #cbd5e1;
+    vertical-align: top;
+  }
+  .spec-table tr:last-child td { border-bottom: none; }
+  .spec-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    overflow-x: auto;
+    margin-top: 0.8rem;
+  }
+  .code-block pre {
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    color: #e2e8f0;
+    line-height: 1.6;
+    white-space: pre;
+  }
+  .code-kw { color: #ff7b72; }
+  .code-fn { color: #79c0ff; }
+  .code-str { color: #a5d6ff; }
+  .code-cm { color: #6e7781; }
+  .code-num { color: #f2cc60; }
+
+  /* RESOURCE CARD */
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .resource-card:hover {
+    border-color: rgba(99,102,241,0.5);
+    transform: translateY(-1px);
+  }
+  .resource-icon {
+    width: 40px; height: 40px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .resource-title { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+  .resource-desc { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+  /* FOOTER */
+  footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.87rem;
+  }
+  footer a { color: #a5b4fc; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .footer-grid {
+    max-width: 800px; margin: 0 auto 1.2rem;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem; text-align: left;
+  }
+  .footer-section h4 { font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.5rem; font-weight: 600; }
+  .footer-section p { font-size: 0.8rem; line-height: 1.6; }
+
+  @media (max-width: 640px) {
+    header h1 { font-size: 1.7rem; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr; }
+    main { padding: 1.5rem 1rem 3rem; }
+    nav { padding: 0 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">
+    <span class="dot-live"></span>
+    ESP32 Research Daily — AI-Powered
+  </div>
+  <h1>🔬 ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">3 กันยายน 2569 &nbsp;|&nbsp; ฉบับประจำวัน — นวัตกรรม IoT ล่าสุด</p>
+  <div class="stats-row">
+    <div class="stat-chip">🎯 หัวข้อหลัก <strong>4 หมวด</strong></div>
+    <div class="stat-chip">💡 ไอเดียโปรเจกต์ <strong>8 ชิ้น</strong></div>
+    <div class="stat-chip">📡 Sensors ใหม่ <strong>5 ตัว</strong></div>
+    <div class="stat-chip">🔗 แหล่งอ้างอิง <strong>12 ลิงก์</strong></div>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations">🚀 นวัตกรรม</a>
+  <a href="#projects">💡 ไอเดียโปรเจกต์</a>
+  <a href="#sensors">🔬 Sensors</a>
+  <a href="#deepdive">🔍 Deep Dive</a>
+  <a href="#resources">📚 แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- SECTION 1: INNOVATIONS -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-indigo">🚀</div>
+      <div>
+        <h2>นวัตกรรมและชิปใหม่ล่าสุด</h2>
+        <p>ESP32-P4 HMI · Robotics ROS2 · Smart Energy · Offline Voice AI</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🖥️</span>
+          <div>
+            <div class="card-title">ESP32-P4 — High-Performance HMI Revolution</div>
+            <div class="card-subtitle">Dual-core 400 MHz · MIPI-DSI Display · MIPI-CSI Camera · ไม่มี Wi-Fi ในตัว</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p>ESP32-P4 เปิดยุคใหม่ของ HMI (Human-Machine Interface) บน MCU ราคาประหยัด รองรับหน้าจอ MIPI-DSI ความละเอียดสูงถึง Full HD 1080p และรับภาพจากกล้อง MIPI-CSI ในระบบเดียวกัน</p>
+          <div class="highlight-box highlight-indigo">
+            <h4>⚡ จุดแข็งหลักของ ESP32-P4</h4>
+            <ul>
+              <li><strong>CPU:</strong> Dual Xtensa LX9 @ 400 MHz (2× เร็วกว่า ESP32-S3)</li>
+              <li><strong>RAM:</strong> 768 KB SRAM + รองรับ PSRAM ภายนอกสูงสุด 32 MB</li>
+              <li><strong>Display:</strong> MIPI-DSI, RGB LCD, SPI/I80 — รองรับ LVGL 9 แบบ GPU-accelerated</li>
+              <li><strong>Camera:</strong> MIPI-CSI 2-lane, รองรับ OV5640, IMX477, SC2336</li>
+              <li><strong>Video Codec:</strong> Hardware H.264 encoder/decoder + JPEG codec</li>
+              <li><strong>ข้อจำกัด:</strong> ไม่มี Wi-Fi/BT ในตัว ต้องจับคู่กับ ESP32-C6 ผ่าน SPI/SDIO</li>
+            </ul>
+          </div>
+          <p>Seeed Studio เปิดตัว <strong>reTerminal D1001</strong> — หน้าจอ 8 นิ้ว 800×1280, P4 + C6 คู่, กล้อง MIPI-CSI, ลำโพง, ไมค์ ราคาประมาณ $79 เหมาะสำหรับ Industrial HMI</p>
+        </div>
+        <div class="tags">
+          <span class="tag indigo">ESP32-P4</span>
+          <span class="tag indigo">MIPI-DSI</span>
+          <span class="tag indigo">LVGL 9</span>
+          <span class="tag indigo">HMI</span>
+          <span class="tag indigo">1080p</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🤖</span>
+          <div>
+            <div class="card-title">ESP32 + micro-ROS — เชื่อม ROS2 กับโลก Embedded</div>
+            <div class="card-subtitle">ROS2 Humble · Nav2 Stack · PID Control · IMU Fusion</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p>micro-ROS ทำให้ ESP32 (โดยเฉพาะ S3) กลายเป็น <strong>co-processor ของ Robot ที่ใช้ ROS2</strong> ได้จริง ส่งคำสั่ง Twist ผ่าน Wi-Fi หรือ Serial แล้ว ESP32 แปลงเป็น PWM ขับมอเตอร์ + อ่าน Encoder + ส่ง Odometry กลับ</p>
+          <div class="highlight-box highlight-cyan">
+            <h4>🔧 Stack ที่ใช้งานจริง</h4>
+            <ul>
+              <li><strong>ROS2 Humble</strong> บน Raspberry Pi 5 / Jetson Nano</li>
+              <li><strong>micro-ROS</strong> บน ESP32-S3 (ผ่าน UDP over Wi-Fi)</li>
+              <li><strong>Nav2</strong> — Autonomous Navigation, Path Planning</li>
+              <li><strong>6-Axis IMU</strong> (MPU6050/ICM-42688) สำหรับ Attitude Estimation</li>
+              <li><strong>LiDAR Interface</strong> — UART ต่อ RPLIDAR A1/S2 ผ่าน ESP32</li>
+              <li><strong>PID Controller</strong> — Wheel speed control, differential drive</li>
+            </ul>
+          </div>
+          <p>Board สำเร็จรูปเช่น <strong>Yahboom MicroROS Board</strong> (ESP32S3 + 4-ch Encoder Driver + IMU) ทำให้เริ่มต้นได้ใน 1 วัน ไม่ต้องบัดกรีเอง</p>
+        </div>
+        <div class="tags">
+          <span class="tag cyan">micro-ROS</span>
+          <span class="tag cyan">ROS2</span>
+          <span class="tag cyan">Differential Drive</span>
+          <span class="tag cyan">Nav2</span>
+          <span class="tag cyan">Robotics</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">⚡</span>
+          <div>
+            <div class="card-title">ESP32 Smart Energy Manager — EV + Solar + Grid</div>
+            <div class="card-subtitle">PZEM-004T v3 · Solar PV Monitoring · EV Charging Control · Home Assistant</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p>ESP32 กำลังเป็น <strong>brain ของระบบพลังงานอัจฉริยะที่บ้าน</strong> ตั้งแต่วัดพลังงาน AC/DC ควบคุมการชาร์จ EV จาก Solar และ integrate กับ Home Assistant ได้แบบ seamless</p>
+          <div class="highlight-box highlight-green">
+            <h4>📊 Use Cases หลักปี 2026</h4>
+            <ul>
+              <li><strong>Smart Energy Meter</strong> — PZEM-004T อ่าน V/A/W/kWh แล้วส่ง MQTT → HA</li>
+              <li><strong>Solar PV Monitor</strong> — วัดทั้งฝั่ง Input (แผงโซล่า) และ Output (แบต/โหลด)</li>
+              <li><strong>EV Charging Station</strong> — ควบคุม EVSE Relay ตามระดับ Solar excess</li>
+              <li><strong>Demand Response</strong> — ตัดโหลดอัตโนมัติเมื่อใช้เกิน threshold</li>
+              <li><strong>DC Bus Monitor</strong> — INA3221 อ่าน 3 channel พร้อมกัน บน I²C</li>
+            </ul>
+          </div>
+          <p>งานวิจัยปี 2026 (IJCT) แสดงว่าระบบ Solar EV Charging ด้วย ESP32 + IoT ลดต้นทุนการชาร์จได้ถึง <strong>68%</strong> เมื่อเทียบกับการใช้ grid ล้วนๆ</p>
+        </div>
+        <div class="tags">
+          <span class="tag green">Smart Energy</span>
+          <span class="tag green">PZEM-004T</span>
+          <span class="tag green">Solar EV</span>
+          <span class="tag green">Home Assistant</span>
+          <span class="tag green">MQTT</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🎙️</span>
+          <div>
+            <div class="card-title">ESP32-S3 + WakeNet10 — Offline Voice AI รุ่นใหม่</div>
+            <div class="card-subtitle">Espressif ESP-SR · WakeNet10 · Multi-Language · No Cloud</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p>Espressif ปล่อย <strong>WakeNet10</strong> (สิงหาคม 2026) — โมเดล Wake Word ที่ดีที่สุดบน ESP32-S3 รองรับ 4 ภาษา: ไทย✗ / อังกฤษ / จีน / ญี่ปุ่น / ฝรั่งเศส และมี TTS Pipeline V3 สำหรับสังเคราะห์เสียงด้วย</p>
+          <div class="highlight-box highlight-amber">
+            <h4>🔊 WakeNet10 vs WakeNet9 — สิ่งที่ดีขึ้น</h4>
+            <ul>
+              <li><strong>False Rejection Rate:</strong> ลดลง ~30% (ตอบสนองแม่นขึ้น)</li>
+              <li><strong>False Acceptance Rate:</strong> ลดลง ~25% (ไม่ตอบผิด)</li>
+              <li><strong>Quantization:</strong> w8a16 (default) — เล็กกว่า ไวกว่า</li>
+              <li><strong>Training:</strong> TTS V3 สร้าง Wake Word ใหม่ได้ง่ายขึ้น</li>
+              <li><strong>Platform:</strong> รองรับ ESP32-S3 และ ESP32-S31 (May 2026)</li>
+            </ul>
+          </div>
+          <p>ทางเลือกอื่น: <strong>Edge Impulse + INMP441</strong> MEMS Microphone สร้าง Wake Word ภาษาไทยเองได้ผ่าน browser โดยไม่ต้องเขียน ML code</p>
+        </div>
+        <div class="tags">
+          <span class="tag amber">WakeNet10</span>
+          <span class="tag amber">ESP-SR</span>
+          <span class="tag amber">Offline AI</span>
+          <span class="tag amber">Voice Control</span>
+          <span class="tag amber">Edge Impulse</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 2: PROJECTS -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-cyan">💡</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์น่าสร้าง</h2>
+        <p>8 ไอเดียสดใหม่ เน้น ESP32-P4, Robotics, Energy, Voice</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🏭</span>
+          <div>
+            <div class="card-title">ESP32-P4 Factory Floor HMI Dashboard</div>
+            <div class="card-subtitle">ระดับความยาก: ⭐⭐⭐⭐ | งบประมาณ: ~$120</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p>สร้าง Dashboard ควบคุม Production Line ด้วย ESP32-P4 + หน้าจอ MIPI-DSI 7 นิ้ว แสดงสถานะเครื่องจักร, อุณหภูมิ, ความเร็วสายพาน พร้อม Touch Control</p>
+          <ul style="padding-left:1.2rem; font-size:0.88rem; color:#cbd5e1; margin-top:0.5rem;">
+            <li>ESP32-P4 Dev Board (Waveshare 7" MIPI-DSI kit)</li>
+            <li>ESP32-C6 เป็น wireless co-processor ส่ง MQTT</li>
+            <li>LVGL 9 วาด Widget: Gauge, Chart, Button</li>
+            <li>ModBus RTU อ่านค่าจาก PLC / VFD ผ่าน RS485</li>
+            <li>Alert Buzzer + LED strip เมื่อเกิด fault</li>
+          </ul>
+        </div>
+        <div class="tags">
+          <span class="tag indigo">ESP32-P4</span>
+          <span class="tag indigo">LVGL</span>
+          <span class="tag indigo">ModBus</span>
+          <span class="tag indigo">Industrial HMI</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">📷</span>
+          <div>
+            <div class="card-title">ESP32-P4 Smart Doorbell + Face Recognition</div>
+            <div class="card-subtitle">ระดับความยาก: ⭐⭐⭐⭐ | งบประมาณ: ~$80</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p>กล้องประตู AI ที่รู้จักหน้าคนในบ้านและส่ง Snapshot ผ่าน Telegram เมื่อเห็นคนแปลกหน้า ทำงานโดยไม่ส่งข้อมูลไปยัง Cloud</p>
+          <ul style="padding-left:1.2rem; font-size:0.88rem; color:#cbd5e1; margin-top:0.5rem;">
+            <li>ESP32-P4 + OV5640 Camera (MIPI-CSI 5MP)</li>
+            <li>Hardware JPEG Encoder บันทึก snapshot เร็ว</li>
+            <li>Face Detection ด้วย ESP-WHO (ทำงาน on-device)</li>
+            <li>ESP32-C6 เชื่อม Wi-Fi ส่ง Telegram notification</li>
+            <li>2.4" Display แสดง Preview + Unlock Button</li>
+          </ul>
+        </div>
+        <div class="tags">
+          <span class="tag indigo">ESP32-P4</span>
+          <span class="tag indigo">ESP-WHO</span>
+          <span class="tag indigo">Face Detection</span>
+          <span class="tag cyan">Telegram</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🚗</span>
+          <div>
+            <div class="card-title">DIY Solar EV Charging Controller</div>
+            <div class="card-subtitle">ระดับความยาก: ⭐⭐⭐⭐ | งบประมาณ: ~$65</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p>ควบคุมการชาร์จรถ EV ให้ใช้ Solar excess อัตโนมัติ เมื่อแผงผลิตไฟเกิน load ที่บ้าน จะเปิด EVSE ชาร์จรถ พอแดดตกก็หยุดเอง</p>
+          <ul style="padding-left:1.2rem; font-size:0.88rem; color:#cbd5e1; margin-top:0.5rem;">
+            <li>ESP32 อ่าน Solar production ด้วย PZEM-004T</li>
+            <li>INA3221 วัด household load 3 วงจรพร้อมกัน</li>
+            <li>40A SSR (Solid State Relay) ควบคุม EVSE</li>
+            <li>OLED แสดง kW solar / kW load / charging status</li>
+            <li>Dashboard ผ่าน Home Assistant + Energy Card</li>
+          </ul>
+        </div>
+        <div class="tags">
+          <span class="tag green">Solar EV</span>
+          <span class="tag green">PZEM-004T</span>
+          <span class="tag green">INA3221</span>
+          <span class="tag green">EVSE Control</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🤖</span>
+          <div>
+            <div class="card-title">ESP32-S3 ROS2 Differential Drive Robot</div>
+            <div class="card-subtitle">ระดับความยาก: ⭐⭐⭐⭐⭐ | งบประมาณ: ~$150</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p>หุ่นยนต์ 2 ล้อ autonomous ที่ ESP32-S3 ทำหน้าที่ Low-level Motor Controller ขณะที่ Raspberry Pi 5 รัน ROS2 Nav2 วางแผนเส้นทางหลีกเลี่ยงสิ่งกีดขวาง</p>
+          <ul style="padding-left:1.2rem; font-size:0.88rem; color:#cbd5e1; margin-top:0.5rem;">
+            <li>Raspberry Pi 5 + ROS2 Humble (Host)</li>
+            <li>ESP32-S3 + micro-ROS (Motor Driver MCU)</li>
+            <li>RPLIDAR A1 — 2D LiDAR สร้าง Map</li>
+            <li>ICM-42688 6-Axis IMU + Wheel Encoder</li>
+            <li>L298N Motor Driver + 12V LiPo 3000mAh</li>
+          </ul>
+        </div>
+        <div class="tags">
+          <span class="tag cyan">micro-ROS</span>
+          <span class="tag cyan">ROS2 Nav2</span>
+          <span class="tag cyan">LiDAR</span>
+          <span class="tag cyan">Autonomous</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🎙️</span>
+          <div>
+            <div class="card-title">ESP32-S3 ผู้ช่วยเสียงภาษาไทย — Offline 100%</div>
+            <div class="card-subtitle">ระดับความยาก: ⭐⭐⭐ | งบประมาณ: ~$25</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p>สร้าง Smart Speaker ราคาถูกที่ฟัง Wake Word และคำสั่งภาษาไทย แล้วควบคุมอุปกรณ์ในบ้านผ่าน MQTT โดยไม่ส่งเสียงไปยัง Server ภายนอกแม้แต่ byte เดียว</p>
+          <ul style="padding-left:1.2rem; font-size:0.88rem; color:#cbd5e1; margin-top:0.5rem;">
+            <li>ESP32-S3 (16MB Flash, 8MB PSRAM)</li>
+            <li>INMP441 I²S MEMS Microphone (ราคา ~$3)</li>
+            <li>Edge Impulse สร้าง Wake Word ภาษาไทยเอง</li>
+            <li>ESP-SR CommandRecognition สำหรับ keywords</li>
+            <li>MAX98357A I²S DAC ตอบกลับด้วย TTS</li>
+          </ul>
+        </div>
+        <div class="tags">
+          <span class="tag amber">Voice AI</span>
+          <span class="tag amber">INMP441</span>
+          <span class="tag amber">Edge Impulse</span>
+          <span class="tag amber">ภาษาไทย</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">📊</span>
+          <div>
+            <div class="card-title">ESP32 Multi-Phase Energy Monitor สำหรับโรงงาน</div>
+            <div class="card-subtitle">ระดับความยาก: ⭐⭐⭐ | งบประมาณ: ~$45</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p>ตรวจสอบการใช้พลังงานไฟฟ้า 3 Phase ในโรงงานแบบ Real-Time ส่งข้อมูลขึ้น InfluxDB + Grafana แสดง Trend ค่าไฟแต่ละเครื่องจักร</p>
+          <ul style="padding-left:1.2rem; font-size:0.88rem; color:#cbd5e1; margin-top:0.5rem;">
+            <li>3× PZEM-004T v3.0 (ต่อ ModBus ผ่าน RS485)</li>
+            <li>ESP32 รัน polling loop ทุก 1 วินาที</li>
+            <li>InfluxDB + Grafana สำหรับ visualization</li>
+            <li>Alert ผ่าน LINE Notify เมื่อ PF ต่ำกว่า 0.8</li>
+            <li>CT Clamp 100A — ติดตั้งโดยไม่ต้องตัดสาย</li>
+          </ul>
+        </div>
+        <div class="tags">
+          <span class="tag green">Energy Monitor</span>
+          <span class="tag green">3-Phase</span>
+          <span class="tag green">Grafana</span>
+          <span class="tag green">Industrial</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🦾</span>
+          <div>
+            <div class="card-title">ESP32 + micro-ROS Robotic Arm Controller</div>
+            <div class="card-subtitle">ระดับความยาก: ⭐⭐⭐⭐ | งบประมาณ: ~$90</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p>แขนกล 5-DOF ที่รับคำสั่ง Joint Position จาก MoveIt2 บน PC แล้ว ESP32 ขับ Servo 5 ตัวพร้อมอ่าน Force Sensor ป้องกัน Over-torque</p>
+          <ul style="padding-left:1.2rem; font-size:0.88rem; color:#cbd5e1; margin-top:0.5rem;">
+            <li>ESP32-S3 + micro-ROS รับ JointState topics</li>
+            <li>PCA9685 PWM Driver ขับ Servo 5 ตัวพร้อมกัน</li>
+            <li>FSR-406 Force Sensor บน gripper</li>
+            <li>AS5600 Absolute Encoder ทุก joint</li>
+            <li>MoveIt2 บน PC สร้าง Trajectory Planning</li>
+          </ul>
+        </div>
+        <div class="tags">
+          <span class="tag cyan">Robotic Arm</span>
+          <span class="tag cyan">MoveIt2</span>
+          <span class="tag cyan">PCA9685</span>
+          <span class="tag cyan">Force Sensor</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-emoji">🌅</span>
+          <div>
+            <div class="card-title">ESP32-P4 Smart Mirror — AI Weather + Calendar</div>
+            <div class="card-subtitle">ระดับความยาก: ⭐⭐⭐ | งบประมาณ: ~$95</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p>กระจกอัจฉริยะที่ ESP32-P4 ขับ LCD 7 นิ้วซ่อนอยู่หลังกระจกสองทาง แสดงเวลา สภาพอากาศ ตารางงาน และจดจำหน้าผู้ใช้เพื่อแสดงข้อมูลส่วนตัว</p>
+          <ul style="padding-left:1.2rem; font-size:0.88rem; color:#cbd5e1; margin-top:0.5rem;">
+            <li>ESP32-P4 + 7" MIPI-DSI 1024×600 LCD</li>
+            <li>ESP32-C6 ดึง Weather API + Google Calendar</li>
+            <li>OV5640 Camera สำหรับ Face Recognition</li>
+            <li>LVGL 9 + Custom Weather Widget</li>
+            <li>PIR Sensor ปิด-เปิด display อัตโนมัติ</li>
+          </ul>
+        </div>
+        <div class="tags">
+          <span class="tag indigo">ESP32-P4</span>
+          <span class="tag indigo">Smart Mirror</span>
+          <span class="tag indigo">LVGL</span>
+          <span class="tag cyan">Face Recognition</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 3: SENSORS -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">🔬</div>
+      <div>
+        <h2>Sensors น่าสนใจประจำวันนี้</h2>
+        <p>5 Sensors สำหรับ Energy, Robotics, Voice, และ HMI</p>
+      </div>
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table class="spec-table">
+        <thead>
+          <tr>
+            <th>Sensor / Module</th>
+            <th>ใช้กับ</th>
+            <th>Interface</th>
+            <th>ราคาโดยประมาณ</th>
+            <th>จุดเด่น</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>PZEM-004T v3.0</strong><br><small style="color:#64748b">Peacefair</small></td>
+            <td>Energy Monitor, EV Charging</td>
+            <td>UART / ModBus RTU</td>
+            <td>~$5–8</td>
+            <td>วัด V/A/W/kWh/Hz/PF แม่นยำ ±0.5% รองรับ AC 80–260V</td>
+          </tr>
+          <tr>
+            <td><strong>INMP441</strong><br><small style="color:#64748b">MEMS Microphone Module</small></td>
+            <td>Voice Recognition, Audio AI</td>
+            <td>I²S (Digital)</td>
+            <td>~$2–4</td>
+            <td>SNR สูง 61 dBFS, ไม่มี noise เหมือน analog mic, ต่อตรง I²S ESP32</td>
+          </tr>
+          <tr>
+            <td><strong>ICM-42688-P</strong><br><small style="color:#64748b">TDK InvenSense</small></td>
+            <td>Robotics, Drone, IMU Fusion</td>
+            <td>SPI / I²C</td>
+            <td>~$3–6</td>
+            <td>6-Axis ±16g/±2000°/s, noise ต่ำมาก เหมาะ ROS2 IMU</td>
+          </tr>
+          <tr>
+            <td><strong>AS5600</strong><br><small style="color:#64748b">ams-OSRAM</small></td>
+            <td>Robot Arm, Motor Control</td>
+            <td>I²C / PWM</td>
+            <td>~$2–4</td>
+            <td>12-bit Absolute Magnetic Encoder, ไม่ต้องการ Home Switch</td>
+          </tr>
+          <tr>
+            <td><strong>OV5640</strong><br><small style="color:#64748b">OmniVision</small></td>
+            <td>ESP32-P4 Camera Projects</td>
+            <td>MIPI-CSI 2-lane</td>
+            <td>~$8–15</td>
+            <td>5MP AF/FF, 1080p30 + 720p60, Auto Exposure / White Balance</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 4: DEEP DIVE -->
+  <section id="deepdive">
+    <div class="section-header">
+      <div class="section-icon icon-amber">🔍</div>
+      <div>
+        <h2>Deep Dive: ESP32-P4 + LVGL — ทำ HMI สวยใน 30 นาที</h2>
+        <p>ตัวอย่าง Code เริ่มต้น + การตั้งค่า MIPI-DSI</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="highlight-box highlight-indigo">
+          <h4>📋 สิ่งที่ต้องเตรียม</h4>
+          <ul>
+            <li>ESP32-P4 Dev Board (Espressif ESP32-P4-Function-EV)</li>
+            <li>ESP-IDF v5.3+ (รองรับ P4 Driver เต็มรูปแบบ)</li>
+            <li>LVGL v9.x — <code>idf_component_manager</code> ติดตั้งได้ง่าย</li>
+            <li>หน้าจอ MIPI-DSI 7" หรือ 4.3" (เช่น Waveshare)</li>
+            <li>ESP-IDF LVGL Porting Layer: <code>esp_lvgl_port</code></li>
+          </ul>
+        </div>
+
+        <div class="highlight-box highlight-cyan" style="margin-top:1rem">
+          <h4>⚙️ Key Config ใน menuconfig</h4>
+          <ul>
+            <li>Enable <code>CONFIG_IDF_TARGET="esp32p4"</code></li>
+            <li>Set <code>CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192</code></li>
+            <li>Enable <code>CONFIG_SPIRAM</code> (สำหรับ Frame Buffer)</li>
+            <li>LVGL Color Depth: <code>LV_COLOR_DEPTH 16</code> หรือ <code>24</code></li>
+            <li>DMA2D (2D Pixel Processing) ต้องเปิดสำหรับ GPU accel</li>
+          </ul>
+        </div>
+      </div>
+
+      <div>
+        <div class="code-block">
+          <pre><span class="code-cm">// ESP32-P4 LVGL Init (ESP-IDF v5.3)</span>
+<span class="code-kw">#include</span> <span class="code-str">"esp_lvgl_port.h"</span>
+<span class="code-kw">#include</span> <span class="code-str">"esp_lcd_panel_io.h"</span>
+
+<span class="code-fn">void</span> app_main(<span class="code-fn">void</span>) {
+  <span class="code-cm">// 1. Init MIPI-DSI LCD</span>
+  esp_lcd_panel_io_handle_t io_handle;
+  esp_lcd_panel_handle_t panel_handle;
+
+  esp_lcd_dsi_bus_config_t dsi_cfg = {
+    .bus_id = <span class="code-num">0</span>,
+    .num_data_lanes = <span class="code-num">2</span>,
+    .phy_clk_src = MIPI_DSI_PHY_CLK_SRC_DEFAULT,
+    .lane_bit_rate_mbps = <span class="code-num">500</span>,
+  };
+  esp_lcd_new_dsi_bus(&amp;dsi_cfg, &amp;dsi_bus);
+
+  <span class="code-cm">// 2. Init LVGL Port</span>
+  lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
+  lvgl_port_init(&amp;lvgl_cfg);
+
+  <span class="code-cm">// 3. Create screen + widget</span>
+  lv_obj_t *screen = lv_scr_act();
+  lv_obj_set_style_bg_color(screen,
+    lv_color_hex(<span class="code-str">0x0f172a</span>), <span class="code-num">0</span>);
+
+  lv_obj_t *gauge = lv_arc_create(screen);
+  lv_arc_set_value(gauge, <span class="code-num">75</span>);
+  lv_obj_center(gauge);
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:1.5rem">
+      <div class="highlight-box highlight-green">
+        <h4>🔌 ESP32-P4 + ESP32-C6 Combo — วิธีเชื่อม Wi-Fi</h4>
+        <ul>
+          <li>ต่อผ่าน <strong>SPI</strong>: ESP32-C6 ทำงานเป็น Wi-Fi Co-processor, P4 ส่ง TCP/MQTT</li>
+          <li>ใช้ <strong>AT Firmware</strong> บน C6 — P4 ส่ง AT Commands ผ่าน UART ง่ายที่สุด</li>
+          <li>หรือใช้ <strong>ESP-Hosted-NG</strong> — C6 เป็น Network Card บน SPI, P4 ใช้ lwIP ปกติ</li>
+          <li>Seeed reTerminal D1001 ใช้ SDIO สำหรับ bandwidth สูงกว่า (ราคาสูงกว่า)</li>
+          <li>เลือก ESP32-C6 เพราะรองรับ Thread/Matter นอกจาก Wi-Fi 6 และ BLE 5.3</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: RESOURCES -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-pink">📚</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์น่าสนใจ</h2>
+        <p>Repository, Tutorial, และ Community สำหรับหัวข้อวันนี้</p>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <a class="resource-card" href="https://github.com/espressif/esp-sr" target="_blank" rel="noopener">
+        <div class="resource-icon icon-amber">🎙️</div>
+        <div>
+          <div class="resource-title">ESP-SR (Speech Recognition)</div>
+          <div class="resource-desc">GitHub — WakeNet10, MultiNet, TTS Pipeline V3</div>
+        </div>
+      </a>
+
+      <a class="resource-card" href="https://github.com/espressif/esp-skainet" target="_blank" rel="noopener">
+        <div class="resource-icon icon-amber">🤖</div>
+        <div>
+          <div class="resource-title">ESP-Skainet Voice Assistant</div>
+          <div class="resource-desc">GitHub — Voice assistant framework สำหรับ ESP32-S3</div>
+        </div>
+      </a>
+
+      <a class="resource-card" href="https://github.com/topics/micro-ros-esp32" target="_blank" rel="noopener">
+        <div class="resource-icon icon-cyan">🦾</div>
+        <div>
+          <div class="resource-title">micro-ROS ESP32 Projects</div>
+          <div class="resource-desc">GitHub Topics — รวม repo ทั้งหมดของ micro-ROS บน ESP32</div>
+        </div>
+      </a>
+
+      <a class="resource-card" href="https://github.com/rosmo-robot/Rosmo_ROS2_Diffdrive" target="_blank" rel="noopener">
+        <div class="resource-icon icon-cyan">🚗</div>
+        <div>
+          <div class="resource-title">Rosmo ROS2 Diffdrive</div>
+          <div class="resource-desc">GitHub — Differential drive robot ด้วย ESP32 + ROS2</div>
+        </div>
+      </a>
+
+      <a class="resource-card" href="https://www.seeedstudio.com/blog/2026/03/19/no-more-compromise-reterminal-d1001-8-inch-touch-display-redefines-hmi-with-esp32-p4/" target="_blank" rel="noopener">
+        <div class="resource-icon icon-indigo">🖥️</div>
+        <div>
+          <div class="resource-title">reTerminal D1001 — Seeed Blog</div>
+          <div class="resource-desc">ESP32-P4 + 8" HMI Display — รีวิวและ spec เต็ม</div>
+        </div>
+      </a>
+
+      <a class="resource-card" href="https://www.elecrow.com/blog/esp32-p4-hmi-display-high-performance-guide.html" target="_blank" rel="noopener">
+        <div class="resource-icon icon-indigo">📱</div>
+        <div>
+          <div class="resource-title">ESP32-P4 HMI Guide — Elecrow</div>
+          <div class="resource-desc">คู่มือ developer สำหรับ P4 HMI Display projects</div>
+        </div>
+      </a>
+
+      <a class="resource-card" href="https://www.instructables.com/DIY-Smart-Energy-Meter-With-ESP32-Home-Assistant/" target="_blank" rel="noopener">
+        <div class="resource-icon icon-green">⚡</div>
+        <div>
+          <div class="resource-title">DIY Smart Energy Meter — Instructables</div>
+          <div class="resource-desc">Step-by-step: ESP32 + PZEM-004T + Home Assistant</div>
+        </div>
+      </a>
+
+      <a class="resource-card" href="https://hackaday.com/2024/12/02/esp32-powers-diy-smart-energy-meter/" target="_blank" rel="noopener">
+        <div class="resource-icon icon-green">🔋</div>
+        <div>
+          <div class="resource-title">ESP32 Smart Energy Meter — Hackaday</div>
+          <div class="resource-desc">Community build + วิจารณ์การออกแบบ PCB</div>
+        </div>
+      </a>
+
+      <a class="resource-card" href="https://www.hackster.io/CircuitDigest/offline-esp32-voice-recognition-with-edge-impulse-fc93c9" target="_blank" rel="noopener">
+        <div class="resource-icon icon-amber">🎯</div>
+        <div>
+          <div class="resource-title">Offline Voice Recognition — Hackster</div>
+          <div class="resource-desc">ESP32 + Edge Impulse + INMP441 ทำงาน offline</div>
+        </div>
+      </a>
+
+      <a class="resource-card" href="https://zbotic.in/esp32-p4-high-performance-mcu-new-features-and-projects/" target="_blank" rel="noopener">
+        <div class="resource-icon icon-indigo">🚀</div>
+        <div>
+          <div class="resource-title">ESP32-P4 Features — Zbotic</div>
+          <div class="resource-desc">รวม projects และ features ใหม่ของ ESP32-P4</div>
+        </div>
+      </a>
+
+      <a class="resource-card" href="https://ijetjournal.org/solar-pv-smart-electric-vehicle-charging/" target="_blank" rel="noopener">
+        <div class="resource-icon icon-green">🌞</div>
+        <div>
+          <div class="resource-title">Solar PV EV Charging — IJCT Research</div>
+          <div class="resource-desc">งานวิจัย 2026 ลดต้นทุนชาร์จ EV ด้วย ESP32 + Solar</div>
+        </div>
+      </a>
+
+      <a class="resource-card" href="https://github.com/espressif/esp-lvgl-port" target="_blank" rel="noopener">
+        <div class="resource-icon icon-indigo">🎨</div>
+        <div>
+          <div class="resource-title">esp-lvgl-port — Espressif</div>
+          <div class="resource-desc">Official LVGL Porting Layer สำหรับ ESP32-P4 และ S3</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-section">
+      <h4>🔬 หัวข้อวันนี้</h4>
+      <p>ESP32-P4 HMI · micro-ROS Robotics · Smart Energy · Offline Voice AI</p>
+    </div>
+    <div class="footer-section">
+      <h4>📅 ฉบับถัดไป</h4>
+      <p>ESP32 + UWB Positioning · BLE Mesh 2026 · mmWave Occupancy Sensor</p>
+    </div>
+    <div class="footer-section">
+      <h4>📚 แหล่งอ้างอิงหลัก</h4>
+      <p>Espressif Docs · Hackster.io · Hackaday · Seeed Blog · IJCT Research 2026</p>
+    </div>
+  </div>
+  <p>สร้างโดย AI Researcher อัตโนมัติ &nbsp;·&nbsp; 3 กันยายน 2569 &nbsp;·&nbsp;
+    <a href="https://docs.espressif.com" target="_blank">Espressif Docs</a> &nbsp;·&nbsp;
+    <a href="https://github.com/espressif" target="_blank">Espressif GitHub</a>
+  </p>
+</footer>
+
+</body>
+</html>
