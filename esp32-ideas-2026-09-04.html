@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 4 กันยายน 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263045;
+    --accent-1: #8b5cf6;
+    --accent-2: #14b8a6;
+    --accent-3: #f97316;
+    --accent-4: #3b82f6;
+    --accent-5: #ec4899;
+    --text-primary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --tag-bg: #0f172a;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    font-size: 16px;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #1a0f3c 0%, #0f172a 45%, #0d1f2d 100%);
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(139,92,246,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; right: 10%;
+    width: 300px; height: 200px;
+    background: radial-gradient(ellipse, rgba(20,184,166,0.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(139,92,246,0.15);
+    border: 1px solid rgba(139,92,246,0.4);
+    border-radius: 100px;
+    padding: 0.35rem 1.1rem;
+    font-size: 0.82rem;
+    color: #c4b5fd;
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .dot-live {
+    width: 8px; height: 8px;
+    background: #8b5cf6;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50% { opacity:0.4; transform:scale(1.4); }
+  }
+
+  header h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #c4b5fd, #5eead4, #fdba74);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.6rem;
+    position: relative;
+  }
+  header .subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 1.6rem;
+  }
+
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .stat-num {
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #c4b5fd, #5eead4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* MAIN LAYOUT */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+  }
+
+  /* SECTION TITLES */
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .section-title span.icon { font-size: 1.6rem; }
+  .section-title small {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-left: 0.5rem;
+  }
+
+  /* CARD GRID */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 3rem;
+  }
+  .card-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 3rem;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+  }
+  .card.accent-1::before { background: linear-gradient(90deg, #8b5cf6, #c4b5fd); }
+  .card.accent-2::before { background: linear-gradient(90deg, #14b8a6, #5eead4); }
+  .card.accent-3::before { background: linear-gradient(90deg, #f97316, #fbbf24); }
+  .card.accent-4::before { background: linear-gradient(90deg, #3b82f6, #93c5fd); }
+  .card.accent-5::before { background: linear-gradient(90deg, #ec4899, #f9a8d4); }
+
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(139,92,246,0.35);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+
+  .card-icon {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+  .card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #f1f5f9;
+  }
+  .card p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 0.75rem;
+  }
+
+  /* TAGS */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+  .tag {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.65rem;
+    border-radius: 100px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    border: 1px solid transparent;
+  }
+  .tag-purple { background: rgba(139,92,246,0.15); color: #c4b5fd; border-color: rgba(139,92,246,0.3); }
+  .tag-teal   { background: rgba(20,184,166,0.15);  color: #5eead4; border-color: rgba(20,184,166,0.3); }
+  .tag-orange { background: rgba(249,115,22,0.15);  color: #fdba74; border-color: rgba(249,115,22,0.3); }
+  .tag-blue   { background: rgba(59,130,246,0.15);  color: #93c5fd; border-color: rgba(59,130,246,0.3); }
+  .tag-pink   { background: rgba(236,72,153,0.15);  color: #f9a8d4; border-color: rgba(236,72,153,0.3); }
+  .tag-yellow { background: rgba(234,179,8,0.15);   color: #fde68a; border-color: rgba(234,179,8,0.3); }
+
+  /* CHIP SPEC ROW */
+  .spec-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.6rem 0;
+  }
+  .spec-pill {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.78rem;
+    color: #cbd5e1;
+    font-weight: 600;
+  }
+
+  /* PROJECT CARD WIDE */
+  .project-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.6rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.2rem;
+    align-items: start;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+  .project-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(59,130,246,0.35);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .project-icon-box {
+    width: 60px; height: 60px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+  }
+  .project-icon-box.bg-purple { background: rgba(139,92,246,0.2); }
+  .project-icon-box.bg-teal   { background: rgba(20,184,166,0.2); }
+  .project-icon-box.bg-orange { background: rgba(249,115,22,0.2); }
+  .project-icon-box.bg-blue   { background: rgba(59,130,246,0.2); }
+
+  .project-content h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.3rem;
+  }
+  .project-content p {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* DIFFICULTY BADGE */
+  .difficulty {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.15rem 0.6rem;
+    border-radius: 100px;
+    margin-bottom: 0.4rem;
+  }
+  .diff-easy   { background: rgba(16,185,129,0.15); color:#6ee7b7; border:1px solid rgba(16,185,129,0.3); }
+  .diff-medium { background: rgba(234,179,8,0.15);  color:#fde68a; border:1px solid rgba(234,179,8,0.3); }
+  .diff-hard   { background: rgba(239,68,68,0.15);  color:#fca5a5; border:1px solid rgba(239,68,68,0.3); }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #c9d1d9;
+    overflow-x: auto;
+    margin-top: 0.75rem;
+    line-height: 1.6;
+  }
+  .code-block .c-keyword  { color: #ff7b72; }
+  .code-block .c-string   { color: #a5d6ff; }
+  .code-block .c-comment  { color: #8b949e; font-style: italic; }
+  .code-block .c-number   { color: #79c0ff; }
+  .code-block .c-func     { color: #d2a8ff; }
+
+  /* SENSOR TABLE */
+  .sensor-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin-top: 0.5rem;
+  }
+  .sensor-table th {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+  }
+  .sensor-table td {
+    padding: 0.65rem 0.8rem;
+    border-bottom: 1px solid rgba(51,65,85,0.4);
+    color: #cbd5e1;
+    vertical-align: top;
+  }
+  .sensor-table tr:last-child td { border-bottom: none; }
+  .sensor-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .sensor-name { color: #f1f5f9; font-weight: 600; }
+  .sensor-type { color: #5eead4; font-size: 0.78rem; font-weight: 600; }
+
+  /* RESOURCE CARD */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s, transform 0.2s;
+    display: block;
+  }
+  .resource-card:hover {
+    border-color: rgba(139,92,246,0.4);
+    transform: translateY(-2px);
+  }
+  .resource-card .r-type {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+  .resource-card h4 { font-size: 0.95rem; font-weight: 700; color:#f1f5f9; margin-bottom:0.3rem; }
+  .resource-card p  { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+
+  /* HIGHLIGHT BOX */
+  .highlight-box {
+    background: rgba(139,92,246,0.08);
+    border: 1px solid rgba(139,92,246,0.25);
+    border-left: 4px solid #8b5cf6;
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin-top: 0.75rem;
+    font-size: 0.88rem;
+    color: #cbd5e1;
+  }
+  .highlight-box.teal {
+    background: rgba(20,184,166,0.08);
+    border-color: rgba(20,184,166,0.25);
+    border-left-color: #14b8a6;
+  }
+  .highlight-box.orange {
+    background: rgba(249,115,22,0.08);
+    border-color: rgba(249,115,22,0.25);
+    border-left-color: #f97316;
+  }
+  .highlight-box strong { color: #f1f5f9; }
+
+  /* NEWS BANNER */
+  .news-banner {
+    background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(20,184,166,0.08));
+    border: 1px solid rgba(139,92,246,0.3);
+    border-radius: 14px;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .news-icon { font-size: 1.8rem; flex-shrink: 0; }
+  .news-content h4 { font-size: 1rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.25rem; }
+  .news-content p  { font-size: 0.87rem; color: var(--text-muted); line-height: 1.6; }
+  .news-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: rgba(139,92,246,0.3);
+    color: #c4b5fd;
+    padding: 0.1rem 0.5rem;
+    border-radius: 100px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* FOOTER */
+  footer {
+    background: #080f1a;
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  footer .footer-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #94a3b8;
+    margin-bottom: 0.5rem;
+  }
+  footer .footer-refs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.5rem;
+    margin-top: 1rem;
+  }
+  footer a {
+    color: #7c87a0;
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: color 0.2s;
+  }
+  footer a:hover { color: #c4b5fd; }
+
+  @media (max-width: 640px) {
+    header h1 { font-size: 1.7rem; }
+    .card-grid, .card-grid-2 { grid-template-columns: 1fr; }
+    .project-card { grid-template-columns: 1fr; }
+    .header-stats { gap: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-badge">
+    <span class="dot-live"></span>
+    Daily ESP32 Research Report
+  </div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">4 กันยายน 2569 &nbsp;·&nbsp; ข่าวสาร นวัตกรรม และโปรเจกต์ IoT ล่าสุด</p>
+  <div class="header-stats">
+    <div class="stat-item"><span class="stat-num">4</span><span class="stat-label">นวัตกรรมใหม่</span></div>
+    <div class="stat-item"><span class="stat-num">4</span><span class="stat-label">ไอเดียโปรเจกต์</span></div>
+    <div class="stat-item"><span class="stat-num">5</span><span class="stat-label">Sensors แนะนำ</span></div>
+    <div class="stat-item"><span class="stat-num">6</span><span class="stat-label">แหล่งข้อมูล</span></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <section id="innovations">
+    <h2 class="section-title">
+      <span class="icon">⚡</span> นวัตกรรม ESP32 ล่าสุด
+      <small>Hardware &amp; Ecosystem Updates</small>
+    </h2>
+
+    <div class="card-grid">
+
+      <!-- ESP32-S31 -->
+      <div class="card accent-1">
+        <span class="card-icon">🆕</span>
+        <h3>ESP32-S31 — All-in-One Wireless SoC 2026</h3>
+        <p>Espressif เปิดตัว <strong>ESP32-S31</strong> ชิปตัวใหม่ปี 2026 ที่รวม Wi-Fi 6, Bluetooth 5.4, Thread และ Zigbee ไว้ในชิปเดียว เหมาะกับ IoT ยุคใหม่ที่ต้องการ multi-protocol connectivity โดยไม่ต้องซื้อชิปหลายตัว</p>
+        <div class="spec-row">
+          <span class="spec-pill">Wi-Fi 6 (802.11ax)</span>
+          <span class="spec-pill">BT 5.4</span>
+          <span class="spec-pill">Thread</span>
+          <span class="spec-pill">Zigbee</span>
+          <span class="spec-pill">RISC-V</span>
+        </div>
+        <div class="highlight-box">
+          <strong>จุดเด่น:</strong> ชิปตัวเดียวสามารถเป็นทั้ง Thread Border Router, Zigbee Coordinator และ Wi-Fi Station พร้อมกัน — ลดต้นทุน BOM อย่างมีนัยสำคัญ
+        </div>
+        <div class="tags">
+          <span class="tag tag-purple">ESP32-S31</span>
+          <span class="tag tag-teal">Wi-Fi 6</span>
+          <span class="tag tag-blue">Thread</span>
+          <span class="tag tag-yellow">Zigbee</span>
+        </div>
+      </div>
+
+      <!-- ESP32-P4 AI Vision -->
+      <div class="card accent-3">
+        <span class="card-icon">📷</span>
+        <h3>ESP32-P4 — AI Vision Camera Platform</h3>
+        <p><strong>ESP32-P4</strong> กลายเป็น flagship สำหรับงาน AI Vision ในปี 2026 ด้วย dual-core RISC-V 400 MHz, hardware H.264 encoder, MIPI-CSI/DSI interface และ PSRAM สูงสุด 32 MB ทำให้ทำ face recognition, object detection และ video analytics ได้บน Edge โดยไม่ต้องพึ่ง cloud</p>
+        <div class="spec-row">
+          <span class="spec-pill">400 MHz Dual-Core</span>
+          <span class="spec-pill">H.264 HW Encode</span>
+          <span class="spec-pill">MIPI-CSI</span>
+          <span class="spec-pill">32 MB PSRAM</span>
+          <span class="spec-pill">USB 2.0</span>
+        </div>
+        <div class="highlight-box orange">
+          <strong>Pairing:</strong> ใช้คู่กับ ESP32-C6 สำหรับ wireless connectivity — P4 จัดการ media processing ส่วน C6 จัดการ Wi-Fi 6 + Thread ทำให้ได้ระบบ complete ในราคาประหยัด
+        </div>
+        <div class="tags">
+          <span class="tag tag-orange">ESP32-P4</span>
+          <span class="tag tag-purple">Edge AI</span>
+          <span class="tag tag-blue">H.264</span>
+          <span class="tag tag-pink">Camera</span>
+        </div>
+      </div>
+
+      <!-- Matter 1.5 -->
+      <div class="card accent-2">
+        <span class="card-icon">🏠</span>
+        <h3>Matter 1.5 — Cameras, Closures &amp; Soil Sensors</h3>
+        <p>มาตรฐาน <strong>Matter 1.5</strong> เพิ่ม device type ใหม่ที่สำคัญ ได้แก่ IP Camera, Smart Lock/Closure, Soil Sensor และ Energy Management ทำให้ ESP32-based prototype มีความหลากหลายมากขึ้น รองรับกับ Home Assistant, Apple Home และ Google Home โดยไม่ต้อง bridge</p>
+        <div class="spec-row">
+          <span class="spec-pill">IP Camera</span>
+          <span class="spec-pill">Smart Lock</span>
+          <span class="spec-pill">Soil Sensor</span>
+          <span class="spec-pill">Energy Mgmt</span>
+        </div>
+        <div class="highlight-box teal">
+          <strong>สำหรับ Maker:</strong> esp-matter SDK บน ESP-IDF คือวิธีที่ดีที่สุดสำหรับ production-grade firmware ใน 2026 รองรับ OTA, security features และ power optimization ครบ
+        </div>
+        <div class="tags">
+          <span class="tag tag-teal">Matter 1.5</span>
+          <span class="tag tag-blue">ESP-IDF</span>
+          <span class="tag tag-yellow">Home Assistant</span>
+          <span class="tag tag-purple">IoT Standard</span>
+        </div>
+      </div>
+
+      <!-- IKEA News -->
+      <div class="card accent-4">
+        <span class="card-icon">📰</span>
+        <h3>IKEA ละทิ้ง Zigbee — หันมาใช้ Thread/Matter</h3>
+        <p>ข่าวใหญ่ปี 2026: <strong>IKEA</strong> ประกาศยุติการใช้ Zigbee ในสินค้าใหม่ทั้งหมด หันมาใช้ <strong>Thread</strong> และ <strong>Matter</strong> แทน นี่คือสัญญาณชัดเจนว่า ecosystem IoT กำลังเปลี่ยนแปลง และ ESP32-C6 / ESP32-H2 ที่รองรับ IEEE 802.15.4 จะกลายเป็นตัวเลือกหลักสำหรับ DIY maker</p>
+        <div class="spec-row">
+          <span class="spec-pill">ESP32-C6</span>
+          <span class="spec-pill">ESP32-H2</span>
+          <span class="spec-pill">IEEE 802.15.4</span>
+          <span class="spec-pill">$5 Thread Node</span>
+        </div>
+        <div class="highlight-box">
+          <strong>โอกาสสำหรับ Maker:</strong> ESP32-C6 ในราคา ~$5 สามารถทำ Thread Border Router แบบ standalone ได้ — เชื่อม WiFi + Thread stack + REST API ให้ Home Assistant discover ผ่าน mDNS โดยอัตโนมัติ
+        </div>
+        <div class="tags">
+          <span class="tag tag-blue">Thread</span>
+          <span class="tag tag-teal">Matter</span>
+          <span class="tag tag-orange">Zigbee</span>
+          <span class="tag tag-yellow">IKEA</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <section id="projects">
+    <h2 class="section-title">
+      <span class="icon">💡</span> ไอเดียโปรเจกต์ที่น่าสนใจ
+      <small>Project Ideas &amp; Prototypes</small>
+    </h2>
+
+    <!-- NEWS BANNERS (Hot Projects) -->
+    <div class="news-banner">
+      <span class="news-icon">❤️</span>
+      <div class="news-content">
+        <h4>ESP32 + AD8232 — ระบบ ECG / Heart Monitor IoT <span class="news-badge">Biometric</span></h4>
+        <p>ใช้ <strong>AD8232 ECG Module</strong> กับ ESP32 สร้างระบบ hemodynamic surveillance ที่ส่งข้อมูล BPM และ ECG waveform แบบ real-time ผ่าน Wi-Fi ไปยัง dashboard งานวิจัย IEEE arXiv ปี 2025–2026 แสดงให้เห็นความเป็นไปได้ของ IoT-enabled bioelectrical signal processing ต้นทุนต่ำ ที่ใช้ได้จริงในสภาพแวดล้อมห่างไกล</p>
+      </div>
+    </div>
+
+    <div class="news-banner">
+      <span class="news-icon">🍎</span>
+      <div class="news-content">
+        <h4>ESP32 "Electronic Nose" — ตรวจสอบคุณภาพผลไม้ <span class="news-badge">Smart Agriculture</span></h4>
+        <p>งานวิจัยใหม่ (arXiv 2025) นำ <strong>ESP32 + array of gas sensors</strong> มาสร้าง "จมูกอิเล็กทรอนิกส์" สำหรับตรวจสอบความสุก การเน่าเสีย และคุณภาพของผลไม้ โดยใช้ machine learning จำแนกกลิ่น VOC pattern รูปแบบนี้สามารถ deploy บน edge ได้โดยไม่ต้องส่งข้อมูลขึ้น cloud</p>
+      </div>
+    </div>
+
+    <div class="card-grid-2">
+
+      <!-- Smart Lock + Matter 1.5 -->
+      <div class="project-card">
+        <div class="project-icon-box bg-purple">🔐</div>
+        <div class="project-content">
+          <span class="difficulty diff-hard">⬛ Hard</span>
+          <h3>ESP32-P4 Smart Door Lock + Face Unlock ผ่าน Matter 1.5</h3>
+          <p>โปรเจกต์ผสม ESP32-P4 (AI Vision + camera) กับ ESP32-C6 (Matter/Thread wireless) สร้าง smart lock ที่ใช้ face recognition unlock ประตู และ integrate กับ Matter 1.5 Closure device type ทำให้ควบคุมจาก Home Assistant หรือ Apple Home ได้โดยตรง</p>
+          <div class="tags" style="margin-top:0.5rem;">
+            <span class="tag tag-purple">ESP32-P4</span>
+            <span class="tag tag-blue">ESP32-C6</span>
+            <span class="tag tag-teal">Matter 1.5</span>
+            <span class="tag tag-orange">Face Recognition</span>
+            <span class="tag tag-pink">Edge AI</span>
+          </div>
+          <div class="code-block">
+<span class="c-comment">// ESP32-P4: Capture + Run Face Model</span>
+<span class="c-keyword">esp_err_t</span> <span class="c-func">run_face_detect</span>(camera_fb_t *fb) {
+  dl_matrix3du_t *<span class="c-keyword">image</span> = <span class="c-func">dl_matrix3du_alloc</span>(<span class="c-number">1</span>, <span class="c-number">240</span>, <span class="c-number">240</span>, <span class="c-number">3</span>);
+  <span class="c-func">fmt2rgb888</span>(fb->buf, fb->len, PIXFORMAT_JPEG, image->item);
+  box_array_t *<span class="c-keyword">net_boxes</span> = <span class="c-func">face_detect</span>(image, &mtmn_config);
+  <span class="c-keyword">if</span> (net_boxes && net_boxes->len > <span class="c-number">0</span>) {
+    <span class="c-func">esp_matter_lock_set_open</span>(<span class="c-string">true</span>);   <span class="c-comment">// Unlock via Matter</span>
+  }
+  <span class="c-func">dl_matrix3du_free</span>(image);
+  <span class="c-keyword">return</span> ESP_OK;
+}
+          </div>
+        </div>
+      </div>
+
+      <!-- Biofloc Fish Tank -->
+      <div class="project-card">
+        <div class="project-icon-box bg-teal">🐟</div>
+        <div class="project-content">
+          <span class="difficulty diff-medium">◨ Medium</span>
+          <h3>ESP32 Smart Biofloc Fish Tank System</h3>
+          <p>ระบบ IoT สำหรับการเพาะเลี้ยงปลาแบบ Biofloc ที่ตรวจวัด pH, TDS (ความเค็ม/แร่ธาตุ), อุณหภูมิ, ออกซิเจนละลายน้ำ (DO) และแอมโมเนีย (NH₃) พร้อมกัน ส่งข้อมูลไป MQTT broker และแสดงผลบน dashboard ใช้ Decision Tree ช่วย predict ว่าควรเปิด aerator หรือเปลี่ยนน้ำ</p>
+          <div class="tags" style="margin-top:0.5rem;">
+            <span class="tag tag-teal">Biofloc</span>
+            <span class="tag tag-blue">MQTT</span>
+            <span class="tag tag-orange">pH Sensor</span>
+            <span class="tag tag-purple">DO Sensor</span>
+            <span class="tag tag-yellow">Smart Agriculture</span>
+          </div>
+          <div class="highlight-box teal" style="margin-top:0.6rem;">
+            <strong>Sensors ที่ใช้:</strong> Atlas Scientific EZO-DO (Dissolved Oxygen) + EZO-NH3 (Ammonia) + DS18B20 (Temp) + Analog TDS — ทำงานผ่าน I²C / 1-Wire
+          </div>
+        </div>
+      </div>
+
+      <!-- ECG Monitor -->
+      <div class="project-card">
+        <div class="project-icon-box bg-orange">❤️</div>
+        <div class="project-content">
+          <span class="difficulty diff-medium">◨ Medium</span>
+          <h3>ESP32 + AD8232 — Wearable ECG Monitor</h3>
+          <p>สร้าง wearable heart monitor ต้นทุนต่ำโดยใช้ <strong>AD8232 ECG Signal Processor</strong> กับ ESP32 อ่าน analog ECG signal ผ่าน ADC แล้วส่งข้อมูลแบบ real-time ผ่าน BLE ไปยัง smartphone app หรือส่งไป IoT dashboard เพื่อตรวจจับ arrhythmia เบื้องต้น</p>
+          <div class="tags" style="margin-top:0.5rem;">
+            <span class="tag tag-orange">AD8232</span>
+            <span class="tag tag-pink">Biometric</span>
+            <span class="tag tag-blue">BLE</span>
+            <span class="tag tag-purple">Wearable</span>
+            <span class="tag tag-teal">Health IoT</span>
+          </div>
+          <div class="code-block">
+<span class="c-comment">// Read ECG from AD8232 via ADC</span>
+<span class="c-keyword">const int</span> ECG_PIN = <span class="c-number">34</span>; <span class="c-comment">// GPIO34 (ADC1_CH6)</span>
+<span class="c-keyword">const int</span> LO_PLUS  = <span class="c-number">25</span>; <span class="c-comment">// Lead-off detect +</span>
+<span class="c-keyword">const int</span> LO_MINUS = <span class="c-number">26</span>; <span class="c-comment">// Lead-off detect -</span>
+
+<span class="c-keyword">void</span> <span class="c-func">readECG</span>() {
+  <span class="c-keyword">if</span> (<span class="c-func">digitalRead</span>(LO_PLUS) == <span class="c-number">1</span> || <span class="c-func">digitalRead</span>(LO_MINUS) == <span class="c-number">1</span>) {
+    Serial.<span class="c-func">println</span>(<span class="c-string">"Leads off!"</span>);
+  } <span class="c-keyword">else</span> {
+    <span class="c-keyword">int</span> ecgValue = <span class="c-func">analogRead</span>(ECG_PIN);
+    ble_send_ecg_packet(ecgValue);  <span class="c-comment">// Stream via BLE</span>
+  }
+}
+          </div>
+        </div>
+      </div>
+
+      <!-- Electronic Nose -->
+      <div class="project-card">
+        <div class="project-icon-box bg-blue">👃</div>
+        <div class="project-content">
+          <span class="difficulty diff-hard">⬛ Hard</span>
+          <h3>ESP32 Electronic Nose — จมูกดิจิทัลตรวจคุณภาพผลไม้</h3>
+          <p>ใช้ array ของ gas sensors (MQ-3, MQ-138, TGS2600) วัด VOC patterns จากผลไม้ แล้วส่งข้อมูลไป Edge Impulse เพื่อ train model จำแนกระดับความสุก / การเน่าเสีย deploy กลับบน ESP32 เป็น TFLite model — ทำงานได้แบบ fully offline ไม่ต้อง cloud</p>
+          <div class="tags" style="margin-top:0.5rem;">
+            <span class="tag tag-blue">Electronic Nose</span>
+            <span class="tag tag-orange">Gas Sensor Array</span>
+            <span class="tag tag-purple">TFLite Micro</span>
+            <span class="tag tag-teal">Edge Impulse</span>
+            <span class="tag tag-yellow">Fruit Quality</span>
+          </div>
+          <div class="highlight-box" style="margin-top:0.6rem;">
+            <strong>Pipeline:</strong> Collect VOC data → Label (fresh/ripe/overripe/rotten) → Train Spectral Analysis model ใน Edge Impulse → Export Arduino library → Deploy บน ESP32-S3
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <section id="sensors">
+    <h2 class="section-title">
+      <span class="icon">🔬</span> Sensors น่าสนใจ
+      <small>Highlighted Sensor Modules 2026</small>
+    </h2>
+
+    <div class="card" style="margin-bottom:3rem;">
+      <table class="sensor-table">
+        <thead>
+          <tr>
+            <th>Sensor</th>
+            <th>ประเภท</th>
+            <th>Interface</th>
+            <th>การใช้งาน &amp; จุดเด่น</th>
+            <th>ราคาโดยประมาณ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="sensor-name">SCD41</span><br><span class="sensor-type">Sensirion</span></td>
+            <td>CO₂ + Temp + Humidity</td>
+            <td>I²C</td>
+            <td>รุ่นอัพเกรดจาก SCD40 ใช้ PAS (Photoacoustic Sensing) ให้ค่า CO₂ แม่นยำ 400–5000 ppm บนขนาด mini package — เหมาะกับ air quality node และ demand-controlled ventilation</td>
+            <td>~$25–35</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">AD8232</span><br><span class="sensor-type">Analog Devices</span></td>
+            <td>ECG / Biopotential</td>
+            <td>Analog (ADC)</td>
+            <td>Instrument amplifier + high-pass filter สำหรับ cardiac biopotential — ออกแบบมาสำหรับ wearable ECG monitor ใช้งานง่ายกับ ESP32 ADC 12-bit ราคาถูก</td>
+            <td>~$3–8 (module)</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">MH-Z19B</span><br><span class="sensor-type">Winsen</span></td>
+            <td>NDIR CO₂</td>
+            <td>UART / PWM</td>
+            <td>Non-Dispersive Infrared CO₂ sensor ช่วง 0–5000 ppm มี auto-calibration ในตัว เชื่อมต่อผ่าน UART ง่าย เหมาะกับ indoor air quality monitor ราคาประหยัด</td>
+            <td>~$15–25</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">TSL2591</span><br><span class="sensor-type">ams-OSRAM</span></td>
+            <td>Ambient Light</td>
+            <td>I²C</td>
+            <td>High-dynamic-range light sensor รองรับ 188 µLux ถึง 88,000 Lux ช่วง 600 million:1 แยก Infrared + Full-spectrum ได้ เหมาะกับ smart lighting และ greenhouse monitoring ที่ต้องการความแม่นยำสูง</td>
+            <td>~$5–12</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">MAX30102</span><br><span class="sensor-type">Maxim (ADI)</span></td>
+            <td>SpO₂ + Heart Rate</td>
+            <td>I²C</td>
+            <td>Pulse oximeter + heart rate sensor ใน package เล็ก ใช้ LED สีแดงและ IR วัด oxygen saturation ในเลือด (SpO₂) คู่กับ ESP32-S3 และ BLE ทำ wearable health monitor ต้นทุน &lt;$10</td>
+            <td>~$3–8 (module)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: RESOURCES ===== -->
+  <section id="resources">
+    <h2 class="section-title">
+      <span class="icon">📚</span> แหล่งข้อมูลและลิงก์
+      <small>Curated Resources</small>
+    </h2>
+
+    <div class="resource-grid">
+
+      <a href="https://makeronsite.com/blog/2026/08/esp32-c6-matter-smart-home-guide-2026-en/" class="resource-card" target="_blank" rel="noopener">
+        <p class="r-type" style="color:#5eead4;">📖 Tutorial</p>
+        <h4>ESP32-C6 Matter Smart Home Guide 2026</h4>
+        <p>คู่มือ $5 Thread Border Router บน ESP32-C6 พร้อม setup ครบ ตั้งแต่ wiring จนถึง Home Assistant discovery</p>
+      </a>
+
+      <a href="https://makeronsite.com/blog/2026/08/esp32-c6-matter-ikea-thread-2026-en/" class="resource-card" target="_blank" rel="noopener">
+        <p class="r-type" style="color:#c4b5fd;">📰 News</p>
+        <h4>IKEA Abandons Zigbee — ESP32-C6 Practical Guide</h4>
+        <p>บทความเชิงลึกเกี่ยวกับผลกระทบของการเปลี่ยน ecosystem และวิธีใช้ ESP32-C6 รับมือ</p>
+      </a>
+
+      <a href="https://developer.espressif.com/workshops/edge-ai-with-esp32-s3/introduction/" class="resource-card" target="_blank" rel="noopener">
+        <p class="r-type" style="color:#fdba74;">🧠 Workshop</p>
+        <h4>Edge-AI with ESP32-S3 Workshop</h4>
+        <p>Workshop อย่างเป็นทางการจาก Espressif สอนการทำ Edge AI บน ESP32-S3 ตั้งแต่ต้นจนจบ</p>
+      </a>
+
+      <a href="https://hackaday.com/2026/02/19/poking-at-the-esp32-p4-and-c6-dies-in-an-esp32-p4-m3-module/" class="resource-card" target="_blank" rel="noopener">
+        <p class="r-type" style="color:#f9a8d4;">🔍 Deep Dive</p>
+        <h4>Hackaday: ESP32-P4 &amp; C6 Die Analysis</h4>
+        <p>บทความเจาะลึก die shots และ architecture ของ ESP32-P4 + C6 ใน module เดียวกัน</p>
+      </a>
+
+      <a href="https://gizantech.com/blog/edge-ai-tinyml-on-esp32-on-device-machine-learning" class="resource-card" target="_blank" rel="noopener">
+        <p class="r-type" style="color:#6ee7b7;">📝 Article</p>
+        <h4>TinyML on ESP32: On-Device Machine Learning</h4>
+        <p>คู่มือ TinyML บน ESP32 ครอบคลุม inference, sensor fusion และ workflow ด้วย Edge Impulse</p>
+      </a>
+
+      <a href="https://zbotic.in/esp32-h2-zigbee-and-thread-native-support-guide/" class="resource-card" target="_blank" rel="noopener">
+        <p class="r-type" style="color:#93c5fd;">📗 Guide</p>
+        <h4>ESP32-H2 Zigbee &amp; Thread Native Support Guide</h4>
+        <p>คู่มือการใช้งาน ESP32-H2 กับ Zigbee และ Thread แบบ native พร้อม code examples</p>
+      </a>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-title">ESP32 &amp; Sensor Innovations Daily Report</div>
+  <p>สร้างโดย AI Researcher อัตโนมัติ · 4 กันยายน 2569 (2026)</p>
+  <div class="footer-refs">
+    <a href="https://www.espressif.com" target="_blank" rel="noopener">Espressif Official</a>
+    <a href="https://hackaday.com" target="_blank" rel="noopener">Hackaday</a>
+    <a href="https://makeronsite.com" target="_blank" rel="noopener">MakerOnSite</a>
+    <a href="https://developer.espressif.com" target="_blank" rel="noopener">Espressif Developer Portal</a>
+    <a href="https://gizantech.com" target="_blank" rel="noopener">GizanTech</a>
+    <a href="https://zbotic.in" target="_blank" rel="noopener">Zbotic</a>
+  </div>
+</footer>
+
+</body>
+</html>
