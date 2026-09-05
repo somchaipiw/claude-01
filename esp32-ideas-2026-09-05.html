@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 5 กันยายน 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263349;
+    --accent-1: #38bdf8;
+    --accent-2: #818cf8;
+    --accent-3: #34d399;
+    --accent-4: #fb923c;
+    --accent-5: #f472b6;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --gradient-1: linear-gradient(135deg, #0ea5e9, #6366f1);
+    --gradient-2: linear-gradient(135deg, #10b981, #0284c7);
+    --gradient-3: linear-gradient(135deg, #f59e0b, #ef4444);
+    --gradient-4: linear-gradient(135deg, #8b5cf6, #ec4899);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(160deg, #0f172a 0%, #1a2744 40%, #162035 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(56,189,248,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.35);
+    color: var(--accent-1);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1.2rem;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #e2e8f0, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.6rem;
+  }
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.8rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.4rem 1.1rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .stat-pill .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent-3);
+    display: inline-block;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+
+  /* Navigation */
+  nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    overflow-x: auto;
+  }
+  nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.9rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  nav a:hover { color: var(--accent-1); border-bottom-color: var(--accent-1); }
+
+  /* Main layout */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+  }
+
+  /* Section styles */
+  section { margin-bottom: 3.5rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.8rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: rgba(56,189,248,0.15); }
+  .icon-purple { background: rgba(129,140,248,0.15); }
+  .icon-green { background: rgba(52,211,153,0.15); }
+  .icon-orange { background: rgba(251,146,60,0.15); }
+  .section-title-text h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-title-text p {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+  }
+
+  /* Cards grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+  .card.blue::before { background: var(--gradient-1); }
+  .card.green::before { background: var(--gradient-2); }
+  .card.orange::before { background: var(--gradient-3); }
+  .card.purple::before { background: var(--gradient-4); }
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(56,189,248,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .card-emoji { font-size: 1.8rem; margin-bottom: 0.7rem; display: block; }
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 0.8rem;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+  }
+  .tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    letter-spacing: 0.03em;
+  }
+  .tag-blue { background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.25); }
+  .tag-green { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.25); }
+  .tag-purple { background: rgba(129,140,248,0.15); color: #818cf8; border: 1px solid rgba(129,140,248,0.25); }
+  .tag-orange { background: rgba(251,146,60,0.15); color: #fb923c; border: 1px solid rgba(251,146,60,0.25); }
+  .tag-pink { background: rgba(244,114,182,0.15); color: #f472b6; border: 1px solid rgba(244,114,182,0.25); }
+  .tag-red { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.25); }
+
+  /* Deep Dive Box */
+  .deep-dive {
+    background: linear-gradient(135deg, rgba(14,165,233,0.08), rgba(99,102,241,0.08));
+    border: 1px solid rgba(56,189,248,0.25);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-top: 2rem;
+  }
+  .deep-dive .dive-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 1.2rem;
+  }
+  .deep-dive .dive-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-1);
+  }
+  .deep-dive .badge {
+    background: rgba(56,189,248,0.2);
+    color: var(--accent-1);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .code-block {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 1.1rem 1.3rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: #e6edf3;
+    overflow-x: auto;
+    line-height: 1.7;
+    margin-top: 1rem;
+  }
+  .code-block .comment { color: #8b949e; }
+  .code-block .keyword { color: #ff7b72; }
+  .code-block .string { color: #a5d6ff; }
+  .code-block .number { color: #79c0ff; }
+  .code-block .func { color: #d2a8ff; }
+
+  /* Sensor table */
+  .sensor-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .sensor-table th {
+    background: rgba(56,189,248,0.1);
+    color: var(--accent-1);
+    font-weight: 700;
+    padding: 0.7rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(56,189,248,0.25);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .sensor-table td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+  .sensor-table tr:last-child td { border-bottom: none; }
+  .sensor-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .sensor-table .name { color: var(--text-primary); font-weight: 600; }
+  .sensor-table .highlight { color: var(--accent-3); font-weight: 600; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+
+  /* Resource cards */
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem;
+    transition: all 0.2s;
+  }
+  .resource-card:hover {
+    border-color: rgba(56,189,248,0.3);
+    transform: translateY(-1px);
+  }
+  .resource-card .rc-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    margin-bottom: 0.5rem;
+  }
+  .resource-card .rc-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .resource-card h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+    line-height: 1.3;
+  }
+  .resource-card p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .resource-card .rc-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--accent-1);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: 0.6rem;
+    transition: gap 0.2s;
+  }
+  .resource-card .rc-link:hover { gap: 0.5rem; }
+
+  /* Highlight box */
+  .highlight-box {
+    background: rgba(52,211,153,0.08);
+    border: 1px solid rgba(52,211,153,0.25);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin: 1rem 0;
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+  }
+  .highlight-box .hb-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .highlight-box p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.7; margin: 0; }
+  .highlight-box strong { color: var(--accent-3); }
+
+  /* Full width card */
+  .full-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.6rem;
+    margin-bottom: 1.25rem;
+  }
+  .full-card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .full-card p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+  }
+  .steps {
+    list-style: none;
+    counter-reset: step;
+    margin-top: 0.8rem;
+  }
+  .steps li {
+    counter-increment: step;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    padding: 0.4rem 0 0.4rem 2.2rem;
+    position: relative;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    line-height: 1.65;
+  }
+  .steps li:last-child { border-bottom: none; }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0.4rem;
+    background: var(--gradient-1);
+    color: white;
+    width: 1.5rem; height: 1.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+  .steps li strong { color: var(--text-primary); }
+
+  /* Footer */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+  }
+  footer .footer-grid {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  footer h3 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.8rem;
+  }
+  footer p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  footer .footer-sources {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 1.2rem;
+    line-height: 1.8;
+  }
+  footer .footer-sources a {
+    color: var(--accent-1);
+    text-decoration: none;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+  footer .footer-sources a:hover { opacity: 1; }
+  footer .divider {
+    width: 60px; height: 2px;
+    background: var(--gradient-1);
+    margin: 1.5rem auto;
+    border-radius: 1px;
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .resources-grid { grid-template-columns: 1fr; }
+    header { padding: 2rem 1rem 1.5rem; }
+    main { padding: 1.5rem 1rem; }
+    .deep-dive { padding: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">📡 Daily ESP32 Research Report</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">5 กันยายน 2569 &nbsp;·&nbsp; LoRaWAN · Industrial IoT · E-Paper · BLE Mesh</p>
+  <div class="stats-row">
+    <div class="stat-pill"><span class="dot"></span> อัปเดตล่าสุดวันนี้</div>
+    <div class="stat-pill">🔬 4 หัวข้อหลัก</div>
+    <div class="stat-pill">💡 12+ ไอเดียโปรเจกต์</div>
+    <div class="stat-pill">🔧 8 Sensors แนะนำ</div>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations">นวัตกรรมใหม่</a>
+  <a href="#projects">ไอเดียโปรเจกต์</a>
+  <a href="#sensors">Sensors</a>
+  <a href="#deepdive">Deep Dive</a>
+  <a href="#resources">แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- SECTION 1: INNOVATIONS -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🚀</div>
+      <div class="section-title-text">
+        <h2>นวัตกรรมและเทรนด์ใหม่ล่าสุด</h2>
+        <p>ESP32 + LoRaWAN, E-Paper Solar, BLE Mesh และ Predictive Maintenance</p>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <div class="card blue">
+        <span class="card-emoji">📡</span>
+        <h3>ESP32-S3 + SX1262 — LoRaWAN Node รุ่นใหม่ 2026</h3>
+        <p>Heltec WiFi LoRa 32 V3 รวม ESP32-S3 + SX1262 LoRa chip ทำให้มี Wi-Fi, BLE 5.0 และ LoRa ในชิปเดียว รองรับ Meshtastic ส่งข้อมูลไกล 15 กม. ในพื้นที่โล่ง เหมาะสำหรับ Smart Farm และ Disaster Monitoring</p>
+        <div class="tags">
+          <span class="tag tag-blue">LoRaWAN</span>
+          <span class="tag tag-purple">Meshtastic</span>
+          <span class="tag tag-green">15km Range</span>
+          <span class="tag tag-orange">ESP32-S3</span>
+        </div>
+      </div>
+
+      <div class="card green">
+        <span class="card-emoji">☀️</span>
+        <h3>LightInk — ESP32 Solar E-Ink Watch อายุแบตเตอรี่ 10 เดือน</h3>
+        <p>โปรเจกต์ Open Source ล่าสุด (เมษายน 2026) รวม E-Paper 1.54 นิ้ว + แผงโซลาร์เซลล์ขนาดเล็ก ทำงานโดยไม่ต้องชาร์จนาน 9-10 เดือน รองรับ Wi-Fi, Bluetooth, LoRa และ GPS เป็นตัวอย่างสุดยอดของ Ultra Low Power Design</p>
+        <div class="tags">
+          <span class="tag tag-green">Solar Power</span>
+          <span class="tag tag-blue">E-Paper</span>
+          <span class="tag tag-purple">Open Source</span>
+          <span class="tag tag-orange">10 เดือน</span>
+        </div>
+      </div>
+
+      <div class="card purple">
+        <span class="card-emoji">🏭</span>
+        <h3>ESP32-S3 + ICM-42688-P — Predictive Maintenance Platform 2026</h3>
+        <p>Reference design จาก findchips.com ปี 2026 ใช้ ICM-42688-P 6-axis IMU ความแม่นยำสูง ตรวจจับความสั่นสะเทือนของเครื่องจักรแบบ Real-time ทำ FFT analysis ที่ 3,200 samples/วินาที พร้อม ESD protection ด้วย USBLC6-2SC6</p>
+        <div class="tags">
+          <span class="tag tag-purple">Predictive Maintenance</span>
+          <span class="tag tag-blue">ICM-42688-P</span>
+          <span class="tag tag-orange">FFT Analysis</span>
+        </div>
+      </div>
+
+      <div class="card orange">
+        <span class="card-emoji">🔵</span>
+        <h3>ESP-BLE-MESH v6.0 — BLE Mesh Smart Building ระดับ Enterprise</h3>
+        <p>ESP-IDF v6.0.2 อัปเดต BLE Mesh รองรับ Bluetooth Mesh Specification v1.0 ครบทุก Model แต่ละ Node ส่งสัญญาณได้ 10-30 เมตร รีเลย์ทุก 10-15 เมตรครอบคลุมทั้งชั้นอาคาร Self-healing เมื่อ Node ล้มเหลว เหมาะ Smart Lighting, HVAC Control</p>
+        <div class="tags">
+          <span class="tag tag-blue">BLE Mesh</span>
+          <span class="tag tag-green">Self-Healing</span>
+          <span class="tag tag-purple">ESP-IDF 6.0</span>
+          <span class="tag tag-pink">Smart Building</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="highlight-box" style="margin-top:1.5rem;">
+      <div class="hb-icon">💡</div>
+      <p><strong>Meshtastic Build_off 2026</strong> — Seeed Studio จัดการแข่งขันสร้าง Meshtastic Node บน XIAO ESP32-S3 + Wio-SX1262 ราคาเริ่มต้นเพียง ~$12 ทำให้ LoRa Mesh Network เข้าถึงได้ทุกคน เครือข่าย LoRa ปัจจุบันมีอยู่ในหลายร้อยเมืองทั่วโลก</p>
+    </div>
+  </section>
+
+  <!-- SECTION 2: PROJECTS -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">💡</div>
+      <div class="section-title-text">
+        <h2>ไอเดียโปรเจกต์น่าสร้าง</h2>
+        <p>โปรเจกต์ต้นแบบที่สามารถเริ่มสร้างได้จริงวันนี้</p>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <div class="card blue">
+        <span class="card-emoji">🌾</span>
+        <h3>Smart Farm LoRaWAN Monitor ระยะ 15 กม.</h3>
+        <p>ติดตั้ง Node ESP32-S3 + SX1262 ตามแปลงเกษตร วัดอุณหภูมิ ความชื้นดิน และปริมาณน้ำฝน ส่งข้อมูลผ่าน LoRaWAN ไปยัง Gateway กลาง แสดงผลบน Dashboard ไม่ต้องใช้ Wi-Fi ในพื้นที่ห่างไกล</p>
+        <div class="tags">
+          <span class="tag tag-green">Smart Farm</span>
+          <span class="tag tag-blue">LoRaWAN</span>
+          <span class="tag tag-orange">Gateway</span>
+        </div>
+      </div>
+
+      <div class="card green">
+        <span class="card-emoji">🗺️</span>
+        <h3>Meshtastic Off-Grid Communication Relay</h3>
+        <p>สร้าง Mesh Network ด้วย ESP32-S3 + SX1262 หลาย Node สำหรับพื้นที่ไม่มีสัญญาณมือถือ เช่น ป่าเขา หรือพื้นที่ภัยพิบัติ ใช้ Meshtastic app ส่งข้อความและพิกัด GPS ได้โดยไม่ต้องมี Internet</p>
+        <div class="tags">
+          <span class="tag tag-purple">Meshtastic</span>
+          <span class="tag tag-blue">Off-Grid</span>
+          <span class="tag tag-orange">Disaster Relief</span>
+        </div>
+      </div>
+
+      <div class="card purple">
+        <span class="card-emoji">⚙️</span>
+        <h3>Industrial Machine Health Monitor + Telegram Alert</h3>
+        <p>ติด XIAO ESP32-S3 + ICM-42688-P กับมอเตอร์หรือปั๊มน้ำ วัดความสั่นสะเทือน ทำ FFT วิเคราะห์ความผิดปกติ เมื่อค่าเกินกำหนดส่ง Alert ผ่าน Telegram ทันที ป้องกันเครื่องจักรเสียหายก่อนเวลา</p>
+        <div class="tags">
+          <span class="tag tag-purple">Predictive Maintenance</span>
+          <span class="tag tag-red">FFT</span>
+          <span class="tag tag-blue">Telegram</span>
+        </div>
+      </div>
+
+      <div class="card orange">
+        <span class="card-emoji">🖥️</span>
+        <h3>Solar-Powered E-Paper Dashboard พลังงานแสงอาทิตย์</h3>
+        <p>ESP32 + จอ E-Ink 4.2 นิ้ว + แผงโซลาร์เล็ก + BQ25570 Energy Harvester แสดงสภาพอากาศ ราคาหุ้น หรือ To-Do List อัปเดตทุก 15 นาที ใช้ Deep Sleep ส่วนใหญ่ แบตฯ 2000mAh อยู่ได้ 3-5 เดือน แม้ไม่มีแสงแดด</p>
+        <div class="tags">
+          <span class="tag tag-green">Solar</span>
+          <span class="tag tag-blue">E-Paper</span>
+          <span class="tag tag-orange">Deep Sleep</span>
+          <span class="tag tag-purple">BQ25570</span>
+        </div>
+      </div>
+
+      <div class="card blue">
+        <span class="card-emoji">🏢</span>
+        <h3>ESP32 BLE Mesh Smart Lighting ทั้งอาคาร</h3>
+        <p>ติดตั้ง Node ESP32-C6 ในทุกโคมไฟ สร้าง BLE Mesh ครอบคลุมทั้งชั้น ควบคุมแสงสว่างตามความต้องการจาก App เพียงตัวเดียว ระบบ Self-healing ถ้า Node ใดล้มเหลว Mesh จะหาเส้นทางใหม่อัตโนมัติ</p>
+        <div class="tags">
+          <span class="tag tag-blue">BLE Mesh</span>
+          <span class="tag tag-purple">ESP32-C6</span>
+          <span class="tag tag-green">Smart Lighting</span>
+        </div>
+      </div>
+
+      <div class="card green">
+        <span class="card-emoji">🌊</span>
+        <h3>LoRa River Level Monitor สำหรับเตือนภัยน้ำท่วม</h3>
+        <p>ติด Node ESP32 + SX1262 + Ultrasonic Distance Sensor ริมแม่น้ำ วัดระดับน้ำทุก 5 นาที ส่งผ่าน LoRaWAN ไปยัง Server กลาง เมื่อระดับน้ำเกิน Threshold ส่ง SMS/Line Alert ชาวบ้านทันที</p>
+        <div class="tags">
+          <span class="tag tag-blue">Flood Alert</span>
+          <span class="tag tag-orange">LoRaWAN</span>
+          <span class="tag tag-green">Ultrasonic</span>
+        </div>
+      </div>
+
+      <div class="card purple">
+        <span class="card-emoji">🏋️</span>
+        <h3>DIY Gym Equipment Usage Monitor ด้วย IMU</h3>
+        <p>ติด ESP32 + ICM-42688-P กับอุปกรณ์ออกกำลังกาย นับจำนวนครั้ง วัดความแรง และตรวจท่าทางที่ไม่ถูกต้อง ส่งข้อมูลผ่าน BLE ไปยัง App บนมือถือ เหมาะสำหรับ Personal Trainer หรือ Home Gym Tracker</p>
+        <div class="tags">
+          <span class="tag tag-purple">IMU</span>
+          <span class="tag tag-blue">BLE</span>
+          <span class="tag tag-orange">Fitness</span>
+        </div>
+      </div>
+
+      <div class="card orange">
+        <span class="card-emoji">🚁</span>
+        <h3>Drone Telemetry Relay ด้วย ESP32 + LoRa</h3>
+        <p>ติด ESP32 + SX1262 บน Drone เพิ่ม Range การส่ง Telemetry ไปได้ถึง 10 กม. แทนที่จะใช้ Wi-Fi เพียง 100 เมตร เชื่อมต่อกับ Ground Station ที่มี ESP32 + จอแสดงผล แสดงตำแหน่ง ความสูง และอัตราเร็วแบบ Real-time</p>
+        <div class="tags">
+          <span class="tag tag-blue">Drone</span>
+          <span class="tag tag-orange">LoRa</span>
+          <span class="tag tag-green">10km Range</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 3: SENSORS -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">🔬</div>
+      <div class="section-title-text">
+        <h2>Sensors น่าสนใจประจำวันนี้</h2>
+        <p>ชิปเซ็นเซอร์ใหม่สำหรับงาน Industrial IoT และ Energy Harvesting</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="sensor-table">
+        <thead>
+          <tr>
+            <th>ชื่อ Sensor</th>
+            <th>ประเภท</th>
+            <th>Interface</th>
+            <th>จุดเด่น</th>
+            <th>ราคาโดยประมาณ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="name">ICM-42688-P</td>
+            <td>IMU 6-axis (Acc + Gyro)</td>
+            <td>SPI / I2C</td>
+            <td class="highlight">3,200 Hz ODR, ±2g–±16g, ±250–±2000°/s, noise ต่ำมาก</td>
+            <td>~฿90–฿150</td>
+          </tr>
+          <tr>
+            <td class="name">SX1262</td>
+            <td>LoRa RF Transceiver</td>
+            <td>SPI</td>
+            <td class="highlight">868/915 MHz, +22 dBm TX, ระยะ 15 กม., ใช้พลังงานต่ำ</td>
+            <td>~฿180–฿260</td>
+          </tr>
+          <tr>
+            <td class="name">BQ25570</td>
+            <td>Energy Harvester IC</td>
+            <td>I2C / Analog</td>
+            <td class="highlight">ประสิทธิภาพสูงสุด 95%, รองรับ Solar / Thermal / Vibration</td>
+            <td>~฿120–฿200</td>
+          </tr>
+          <tr>
+            <td class="name">AEM10941</td>
+            <td>Solar Energy Harvester</td>
+            <td>SPI</td>
+            <td class="highlight">Cold Start ที่ 380 mV, ชาร์จ Super Capacitor / LiPo</td>
+            <td>~฿150–฿250</td>
+          </tr>
+          <tr>
+            <td class="name">ADXL355</td>
+            <td>Accelerometer 3-axis</td>
+            <td>SPI / I2C</td>
+            <td class="highlight">Noise 25 µg/√Hz, ใช้สำหรับ Structural Health Monitoring</td>
+            <td>~฿200–฿350</td>
+          </tr>
+          <tr>
+            <td class="name">LIS2DW12</td>
+            <td>Accelerometer Ultra-Low Power</td>
+            <td>SPI / I2C</td>
+            <td class="highlight">900 nA ใน Low Power Mode, ตรวจ Free Fall / Tap / Tilt</td>
+            <td>~฿50–฿90</td>
+          </tr>
+          <tr>
+            <td class="name">HC-SR04 Pro</td>
+            <td>Ultrasonic Distance</td>
+            <td>GPIO (Trigger/Echo)</td>
+            <td class="highlight">วัดระยะ 2–400 ซม. ราคาถูก เหมาะ Flood Monitoring</td>
+            <td>~฿30–฿60</td>
+          </tr>
+          <tr>
+            <td class="name">E-Paper 4.2" Waveshare</td>
+            <td>E-Ink Display</td>
+            <td>SPI</td>
+            <td class="highlight">400×300 px, อ่านง่ายกลางแดด, ใช้ไฟเฉพาะตอนอัปเดต</td>
+            <td>~฿650–฿900</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="highlight-box" style="margin-top:1.2rem;">
+      <div class="hb-icon">⚡</div>
+      <p><strong>Energy Harvesting Tip:</strong> การจับคู่ ESP32 + BQ25570 + แผงโซลาร์ขนาด 5V/100mA ทำให้ระบบ IoT ทำงานได้โดยไม่ต้องเปลี่ยนถ่านเลย ตราบใดที่มีแสงอย่างน้อย 2-3 ชั่วโมงต่อวัน เหมาะสำหรับ Outdoor Sensor Node ในพื้นที่ห่างไกล</p>
+    </div>
+  </section>
+
+  <!-- SECTION 4: DEEP DIVE -->
+  <section id="deepdive">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔍</div>
+      <div class="section-title-text">
+        <h2>Deep Dive: LoRaWAN Node ด้วย ESP32-S3 + SX1262</h2>
+        <p>ขั้นตอนสร้าง Long-Range Sensor Node ส่งข้อมูลได้ไกล 10–15 กิโลเมตร</p>
+      </div>
+    </div>
+
+    <div class="full-card">
+      <h3>⚙️ Hardware ที่ต้องการ</h3>
+      <p>Heltec WiFi LoRa 32 V3 (มี ESP32-S3 + SX1262 ในบอร์ดเดียว) หรือ XIAO ESP32-S3 + Wio-SX1262 Module รวมค่าใช้จ่ายเริ่มต้นประมาณ <strong style="color:#34d399;">$10–$15</strong> พร้อมเสาอากาศ LoRa 868/915 MHz และแบตเตอรี่ 3.7V LiPo</p>
+      <ol class="steps">
+        <li><strong>ติดตั้ง Arduino IDE</strong> พร้อม ESP32 Board Package v3.x และ Library: <code style="color:#38bdf8;">RadioLib</code> หรือ <code style="color:#38bdf8;">LoRaWAN-Arduino</code></li>
+        <li><strong>ลงทะเบียน Device</strong> บน The Things Network (TTN) หรือ Chirpstack Server รับ DevEUI, AppEUI, AppKey มาใส่ใน Code</li>
+        <li><strong>เขียน Code OTAA Join</strong> ให้ Node ขอ Join Network แล้วส่งข้อมูลทุก 5 นาที ตาม Duty Cycle ของ LoRaWAN</li>
+        <li><strong>ใช้ Deep Sleep</strong> ระหว่างรอส่งข้อมูล ลดการใช้พลังงานเหลือ 10–50 µA ทำให้แบตฯ 2000mAh อยู่ได้หลายปี</li>
+        <li><strong>ดูข้อมูลบน Dashboard</strong> ผ่าน TTN Console หรือเชื่อม Grafana / Node-RED สำหรับ Visualization</li>
+      </ol>
+    </div>
+
+    <div class="deep-dive">
+      <div class="dive-header">
+        <h3>📟 ตัวอย่าง Code: ส่งข้อมูล Temperature ผ่าน LoRaWAN (RadioLib)</h3>
+        <span class="badge">Arduino IDE</span>
+      </div>
+      <div class="code-block">
+<span class="comment">// ESP32-S3 + SX1262 LoRaWAN Sensor Node</span>
+<span class="comment">// ใช้ RadioLib Library + OTAA Join</span>
+#include &lt;RadioLib.h&gt;
+#include &lt;DHT.h&gt;
+
+<span class="comment">// SX1262 pins สำหรับ Heltec WiFi LoRa 32 V3</span>
+SX1262 radio = <span class="func">SX1262</span>(<span class="number">8</span>, <span class="number">9</span>, <span class="number">13</span>, <span class="number">12</span>); <span class="comment">// NSS, DIO1, NRST, BUSY</span>
+LoRaWANNode node = <span class="func">LoRaWANNode</span>(&radio, &EU868);
+DHT dht(<span class="number">4</span>, DHT22);
+
+<span class="keyword">const</span> uint64_t joinEUI = <span class="string">0xYOUR_JOIN_EUI</span>;
+<span class="keyword">const</span> uint64_t devEUI  = <span class="string">0xYOUR_DEV_EUI</span>;
+<span class="keyword">const</span> uint8_t appKey[] = { <span class="number">0x00</span>, <span class="number">...</span> }; <span class="comment">// 16 bytes</span>
+<span class="keyword">const</span> uint8_t nwkKey[] = { <span class="number">0x00</span>, <span class="number">...</span> };
+
+<span class="keyword">void</span> <span class="func">setup</span>() {
+  Serial.<span class="func">begin</span>(<span class="number">115200</span>);
+  dht.<span class="func">begin</span>();
+
+  radio.<span class="func">begin</span>(); <span class="comment">// Init SX1262</span>
+  node.<span class="func">beginOTAA</span>(joinEUI, devEUI, nwkKey, appKey);
+  node.<span class="func">activateOTAA</span>(); <span class="comment">// Join Network</span>
+}
+
+<span class="keyword">void</span> <span class="func">loop</span>() {
+  <span class="keyword">float</span> temp = dht.<span class="func">readTemperature</span>();
+  <span class="keyword">float</span> hum  = dht.<span class="func">readHumidity</span>();
+
+  <span class="comment">// Pack data: temp*10 + humidity*10 (2 bytes each)</span>
+  uint8_t data[<span class="number">4</span>];
+  int16_t t = (int16_t)(temp * <span class="number">10</span>);
+  int16_t h = (int16_t)(hum * <span class="number">10</span>);
+  data[<span class="number">0</span>] = t >> <span class="number">8</span>; data[<span class="number">1</span>] = t & <span class="number">0xFF</span>;
+  data[<span class="number">2</span>] = h >> <span class="number">8</span>; data[<span class="number">3</span>] = h & <span class="number">0xFF</span>;
+
+  node.<span class="func">sendReceive</span>(data, <span class="keyword">sizeof</span>(data), <span class="number">1</span>); <span class="comment">// Port 1</span>
+
+  <span class="comment">// Deep sleep 5 นาที ประหยัดพลังงาน</span>
+  esp_deep_sleep(<span class="number">5</span> * <span class="number">60</span> * <span class="number">1000000ULL</span>);
+}
+      </div>
+
+      <div class="highlight-box" style="margin-top:1.2rem;">
+        <div class="hb-icon">📊</div>
+        <p>ข้อมูลที่ส่งผ่าน LoRaWAN จะถูกรับที่ TTN Gateway และส่งต่อไปยัง <strong>Node-RED</strong> หรือ <strong>Grafana</strong> สำหรับแสดงผล Dashboard สามารถรับข้อมูลจาก Node ได้หลายพันตัวพร้อมกันผ่าน Gateway เดียว</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: RESOURCES -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🌐</div>
+      <div class="section-title-text">
+        <h2>แหล่งข้อมูลและลิงก์น่าสนใจ</h2>
+        <p>เอกสาร บทความ และชุมชนสำหรับ ESP32 LoRaWAN และ E-Paper</p>
+      </div>
+    </div>
+
+    <div class="resources-grid">
+
+      <div class="resource-card">
+        <div class="rc-top">
+          <div class="rc-icon">📘</div>
+          <div>
+            <h4>Heltec WiFi LoRa 32 V3</h4>
+            <p>ESP32-S3 + SX1262 บอร์ด LoRaWAN สำเร็จรูป รองรับ Meshtastic และ Arduino</p>
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-blue">LoRa Board</span>
+          <span class="tag tag-green">OLED</span>
+        </div>
+        <a class="rc-link" href="https://heltec.org/project/wifi-lora-32-v3/" target="_blank">ดูรายละเอียด →</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-top">
+          <div class="rc-icon">🌱</div>
+          <div>
+            <h4>Seeed XIAO ESP32-S3 + Wio-SX1262</h4>
+            <p>ชุด LoRaWAN ขนาดเล็ก ราคา ~$12 รองรับ Meshtastic Build_off 2026</p>
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-purple">Compact</span>
+          <span class="tag tag-orange">$12</span>
+        </div>
+        <a class="rc-link" href="https://www.seeedstudio.com/blog/2026/05/26/esp32-lora-guide/" target="_blank">ESP32 LoRa Guide →</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-top">
+          <div class="rc-icon">☀️</div>
+          <div>
+            <h4>LightInk — Solar E-Ink Watch</h4>
+            <p>Open Source เปิดแบบ PCB และ Firmware ให้ DIY อายุแบต 10 เดือน</p>
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-green">Open Source</span>
+          <span class="tag tag-blue">Solar</span>
+        </div>
+        <a class="rc-link" href="https://www.cnx-software.com/2026/04/26/lightink-an-esp32-based-solar-powered-e-ink-smartwatch-with-up-to-10-months-of-battery-life/" target="_blank">อ่านบทความ →</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-top">
+          <div class="rc-icon">🏭</div>
+          <div>
+            <h4>Vibration Anomaly Detection Kit</h4>
+            <p>Seeed XIAO ESP32-S3 + Grove Accelerometer สำเร็จรูปสำหรับ Predictive Maintenance</p>
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-purple">Plug & Play</span>
+          <span class="tag tag-red">Industrial</span>
+        </div>
+        <a class="rc-link" href="https://www.seeedstudio.com/Vibration-Anomaly-Detection-Kit-for-XIAO-ESP32-S3.html" target="_blank">ดู Kit →</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-top">
+          <div class="rc-icon">🔵</div>
+          <div>
+            <h4>ESP-IDF BLE Mesh Guide v6.0</h4>
+            <p>เอกสาร Official จาก Espressif สำหรับ BLE Mesh บน ESP32-C6</p>
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-blue">Official Docs</span>
+          <span class="tag tag-green">ESP32-C6</span>
+        </div>
+        <a class="rc-link" href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32c6/api-guides/esp-ble-mesh/ble-mesh-index.html" target="_blank">อ่าน Docs →</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-top">
+          <div class="rc-icon">📡</div>
+          <div>
+            <h4>Random Nerd Tutorials — ESP32 LoRa</h4>
+            <p>บทเรียน LoRa Sensor Monitoring พร้อม Web Server ครบสมบูรณ์</p>
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-orange">Tutorial</span>
+          <span class="tag tag-blue">Web Server</span>
+        </div>
+        <a class="rc-link" href="https://randomnerdtutorials.com/esp32-lora-sensor-web-server/" target="_blank">ดู Tutorial →</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-top">
+          <div class="rc-icon">🔧</div>
+          <div>
+            <h4>ESP32-S3 Motion Node Reference Design</h4>
+            <p>Schematic สำเร็จรูปสำหรับ Wireless Vibration Monitor + ICM-42688-P</p>
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-purple">Reference Design</span>
+          <span class="tag tag-red">2026</span>
+        </div>
+        <a class="rc-link" href="https://blog.findchips.com/esp32-s3-wireless-motion-node-reference-design-sourcing/" target="_blank">ดู Design →</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-top">
+          <div class="rc-icon">🌐</div>
+          <div>
+            <h4>LoRaWAN Guide 2026</h4>
+            <p>คู่มือ LoRaWAN สำหรับ IoT ภาพรวมเครือข่าย Coverage และการ Deploy</p>
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag tag-blue">Overview</span>
+          <span class="tag tag-green">2026</span>
+        </div>
+        <a class="rc-link" href="https://iotbeat.com/blog/lorawan-a-simple-guide-for-2026" target="_blank">อ่านคู่มือ →</a>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-grid">
+    <h3>ESP32 & Sensor Innovations Daily</h3>
+    <p>รายงานอัตโนมัติ ประจำวันที่ 5 กันยายน 2569 | สร้างโดย AI Research Agent<br>
+    หัวข้อวันนี้: LoRaWAN Long Range · Solar E-Paper · Industrial Vibration · BLE Mesh Smart Building</p>
+    <div class="divider"></div>
+    <p class="footer-sources">
+      <strong style="color:#64748b;">แหล่งอ้างอิง:</strong><br>
+      <a href="https://heltec.org/project/wifi-lora-32-v3/" target="_blank">Heltec WiFi LoRa 32 V3</a> ·
+      <a href="https://www.seeedstudio.com/blog/2026/05/26/esp32-lora-guide/" target="_blank">Seeed ESP32 LoRa Guide</a> ·
+      <a href="https://www.cnx-software.com/2026/04/26/lightink-an-esp32-based-solar-powered-e-ink-smartwatch-with-up-to-10-months-of-battery-life/" target="_blank">CNX Software — LightInk</a> ·
+      <a href="https://blog.findchips.com/esp32-s3-wireless-motion-node-reference-design-sourcing/" target="_blank">FindChips — ESP32-S3 Motion Node</a> ·
+      <a href="https://zbotic.in/iot-predictive-maintenance-vibration-sensors-on-esp32/" target="_blank">Zbotic — Predictive Maintenance</a> ·
+      <a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32c6/api-guides/esp-ble-mesh/ble-mesh-index.html" target="_blank">Espressif BLE Mesh Docs</a> ·
+      <a href="https://randomnerdtutorials.com/esp32-lora-sensor-web-server/" target="_blank">Random Nerd Tutorials</a> ·
+      <a href="https://iotbeat.com/blog/lorawan-a-simple-guide-for-2026" target="_blank">IoTBeat LoRaWAN 2026</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
