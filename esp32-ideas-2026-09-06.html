@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 6 กันยายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1a2744;
+    --accent-blue: #38bdf8;
+    --accent-cyan: #22d3ee;
+    --accent-green: #4ade80;
+    --accent-purple: #a78bfa;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --gradient-header: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f2a4a 100%);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: var(--gradient-header);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(56,189,248,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 2rem;
+    padding: 0.35rem 1rem;
+    font-size: 0.8rem;
+    color: var(--accent-blue);
+    letter-spacing: 0.05em;
+    margin-bottom: 1.2rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan), var(--accent-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.6rem;
+  }
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-item .num {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    display: block;
+  }
+  .stat-item .label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* Navigation */
+  nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 0.8rem 2rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.4rem 1rem;
+    border-radius: 0.4rem;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  nav a:hover {
+    color: var(--accent-blue);
+    background: rgba(56,189,248,0.1);
+    border-color: rgba(56,189,248,0.2);
+  }
+
+  /* Main Layout */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  /* Section */
+  section {
+    margin-bottom: 3.5rem;
+  }
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border);
+  }
+  .section-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: rgba(56,189,248,0.15); color: var(--accent-blue); }
+  .icon-green { background: rgba(74,222,128,0.15); color: var(--accent-green); }
+  .icon-purple { background: rgba(167,139,250,0.15); color: var(--accent-purple); }
+  .icon-orange { background: rgba(251,146,60,0.15); color: var(--accent-orange); }
+
+  /* Cards Grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.25rem;
+  }
+
+  /* Card */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.875rem;
+    padding: 1.5rem;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 0.875rem 0.875rem 0 0;
+  }
+  .card.blue::before { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); }
+  .card.green::before { background: linear-gradient(90deg, var(--accent-green), #86efac); }
+  .card.purple::before { background: linear-gradient(90deg, var(--accent-purple), #c4b5fd); }
+  .card.orange::before { background: linear-gradient(90deg, var(--accent-orange), #fbbf24); }
+  .card.pink::before { background: linear-gradient(90deg, var(--accent-pink), #f9a8d4); }
+  .card:hover {
+    border-color: var(--accent-blue);
+    transform: translateY(-2px);
+  }
+
+  .card-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.25rem;
+    margin-bottom: 0.75rem;
+  }
+  .tag-blue { background: rgba(56,189,248,0.2); color: var(--accent-blue); }
+  .tag-green { background: rgba(74,222,128,0.2); color: var(--accent-green); }
+  .tag-purple { background: rgba(167,139,250,0.2); color: var(--accent-purple); }
+  .tag-orange { background: rgba(251,146,60,0.2); color: var(--accent-orange); }
+  .tag-pink { background: rgba(244,114,182,0.2); color: var(--accent-pink); }
+  .tag-cyan { background: rgba(34,211,238,0.2); color: var(--accent-cyan); }
+
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .card ul {
+    margin: 0.75rem 0 0 0;
+    padding-left: 1.2rem;
+  }
+  .card ul li {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.3rem;
+    line-height: 1.6;
+  }
+  .card ul li strong { color: var(--text-primary); }
+
+  /* Spec table */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+  }
+  .spec-table td {
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .spec-table td:first-child {
+    color: var(--text-muted);
+    white-space: nowrap;
+    padding-right: 1rem;
+    width: 40%;
+  }
+  .spec-table td:last-child {
+    color: var(--text-primary);
+    font-weight: 400;
+  }
+
+  /* Highlight box */
+  .highlight-box {
+    background: rgba(56,189,248,0.06);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    margin-top: 0.8rem;
+    font-size: 0.85rem;
+    color: var(--accent-blue);
+  }
+
+  /* Deep dive section */
+  .deepdive-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+  .deepdive-header {
+    background: linear-gradient(135deg, #1e3a5f, #0f2a4a);
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .deepdive-header h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    margin-bottom: 0.3rem;
+  }
+  .deepdive-header p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+  .deepdive-body {
+    padding: 1.5rem 2rem;
+  }
+  .deepdive-body h4 {
+    color: var(--accent-green);
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 1.2rem 0 0.5rem;
+  }
+  .deepdive-body h4:first-child { margin-top: 0; }
+  .deepdive-body p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+  .deepdive-body ul {
+    padding-left: 1.2rem;
+  }
+  .deepdive-body ul li {
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    margin-bottom: 0.3rem;
+    line-height: 1.6;
+  }
+  .deepdive-body ul li strong { color: var(--text-primary); }
+
+  /* Code block */
+  pre {
+    background: #0a0f1e;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    margin-top: 0.75rem;
+  }
+  code {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 0.82rem;
+    color: #93c5fd;
+    line-height: 1.7;
+  }
+  .cm { color: #64748b; }
+  .ck { color: #f472b6; }
+  .cs { color: #4ade80; }
+  .cn { color: #fb923c; }
+
+  /* Resources */
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .resource-link {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    text-decoration: none;
+    transition: border-color 0.2s;
+  }
+  .resource-link:hover { border-color: var(--accent-blue); }
+  .resource-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    background: rgba(56,189,248,0.1);
+  }
+  .resource-link .title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+  .resource-link .desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  /* Footer */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 2rem 1.5rem;
+    text-align: center;
+  }
+  footer .footer-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+  footer .footer-sub {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  footer .footer-sources {
+    margin-top: 1rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+  footer .footer-sources a {
+    color: var(--accent-blue);
+    text-decoration: none;
+  }
+
+  @media (max-width: 640px) {
+    header { padding: 2rem 1rem 1.5rem; }
+    .stats-row { gap: 1rem; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .deepdive-body { padding: 1rem; }
+    nav { padding: 0.6rem 1rem; }
+    nav a { font-size: 0.78rem; padding: 0.3rem 0.7rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">&#9889; ESP32 & IoT Daily — 6 กันยายน 2026</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">นวัตกรรม IoT และ Sensor ที่น่าสนใจประจำวัน — รวบรวมโดย AI Researcher</p>
+  <div class="stats-row">
+    <div class="stat-item"><span class="num">4</span><span class="label">นวัตกรรมใหม่</span></div>
+    <div class="stat-item"><span class="num">4</span><span class="label">ไอเดียโปรเจกต์</span></div>
+    <div class="stat-item"><span class="num">4</span><span class="label">Sensors น่าสนใจ</span></div>
+    <div class="stat-item"><span class="num">8</span><span class="label">แหล่งข้อมูล</span></div>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations">&#127381; นวัตกรรม</a>
+  <a href="#projects">&#128161; โปรเจกต์</a>
+  <a href="#sensors">&#128268; Sensors</a>
+  <a href="#deepdive">&#128270; Deep Dive</a>
+  <a href="#resources">&#128279; แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- INNOVATIONS -->
+  <section id="innovations">
+    <h2 class="section-title">
+      <span class="section-icon icon-blue">&#127381;</span>
+      นวัตกรรมและเทรนด์ใหม่ล่าสุด
+    </h2>
+    <div class="cards-grid">
+
+      <div class="card blue">
+        <span class="card-tag tag-blue">ข่าวใหม่ กันยายน 2026</span>
+        <h3>ESP32-P4 Weather Station — สถานีตรวจอากาศ All-in-One บน 10.1" Display</h3>
+        <p>Harald Kreuzer เปิดตัวโปรเจกต์ ESP32-P4 Weather Station ที่ครบเครื่องที่สุดในปี 2026 ขับ DSI Touchscreen 10.1 นิ้วโดยตรง รวมการแสดงผลสภาพอากาศ, คุณภาพอากาศ และ Sensor ไร้สายรอบบ้านไว้ในระบบเดียว</p>
+        <ul>
+          <li><strong>Display:</strong> 10.1" DSI Touchscreen (ขับตรงจาก ESP32-P4)</li>
+          <li><strong>Sensor หลัก:</strong> Sensirion SEN66 — PM, CO₂, VOC, NOx, Temp, Humidity</li>
+          <li><strong>Wireless Node:</strong> รองรับ LoRa + ESP-NOW สูงสุด 6 โหนด</li>
+          <li><strong>Weather API:</strong> Open-Meteo, OpenWeatherMap, Visual Crossing</li>
+          <li><strong>ข้อดี:</strong> ไม่ต้องใช้ Cloud หรือบัญชีผู้ใช้ ทำงานบน LAN ทั้งหมด</li>
+          <li><strong>ใช้บอร์ดสำเร็จรูป:</strong> ไม่ต้องออกแบบ PCB เอง</li>
+        </ul>
+        <div class="highlight-box">&#9889; Battery Node สามารถทำงานได้นานหลายปีด้วย Deep Sleep + LoRa</div>
+      </div>
+
+      <div class="card green">
+        <span class="card-tag tag-green">ฮาร์ดแวร์ใหม่</span>
+        <h3>ESP32-C61-MINI — Wi-Fi 6 + BLE 5.3 ราคาเพียง $2 ต่อโมดูล</h3>
+        <p>Espressif เริ่มขาย ESP32-C61-MINI-1 และ MINI-1U อย่างเป็นทางการบน AliExpress ในราคา ~$2 ต่อโมดูล ($10.7 สำหรับ 5 ชิ้น) ถือเป็น Wi-Fi 6 Module ราคาถูกที่สุดในตลาดขณะนี้</p>
+        <table class="spec-table">
+          <tr><td>CPU</td><td>RISC-V 160 MHz (Single-core)</td></tr>
+          <tr><td>RAM</td><td>320 KB SRAM</td></tr>
+          <tr><td>Wi-Fi</td><td>Wi-Fi 6 (802.11ax) 2.4 GHz</td></tr>
+          <tr><td>Bluetooth</td><td>BLE 5.3</td></tr>
+          <tr><td>Matter</td><td>รองรับ Matter over Wi-Fi</td></tr>
+          <tr><td>Framework</td><td>ESP-IDF v6.0+, Arduino (via component)</td></tr>
+          <tr><td>ราคา</td><td>~$2/โมดูล (AliExpress)</td></tr>
+        </table>
+        <div class="highlight-box">&#9888;&#65039; ไม่มี 802.15.4 (Thread/Zigbee) ต่างจาก C6 — เลือกให้ถูกกับ Use Case</div>
+      </div>
+
+      <div class="card purple">
+        <span class="card-tag tag-purple">บอร์ด Combo ใหม่</span>
+        <h3>ESP32P4C61-TINY — AIoT Board ที่รวม P4 + C61 ไว้ในบอร์ดเดียว</h3>
+        <p>Wireless-Tag ระดมทุนบน Kickstarter สำหรับ ESP32P4C61-TINY บอร์ด Open-Source AIoT ขนาดกะทัดรัดที่รวม ESP32-P4 (ประมวลผล 400 MHz) และ ESP32-C61 (Wi-Fi 6 + BLE) ไว้ด้วยกัน แก้จุดอ่อนที่ P4 ไม่มี Wireless ในตัว</p>
+        <ul>
+          <li><strong>ESP32-P4:</strong> Dual-core RISC-V 400 MHz + Hardware H.264 Encoder + AI Extensions</li>
+          <li><strong>ESP32-C61:</strong> Wi-Fi 6 + BLE 5.3 Co-processor</li>
+          <li><strong>Camera:</strong> MIPI CSI Interface (เชื่อมกล้องได้)</li>
+          <li><strong>Display:</strong> MIPI DSI Interface</li>
+          <li><strong>Storage:</strong> MicroSD Card Slot</li>
+          <li><strong>ใช้งาน:</strong> Edge AI, Computer Vision, AIoT Gateway</li>
+        </ul>
+      </div>
+
+      <div class="card orange">
+        <span class="card-tag tag-orange">เทรนด์ 2026</span>
+        <h3>ESP32-H21 — ทายาท H2 สำหรับ Thread/Zigbee พลังงานต่ำสุด</h3>
+        <p>ESP32-H21 คือ Low-Power Successor ของ ESP32-H2 สำหรับ IoT Endpoint แบบใช้แบตเตอรี่ยาวนาน จุดเด่นคือมี DC-DC Converter แบบ Integrated ทำให้ประหยัดพลังงานได้มากกว่าเดิม เหมาะกับ Zigbee และ Thread Sensor Node</p>
+        <ul>
+          <li><strong>Protocol:</strong> IEEE 802.15.4 — Thread, Zigbee, Matter</li>
+          <li><strong>จุดเด่น:</strong> Integrated DC-DC Converter (ลดการสิ้นเปลืองพลังงาน)</li>
+          <li><strong>Use Case:</strong> Door/Window Sensor, Motion Sensor แบบแบต 2-3 ปี</li>
+          <li><strong>เทียบกับ H2:</strong> เหมาะกว่าสำหรับ Battery-Powered Device</li>
+          <li><strong>Framework:</strong> ESP-IDF v6.0 + ESP-Matter SDK (สิงหาคม 2026)</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <h2 class="section-title">
+      <span class="section-icon icon-green">&#128161;</span>
+      ไอเดียโปรเจกต์น่าสร้าง
+    </h2>
+    <div class="cards-grid">
+
+      <div class="card green">
+        <span class="card-tag tag-green">ระดับกลาง</span>
+        <h3>DIY ระบบ Weather Station + Air Quality แบบ Off-Grid ด้วย ESP32-P4</h3>
+        <p>สร้างสถานีตรวจอากาศที่ครบที่สุด โดยใช้ ESP32-P4 ขับ DSI Touch Display 10.1 นิ้ว พร้อม Sensirion SEN66 วัด PM2.5/CO₂/VOC/NOx และเชื่อม Sensor Node ไร้สายผ่าน LoRa + ESP-NOW</p>
+        <ul>
+          <li><strong>Main Board:</strong> ESP32-P4 Dev Board + Heltec WiFi LoRa 32 V3</li>
+          <li><strong>Sensor หลัก:</strong> Sensirion SEN66 (All-in-One Air Quality)</li>
+          <li><strong>Remote Node:</strong> Heltec + BME280 (Temp/Humidity/Pressure)</li>
+          <li><strong>Display:</strong> 10.1" DSI Touchscreen</li>
+          <li><strong>Weather Data:</strong> Open-Meteo API (ฟรี ไม่ต้องสมัคร)</li>
+          <li><strong>ต้นทุนประมาณ:</strong> 3,000–5,000 บาท</li>
+        </ul>
+        <div class="highlight-box">&#127968; ทำงานบน LAN ทั้งหมด — ไม่พึ่ง Cloud ส่วนตัวปลอดภัย</div>
+      </div>
+
+      <div class="card blue">
+        <span class="card-tag tag-blue">ระดับเริ่มต้น</span>
+        <h3>Ultra-Cheap Smart Home Node ด้วย ESP32-C61 ($2) + Matter</h3>
+        <p>สร้าง Smart Sensor Node ราคาประหยัดสุดๆ ด้วย ESP32-C61-MINI ($2) เชื่อมต่อ Matter over Wi-Fi 6 เข้า Home Assistant ได้เลย ไม่ต้องมี Hub พิเศษ</p>
+        <ul>
+          <li><strong>MCU:</strong> ESP32-C61-MINI-1 (~$2)</li>
+          <li><strong>Sensor:</strong> BME280 (Temp + Humidity + Pressure) ~$1.5</li>
+          <li><strong>Protocol:</strong> Matter over Wi-Fi 6</li>
+          <li><strong>Framework:</strong> ESP-IDF v6.0 + ESP-Matter SDK</li>
+          <li><strong>Integration:</strong> Home Assistant, Apple Home, Google Home, Alexa</li>
+          <li><strong>ต้นทุนรวม:</strong> &lt; $5 ต่อ Node</li>
+        </ul>
+      </div>
+
+      <div class="card pink">
+        <span class="card-tag tag-pink">ระดับสูง</span>
+        <h3>IoT Water Quality Monitor — ตรวจคุณภาพน้ำอัตโนมัติด้วย ESP32</h3>
+        <p>ระบบ Monitor คุณภาพน้ำแบบ Real-time ด้วย Sensor หลายตัวส่งข้อมูลขึ้น Firebase Cloud อัตโนมัติ เหมาะกับบ่อเลี้ยงปลา, แหล่งน้ำดื่ม หรือระบบน้ำในโรงงาน</p>
+        <ul>
+          <li><strong>MCU:</strong> ESP32-S3 (Wi-Fi + BLE)</li>
+          <li><strong>pH Sensor:</strong> Analog pH Probe + Module</li>
+          <li><strong>TDS Sensor:</strong> วัดสารละลายในน้ำ (Dissolved Solids)</li>
+          <li><strong>Turbidity:</strong> วัดความขุ่นของน้ำ</li>
+          <li><strong>Temperature:</strong> DS18B20 (Waterproof)</li>
+          <li><strong>Cloud:</strong> Firebase Realtime Database</li>
+          <li><strong>Alert:</strong> LINE Notify เมื่อค่าเกิน Threshold</li>
+        </ul>
+      </div>
+
+      <div class="card purple">
+        <span class="card-tag tag-purple">ระดับกลาง</span>
+        <h3>ESP32-H21 Thread Sensor Network — เครือข่าย Sensor แบต 3 ปี</h3>
+        <p>วางเครือข่าย Thread Sensor Node ทั่วบ้านด้วย ESP32-H21 พลังงานต่ำมาก ใช้แบต AA 2 ก้อนได้นานถึง 2-3 ปี โดยไม่ต้องเดินสายไฟ</p>
+        <ul>
+          <li><strong>MCU:</strong> ESP32-H21 (Thread + Integrated DC-DC)</li>
+          <li><strong>Sensor:</strong> PIR Motion / Reed Switch / BME280</li>
+          <li><strong>Protocol:</strong> Thread (IEEE 802.15.4) + Matter</li>
+          <li><strong>Hub:</strong> Apple HomePod Mini หรือ Google Nest Hub (Thread Border Router)</li>
+          <li><strong>Deep Sleep:</strong> ตื่นทุก 5 นาที ส่งข้อมูล แล้วหลับใหม่</li>
+          <li><strong>อายุแบต:</strong> คาดว่า 2-3 ปี บน AA 2 ก้อน</li>
+        </ul>
+        <div class="highlight-box">&#128161; Thread ไม่ต้องผ่าน Wi-Fi Router — ลด Latency และ เพิ่ม Reliability</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SENSORS -->
+  <section id="sensors">
+    <h2 class="section-title">
+      <span class="section-icon icon-purple">&#128268;</span>
+      Sensors น่าสนใจประจำวันนี้
+    </h2>
+    <div class="cards-grid">
+
+      <div class="card blue">
+        <span class="card-tag tag-blue">All-in-One</span>
+        <h3>Sensirion SEN66 — Air Quality Sensor ครบจบในตัวเดียว</h3>
+        <p>SEN66 เป็น All-in-One Environmental Sensor จาก Sensirion วัดได้ถึง 6 พารามิเตอร์พร้อมกัน: PM1.0, PM2.5, PM4.0, PM10, CO₂, VOC, NOx, Temperature และ Humidity ในโมดูลเดียว เชื่อมต่อด้วย I2C ง่ายมาก</p>
+        <ul>
+          <li><strong>PM:</strong> PM1.0 / PM2.5 / PM4.0 / PM10 (µg/m³)</li>
+          <li><strong>CO₂:</strong> 0–40,000 ppm (Sensirion NDIR)</li>
+          <li><strong>VOC:</strong> Volatile Organic Compounds Index</li>
+          <li><strong>NOx:</strong> Nitrogen Oxide Index</li>
+          <li><strong>Temp/Humidity:</strong> Built-in</li>
+          <li><strong>Interface:</strong> I2C (3.3V)</li>
+          <li><strong>ราคา:</strong> ~$35–45</li>
+        </ul>
+        <div class="highlight-box">&#127381; ใช้ในโปรเจกต์ ESP32-P4 Weather Station ที่เพิ่งเผยแพร่เดือนนี้</div>
+      </div>
+
+      <div class="card green">
+        <span class="card-tag tag-green">คุณภาพน้ำ</span>
+        <h3>Atlas Scientific EZO-pH — pH Sensor มาตรฐานอุตสาหกรรม</h3>
+        <p>EZO-pH เป็น pH Sensor Module คุณภาพสูงจาก Atlas Scientific ให้ความแม่นยำ ±0.002 pH รองรับ UART/I2C ใช้ได้ทั้งน้ำดื่มและน้ำเสีย มี Calibration ที่ง่ายมาก เหมาะกับโปรเจกต์ตรวจคุณภาพน้ำระดับ Serious</p>
+        <table class="spec-table">
+          <tr><td>Range</td><td>0–14 pH</td></tr>
+          <tr><td>Accuracy</td><td>±0.002 pH</td></tr>
+          <tr><td>Interface</td><td>UART / I2C (Selectable)</td></tr>
+          <tr><td>Voltage</td><td>3.3V / 5V</td></tr>
+          <tr><td>Response</td><td>420 ms</td></tr>
+          <tr><td>ราคา</td><td>~$40–50</td></tr>
+        </table>
+      </div>
+
+      <div class="card purple">
+        <span class="card-tag tag-purple">Climate</span>
+        <h3>Bosch BME280 — Climate Sensor ราคาต่ำประสิทธิภาพสูง</h3>
+        <p>BME280 ยังคงเป็นตัวเลือกยอดนิยมปี 2026 สำหรับโปรเจกต์ที่ต้องการ Temperature, Humidity และ Pressure แบบครบชุด ราคาถูก (~$2), I2C/SPI, 3.3V — แนะนำโดย Espressif เองสำหรับ Matter + CO₂ Node</p>
+        <ul>
+          <li><strong>Temperature:</strong> ±0.5°C (-40 ถึง +85°C)</li>
+          <li><strong>Humidity:</strong> ±3% RH (0–100%)</li>
+          <li><strong>Pressure:</strong> ±1 hPa (300–1100 hPa)</li>
+          <li><strong>Interface:</strong> I2C หรือ SPI</li>
+          <li><strong>ราคา:</strong> ~$2 (Module บน AliExpress)</li>
+          <li><strong>Library:</strong> Adafruit BME280, ESP-IDF built-in example</li>
+        </ul>
+      </div>
+
+      <div class="card orange">
+        <span class="card-tag tag-orange">CO₂</span>
+        <h3>Sensirion SCD41 — CO₂ Sensor แม่นยำสูง สำหรับ Indoor Air Quality</h3>
+        <p>SCD41 คือ Miniaturized CO₂ Sensor ที่ใช้เทคนิค PASens (Photoacoustic Sensing) ให้ความแม่นยำสูงในราคาที่เข้าถึงได้ แนะนำโดย Espressif สำหรับ ESP32-C6 Air Quality Node ในปี 2026</p>
+        <table class="spec-table">
+          <tr><td>เทคนิค</td><td>PASens (Photoacoustic)</td></tr>
+          <tr><td>Range CO₂</td><td>400–5000 ppm</td></tr>
+          <tr><td>Accuracy</td><td>±40 ppm ±5% of reading</td></tr>
+          <tr><td>Temp Range</td><td>-10 ถึง +60°C</td></tr>
+          <tr><td>Interface</td><td>I2C (Address: 0x62)</td></tr>
+          <tr><td>ราคา</td><td>~$15–20</td></tr>
+        </table>
+        <div class="highlight-box">&#128161; จับคู่กับ BME280 + ESP32-C6 = Indoor Air Quality Node ครบสมบูรณ์</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- DEEP DIVE -->
+  <section id="deepdive">
+    <h2 class="section-title">
+      <span class="section-icon icon-blue">&#128270;</span>
+      Deep Dive: สร้าง ESP32-C61 Matter Sensor Node ราคาต่ำกว่า $5
+    </h2>
+    <div class="deepdive-card">
+      <div class="deepdive-header">
+        <h3>&#128161; Tutorial: Ultra-Cheap Matter Sensor Node ด้วย ESP32-C61 + BME280</h3>
+        <p>ต้นทุนรวมไม่เกิน $5 — เชื่อม Home Assistant ผ่าน Matter over Wi-Fi 6 ได้เลย</p>
+      </div>
+      <div class="deepdive-body">
+
+        <h4>&#9881;&#65039; Hardware ที่ต้องการ</h4>
+        <ul>
+          <li><strong>ESP32-C61-MINI-1:</strong> ~$2 (AliExpress, ชุด 5 ชิ้น = $10.7)</li>
+          <li><strong>BME280 Module:</strong> ~$1.5</li>
+          <li><strong>Breadboard + สาย:</strong> ~$0.5</li>
+          <li><strong>USB-C Power:</strong> 5V 500mA</li>
+        </ul>
+
+        <h4>&#128196; การต่อวงจร BME280 กับ ESP32-C61</h4>
+        <ul>
+          <li>VCC → 3.3V</li>
+          <li>GND → GND</li>
+          <li>SCL → GPIO5 (I2C Clock)</li>
+          <li>SDA → GPIO4 (I2C Data)</li>
+        </ul>
+
+        <h4>&#128187; ตัวอย่าง Code: อ่าน BME280 ผ่าน I2C (ESP-IDF v6.0)</h4>
+<pre><code><span class="cm">// ESP32-C61 + BME280 via I2C — ESP-IDF v6.0</span>
+<span class="ck">#include</span> <span class="cs">"driver/i2c_master.h"</span>
+<span class="ck">#include</span> <span class="cs">"bme280.h"</span>
+
+<span class="ck">#define</span> <span class="cn">I2C_PORT</span>    I2C_NUM_0
+<span class="ck">#define</span> <span class="cn">SDA_PIN</span>     4
+<span class="ck">#define</span> <span class="cn">SCL_PIN</span>     5
+<span class="ck">#define</span> <span class="cn">BME280_ADDR</span> 0x76
+
+<span class="ck">void</span> app_main(<span class="ck">void</span>) {
+    <span class="cm">// Init I2C Master Bus</span>
+    i2c_master_bus_config_t bus_cfg = {
+        .clk_source = I2C_CLK_SRC_DEFAULT,
+        .i2c_port   = <span class="cn">I2C_PORT</span>,
+        .scl_io_num = <span class="cn">SCL_PIN</span>,
+        .sda_io_num = <span class="cn">SDA_PIN</span>,
+        .glitch_ignore_cnt = 7,
+    };
+    i2c_master_bus_handle_t bus;
+    i2c_new_master_bus(&bus_cfg, &bus);
+
+    <span class="cm">// Add BME280 Device</span>
+    i2c_device_config_t dev_cfg = {
+        .dev_addr_length = I2C_ADDR_BIT_LEN_7,
+        .device_address  = <span class="cn">BME280_ADDR</span>,
+        .scl_speed_hz    = 100000,
+    };
+    i2c_master_dev_handle_t dev;
+    i2c_master_bus_add_device(bus, &dev_cfg, &dev);
+
+    bme280_handle_t sensor;
+    bme280_init(dev, &sensor);
+    bme280_set_mode(sensor, BME280_MODE_NORMAL);
+
+    <span class="ck">while</span> (1) {
+        bme280_data_t data;
+        bme280_read_data(sensor, &data);
+        printf(<span class="cs">"Temp: %.2f C | Hum: %.2f %% | Press: %.2f hPa\n"</span>,
+               data.temperature, data.humidity, data.pressure / 100.0f);
+        vTaskDelay(pdMS_TO_TICKS(5000));
+    }
+}</code></pre>
+
+        <h4>&#128279; ขั้นตอนต่อไป: เชื่อม Matter</h4>
+        <ul>
+          <li>ติดตั้ง <strong>ESP-Matter SDK</strong> ล่าสุด (สิงหาคม 2026)</li>
+          <li>ใช้ <strong>matter_temperature_sensor</strong> example เป็น Base</li>
+          <li>แก้ไข Cluster ให้ส่งค่า Temperature จาก BME280</li>
+          <li>Flash QR Code ลง Display หรือ Serial Monitor สำหรับ Commissioning</li>
+          <li>Pair ด้วย Apple Home / Home Assistant / Google Home</li>
+        </ul>
+
+        <h4>&#9888;&#65039; ข้อควรระวัง ESP32-C61</h4>
+        <ul>
+          <li>ไม่มี 802.15.4 — รองรับแค่ <strong>Matter over Wi-Fi</strong> ไม่ใช่ Thread</li>
+          <li>RAM น้อยกว่า C6 (320KB vs 512KB) — ระวัง Memory เมื่อใช้ HTTPS/TLS</li>
+          <li>Arduino Support ยังไม่สมบูรณ์ — แนะนำใช้ ESP-IDF หรือ Arduino as Component</li>
+        </ul>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- RESOURCES -->
+  <section id="resources">
+    <h2 class="section-title">
+      <span class="section-icon icon-orange">&#128279;</span>
+      แหล่งข้อมูลและลิงก์น่าสนใจ
+    </h2>
+    <div class="resources-grid">
+
+      <a href="https://www.hackster.io/harald7/esp32-p4-weather-station-air-quality-monitor-5be856" target="_blank" class="resource-link">
+        <div class="resource-icon">&#127781;&#65039;</div>
+        <div>
+          <span class="title">ESP32-P4 Weather Station & Air Quality</span>
+          <span class="desc">Hackster.io — โปรเจกต์ 10.1" Display + SEN66 + LoRa</span>
+        </div>
+      </a>
+
+      <a href="https://www.haraldkreuzer.net/en/news/esp32-weather-station-weather-forecast-wireless-sensors-and-air-quality-measurement" target="_blank" class="resource-link">
+        <div class="resource-icon">&#127968;</div>
+        <div>
+          <span class="title">Harald's ESP32 Weather Station Guide</span>
+          <span class="desc">เว็บไซต์ผู้สร้าง — Source code + วิธีสร้างละเอียด</span>
+        </div>
+      </a>
+
+      <a href="https://www.espressif.com/en/products/socs/esp32-c61" target="_blank" class="resource-link">
+        <div class="resource-icon">&#9711;</div>
+        <div>
+          <span class="title">ESP32-C61 Official Page</span>
+          <span class="desc">Espressif — Spec Sheet, Datasheet, SDK Download</span>
+        </div>
+      </a>
+
+      <a href="https://www.hackster.io/news/espressif-launches-the-esp32-c61-mini-module-family-for-budget-conscious-wi-fi-6-ble-matter-work-69b26e768dc5" target="_blank" class="resource-link">
+        <div class="resource-icon">&#128204;</div>
+        <div>
+          <span class="title">ESP32-C61-MINI Launch — Hackster.io</span>
+          <span class="desc">ข่าวเปิดตัว Wi-Fi 6 + BLE 5.3 Module $2</span>
+        </div>
+      </a>
+
+      <a href="https://esp32.co.uk/best-esp32-matter-thread-zigbee-c6-h2-h21-h4-c5/" target="_blank" class="resource-link">
+        <div class="resource-icon">&#128203;</div>
+        <div>
+          <span class="title">Best ESP32 for Matter/Thread/Zigbee 2026</span>
+          <span class="desc">เปรียบเทียบ C6 vs H2 vs H21 vs H4 vs C5</span>
+        </div>
+      </a>
+
+      <a href="https://www.ampheo.com/blog/best-esp32-projects-you-can-build-in-2026" target="_blank" class="resource-link">
+        <div class="resource-icon">&#128161;</div>
+        <div>
+          <span class="title">Best ESP32 Projects 2026 — Ampheo</span>
+          <span class="desc">รวม Top Projects น่าสร้างปี 2026</span>
+        </div>
+      </a>
+
+      <a href="https://community.home-assistant.io/t/showcase-diy-esphome-air-quality-monitor-sensirion-sen66-esp32-c3-round-display/988873" target="_blank" class="resource-link">
+        <div class="resource-icon">&#127968;</div>
+        <div>
+          <span class="title">ESPHome + SEN66 Air Quality Monitor</span>
+          <span class="desc">Home Assistant Community — DIY Round Display + C3</span>
+        </div>
+      </a>
+
+      <a href="https://wizzdev.com/blog/espressif-soc-esp32/" target="_blank" class="resource-link">
+        <div class="resource-icon">&#128202;</div>
+        <div>
+          <span class="title">ESP32-S3 vs C6 vs P4: 2026 SoC Guide</span>
+          <span class="desc">WizzDev — เลือก SoC ไหนดีสำหรับ IoT Roadmap</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-title">ESP32 & Sensor Innovations Daily</div>
+  <div class="footer-sub">สร้างโดย AI Researcher อัตโนมัติ — 6 กันยายน 2026</div>
+  <div class="footer-sources">
+    แหล่งอ้างอิง:
+    <a href="https://www.hackster.io/harald7/esp32-p4-weather-station-air-quality-monitor-5be856" target="_blank">Hackster.io</a> ·
+    <a href="https://www.espressif.com/en/products/socs/esp32-c61" target="_blank">Espressif ESP32-C61</a> ·
+    <a href="https://www.cnx-software.com/2026/08/04/espressif-esp32-c61-mini-1-1u-wi-fi-6-and-ble-iot-module-2-dollars/" target="_blank">CNX Software</a> ·
+    <a href="https://esp32.co.uk/best-esp32-matter-thread-zigbee-c6-h2-h21-h4-c5/" target="_blank">esp32.co.uk</a> ·
+    <a href="https://dronebotworkshop.com/esp32-2026/" target="_blank">DroneBot Workshop</a>
+  </div>
+</footer>
+
+</body>
+</html>
