@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 9 กันยายน 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263548;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-blue: #38bdf8;
+    --accent-cyan: #22d3ee;
+    --accent-green: #4ade80;
+    --accent-purple: #c084fc;
+    --accent-orange: #fb923c;
+    --accent-red: #f87171;
+    --accent-yellow: #facc15;
+    --border: rgba(148,163,184,0.1);
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ---- HEADER ---- */
+  header {
+    background: linear-gradient(135deg, #0c1a3a 0%, #0f2d5e 50%, #0c1a3a 100%);
+    border-bottom: 1px solid rgba(56,189,248,0.2);
+    padding: 3rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 50% -20%, rgba(56,189,248,0.15), transparent);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.35);
+    color: var(--accent-blue);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(120deg, #38bdf8, #818cf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header p.subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    max-width: 620px;
+    margin: 0 auto 1.5rem;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-num {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+  }
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ---- NAV ---- */
+  nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    overflow-x: auto;
+  }
+  nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.9rem 1.2rem;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  nav a:hover {
+    color: var(--accent-blue);
+    border-bottom-color: var(--accent-blue);
+  }
+
+  /* ---- MAIN ---- */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+  }
+
+  /* ---- SECTION ---- */
+  section { margin-bottom: 3.5rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    font-size: 1.4rem;
+  }
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-count {
+    margin-left: auto;
+    background: rgba(56,189,248,0.1);
+    color: var(--accent-blue);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    border: 1px solid rgba(56,189,248,0.2);
+  }
+
+  /* ---- GRID ---- */
+  .grid { display: grid; gap: 1.25rem; }
+  .grid-2 { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+
+  /* ---- CARD ---- */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.4rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--card-accent, #38bdf8), transparent);
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(56,189,248,0.25);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    background: var(--bg-card-hover);
+  }
+
+  .card-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+  }
+  .badge-new    { background: rgba(74,222,128,0.15); color: var(--accent-green);  border: 1px solid rgba(74,222,128,0.25); }
+  .badge-hot    { background: rgba(251,146,60,0.15);  color: var(--accent-orange); border: 1px solid rgba(251,146,60,0.25); }
+  .badge-research { background: rgba(192,132,252,0.15); color: var(--accent-purple); border: 1px solid rgba(192,132,252,0.25); }
+  .badge-guide  { background: rgba(56,189,248,0.15); color: var(--accent-blue);   border: 1px solid rgba(56,189,248,0.25); }
+
+  .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card-desc {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.7;
+  }
+
+  .tag-row { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: rgba(148,163,184,0.08);
+    color: var(--text-muted);
+    border: 1px solid rgba(148,163,184,0.12);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  /* ---- INNOVATION CARD (larger) ---- */
+  .inno-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .inno-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  }
+  .inno-header {
+    padding: 1.4rem 1.4rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, rgba(56,189,248,0.06), transparent);
+  }
+  .inno-chip {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    margin-bottom: 0.4rem;
+  }
+  .inno-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.3rem;
+  }
+  .inno-body {
+    padding: 1rem 1.4rem 1.4rem;
+  }
+  .inno-body p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    line-height: 1.75;
+  }
+  .spec-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+  }
+  .spec-item {
+    text-align: center;
+    background: rgba(56,189,248,0.07);
+    border: 1px solid rgba(56,189,248,0.12);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    min-width: 80px;
+    flex: 1;
+  }
+  .spec-val {
+    display: block;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+  }
+  .spec-key {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ---- SENSOR CARD ---- */
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .sensor-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+  .sensor-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent-yellow);
+    margin-bottom: 0.25rem;
+  }
+  .sensor-full {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+  .sensor-desc {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    line-height: 1.65;
+  }
+  .spec-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .spec-list li {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .spec-list li:last-child { border-bottom: none; }
+  .spec-list .key { color: var(--text-muted); }
+  .spec-list .val { color: var(--text-primary); font-weight: 600; }
+
+  /* ---- TUTORIAL BOX ---- */
+  .tutorial-box {
+    background: linear-gradient(135deg, rgba(56,189,248,0.06) 0%, rgba(129,140,248,0.06) 100%);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 14px;
+    padding: 1.75rem;
+  }
+  .tutorial-box h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    margin-bottom: 0.75rem;
+  }
+  .tutorial-box p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    line-height: 1.75;
+  }
+  .code-block {
+    background: #0d1117;
+    border: 1px solid rgba(148,163,184,0.1);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #a5f3fc;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+    line-height: 1.7;
+    white-space: pre;
+  }
+  .code-comment { color: #6b7280; }
+  .step-list {
+    list-style: none;
+    counter-reset: step;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0.75rem 0;
+  }
+  .step-list li {
+    counter-increment: step;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+  .step-list li::before {
+    content: counter(step);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.6rem;
+    height: 1.6rem;
+    background: rgba(56,189,248,0.15);
+    color: var(--accent-blue);
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-top: 0.1rem;
+  }
+
+  /* ---- HIGHLIGHT BOX ---- */
+  .highlight-box {
+    background: rgba(74,222,128,0.07);
+    border-left: 3px solid var(--accent-green);
+    border-radius: 0 8px 8px 0;
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+    font-size: 0.875rem;
+    color: var(--accent-green);
+    line-height: 1.6;
+  }
+  .warn-box {
+    background: rgba(251,146,60,0.07);
+    border-left: 3px solid var(--accent-orange);
+    border-radius: 0 8px 8px 0;
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+    font-size: 0.875rem;
+    color: var(--accent-orange);
+    line-height: 1.6;
+  }
+
+  /* ---- RESOURCE ---- */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+  }
+  .resource-card h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+  .resource-card a {
+    display: block;
+    color: var(--accent-blue);
+    font-size: 0.8rem;
+    text-decoration: none;
+    padding: 0.25rem 0;
+    border-bottom: 1px solid var(--border);
+    transition: color 0.2s;
+    word-break: break-word;
+  }
+  .resource-card a:last-child { border-bottom: none; }
+  .resource-card a:hover { color: var(--accent-cyan); }
+
+  /* ---- FOOTER ---- */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+  }
+  footer p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.8; }
+  footer strong { color: var(--text-secondary); }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 640px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    header { padding: 2rem 1rem 1.5rem; }
+    .header-stats { gap: 1.25rem; }
+    .spec-row { gap: 0.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily ESP32 Research — 9 กันยายน 2569</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">
+    LoRa Mesh Off-Grid · CAN Bus / OBD2 Automotive · Spectral Sensing · Industrial Modbus · Deep Sleep Optimization
+  </p>
+  <div class="header-stats">
+    <div class="stat-item">
+      <span class="stat-num">4</span>
+      <span class="stat-label">นวัตกรรมใหม่</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">4</span>
+      <span class="stat-label">ไอเดียโปรเจกต์</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">4</span>
+      <span class="stat-label">Sensors น่าสนใจ</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">1</span>
+      <span class="stat-label">Tutorial ประจำวัน</span>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations">🔬 นวัตกรรม</a>
+  <a href="#projects">💡 โปรเจกต์</a>
+  <a href="#sensors">📡 Sensors</a>
+  <a href="#tutorial">🎓 Tutorial</a>
+  <a href="#resources">🔗 แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 1 : INNOVATIONS -->
+  <!-- ============================================================ -->
+  <section id="innovations">
+    <div class="section-header">
+      <span class="section-icon">🔬</span>
+      <span class="section-title">นวัตกรรม ESP32 ใหม่ล่าสุด</span>
+      <span class="section-count">4 รายการ</span>
+    </div>
+
+    <div class="grid grid-2">
+
+      <!-- 1. Gateway-Free LoRa Mesh -->
+      <div class="inno-card" style="--card-accent:#22d3ee">
+        <div class="inno-header">
+          <div class="inno-chip">📡 Research 2025 · MDPI Sensors</div>
+          <div class="inno-title">Gateway-Free LoRa Mesh บน ESP32-S3 — ไร้ Gateway ยังสื่อสารได้</div>
+          <div class="tag-row" style="margin-top:0.5rem">
+            <span class="tag">ESP32-S3</span>
+            <span class="tag">SX1262</span>
+            <span class="tag">LoRa Mesh</span>
+            <span class="tag">Self-Healing</span>
+          </div>
+        </div>
+        <div class="inno-body">
+          <p>
+            งานวิจัยล่าสุด (ตีพิมพ์ใน MDPI Sensors 2025) นำเสนอสถาปัตยกรรม LoRa Mesh
+            แบบไม่ใช้ Gateway บน hardware ราคาถูก ESP32-S3 + SX1262
+            ข้อมูลสามารถกระโดดผ่านหลาย Hop แบบ Multi-hop routing
+            โดยมีกลไก Self-Healing ที่ซ่อมเส้นทางอัตโนมัติเมื่อ Node ล้มเหลว
+          </p>
+          <p>
+            ระบบใช้ <strong>Neighbor-based routing</strong> + <strong>Hop-by-hop ACK</strong>
+            + Controlled retransmission ทำให้เหมาะสำหรับ IoT ในพื้นที่ห่างไกล
+            ที่ไม่มีโครงสร้างพื้นฐาน เช่น ป่า ไร่นา เหมือง หรือพื้นที่ภัยพิบัติ
+          </p>
+          <div class="spec-row">
+            <div class="spec-item">
+              <span class="spec-val">ESP32-S3</span>
+              <span class="spec-key">MCU</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">SX1262</span>
+              <span class="spec-key">LoRa Chip</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">Multi-Hop</span>
+              <span class="spec-key">Topology</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">Self-Heal</span>
+              <span class="spec-key">ความน่าเชื่อถือ</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. M5Stack Cardputer Mesh Kit -->
+      <div class="inno-card" style="--card-accent:#c084fc">
+        <div class="inno-header">
+          <div class="inno-chip">🆕 เมษายน 2569 · M5Stack</div>
+          <div class="inno-title">M5Stack Cardputer Mesh Kit — LoRa + GNSS บน ESP32-S3</div>
+          <div class="tag-row" style="margin-top:0.5rem">
+            <span class="tag">ESP32-S3</span>
+            <span class="tag">SX1262</span>
+            <span class="tag">Meshtastic</span>
+            <span class="tag">AT6668 GNSS</span>
+          </div>
+        </div>
+        <div class="inno-body">
+          <p>
+            M5Stack เปิดตัว Cardputer Mesh Kit ในเดือนเมษายน 2569 เพิ่ม
+            <strong>CapLoRa-1262 module</strong> ที่มี Semtech SX1262 และ AT6668 GNSS module
+            ต่อกับ Cardputer-Adv (ESP32-S3) ทำให้กลายเป็น
+            Terminal สื่อสาร Meshtastic ขนาดพกพาที่ใช้งานได้โดยไม่ต้องพึ่งมือถือ
+          </p>
+          <p>
+            รองรับการส่ง Text Message + แชร์ตำแหน่ง GPS ผ่าน LoRa Mesh
+            สื่อสารระยะไกลในพื้นที่ที่ไม่มี Wi-Fi หรือ Cellular
+            เหมาะกับการเดินป่า ภัยพิบัติ งานวิจัยภาคสนาม
+          </p>
+          <div class="spec-row">
+            <div class="spec-item">
+              <span class="spec-val">SX1262</span>
+              <span class="spec-key">LoRa</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">AT6668</span>
+              <span class="spec-key">GNSS</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">Meshtastic</span>
+              <span class="spec-key">Protocol</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">Off-Grid</span>
+              <span class="spec-key">การใช้งาน</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. ESP32 TWAI CAN Bus OBD2 -->
+      <div class="inno-card" style="--card-accent:#fb923c">
+        <div class="inno-header">
+          <div class="inno-chip">🚗 Automotive IoT · TWAI Controller</div>
+          <div class="inno-title">ESP32 TWAI — Built-in CAN Controller สำหรับ OBD2 Automotive</div>
+          <div class="tag-row" style="margin-top:0.5rem">
+            <span class="tag">TWAI</span>
+            <span class="tag">CAN Bus</span>
+            <span class="tag">OBD2</span>
+            <span class="tag">SN65HVD230</span>
+          </div>
+        </div>
+        <div class="inno-body">
+          <p>
+            ESP32, ESP32-S2, ESP32-S3, ESP32-C6 ทุกตัวมี <strong>TWAI Controller</strong>
+            (Two-Wire Automotive Interface — Espressif's ISO 11898-1 CAN) ฝังอยู่แล้ว
+            เพียงเพิ่ม CAN Transceiver SN65HVD230 หรือ MCP2551 (ราคา ~$1)
+            ก็เชื่อมต่อกับ OBD-II port ของรถยนต์ได้ทันที
+          </p>
+          <p>
+            รองรับ Modbus RTU/TCP, OBD-II Standard (ISO15765-4), J1939 (รถหนัก)
+            สามารถสร้าง <strong>Wireless OBD Scanner</strong>, Real-time Dashboard,
+            Vehicle Data Logger, หรือ Custom Instrument Cluster ได้ด้วย ESP32 เพียงตัวเดียว
+          </p>
+          <div class="spec-row">
+            <div class="spec-item">
+              <span class="spec-val">2008+</span>
+              <span class="spec-key">รถรุ่นรองรับ</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">1 Mbps</span>
+              <span class="spec-key">Max Speed</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">ISO 11898</span>
+              <span class="spec-key">Standard</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">~$1</span>
+              <span class="spec-key">Transceiver</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Trail Mate Firmware -->
+      <div class="inno-card" style="--card-accent:#4ade80">
+        <div class="inno-header">
+          <div class="inno-chip">🆕 เมษายน 2569 · Open Source</div>
+          <div class="inno-title">Trail Mate — Open-Source Firmware สำหรับ ESP32 Off-Grid Handheld</div>
+          <div class="tag-row" style="margin-top:0.5rem">
+            <span class="tag">ESP32</span>
+            <span class="tag">Meshtastic</span>
+            <span class="tag">MeshCore</span>
+            <span class="tag">GPS Map</span>
+            <span class="tag">T-LoRa Pager</span>
+          </div>
+        </div>
+        <div class="inno-body">
+          <p>
+            Trail Mate คือ Open-source firmware สำหรับอุปกรณ์ ESP32 handheld เช่น
+            <strong>LILYGO T-LoRa Pager</strong> หรือ <strong>M5Stack Tab5</strong>
+            ออกแบบให้สื่อสารแบบ Off-grid ได้โดยตรง ไม่ต้องพึ่งสมาร์ทโฟน
+          </p>
+          <p>
+            Features หลัก: GPS Map แบบ North-up, Direct LoRa messaging ผ่าน Meshtastic/MeshCore,
+            รองรับทั้ง 2 protocol พร้อมกัน เน้นความเสถียร พลังงานต่ำ และ interoperability
+            เหมาะกับกิจกรรมกลางแจ้ง ทหาร SAR และนักสำรวจภาคสนาม
+          </p>
+          <div class="spec-row">
+            <div class="spec-item">
+              <span class="spec-val">North-up</span>
+              <span class="spec-key">GPS Map</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">Dual</span>
+              <span class="spec-key">Mesh Protocol</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">No Phone</span>
+              <span class="spec-key">Standalone</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val">Open</span>
+              <span class="spec-key">Source</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 2 : PROJECTS -->
+  <!-- ============================================================ -->
+  <section id="projects">
+    <div class="section-header">
+      <span class="section-icon">💡</span>
+      <span class="section-title">ไอเดียโปรเจกต์ IoT น่าทำ</span>
+      <span class="section-count">4 โปรเจกต์</span>
+    </div>
+
+    <div class="grid grid-2">
+
+      <!-- P1 -->
+      <div class="card" style="--card-accent:#22d3ee">
+        <span class="card-badge badge-new">Off-Grid Network</span>
+        <div class="card-title">🌐 DIY Gateway-Free LoRa Sensor Mesh — เครือข่าย Sensor พื้นที่ห่างไกล</div>
+        <div class="card-desc">
+          สร้างเครือข่าย Sensor แบบ Mesh ที่ไม่ต้องพึ่ง Gateway หรืออินเทอร์เน็ต
+          ด้วย ESP32-S3 + SX1262 + INMP441 (microphone) หรือ BME280 (อากาศ)
+          แต่ละ Node ส่งข้อมูลแบบ Multi-hop ไปยัง Node หลักแบบ Self-healing
+          เหมาะสำหรับ: ฟาร์ม, ไร่นา, ป่าไม้, หรือพื้นที่ภัยพิบัติ
+        </div>
+        <div class="highlight-box">
+          ✅ ราคาต้นทุนต่อ Node: ESP32-S3 (~$5) + SX1262 module (~$7) + Sensor (~$3) = ~$15/node
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESP32-S3</span>
+          <span class="tag">SX1262</span>
+          <span class="tag">LoRa 915MHz</span>
+          <span class="tag">Solar Powered</span>
+          <span class="tag">Meshtastic</span>
+        </div>
+      </div>
+
+      <!-- P2 -->
+      <div class="card" style="--card-accent:#fb923c">
+        <span class="card-badge badge-hot">Automotive</span>
+        <div class="card-title">🚗 ESP32 OBD2 Wireless Dashboard — ดูข้อมูลรถผ่าน Wi-Fi แบบ Real-time</div>
+        <div class="card-desc">
+          เชื่อม ESP32 เข้ากับ OBD-II port ของรถยนต์ผ่าน CAN Bus
+          (TWAI Controller + SN65HVD230 Transceiver ราคา ~$1)
+          แสดงข้อมูล: RPM, ความเร็ว, อุณหภูมิน้ำ, โหลดเครื่องยนต์, Error Code
+          บน Web Dashboard หรือ OLED Display ผ่าน Wi-Fi
+        </div>
+        <div class="highlight-box">
+          ✅ ไม่ต้องซื้อ OBD Scanner ราคาแพง — ใช้ ESP32 + SN65HVD230 + library ฟรีจาก GitHub
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESP32 TWAI</span>
+          <span class="tag">SN65HVD230</span>
+          <span class="tag">OBD-II</span>
+          <span class="tag">ISO15765-4</span>
+          <span class="tag">Web Dashboard</span>
+        </div>
+      </div>
+
+      <!-- P3 -->
+      <div class="card" style="--card-accent:#c084fc">
+        <span class="card-badge badge-new">Industrial IoT</span>
+        <div class="card-title">🏭 ESP32 Industrial Modbus Gateway — เชื่อม RS485 Sensor เข้า MQTT Cloud</div>
+        <div class="card-desc">
+          สร้าง Modbus RTU/TCP Gateway ด้วย ESP32-S3 + MAX3485 RS485 Transceiver
+          อ่านข้อมูลจาก Sensor/PLC อุตสาหกรรมมาตรฐาน Modbus แล้วส่งขึ้น MQTT Broker
+          รองรับ FOTA Update, Watchdog Timer, Deep Sleep, Multi-WiFi Failover
+          เหมาะสำหรับ: โรงงาน, ระบบ SCADA, Smart Grid, เกษตรกรรม
+        </div>
+        <div class="warn-box">
+          ⚠️ ต้องใช้ MAX3485 หรือ SP3485 (3.3V compatible) ห้ามใช้ MAX485 (5V) โดยตรง
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESP32-S3</span>
+          <span class="tag">MAX3485</span>
+          <span class="tag">Modbus RTU</span>
+          <span class="tag">Modbus TCP</span>
+          <span class="tag">MQTT</span>
+          <span class="tag">SCADA</span>
+        </div>
+      </div>
+
+      <!-- P4 -->
+      <div class="card" style="--card-accent:#4ade80">
+        <span class="card-badge badge-research">DIY Spectroscopy</span>
+        <div class="card-title">🌈 ESP32 + AS7265x Smart Colorimeter — เครื่องวิเคราะห์สีและวัสดุแบบ DIY</div>
+        <div class="card-desc">
+          สร้าง Colorimeter อัจฉริยะด้วย ESP32 + AS7265x Triad Spectroscopy Sensor
+          วัดแสง 18 ช่องความถี่ ตั้งแต่ UV ถึง Near-Infrared
+          แปลงเป็น RGB/HEX + แสดงผล Spectral Graph บน Web Dashboard แบบ Real-time
+          ประยุกต์ใช้ได้กับ: อาหาร, สี, พลาสติก, สิ่งทอ, งาน QC โรงงาน
+        </div>
+        <div class="highlight-box">
+          ✅ AS7265x วัด 18 wavelength bands (410nm–940nm) แม่นยำกว่า sensor สี RGB ทั่วไปมาก
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESP32</span>
+          <span class="tag">AS7265x</span>
+          <span class="tag">18-Channel</span>
+          <span class="tag">UV+Visible+NIR</span>
+          <span class="tag">Web Dashboard</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 3 : SENSORS -->
+  <!-- ============================================================ -->
+  <section id="sensors">
+    <div class="section-header">
+      <span class="section-icon">📡</span>
+      <span class="section-title">Sensors น่าสนใจประจำวัน</span>
+      <span class="section-count">4 ตัว</span>
+    </div>
+
+    <div class="grid grid-2">
+
+      <!-- S1 -->
+      <div class="sensor-card">
+        <div class="sensor-name">AS7265x</div>
+        <div class="sensor-full">AMS Triad Spectroscopy Sensor (18-Channel)</div>
+        <div class="sensor-desc">
+          Sensor สเปกตรัมระดับเดียวกับอุปกรณ์ Lab ใน form factor ขนาดเล็ก
+          วัดความยาวคลื่นแสง 18 ช่อง ครอบคลุม UV, Visible, Near-Infrared
+          (410nm – 940nm) เชื่อมต่อผ่าน I2C/UART ทำงานร่วมกับ ESP32 ได้ทันที
+          SparkFun มีโมดูล Qwiic ที่ใช้งานง่าย มี library Arduino รองรับ
+        </div>
+        <ul class="spec-list">
+          <li><span class="key">Channels</span><span class="val">18 ช่อง (UV+VIS+NIR)</span></li>
+          <li><span class="key">Wavelength Range</span><span class="val">410 nm – 940 nm</span></li>
+          <li><span class="key">Interface</span><span class="val">I2C / UART (3.3V)</span></li>
+          <li><span class="key">แพ็กเกจ Qwiic</span><span class="val">SparkFun ~$65</span></li>
+          <li><span class="key">ใช้งาน</span><span class="val">Colorimetry, QC, เกษตร, อาหาร</span></li>
+        </ul>
+      </div>
+
+      <!-- S2 -->
+      <div class="sensor-card">
+        <div class="sensor-name">SN65HVD230</div>
+        <div class="sensor-full">Texas Instruments CAN Bus Transceiver (3.3V)</div>
+        <div class="sensor-desc">
+          CAN Bus Transceiver แรงดัน 3.3V ที่เข้ากันได้สมบูรณ์กับ ESP32
+          แปลงสัญญาณ logic จาก TWAI Controller ของ ESP32 เป็น CAN differential signal
+          มาตรฐาน ISO 11898 รองรับ ทนต่อสัญญาณรบกวน ESD ดีมาก
+          ราคาถูก (~30-50 บาท) ทำให้ ESP32 เชื่อมต่อ OBD-II/CAN ได้ทันที
+        </div>
+        <ul class="spec-list">
+          <li><span class="key">Supply Voltage</span><span class="val">3.3V (ตรงกับ ESP32)</span></li>
+          <li><span class="key">Max Speed</span><span class="val">1 Mbps</span></li>
+          <li><span class="key">Standard</span><span class="val">ISO 11898 / CAN 2.0</span></li>
+          <li><span class="key">ราคา</span><span class="val">~$1 (module board)</span></li>
+          <li><span class="key">ใช้งาน</span><span class="val">OBD2, Industrial CAN, J1939</span></li>
+        </ul>
+      </div>
+
+      <!-- S3 -->
+      <div class="sensor-card">
+        <div class="sensor-name">YF-S201</div>
+        <div class="sensor-full">Hall Effect Water Flow Sensor (1–30 L/min)</div>
+        <div class="sensor-desc">
+          Sensor วัดอัตราการไหลของน้ำแบบ Hall Effect สร้าง pulse ตามอัตราการไหล
+          เชื่อมต่อกับ ESP32 ผ่าน GPIO + Interrupt อ่านค่าได้ทันที
+          ความแม่นยำ ±3% เหมาะสำหรับโปรเจกต์ตรวจสอบการใช้น้ำ บ้านอัจฉริยะ
+          สวนรดน้ำอัตโนมัติ และระบบ Water Conservation IoT
+        </div>
+        <ul class="spec-list">
+          <li><span class="key">Range</span><span class="val">1 – 30 L/min</span></li>
+          <li><span class="key">Accuracy</span><span class="val">±3%</span></li>
+          <li><span class="key">Pulses</span><span class="val">~450 pulses/L</span></li>
+          <li><span class="key">Working Voltage</span><span class="val">5–18V (level-shift สำหรับ ESP32)</span></li>
+          <li><span class="key">ราคา</span><span class="val">~$3–5</span></li>
+        </ul>
+      </div>
+
+      <!-- S4 -->
+      <div class="sensor-card">
+        <div class="sensor-name">INMP441</div>
+        <div class="sensor-full">MEMS I2S Microphone — Digital Audio for ESP32</div>
+        <div class="sensor-desc">
+          Microphone แบบ MEMS ที่ส่งสัญญาณเสียงแบบ Digital ผ่าน I2S Protocol
+          ทำงานโดยตรงกับ ESP32 I2S peripheral ไม่ต้องแปลง ADC
+          คุณภาพเสียงดีมาก SNR 61 dB เหมาะสำหรับ Voice Keyword Spotting,
+          Audio FFT Analysis, Sound Level Monitoring และ AI Audio Processing
+        </div>
+        <ul class="spec-list">
+          <li><span class="key">Interface</span><span class="val">I2S Digital</span></li>
+          <li><span class="key">SNR</span><span class="val">61 dB</span></li>
+          <li><span class="key">Frequency</span><span class="val">60 Hz – 15 kHz</span></li>
+          <li><span class="key">Supply Voltage</span><span class="val">1.8 – 3.3V</span></li>
+          <li><span class="key">ราคา</span><span class="val">~$2–4 (module)</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 4 : TUTORIAL -->
+  <!-- ============================================================ -->
+  <section id="tutorial">
+    <div class="section-header">
+      <span class="section-icon">🎓</span>
+      <span class="section-title">Tutorial ประจำวัน</span>
+      <span class="section-count">1 บทความ</span>
+    </div>
+
+    <div class="tutorial-box">
+      <h3>⚡ ESP32 Deep Sleep Power Optimization — ลดกระแสไฟ 76% ด้วยการตั้งค่าเพียง 1 บรรทัด</h3>
+
+      <p>
+        ปัญหาหลักของ ESP32 ที่ใช้งานด้วยแบตเตอรี่คือ Flash chip ยังคงดึงไฟอยู่แม้ ESP32 เข้า Deep Sleep
+        การเปิดใช้งาน <strong>Flash Power Down</strong> ระหว่าง Deep Sleep
+        สามารถลดกระแสจาก 2.88 mA ลงเหลือเพียง 692 µA — ประหยัดไฟถึง <strong>76%</strong>
+      </p>
+
+      <div class="highlight-box">
+        💡 ESP32-S3 Light Sleep โดยไม่ปรับแต่ง = 2.88 mA | หลังเปิด Flash Power Down = 692 µA (ลด 76%)
+      </div>
+
+      <h3 style="margin-top:1.25rem">วิธีเปิดใช้ผ่าน menuconfig (ESP-IDF)</h3>
+      <ol class="step-list">
+        <li>เปิด menuconfig: <code style="color:var(--accent-cyan)">idf.py menuconfig</code></li>
+        <li>ไปที่ <strong>Component config → ESP System Settings → Power Management</strong></li>
+        <li>เปิด <strong>CONFIG_ESP_SLEEP_POWER_DOWN_FLASH</strong></li>
+        <li>Save แล้ว Build ใหม่: <code style="color:var(--accent-cyan)">idf.py build flash</code></li>
+      </ol>
+
+      <h3 style="margin-top:1.25rem">Code ตัวอย่าง: Battery-Powered Sensor Node</h3>
+      <div class="code-block"><span class="code-comment">// ESP32 Ultra-Low Power Sensor Node
+// วัดค่า Sensor ทุก 5 นาที แล้วกลับเข้า Deep Sleep</span>
+
+#include &lt;esp_sleep.h&gt;
+#include &lt;driver/rtc_io.h&gt;
+
+#define SLEEP_DURATION_SEC  300   <span class="code-comment">// 5 นาที</span>
+#define WAKEUP_GPIO         GPIO_NUM_33
+
+void setup() {
+  Serial.begin(115200);
+
+  <span class="code-comment">// อ่านค่า Sensor ที่นี่ (BME280, SHT31 ฯลฯ)</span>
+  readAndPublishSensorData();
+
+  <span class="code-comment">// ตั้งค่า Wake-up ด้วย Timer</span>
+  esp_sleep_enable_timer_wakeup(SLEEP_DURATION_SEC * 1000000ULL);
+
+  <span class="code-comment">// ตั้งค่า Wake-up ด้วย GPIO (optional)</span>
+  esp_sleep_enable_ext0_wakeup(WAKEUP_GPIO, 0);
+
+  <span class="code-comment">// เข้า Deep Sleep — Flash จะถูก Power Down อัตโนมัติ
+  // (ถ้าเปิด CONFIG_ESP_SLEEP_POWER_DOWN_FLASH)</span>
+  esp_deep_sleep_start();
+}
+
+void loop() { <span class="code-comment">// ไม่ถูกเรียกเลยหลัง deep sleep</span> }</div>
+
+      <h3 style="margin-top:1.25rem">เคล็ดลับการออกแบบ Hardware สำหรับแบตเตอรี่</h3>
+      <ol class="step-list">
+        <li>ใช้ LDO regulator Iq ต่ำ เช่น <strong>MCP1700</strong>, <strong>HT7333</strong>, หรือ <strong>AP2112</strong> แทน AMS1117</li>
+        <li>ถอด LED power indicator ออกจาก Dev Board (กิน 1–5 mA ตลอดเวลา)</li>
+        <li>ถอด USB-to-Serial chip ออก หรือใช้ custom PCB ที่ไม่มีชิปนี้</li>
+        <li>ใช้ LIPO 18650 (3000–3500 mAh) + solar panel 5V 1W ชาร์จตลอดเวลา</li>
+        <li>เปิด <strong>ULP Co-processor</strong> ถ้าต้องการอ่าน sensor ขณะ main CPU หลับ</li>
+      </ol>
+
+      <div class="warn-box">
+        ⚠️ กระดาน Dev Board ทั่วไป (เช่น NodeMCU, WEMOS D1) มีวงจร USB-Serial และ LED
+        ที่กิน 5–20 mA แม้ ESP32 เข้า Deep Sleep — ต้องถอดออก หรือตัดวงจรเพื่อประสิทธิภาพสูงสุด
+      </div>
+
+      <div class="highlight-box">
+        ✅ เป้าหมาย: Deep Sleep Current &lt; 100 µA | Active (Wi-Fi) Current ~120–160 mA
+        | อัตราส่วน Active Time / Sleep Time = 1:1000 = แบตเตอรี่ 3000 mAh อยู่ได้ ~2 ปี
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SECTION 5 : RESOURCES -->
+  <!-- ============================================================ -->
+  <section id="resources">
+    <div class="section-header">
+      <span class="section-icon">🔗</span>
+      <span class="section-title">แหล่งข้อมูลและอ้างอิง</span>
+    </div>
+
+    <div class="resource-grid">
+
+      <div class="resource-card">
+        <h4>📡 LoRa Mesh Research</h4>
+        <a href="https://www.mdpi.com/1424-8220/25/19/6036" target="_blank" rel="noopener">
+          Gateway-Free LoRa Mesh on ESP32 — MDPI Sensors 2025
+        </a>
+        <a href="https://github.com/anthonysleck/loraMesh2" target="_blank" rel="noopener">
+          loraMesh2 — ESP32 LoRa Mesh Network (GitHub)
+        </a>
+        <a href="https://github.com/jeyaprakash011/lora-mesh-network" target="_blank" rel="noopener">
+          LoRa Mesh + GPS + PIR + Temp (GitHub)
+        </a>
+      </div>
+
+      <div class="resource-card">
+        <h4>🚗 CAN Bus & OBD2</h4>
+        <a href="https://github.com/muki01/OBD2_CAN_Bus_Library" target="_blank" rel="noopener">
+          OBD2_CAN_Bus_Library สำหรับ ESP32 TWAI (GitHub)
+        </a>
+        <a href="https://github.com/MagnusThome/esp32_obd2" target="_blank" rel="noopener">
+          ESP32 OBD2 CAN Bus Arduino Library (GitHub)
+        </a>
+        <a href="https://dash.risal.io/blog/esp32-can-obd2/" target="_blank" rel="noopener">
+          บทความ: Read Your Car's Data with ESP32 — TWAI + SN65HVD230
+        </a>
+      </div>
+
+      <div class="resource-card">
+        <h4>🏭 Industrial IoT / Modbus</h4>
+        <a href="https://norvi.io/modbus-devices-with-esp32/" target="_blank" rel="noopener">
+          Modbus with ESP32: RTU & TCP Guide (NORVI BLOG)
+        </a>
+        <a href="https://openelab.io/blogs/learn/rs485-with-esp32-arduino-modbus-rtu" target="_blank" rel="noopener">
+          RS485 + Modbus RTU กับ ESP32 (OpenELAB)
+        </a>
+        <a href="https://www.waveshare.com/esp32-s3-rs485-can.htm" target="_blank" rel="noopener">
+          Waveshare ESP32-S3 RS485+CAN Industrial Board
+        </a>
+      </div>
+
+      <div class="resource-card">
+        <h4>🌈 AS7265x Spectroscopy</h4>
+        <a href="https://how2electronics.com/diy-colorimeter-using-as7265x-spectroscopy-sensor-esp32/" target="_blank" rel="noopener">
+          DIY Colorimeter: AS7265x + ESP32 + Web Dashboard
+        </a>
+        <a href="https://ams-osram.com/products/sensors/ambient-light-color-spectral-proximity-sensors/ams-as7265x-smart-spectral-sensor" target="_blank" rel="noopener">
+          AMS AS7265x Datasheet (ams-osram.com)
+        </a>
+        <a href="https://hackaday.io/project/174401-spectral-esp" target="_blank" rel="noopener">
+          Spectral ESP — Hackaday Project
+        </a>
+      </div>
+
+      <div class="resource-card">
+        <h4>⚡ Deep Sleep & Power Optimization</h4>
+        <a href="https://www.qoitech.com/blog/esp32-s3-c3-c6-sleep-power-consumption/" target="_blank" rel="noopener">
+          ESP32-S3 vs C3 vs C6: Deep Sleep Power Measured (Qoitech)
+        </a>
+        <a href="https://esp32.co.uk/esp32-battery-powered-sensors-deep-sleep-low-power-design-guide/" target="_blank" rel="noopener">
+          ESP32 Deep Sleep Battery Sensors 2026 Guide
+        </a>
+        <a href="https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-guides/low-power-mode/low-power-mode-soc.html" target="_blank" rel="noopener">
+          ESP-IDF v6: Low Power Mode Guide (Espressif Official)
+        </a>
+      </div>
+
+      <div class="resource-card">
+        <h4>📦 Meshtastic & Trail Mate</h4>
+        <a href="https://github.com/meshtastic/firmware" target="_blank" rel="noopener">
+          Meshtastic Firmware Official (GitHub)
+        </a>
+        <a href="https://readybackyard.com/how-to-flash-meshtastic-firmware-guide/" target="_blank" rel="noopener">
+          How to Flash Meshtastic on Any ESP32 (2026 Guide)
+        </a>
+        <a href="https://github.com/charan-271/meshtastic_ESP-32" target="_blank" rel="noopener">
+          Custom Meshtastic สำหรับ ESP32 + SX1278 (GitHub)
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>
+    <strong>ESP32 & Sensor Innovations</strong> — สร้างวันที่ 9 กันยายน พ.ศ. 2569<br>
+    เนื้อหาประจำวัน: LoRa Mesh Off-Grid · ESP32 TWAI CAN Bus · AS7265x Spectroscopy · Industrial Modbus · Deep Sleep Optimization<br>
+    แหล่งอ้างอิง: MDPI Sensors, GitHub, CNX Software, Qoitech, ESP-IDF Documentation, Hackster.io<br>
+    <span style="color:var(--text-muted)">รวบรวมและเรียบเรียงโดย AI Research Agent | ข้อมูลถูกต้อง ณ วันที่สร้าง</span>
+  </p>
+</footer>
+
+</body>
+</html>
