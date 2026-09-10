@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 10 กันยายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1a2540;
+    --bg-highlight: #162032;
+    --accent-blue: #38bdf8;
+    --accent-cyan: #22d3ee;
+    --accent-green: #4ade80;
+    --accent-purple: #a78bfa;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --accent-yellow: #facc15;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #2d3f5e;
+    --gradient-1: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+    --gradient-2: linear-gradient(135deg, #1a1040 0%, #0f172a 100%);
+    --gradient-3: linear-gradient(135deg, #0d2b1f 0%, #0f172a 100%);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0a1628 0%, #112244 50%, #0a1628 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(56,189,248,0.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent-blue);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #38bdf8, #a78bfa, #22d3ee);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .header-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1.2rem;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.3rem 1rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+  .stat-pill span {
+    color: var(--accent-cyan);
+    font-weight: 700;
+    margin-right: 0.3em;
+  }
+
+  /* Layout */
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem; }
+
+  section { margin-bottom: 3rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: rgba(56,189,248,0.15); }
+  .icon-purple { background: rgba(167,139,250,0.15); }
+  .icon-green { background: rgba(74,222,128,0.15); }
+  .icon-orange { background: rgba(251,146,60,0.15); }
+  .icon-pink { background: rgba(244,114,182,0.15); }
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-left: auto;
+  }
+
+  /* Cards Grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .card-blue::before { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); }
+  .card-purple::before { background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink)); }
+  .card-green::before { background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); }
+  .card-orange::before { background: linear-gradient(90deg, var(--accent-orange), var(--accent-yellow)); }
+  .card-pink::before { background: linear-gradient(90deg, var(--accent-pink), var(--accent-purple)); }
+  .card:hover {
+    border-color: rgba(56,189,248,0.35);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .card-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    margin-bottom: 0.75rem;
+  }
+  .tag-blue { background: rgba(56,189,248,0.15); color: var(--accent-blue); }
+  .tag-purple { background: rgba(167,139,250,0.15); color: var(--accent-purple); }
+  .tag-green { background: rgba(74,222,128,0.15); color: var(--accent-green); }
+  .tag-orange { background: rgba(251,146,60,0.15); color: var(--accent-orange); }
+  .tag-pink { background: rgba(244,114,182,0.15); color: var(--accent-pink); }
+  .card-title {
+    font-size: 1.0rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card-body {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .card-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.85rem;
+  }
+  .chip {
+    font-size: 0.7rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 0.15rem 0.55rem;
+    border-radius: 6px;
+  }
+
+  /* Wide card for project ideas */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+  .project-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .project-blue::before { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); }
+  .project-purple::before { background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink)); }
+  .project-green::before { background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); }
+  .project-orange::before { background: linear-gradient(90deg, var(--accent-orange), var(--accent-yellow)); }
+  .project-card:hover {
+    border-color: rgba(167,139,250,0.35);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .project-emoji { font-size: 2rem; margin-bottom: 0.75rem; display: block; }
+  .project-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .project-desc {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 0.85rem;
+  }
+  .project-meta {
+    display: flex;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+  }
+  .meta-item { display: flex; align-items: center; gap: 0.3rem; }
+  .meta-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-easy { background: var(--accent-green); }
+  .dot-med { background: var(--accent-yellow); }
+  .dot-hard { background: var(--accent-orange); }
+
+  /* Sensor cards */
+  .sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 1.1rem;
+  }
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.2rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .sensor-card:hover {
+    border-color: rgba(74,222,128,0.35);
+    transform: translateY(-3px);
+  }
+  .sensor-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.85rem;
+  }
+  .sensor-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .si-blue { background: rgba(56,189,248,0.12); }
+  .si-green { background: rgba(74,222,128,0.12); }
+  .si-purple { background: rgba(167,139,250,0.12); }
+  .si-orange { background: rgba(251,146,60,0.12); }
+  .sensor-name {
+    font-weight: 700;
+    font-size: 1.0rem;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+  .sensor-model {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+  }
+  .sensor-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    margin-bottom: 0.8rem;
+  }
+  .sensor-specs {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .spec-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    border-top: 1px solid rgba(255,255,255,0.04);
+    padding-top: 0.3rem;
+  }
+  .spec-val { color: var(--accent-cyan); font-weight: 600; }
+
+  /* Tutorial box */
+  .tutorial-box {
+    background: linear-gradient(135deg, #162030 0%, #1a1040 100%);
+    border: 1px solid rgba(167,139,250,0.25);
+    border-radius: 16px;
+    padding: 1.75rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .tutorial-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue), var(--accent-cyan));
+  }
+  .tutorial-box h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+  }
+  .tutorial-box p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1.1rem;
+    line-height: 1.75;
+  }
+  .code-block {
+    background: #0a0f1e;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    color: #a5f3fc;
+    overflow-x: auto;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+  .code-comment { color: #4a5568; }
+  .code-keyword { color: #c084fc; }
+  .code-string { color: #6ee7b7; }
+  .code-number { color: #fbbf24; }
+  .code-func { color: #60a5fa; }
+  .step-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+  .step-list li {
+    display: flex;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .step-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(167,139,250,0.2);
+    color: var(--accent-purple);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  /* Resources */
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .resource-card:hover {
+    border-color: rgba(56,189,248,0.35);
+    transform: translateY(-2px);
+  }
+  .resource-logo {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.06);
+  }
+  .resource-info .res-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.2rem;
+  }
+  .resource-info .res-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* Highlight callout */
+  .callout {
+    background: rgba(56,189,248,0.07);
+    border-left: 3px solid var(--accent-blue);
+    border-radius: 0 10px 10px 0;
+    padding: 0.85rem 1.1rem;
+    margin: 1rem 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .callout strong { color: var(--accent-blue); }
+
+  /* WiFi 6 feature highlight */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.85rem;
+    margin-top: 1.1rem;
+  }
+  .feature-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+  }
+  .feature-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.3rem;
+  }
+  .feature-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+  }
+
+  /* Footer */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    line-height: 1.9;
+  }
+  footer a {
+    color: var(--accent-blue);
+    text-decoration: none;
+  }
+  footer a:hover { text-decoration: underline; }
+  .footer-sources {
+    margin-top: 0.75rem;
+    font-size: 0.78rem;
+  }
+
+  @media (max-width: 600px) {
+    .cards-grid, .projects-grid, .sensor-grid, .resources-grid, .feature-grid {
+      grid-template-columns: 1fr;
+    }
+    .header-stats { gap: 0.75rem; }
+    .section-desc { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily ESP32 Research — 10 September 2026</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="header-subtitle">10 กันยายน 2026 · รวบรวมนวัตกรรม IoT ล่าสุด อัปเดตทุกวัน</p>
+  <div class="header-stats">
+    <div class="stat-pill"><span>4</span>นวัตกรรมใหม่</div>
+    <div class="stat-pill"><span>4</span>ไอเดียโปรเจกต์</div>
+    <div class="stat-pill"><span>4</span>Sensors น่าสนใจ</div>
+    <div class="stat-pill"><span>1</span>Tutorial พร้อม Code</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- SECTION 1: INNOVATIONS -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">⚡</div>
+      <h2 class="section-title">นวัตกรรม ESP32 ใหม่ล่าสุด</h2>
+      <span class="section-desc">อัปเดต: 10 ก.ย. 2026</span>
+    </div>
+    <div class="cards-grid">
+
+      <div class="card card-blue">
+        <span class="card-tag tag-blue">ESP32-C5 • NEW</span>
+        <div class="card-title">ESP32-C5 — Dual-Band WiFi 6 (2.4+5GHz) ตัวแรกในโลก IoT ราคา $3–5</div>
+        <div class="card-body">
+          ESP32-C5 คือ RISC-V MCU รายแรกของโลกที่รองรับ WiFi 6 (802.11ax) ทั้งคลื่น 2.4GHz และ 5GHz พร้อมกัน พร้อม Bluetooth 5 LE และ IEEE 802.15.4 (Zigbee/Thread) ใน chip เดียว — เหมาะสำหรับ Smart Home ที่ต้องการ bandwidth สูงและ latency ต่ำ
+        </div>
+        <div class="feature-grid">
+          <div class="feature-item">
+            <div class="feature-label">CPU</div>
+            <div class="feature-value">240 MHz RISC-V</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-label">WiFi</div>
+            <div class="feature-value">6 (2.4+5GHz)</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-label">Security</div>
+            <div class="feature-value">KMC + TEE</div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-label">Protocol</div>
+            <div class="feature-value">TWT / OFDMA</div>
+          </div>
+        </div>
+        <div class="card-chips">
+          <span class="chip">WiFi 6</span>
+          <span class="chip">5GHz</span>
+          <span class="chip">RISC-V</span>
+          <span class="chip">Zigbee</span>
+          <span class="chip">Thread</span>
+        </div>
+      </div>
+
+      <div class="card card-purple">
+        <span class="card-tag tag-purple">ESP32-C5 Security</span>
+        <div class="card-title">Key Management Controller (KMC) — ความปลอดภัยระดับ Enterprise บน MCU $5</div>
+        <div class="card-body">
+          ESP32-C5 มาพร้อม Hardware Security Suite ชุดใหม่: <strong style="color:var(--accent-purple)">KMC</strong> จัดการ Key ใน Hardware เพื่อป้องกันการขโมย, <strong style="color:var(--accent-purple)">TEE</strong> แยก Security-critical code, และ <strong style="color:var(--accent-purple)">APM</strong> ควบคุม Memory Access ระดับ Fine-grained — เหมาะกับ IoT ที่ต้องการ Secure Boot และ OTA แบบปลอดภัย
+        </div>
+        <div class="card-chips">
+          <span class="chip">Secure Boot</span>
+          <span class="chip">OTA</span>
+          <span class="chip">Hardware Security</span>
+          <span class="chip">TrustZone-like</span>
+        </div>
+      </div>
+
+      <div class="card card-green">
+        <span class="card-tag tag-green">ESP-IDF v6.0</span>
+        <div class="card-title">ESP32-C5 เข้าสู่ Stable Stage บน ESP-IDF v6.0 — Safe Bootloader OTA พร้อมใช้</div>
+        <div class="card-body">
+          กับการปล่อย ESP-IDF v6.0 อย่างเป็นทางการ ESP32-C5 ย้ายจากสถานะ "Preview" เป็น "Stable" แล้ว นั่นหมายความว่า production firmware สามารถใช้งานได้อย่างมั่นใจ รวมถึง Safe Bootloader OTA Updates ที่ rollback ได้หาก firmware ใหม่ล้มเหลว — ลด downtime ใน IoT field deployment ได้มาก
+        </div>
+        <div class="card-chips">
+          <span class="chip">IDF v6.0</span>
+          <span class="chip">Stable</span>
+          <span class="chip">OTA Rollback</span>
+          <span class="chip">Production-Ready</span>
+        </div>
+      </div>
+
+      <div class="card card-orange">
+        <span class="card-tag tag-orange">HMI Display</span>
+        <div class="card-title">CrowPanel Advanced 10.1" ESP32-P4 — LVGL Ready Certified ครบจบในแผ่นเดียว</div>
+        <div class="card-body">
+          Elecrow และ LVGL เป็น Official Partner แล้ว CrowPanel ทุกรุ่นได้รับ "LVGL Ready" Certification — ไม่ต้องเขียน driver เอง ใช้งานได้ทันที รุ่น 10.1 นิ้ว มาพร้อม ESP32-P4 (400 MHz, 32MB PSRAM) + ESP32-C6 wireless (WiFi 6 + BT 5.3) ในแผ่นเดียว resolution 1024×600 IPS Touch
+        </div>
+        <div class="card-chips">
+          <span class="chip">LVGL Ready</span>
+          <span class="chip">1024×600</span>
+          <span class="chip">ESP32-P4</span>
+          <span class="chip">ESP32-C6</span>
+          <span class="chip">WiFi 6</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 2: PROJECTS -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">🛠️</div>
+      <h2 class="section-title">ไอเดียโปรเจกต์ IoT น่าทำ</h2>
+      <span class="section-desc">เรียงตามความยาก</span>
+    </div>
+    <div class="projects-grid">
+
+      <div class="project-card project-blue">
+        <span class="project-emoji">💧</span>
+        <div class="project-title">ESP32 Smart Water Quality Monitor — pH + TDS + Turbidity แจ้งเตือน LINE/ThingSpeak</div>
+        <div class="project-desc">
+          ระบบตรวจสอบคุณภาพน้ำแบบ Real-Time ด้วย ESP32 + sensor 3 ตัว: pH Sensor วัดความเป็นกรด-ด่าง, TDS Meter วัดค่าสารละลาย, Turbidity Sensor วัดความขุ่น — ส่งข้อมูลขึ้น ThingSpeak แสดงกราฟ และแจ้งเตือนทาง LINE เมื่อค่าเกิน threshold ใช้กับบ่อปลา, ระบบกรองน้ำ, หรือการเกษตร
+        </div>
+        <div class="project-meta">
+          <div class="meta-item"><div class="meta-dot dot-med"></div>ระดับกลาง</div>
+          <div class="meta-item">💰 ประมาณ 350-500 บาท</div>
+          <div class="meta-item">⏱ 2-3 วัน</div>
+        </div>
+      </div>
+
+      <div class="project-card project-purple">
+        <span class="project-emoji">🦾</span>
+        <div class="project-title">ESP32 Robotic Arm — ควบคุมผ่าน Web + Glove Controller (ESP-NOW)</div>
+        <div class="project-desc">
+          แขนกลอัจฉริยะ 4-DOF ควบคุมได้ 2 วิธี: ผ่าน Web Interface (WebSocket) บนมือถือ หรือใส่ถุงมือที่มี IMU Sensor (ESP-NOW) โยกมือแล้วแขนกลตามเลย — มี Motion Sequencer บันทึกและเล่นซ้ำท่าทาง ประยุกต์ใช้เป็น pick-and-place, สาธิตหุ่นยนต์, หรือโมเดลการศึกษา
+        </div>
+        <div class="project-meta">
+          <div class="meta-item"><div class="meta-dot dot-hard"></div>ระดับยาก</div>
+          <div class="meta-item">💰 ประมาณ 800-1,200 บาท</div>
+          <div class="meta-item">⏱ 5-7 วัน</div>
+        </div>
+      </div>
+
+      <div class="project-card project-green">
+        <span class="project-emoji">🔊</span>
+        <div class="project-title">ESP32 Noise Monitor — ระบบตรวจวัดเสียงรบกวนแจ้งเตือน LINE สำหรับชุมชน/โรงงาน</div>
+        <div class="project-desc">
+          ใช้ ESP32 + MAX9814 Microphone Amplifier วัด dB ระดับเสียงสิ่งแวดล้อม แสดงกราฟ Real-Time บน Web Dashboard และบันทึกค่าสูงสุดรายชั่วโมง — เมื่อเสียงเกิน 85 dB (มาตรฐาน OSHA) ระบบแจ้งเตือนทันที ใช้กับ Smart Office, ชุมชนใกล้โรงงาน, หรือ ห้องเด็กนอน
+        </div>
+        <div class="project-meta">
+          <div class="meta-item"><div class="meta-dot dot-easy"></div>ระดับง่าย</div>
+          <div class="meta-item">💰 ประมาณ 150-250 บาท</div>
+          <div class="meta-item">⏱ 1-2 วัน</div>
+        </div>
+      </div>
+
+      <div class="project-card project-orange">
+        <span class="project-emoji">🖥️</span>
+        <div class="project-title">CrowPanel ESP32-P4 Smart Home Dashboard — LVGL UI แบบ Professional ในงบ 1,500 บาท</div>
+        <div class="project-desc">
+          สร้าง Home Control Center บน CrowPanel 7" ด้วย LVGL widgets สวยงาม: ปุ่มควบคุมไฟ, Gauge แสดงอุณหภูมิ/ความชื้น, กราฟการใช้ไฟฟ้า real-time, Weather Widget ดึงข้อมูลจาก API, และ Alarm Clock — ทั้งหมดบนจอ IPS 1024×600 กว้าง 7 นิ้วพร้อม Capacitive Touch
+        </div>
+        <div class="project-meta">
+          <div class="meta-item"><div class="meta-dot dot-med"></div>ระดับกลาง</div>
+          <div class="meta-item">💰 ประมาณ 1,200-1,500 บาท</div>
+          <div class="meta-item">⏱ 3-5 วัน</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 3: SENSORS -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">📡</div>
+      <h2 class="section-title">Sensors น่าสนใจประจำวัน</h2>
+      <span class="section-desc">4 ตัวเลือก — สำหรับ Water, Sound, Robotics</span>
+    </div>
+    <div class="sensor-grid">
+
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-icon si-blue">💧</div>
+          <div>
+            <div class="sensor-name">pH Sensor V2</div>
+            <div class="sensor-model">DFRobot SEN0161-V2 (Gravity)</div>
+          </div>
+        </div>
+        <div class="sensor-desc">
+          วัดค่า pH 0–14 ด้วย Glass Electrode แม่นยำสูง, มี Analog Output เชื่อมต่อ ADC ESP32 ตรง, มาพร้อม Probe ป้องกันน้ำ IP67 และ BNC Connector — ใช้ในระบบ Water Quality, บ่อปลา, ไฮโดรโปนิกส์
+        </div>
+        <div class="sensor-specs">
+          <div class="spec-row"><span>ช่วงวัด</span><span class="spec-val">pH 0–14</span></div>
+          <div class="spec-row"><span>ความแม่นยำ</span><span class="spec-val">±0.1 pH</span></div>
+          <div class="spec-row"><span>Output</span><span class="spec-val">Analog (0–3.3V)</span></div>
+          <div class="spec-row"><span>ราคาโดยประมาณ</span><span class="spec-val">~350 บาท</span></div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-icon si-green">🔊</div>
+          <div>
+            <div class="sensor-name">MAX9814 Mic Amplifier</div>
+            <div class="sensor-model">SparkFun / Adafruit MAX9814</div>
+          </div>
+        </div>
+        <div class="sensor-desc">
+          Electret Microphone Module พร้อม AGC (Auto Gain Control) — ปรับ Gain ได้ 40/50/60 dB ตอบสนองเสียงใน range 20 Hz–20 kHz ความไวสูง ส่ง Analog Output ให้ ESP32 ADC อ่านค่าระดับเสียงแบบ Real-Time เพื่อวัด dB หรือ FFT
+        </div>
+        <div class="sensor-specs">
+          <div class="spec-row"><span>Gain</span><span class="spec-val">40/50/60 dB</span></div>
+          <div class="spec-row"><span>Bandwidth</span><span class="spec-val">20 Hz–20 kHz</span></div>
+          <div class="spec-row"><span>Output</span><span class="spec-val">Analog</span></div>
+          <div class="spec-row"><span>ราคาโดยประมาณ</span><span class="spec-val">~80–150 บาท</span></div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-icon si-orange">⚙️</div>
+          <div>
+            <div class="sensor-name">MG996R Servo Motor</div>
+            <div class="sensor-model">Tower Pro MG996R (Metal Gear)</div>
+          </div>
+        </div>
+        <div class="sensor-desc">
+          Servo Motor ชุดเฟืองโลหะ Torque 9.4 kg/cm ทนทาน — ใช้กับแขนกล, ประตูอัตโนมัติ, กลไกต่างๆ ควบคุมด้วย PWM จาก ESP32 LEDC (50Hz, duty 1ms–2ms) รองรับ 180° rotation ราคาถูก ทนกว่า SG90 หลายเท่า
+        </div>
+        <div class="sensor-specs">
+          <div class="spec-row"><span>Torque</span><span class="spec-val">9.4 kg/cm</span></div>
+          <div class="spec-row"><span>Speed</span><span class="spec-val">0.15 sec/60°</span></div>
+          <div class="spec-row"><span>Control</span><span class="spec-val">PWM 50Hz</span></div>
+          <div class="spec-row"><span>ราคาโดยประมาณ</span><span class="spec-val">~60–100 บาท</span></div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-header">
+          <div class="sensor-icon si-purple">🌊</div>
+          <div>
+            <div class="sensor-name">TDS Meter Sensor</div>
+            <div class="sensor-model">Gravity Analog TDS Sensor (DFRobot)</div>
+          </div>
+        </div>
+        <div class="sensor-desc">
+          วัดค่า Total Dissolved Solids (TDS) ในน้ำ 0–1000 ppm ด้วย Conductivity Probe — ใช้ประเมินคุณภาพน้ำดื่ม, ตรวจสารปนเปื้อน, ระบบ RO Filter, และไฮโดรโปนิกส์ เชื่อม ADC ESP32 ตรง มี Temperature Compensation Built-in
+        </div>
+        <div class="sensor-specs">
+          <div class="spec-row"><span>ช่วงวัด</span><span class="spec-val">0–1000 ppm</span></div>
+          <div class="spec-row"><span>ความแม่นยำ</span><span class="spec-val">±10%</span></div>
+          <div class="spec-row"><span>Output</span><span class="spec-val">Analog (0–2.3V)</span></div>
+          <div class="spec-row"><span>ราคาโดยประมาณ</span><span class="spec-val">~200–280 บาท</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 4: TUTORIAL -->
+  <section id="tutorial">
+    <div class="section-header">
+      <div class="section-icon icon-pink">📖</div>
+      <h2 class="section-title">Tutorial ประจำวัน</h2>
+    </div>
+    <div class="tutorial-box">
+      <h3>📶 ESP32-C5 WiFi 6 Dual-Band — เชื่อมต่อ 5GHz เพื่อ Throughput สูงและ Latency ต่ำ</h3>
+      <p>
+        WiFi 6 บน ESP32-C5 รองรับ <strong style="color:var(--accent-blue)">Target Wake Time (TWT)</strong> ให้อุปกรณ์ IoT หลับลึกและตื่นตรงเวลา ประหยัดพลังงานได้มากกว่า WiFi 5 ถึง 67% และ <strong style="color:var(--accent-cyan)">OFDMA</strong> ให้ AP รับส่งข้อมูลกับอุปกรณ์หลายตัวพร้อมกันโดยไม่แย่งช่องสัญญาณ — เหมาะสำหรับบ้านที่มีอุปกรณ์ IoT มากกว่า 20 ตัว
+      </p>
+      <div class="callout">
+        <strong>ข้อแตกต่างสำคัญ:</strong> 5GHz มี bandwidth กว้างกว่า แต่ระยะสั้นกว่า 2.4GHz ให้ใช้ 5GHz สำหรับอุปกรณ์ใกล้ Router (กล้อง IP, Smart Display) และ 2.4GHz สำหรับ Sensor ไกลๆ (สวน, โรงรถ)
+      </div>
+      <p>ตัวอย่าง code เชื่อมต่อ 5GHz Network บน ESP32-C5 ด้วย ESP-IDF v6.0:</p>
+      <div class="code-block"><span class="code-comment">// ESP32-C5 WiFi 6 - เชื่อมต่อ 5GHz AP</span>
+<span class="code-keyword">#include</span> <span class="code-string">"esp_wifi.h"</span>
+<span class="code-keyword">#include</span> <span class="code-string">"esp_netif.h"</span>
+
+<span class="code-keyword">void</span> <span class="code-func">wifi_init_5ghz</span>() {
+    wifi_config_t cfg = {
+        .sta = {
+            .ssid     = <span class="code-string">"MyRouter_5G"</span>,
+            .password = <span class="code-string">"mypassword"</span>,
+            <span class="code-comment">// บังคับให้ใช้ 5GHz band เท่านั้น</span>
+            .band_mode = WIFI_BAND_MODE_5G_ONLY,
+            <span class="code-comment">// เปิด TWT สำหรับ Power Saving</span>
+            .twt_enabled = <span class="code-number">1</span>,
+        },
+    };
+    esp_wifi_set_mode(WIFI_MODE_STA);
+    esp_wifi_set_config(WIFI_IF_STA, &cfg);
+    esp_wifi_start();
+    esp_wifi_connect();
+}</div>
+      <ul class="step-list">
+        <li><div class="step-num">1</div>ตรวจสอบว่า Router รองรับ WiFi 6 (802.11ax) และเปิด SSID แยกสำหรับ 5GHz</li>
+        <li><div class="step-num">2</div>ใช้ ESP-IDF v6.0+ และเลือก target เป็น esp32c5 ใน menuconfig</li>
+        <li><div class="step-num">3</div>ตั้งค่า <code style="color:var(--accent-cyan)">WIFI_BAND_MODE_5G_ONLY</code> เพื่อบังคับ 5GHz</li>
+        <li><div class="step-num">4</div>เปิด TWT (<code style="color:var(--accent-cyan)">twt_enabled = 1</code>) เพื่อประหยัดพลังงานสูงสุด</li>
+        <li><div class="step-num">5</div>วัด RSSI ด้วย <code style="color:var(--accent-cyan)">esp_wifi_sta_get_ap_info()</code> ให้ได้ไม่ต่ำกว่า -70 dBm</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SECTION 5: RESOURCES -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔗</div>
+      <h2 class="section-title">แหล่งข้อมูลและอ้างอิง</h2>
+    </div>
+    <div class="resources-grid">
+      <a href="https://www.espressif.com/en/products/socs/esp32-c5" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-logo">🔌</div>
+        <div class="resource-info">
+          <div class="res-title">ESP32-C5 Official Page</div>
+          <div class="res-desc">ข้อมูลทางการ ESP32-C5 Dual-Band WiFi 6 จาก Espressif</div>
+        </div>
+      </a>
+      <a href="https://www.cnx-software.com/2026/07/03/esp32-c5-dual-band-wifi-6-and-bluetooth-le-iot-board-features-1-47-inch-color-lcd/" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-logo">📰</div>
+        <div class="resource-info">
+          <div class="res-title">CNX Software — ESP32-C5 Board Review</div>
+          <div class="res-desc">รีวิว ESP32-C5 board พร้อม LCD 1.47" จาก CNX Software (ก.ค. 2026)</div>
+        </div>
+      </a>
+      <a href="https://www.elecrow.com/blog/Elecrow%20CrowPanel%20%20ESP32%20HMI%20Displays%20Now%20LVGL%20Ready:%20Faster%20UI%20Development%20%7C%20Elecrow.html" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-logo">🖥️</div>
+        <div class="resource-info">
+          <div class="res-title">CrowPanel LVGL Ready Certification</div>
+          <div class="res-desc">Elecrow + LVGL Partnership — HMI displays พร้อมใช้ทันที</div>
+        </div>
+      </a>
+      <a href="https://github.com/sadeepas/ESP32-Robot-Arm-Web-Glove-Control" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-logo">🦾</div>
+        <div class="resource-info">
+          <div class="res-title">ESP32 Robot Arm — Web + Glove</div>
+          <div class="res-desc">4-axis Robotic Arm + ESP-NOW Glove Controller บน GitHub</div>
+        </div>
+      </a>
+      <a href="https://github.com/mhdjishan/water-quality-monitor" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-logo">💧</div>
+        <div class="resource-info">
+          <div class="res-title">Water Quality Monitor GitHub</div>
+          <div class="res-desc">IoT Water Quality Monitor ด้วย ESP32 — pH, TDS, Turbidity</div>
+        </div>
+      </a>
+      <a href="https://www.seeedstudio.com/blog/2026/01/16/xiao-esp32-c5-5ghz-dual-band-wifi6/" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-logo">🌱</div>
+        <div class="resource-info">
+          <div class="res-title">XIAO ESP32-C5 Dev Board</div>
+          <div class="res-desc">Seeed Studio XIAO ESP32-C5 — board ขนาดเล็ก WiFi 6 Dual-Band ตัวแรก</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div>สร้างโดย AI Research Bot · 10 กันยายน 2026 · อัปเดตทุกวัน</div>
+  <div class="footer-sources">
+    แหล่งอ้างอิง:
+    <a href="https://www.espressif.com/en/products/socs/esp32-c5" target="_blank" rel="noopener">Espressif ESP32-C5</a> ·
+    <a href="https://www.cnx-software.com/2026/07/03/esp32-c5-dual-band-wifi-6-and-bluetooth-le-iot-board-features-1-47-inch-color-lcd/" target="_blank" rel="noopener">CNX Software</a> ·
+    <a href="https://wizzdev.com/blog/esp32-c5-new-chip-with-dual-band-wi-fi-6/" target="_blank" rel="noopener">WizzDev</a> ·
+    <a href="https://www.elecrow.com/blog/Elecrow%20CrowPanel%20%20ESP32%20HMI%20Displays%20Now%20LVGL%20Ready:%20Faster%20UI%20Development%20%7C%20Elecrow.html" target="_blank" rel="noopener">Elecrow</a> ·
+    <a href="https://github.com/sadeepas/ESP32-Robot-Arm-Web-Glove-Control" target="_blank" rel="noopener">GitHub</a> ·
+    <a href="https://github.com/mhdjishan/water-quality-monitor" target="_blank" rel="noopener">GitHub Water Monitor</a>
+  </div>
+</footer>
+
+</body>
+</html>
