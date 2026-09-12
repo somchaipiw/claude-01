@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 &amp; Sensor Innovations - 12 กันยายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #263347;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent-blue: #38bdf8;
+    --accent-purple: #a78bfa;
+    --accent-green: #34d399;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --accent-cyan: #22d3ee;
+  }
+  body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); line-height: 1.8; }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1a2744 40%, #0f2f4f 70%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 24px 36px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(56,189,248,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 30%, rgba(167,139,250,0.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.12);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent-blue);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #e2e8f0, #38bdf8 50%, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .header-sub { color: var(--text-muted); font-size: 14px; margin-bottom: 28px; }
+
+  /* Stats row */
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .stat-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 20px;
+    min-width: 110px;
+    text-align: center;
+  }
+  .stat-number { font-size: 1.5rem; font-weight: 700; color: var(--accent-blue); }
+  .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Navigation */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+  }
+  nav a:hover { color: var(--accent-blue); border-color: rgba(56,189,248,0.3); background: rgba(56,189,248,0.06); }
+
+  /* Main */
+  main { max-width: 1100px; margin: 0 auto; padding: 40px 20px 60px; }
+
+  /* Section */
+  section { margin-bottom: 56px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: rgba(56,189,248,0.15); }
+  .icon-purple { background: rgba(167,139,250,0.15); }
+  .icon-green { background: rgba(52,211,153,0.15); }
+  .icon-orange { background: rgba(251,146,60,0.15); }
+  .section-title { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+  .section-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Card Grid */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+  .card-grid.wide { grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+  }
+  .card.blue::before { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); }
+  .card.purple::before { background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink)); }
+  .card.green::before { background: linear-gradient(90deg, var(--accent-green), #4ade80); }
+  .card.orange::before { background: linear-gradient(90deg, var(--accent-orange), #facc15); }
+  .card:hover { border-color: rgba(56,189,248,0.3); transform: translateY(-2px); }
+
+  .card-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+  }
+  .tag-blue { background: rgba(56,189,248,0.15); color: var(--accent-blue); }
+  .tag-purple { background: rgba(167,139,250,0.15); color: var(--accent-purple); }
+  .tag-green { background: rgba(52,211,153,0.15); color: var(--accent-green); }
+  .tag-orange { background: rgba(251,146,60,0.15); color: var(--accent-orange); }
+  .tag-pink { background: rgba(244,114,182,0.15); color: var(--accent-pink); }
+  .tag-cyan { background: rgba(34,211,238,0.15); color: var(--accent-cyan); }
+
+  .card-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 10px; line-height: 1.4; }
+  .card-body { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+  .card-body strong { color: var(--text); }
+
+  /* Spec list */
+  .spec-list { list-style: none; margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+  .spec-list li { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-muted); }
+  .spec-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-blue); flex-shrink: 0; margin-top: 7px; }
+  .spec-dot.green { background: var(--accent-green); }
+  .spec-dot.orange { background: var(--accent-orange); }
+  .spec-dot.purple { background: var(--accent-purple); }
+
+  /* Code block */
+  .code-block {
+    background: #0d1526;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 14px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #7dd3fc;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+  .code-block .comment { color: #4b6582; }
+  .code-block .keyword { color: #a78bfa; }
+  .code-block .string { color: #34d399; }
+
+  /* Highlight box */
+  .highlight-box {
+    background: rgba(56,189,248,0.06);
+    border-left: 3px solid var(--accent-blue);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .highlight-box.green { background: rgba(52,211,153,0.06); border-color: var(--accent-green); }
+  .highlight-box.purple { background: rgba(167,139,250,0.06); border-color: var(--accent-purple); }
+  .highlight-box.orange { background: rgba(251,146,60,0.06); border-color: var(--accent-orange); }
+
+  /* Sensor Table */
+  .sensor-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
+  .sensor-table th { background: var(--surface2); color: var(--text-muted); font-weight: 600; text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .sensor-table td { padding: 8px 12px; border-bottom: 1px solid rgba(51,65,85,0.5); color: var(--text-muted); }
+  .sensor-table tr:last-child td { border-bottom: none; }
+  .sensor-table td strong { color: var(--text); }
+  .sensor-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* Resource links */
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+  .resource-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    text-decoration: none;
+    display: block;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .resource-item:hover { border-color: rgba(56,189,248,0.4); transform: translateY(-1px); }
+  .resource-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .resource-url { font-size: 11px; color: var(--text-muted); word-break: break-all; }
+  .resource-type { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .rt-github { color: var(--accent-purple); }
+  .rt-tutorial { color: var(--accent-green); }
+  .rt-news { color: var(--accent-blue); }
+  .rt-video { color: var(--accent-pink); }
+
+  /* Footer */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 28px 24px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  footer strong { color: var(--accent-blue); }
+
+  @media (max-width: 600px) {
+    .card-grid, .card-grid.wide { grid-template-columns: 1fr; }
+    .resource-grid { grid-template-columns: 1fr; }
+    .stats-row { gap: 12px; }
+    .stat-item { min-width: 90px; padding: 10px 14px; }
+    nav { gap: 6px; }
+    main { padding: 28px 16px 48px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">ESP32 Research Daily</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="header-sub">12 กันยายน 2026 · อัปเดตรายวันโดย AI Researcher</p>
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-number">5</div>
+      <div class="stat-label">นวัตกรรมใหม่</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">4</div>
+      <div class="stat-label">โปรเจกต์เด่น</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">6</div>
+      <div class="stat-label">Sensors น่าสนใจ</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">8</div>
+      <div class="stat-label">แหล่งข้อมูล</div>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations">🚀 นวัตกรรม</a>
+  <a href="#projects">💡 โปรเจกต์</a>
+  <a href="#sensors">📡 Sensors</a>
+  <a href="#resources">🔗 แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- SECTION 1: Innovations -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🚀</div>
+      <div>
+        <div class="section-title">นวัตกรรมและเทคโนโลยีใหม่</div>
+        <div class="section-desc">ESP32 chips, platforms, และ ecosystem updates ล่าสุดประจำสัปดาห์</div>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Card 1: ESP32-P4 Video Alarm Clock -->
+      <div class="card blue">
+        <div class="card-tag tag-blue">🎬 ESP32-P4 Fresh Build</div>
+        <div class="card-title">นาฬิกาปลุกวิดีโอ ESP32-P4 — ปลุกด้วยหนังแทนเสียง Beep</div>
+        <div class="card-body">
+          <p>โปรเจกต์ล่าสุดจาก Hackaday (7 ก.ย. 2026) โดย <strong>brunokeymolen</strong> ที่ใช้ <strong>Waveshare ESP32-P4-WIFI6-Touch-LCD-4B</strong> สร้างนาฬิกาปลุกที่เล่นวิดีโอแทนเสียง Beep บนจอ MIPI-DSI <strong>720×720px</strong></p>
+          <ul class="spec-list">
+            <li><span class="spec-dot"></span><strong>ESP32-P4</strong> — Dual-core RISC-V 400MHz + 32MB Flash + 32MB PSRAM</li>
+            <li><span class="spec-dot"></span><strong>ES8311 Audio Codec</strong> — เสียง PCM Stereo 44.1kHz คมชัด</li>
+            <li><span class="spec-dot"></span><strong>GT911 Touch Controller</strong> — กดหน้าจอปิดปลุกได้เลย</li>
+            <li><span class="spec-dot"></span><strong>MicroSD FAT32</strong> — เก็บวิดีโอ MJPEG ในรูปแบบ AVI ได้ไม่จำกัด</li>
+            <li><span class="spec-dot"></span><strong>RTC ในตัว</strong> — เวลาแม่นยำไม่ต้องซิงก์ตลอดเวลา</li>
+          </ul>
+          <div class="highlight-box">
+            🎯 <strong>ไม่ต้องต่อฮาร์ดแวร์เพิ่ม</strong> — Dev board มีทุกอย่างครบ งานทั้งหมดเป็น Software + 3D Print ขาตั้ง
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: EnviroGo Wearable -->
+      <div class="card green">
+        <div class="card-tag tag-green">🌿 Wearable IoT 2026</div>
+        <div class="card-title">EnviroGo ESP32-S3 — Wearable Monitor 7 Sensors ในตัว</div>
+        <div class="card-body">
+          <p><strong>EnviroGo</strong> คือ Wearable Environmental Monitor ที่ใช้ <strong>ESP32-S3</strong> ติดตามสภาพแวดล้อมรอบตัวได้ 7 พารามิเตอร์พร้อมกัน ออกแบบให้ติดบนข้อมือ, หนีบกระเป๋า หรือยึดแม่เหล็กได้</p>
+          <table class="sensor-table">
+            <thead>
+              <tr><th>Sensor</th><th>วัดอะไร</th><th>ช่วงค่า</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>VOC</strong></td><td>สารอินทรีย์ระเหย</td><td>0–500 IAQ</td></tr>
+              <tr><td><strong>UV Index</strong></td><td>รังสี UV</td><td>0–11+ UVI</td></tr>
+              <tr><td><strong>Temp/Humidity</strong></td><td>อุณหภูมิ + ความชื้น</td><td>-40 ถึง 85°C</td></tr>
+              <tr><td><strong>Air Pressure</strong></td><td>ความกดอากาศ</td><td>300–1100 hPa</td></tr>
+              <tr><td><strong>Light</strong></td><td>ความสว่าง</td><td>0–83k lux</td></tr>
+              <tr><td><strong>9-axis MEMS</strong></td><td>Motion/Orientation</td><td>IMU 200Hz</td></tr>
+            </tbody>
+          </table>
+          <div class="highlight-box green">
+            💡 ใช้ได้ทั้งในบ้านและนอกบ้าน — Crowdfunding เปิดตัวมกราคม 2026
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: ESP32-P4 Weather Station -->
+      <div class="card purple">
+        <div class="card-tag tag-purple">🌤️ DIY Weather Station</div>
+        <div class="card-title">ESP32-P4 Weather Station + LoRa/ESP-NOW — Dashboard จอ 10.1 นิ้ว</div>
+        <div class="card-body">
+          <p>สถานีตรวจอากาศ DIY ด้วย <strong>ESP32-P4</strong> จอ 10.1 นิ้ว แสดง Dashboard ครบ รับข้อมูลจาก Wireless Sensor Network ผ่าน <strong>LoRa</strong> และ <strong>ESP-NOW</strong> พร้อมดึง API Weather ออนไลน์</p>
+          <ul class="spec-list">
+            <li><span class="spec-dot purple"></span><strong>Sensirion SEN66</strong> — PM1/2.5/4/10 + CO₂ + VOC + NOx + Temp + Humidity ตัวเดียว</li>
+            <li><span class="spec-dot purple"></span><strong>LoRa Gateway</strong> — รับข้อมูลจาก Remote Sensor ห่างได้หลาย km</li>
+            <li><span class="spec-dot purple"></span><strong>ESP-NOW Nodes</strong> — Sensor nodes ในบ้านไม่ต้องใช้ Router</li>
+            <li><span class="spec-dot purple"></span><strong>Weather APIs</strong> — OpenWeatherMap, Open-Meteo, Visual Crossing</li>
+            <li><span class="spec-dot purple"></span><strong>10.1" Dashboard</strong> — แสดง Graph ประวัติย้อนหลัง 72 ชั่วโมง</li>
+          </ul>
+          <div class="code-block">
+<span class="comment">// SEN66 Multi-Sensor I2C Init</span>
+<span class="keyword">#include</span> <span class="string">"SensirionI2CSen66.h"</span>
+SensirionI2CSen66 sen66;
+sen66.begin(Wire);
+sen66.startMeasurement();
+<span class="comment">// อ่านค่า: PM2.5, CO2, VOC, Temp, Humidity</span></div>
+        </div>
+      </div>
+
+      <!-- Card 4: ESP32-C6 Matter 1.5 -->
+      <div class="card orange">
+        <div class="card-tag tag-orange">🏠 Smart Home 2026</div>
+        <div class="card-title">ESP32-C6 กับ Matter 1.5 — Wi-Fi 6 + Zigbee + Thread + BLE ในราคา $5</div>
+        <div class="card-body">
+          <p><strong>ESP32-C6</strong> กลายเป็น MCU ที่ครบสุดสำหรับ Smart Home — รองรับ Wi-Fi 6, BLE 5, Zigbee 3.0, Thread 1.3 และ <strong>Matter 1.5</strong> ทั้งหมดในชิปตัวเดียว ไม่ต้องใช้โมดูลเพิ่ม</p>
+          <ul class="spec-list">
+            <li><span class="spec-dot orange"></span>Matter 1.5 เพิ่ม <strong>Water Leak Sensor</strong> และ <strong>Energy Management</strong> device types</li>
+            <li><span class="spec-dot orange"></span>เชื่อมกับ Apple HomeKit, Google Home, Amazon Alexa โดยตรง</li>
+            <li><span class="spec-dot orange"></span>ESP-Matter SDK เปิด Open Source บน GitHub</li>
+            <li><span class="spec-dot orange"></span>Commissioning ด้วย QR Code ผ่าน Bluetooth LE</li>
+          </ul>
+          <div class="highlight-box orange">
+            ⚡ <strong>XDA Developers:</strong> "$5 ESP32 board does Zigbee, Thread, Wi-Fi 6, and Matter natively" — ราคาถูกที่สุดในตลาด ณ 2026
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 5: Edge Impulse Voice Recognition -->
+      <div class="card blue">
+        <div class="card-tag tag-cyan">🎙️ Voice AI On-Device</div>
+        <div class="card-title">ESP32 + Edge Impulse — Voice Command Recognition ไม่ต้องใช้ Cloud</div>
+        <div class="card-body">
+          <p>รัน <strong>Neural Network สำหรับจดจำเสียงสั่งการ</strong> บน ESP32/ESP32-S3 โดยตรง ด้วย Edge Impulse platform ฝึก Model ออนไลน์ Deploy ได้ใน 30 นาที</p>
+          <ul class="spec-list">
+            <li><span class="spec-dot"></span>เก็บ Audio Data ผ่าน INMP441 MEMS Microphone (I2S)</li>
+            <li><span class="spec-dot"></span>Features: MFCC (Mel-Frequency Cepstral Coefficients) 13 coefficients</li>
+            <li><span class="spec-dot"></span>Model: 1D CNN / MobileNet — Quantized INT8 ≤80KB RAM</li>
+            <li><span class="spec-dot"></span>Inference latency: ~50ms บน ESP32-S3</li>
+            <li><span class="spec-dot"></span>คำสั่งพื้นฐาน: "เปิดไฟ", "ปิดไฟ", "เพิ่มอุณหภูมิ" ความแม่นยำ &gt;92%</li>
+          </ul>
+          <div class="code-block">
+<span class="comment">// รัน inference บน ESP32</span>
+ei_impulse_result_t result;
+signal_t signal;
+numpy::signal_from_buffer(raw_audio, N_SAMPLES, &amp;signal);
+<span class="keyword">run_classifier</span>(&amp;signal, &amp;result, <span class="keyword">false</span>);
+<span class="comment">// result.classification[] → scores per label</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 2: Projects -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">💡</div>
+      <div>
+        <div class="section-title">ไอเดียโปรเจกต์น่าสร้าง</div>
+        <div class="section-desc">โปรเจกต์ที่มีเอกสาร ซอร์สโค้ด และ Community Support พร้อมต่อยอด</div>
+      </div>
+    </div>
+
+    <div class="card-grid wide">
+
+      <!-- Project 1: Project Aura Air Quality -->
+      <div class="card purple">
+        <div class="card-tag tag-purple">🌬️ Air Quality Monitor</div>
+        <div class="card-title">🔬 Project Aura — Open-Source Professional Air Quality Monitor</div>
+        <div class="card-body">
+          <p><strong>Project Aura</strong> บน Hackaday.io เป็น Open-Source Air Quality Monitor ระดับมืออาชีพ ด้วย Sensirion Sensors และจอสัมผัส 4.3 นิ้ว รองรับ Home Assistant แบบ Local</p>
+          <ul class="spec-list">
+            <li><span class="spec-dot purple"></span>วัด <strong>PM1 / PM2.5 / PM4 / PM10</strong> — ฝุ่นทุกขนาด</li>
+            <li><span class="spec-dot purple"></span>วัด <strong>CO₂</strong> (แม่นยำ NDIR ≤30ppm accuracy)</li>
+            <li><span class="spec-dot purple"></span>วัด <strong>VOC + NOx + Formaldehyde</strong></li>
+            <li><span class="spec-dot purple"></span>วัด <strong>Temp + Humidity + Pressure</strong></li>
+            <li><span class="spec-dot purple"></span>จอ 4.3" Touch Display — กราฟ real-time + Trend 24h</li>
+            <li><span class="spec-dot purple"></span>MQTT → Home Assistant หรือ Grafana Dashboard</li>
+          </ul>
+          <div class="highlight-box purple">
+            📋 ต้นทุนประมาณ: ESP32-S3 + SEN66 + SCD41 + Display ≈ 1,800-2,500 บาท
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 2: Aquaponics Smart System -->
+      <div class="card green">
+        <div class="card-tag tag-green">🐟 Smart Agriculture</div>
+        <div class="card-title">🌱 ระบบ Aquaponics อัจฉริยะ — ESP32 ควบคุมปลา+ผักพร้อมกัน</div>
+        <div class="card-body">
+          <p>ระบบ Aquaponics (เลี้ยงปลา+ปลูกผักในระบบเดียว) อัตโนมัติด้วย ESP32 ครบวงจร — วัด Monitor ทุก Sensor สั่งปั๊มน้ำ, ระบบให้อาหาร และแจ้งเตือนผ่าน Line OA</p>
+          <ul class="spec-list">
+            <li><span class="spec-dot green"></span><strong>pH Sensor</strong> — รักษาค่า 6.5-7.5 (เหมาะปลาและพืช)</li>
+            <li><span class="spec-dot green"></span><strong>DO Sensor</strong> — Dissolved Oxygen ≥5 mg/L สำหรับปลา</li>
+            <li><span class="spec-dot green"></span><strong>TDS/EC Meter</strong> — ธาตุอาหารพืช 1.0-2.5 EC</li>
+            <li><span class="spec-dot green"></span><strong>DS18B20 Waterproof</strong> — อุณหภูมิน้ำ 25-28°C</li>
+            <li><span class="spec-dot green"></span><strong>Water Level Ultrasonic</strong> — HC-SR04 กันน้ำ ตรวจระดับน้ำ</li>
+            <li><span class="spec-dot green"></span><strong>Relay Module 8ch</strong> — ควบคุมปั๊ม, หลอดไฟ, ให้อาหาร</li>
+          </ul>
+          <div class="code-block">
+<span class="comment">// LINE Notify เมื่อ pH ผิดปกติ</span>
+<span class="keyword">if</span> (pH &lt; 6.0 || pH &gt; 8.0) {
+  lineNotify.sendMessage(<span class="string">"⚠️ pH ผิดปกติ: "</span> + String(pH));
+  relay.triggerPump(EXCHANGE_PUMP, 300); <span class="comment">// เปลี่ยนน้ำ 5 นาที</span>
+}</div>
+        </div>
+      </div>
+
+      <!-- Project 3: Gesture Control RC -->
+      <div class="card orange">
+        <div class="card-tag tag-orange">🤚 Gesture Control</div>
+        <div class="card-title">🚗 Gesture-Controlled RC Car ด้วย ESP32 + MPU6050</div>
+        <div class="card-body">
+          <p>รถ RC ที่สั่งการด้วยท่าทือมือผ่าน <strong>MPU6050</strong> (Accelerometer + Gyroscope) บน ESP32 ส่งคำสั่งผ่าน <strong>ESP-NOW</strong> latency ต่ำกว่า 10ms ไม่ต้องใช้ Router</p>
+          <ul class="spec-list">
+            <li><span class="spec-dot orange"></span><strong>ฝั่ง Controller</strong>: ESP32 + MPU6050 + LiPo 1000mAh</li>
+            <li><span class="spec-dot orange"></span><strong>ฝั่ง Car</strong>: ESP32 + L298N Motor Driver + 2 DC Motor</li>
+            <li><span class="spec-dot orange"></span>เอียงซ้าย/ขวา → เลี้ยว | เอียงหน้า → เดินหน้า | เอียงหลัง → ถอย</li>
+            <li><span class="spec-dot orange"></span>Kalman Filter กรอง Gyro drift ออก</li>
+            <li><span class="spec-dot orange"></span>Range: ~100m ในที่โล่ง (ESP-NOW 2.4GHz)</li>
+          </ul>
+          <div class="highlight-box orange">
+            🔩 ต้นทุน: ESP32 x2 (300฿) + MPU6050 (60฿) + L298N (80฿) = ~440 บาท
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 4: BLE Beacon Indoor Positioning -->
+      <div class="card blue">
+        <div class="card-tag tag-blue">📍 Indoor Positioning</div>
+        <div class="card-title">📡 BLE Beacon Trilateration — ระบุตำแหน่งในอาคารด้วย ESP32</div>
+        <div class="card-body">
+          <p>ระบบ Indoor Positioning ด้วย <strong>ESP32 BLE Beacon</strong> 3+ จุด วัด RSSI ทำ Trilateration ระบุตำแหน่งคนหรือวัตถุในอาคาร ความแม่นยำ ±1-3 เมตร</p>
+          <ul class="spec-list">
+            <li><span class="spec-dot"></span><strong>Beacon Nodes</strong>: ESP32 ติดผนัง 3 มุมห้อง ส่ง BLE Advertisement</li>
+            <li><span class="spec-dot"></span><strong>Tracker Tag</strong>: ESP32-C3 ขนาดเล็ก ติดวัตถุที่ต้องการติดตาม</li>
+            <li><span class="spec-dot"></span>RSSI → Distance (Log-Distance Path Loss Model)</li>
+            <li><span class="spec-dot"></span>Weighted Least Squares Trilateration</li>
+            <li><span class="spec-dot"></span>ส่งตำแหน่งไป MQTT → Node-RED → Floorplan Visualization</li>
+          </ul>
+          <div class="highlight-box">
+            🏭 <strong>Use Case จริง</strong>: ติดตามเครื่องมือในโรงงาน, ระบุตำแหน่งพนักงานในคลังสินค้า
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 3: Sensors -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">📡</div>
+      <div>
+        <div class="section-title">Sensors น่าสนใจประจำสัปดาห์</div>
+        <div class="section-desc">Sensors ใหม่และ classic ที่เข้ากับ ESP32 ได้ดีเป็นพิเศษ</div>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Sensor 1: Sensirion SEN66 -->
+      <div class="card green">
+        <div class="card-tag tag-green">🌡️ All-in-One Environmental</div>
+        <div class="card-title">Sensirion SEN66 — 6-in-1 Environmental Sensor</div>
+        <div class="card-body">
+          <p>Sensor ตัวเดียววัดได้ <strong>6 พารามิเตอร์</strong>: PM, CO₂, VOC, NOx, Temperature, Humidity อินเตอร์เฟส I2C ใช้งานง่ายกับ ESP32</p>
+          <ul class="spec-list">
+            <li><span class="spec-dot green"></span>PM1 / PM2.5 / PM4 / PM10 — Laser Particle Counter</li>
+            <li><span class="spec-dot green"></span>CO₂ — NDIR ±30ppm (400-5000 ppm range)</li>
+            <li><span class="spec-dot green"></span>VOC Index 0-500 + NOx Index 1-500</li>
+            <li><span class="spec-dot green"></span>Temp ±0.2°C, Humidity ±3% RH</li>
+            <li><span class="spec-dot green"></span>ราคา: ~35-45 USD</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Sensor 2: INMP441 MEMS Mic -->
+      <div class="card blue">
+        <div class="card-tag tag-blue">🎙️ MEMS Microphone</div>
+        <div class="card-title">INMP441 — I2S MEMS Microphone สำหรับ Voice AI</div>
+        <div class="card-body">
+          <p>ไมโครโฟน Digital MEMS ที่ใช้คู่กับ ESP32 สำหรับโปรเจกต์ Voice Command, FFT Spectrum Analyzer และ Sound Level Meter</p>
+          <ul class="spec-list">
+            <li><span class="spec-dot"></span>อินเตอร์เฟส I2S — Digital ไม่มี noise ADC</li>
+            <li><span class="spec-dot"></span>SNR 61 dBFS, AOP 130 dBSPL</li>
+            <li><span class="spec-dot"></span>ช่วงความถี่ 60Hz - 15kHz</li>
+            <li><span class="spec-dot"></span>ราคา: ~30-60 บาท (โมดูล)</li>
+          </ul>
+          <div class="highlight-box">
+            💡 เชื่อมกับ ESP32 I2S pins: SCK, WS, SD — ไม่ต้องใช้ ADC เลย
+          </div>
+        </div>
+      </div>
+
+      <!-- Sensor 3: SCD41 CO2 -->
+      <div class="card orange">
+        <div class="card-tag tag-orange">💨 CO₂ Precision</div>
+        <div class="card-title">Sensirion SCD41 — Photoacoustic CO₂ Sensor ขนาดเล็กสุด</div>
+        <div class="card-body">
+          <p>CO₂ Sensor ด้วยเทคโนโลยี <strong>PASens (Photoacoustic)</strong> แม่นยำกว่า NDIR ทั่วไป ขนาดเล็กพอดี DIP package ใส่บน Breadboard ได้เลย</p>
+          <ul class="spec-list">
+            <li><span class="spec-dot orange"></span>ช่วง: 400 - 5000 ppm (Typical Indoor)</li>
+            <li><span class="spec-dot orange"></span>ความแม่นยำ: ±40ppm + 5% of reading</li>
+            <li><span class="spec-dot orange"></span>Self-calibration: Auto ด้วย Fresh Air algorithm</li>
+            <li><span class="spec-dot orange"></span>อินเตอร์เฟส I2C — ใช้ Library Sensirion-Arduino ได้เลย</li>
+            <li><span class="spec-dot orange"></span>ราคา: ~20-25 USD</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Sensor 4: MAX30102 -->
+      <div class="card purple">
+        <div class="card-tag tag-pink">❤️ Biometric</div>
+        <div class="card-title">MAX30102 — Heart Rate + SpO₂ Pulse Oximeter</div>
+        <div class="card-body">
+          <p>Sensor วัด <strong>อัตราการเต้นของหัวใจ</strong> และ <strong>ระดับออกซิเจนในเลือด (SpO₂)</strong> ด้วย Red/IR LED 2 สี ใช้กับ ESP32 สร้าง Health Monitor ได้ง่ายมาก</p>
+          <ul class="spec-list">
+            <li><span class="spec-dot purple"></span>Heart Rate: 20-300 BPM ±5%</li>
+            <li><span class="spec-dot purple"></span>SpO₂: 0-100% ±2%</li>
+            <li><span class="spec-dot purple"></span>อินเตอร์เฟส I2C + Interrupt</li>
+            <li><span class="spec-dot purple"></span>กินไฟต่ำ: 600μA (HR Mode), 1.0mA (SpO₂ Mode)</li>
+            <li><span class="spec-dot purple"></span>ราคา: ~80-150 บาท</li>
+          </ul>
+          <div class="highlight-box purple">
+            ⚠️ ต้องใช้ Algorithm: Welch's FFT / Pan-Tompkins สำหรับความแม่นยำสูง
+          </div>
+        </div>
+      </div>
+
+      <!-- Sensor 5: DFRobot Gravity TDS -->
+      <div class="card blue">
+        <div class="card-tag tag-cyan">💧 Water Quality</div>
+        <div class="card-title">DFRobot Gravity TDS Meter — วัดความบริสุทธิ์น้ำแบบ Analog</div>
+        <div class="card-body">
+          <p>วัด <strong>Total Dissolved Solids (TDS)</strong> ในน้ำ บอกความบริสุทธิ์น้ำดื่ม, คุณภาพน้ำสระ หรือความเข้มข้นสารอาหารในระบบ Hydroponic</p>
+          <ul class="spec-list">
+            <li><span class="spec-dot"></span>ช่วง: 0-1000 ppm TDS</li>
+            <li><span class="spec-dot"></span>Output: Analog 0-2.3V → ESP32 ADC</li>
+            <li><span class="spec-dot"></span>Compensation: ต้องวัดอุณหภูมิน้ำ (DS18B20) คู่กัน</li>
+            <li><span class="spec-dot"></span>ค่ามาตรฐาน: น้ำดื่ม &lt;500ppm, น้ำบริสุทธิ์ &lt;50ppm</li>
+            <li><span class="spec-dot"></span>ราคา: ~350 บาท</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Sensor 6: BME688 AI Nose -->
+      <div class="card green">
+        <div class="card-tag tag-green">👃 AI Nose</div>
+        <div class="card-title">Bosch BME688 — 4-in-1 Gas Sensor + AI สำหรับจดจำกลิ่น</div>
+        <div class="card-body">
+          <p><strong>BME688</strong> จาก Bosch เป็น Sensor แรกที่รวม 4 Gas Heater ไว้ในตัว ทำงานร่วมกับ <strong>BSEC2 AI Algorithm</strong> เพื่อจำแนกกลิ่น สภาพอากาศ และตรวจ Air Quality Index (IAQ)</p>
+          <ul class="spec-list">
+            <li><span class="spec-dot green"></span>วัด: Temperature, Humidity, Pressure, Gas Resistance</li>
+            <li><span class="spec-dot green"></span><strong>BSEC2 Algorithm</strong>: IAQ, CO₂ equivalent, VOC equivalent</li>
+            <li><span class="spec-dot green"></span><strong>AI-Studio Software</strong>: Train Model จดจำกลิ่นเฉพาะได้</li>
+            <li><span class="spec-dot green"></span>อินเตอร์เฟส I2C/SPI</li>
+            <li><span class="spec-dot green"></span>ราคา: ~200-300 บาท</li>
+          </ul>
+          <div class="highlight-box green">
+            🧪 <strong>ไอเดีย</strong>: จดจำกลิ่นก๊าซรั่ว, กลิ่นอาหารเสีย, คุณภาพอากาศในห้องนอน
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 4: Resources -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔗</div>
+      <div>
+        <div class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง</div>
+        <div class="section-desc">Sources จากข้อมูลวันนี้ — GitHub, Tutorial, Hackaday, Hackster</div>
+      </div>
+    </div>
+
+    <div class="resource-grid">
+      <a class="resource-item" href="https://github.com/brunokeymolen/videoalarmclock" target="_blank" rel="noopener">
+        <div class="resource-type rt-github">GitHub</div>
+        <div class="resource-title">brunokeymolen / videoalarmclock</div>
+        <div class="resource-url">github.com/brunokeymolen/videoalarmclock</div>
+      </a>
+      <a class="resource-item" href="https://hackaday.com/2026/09/07/esp32-p4-powers-video-alarm-clock/" target="_blank" rel="noopener">
+        <div class="resource-type rt-news">Hackaday</div>
+        <div class="resource-title">ESP32-P4 Powers Video Alarm Clock</div>
+        <div class="resource-url">hackaday.com · 7 ก.ย. 2026</div>
+      </a>
+      <a class="resource-item" href="https://www.cnx-software.com/2026/09/03/diy-esp32-p4-weather-station-air-quality-monitor-connects-to-lora-and-esp-now-sensors-various-weather-apis/" target="_blank" rel="noopener">
+        <div class="resource-type rt-news">CNX Software</div>
+        <div class="resource-title">DIY ESP32-P4 Weather Station + LoRa/ESP-NOW</div>
+        <div class="resource-url">cnx-software.com · 3 ก.ย. 2026</div>
+      </a>
+      <a class="resource-item" href="https://hackaday.io/project/204993-project-aura-open-source-esp32-air-quality/details" target="_blank" rel="noopener">
+        <div class="resource-type rt-news">Hackaday.io</div>
+        <div class="resource-title">Project Aura — Open-Source ESP32 Air Quality</div>
+        <div class="resource-url">hackaday.io/project/204993</div>
+      </a>
+      <a class="resource-item" href="https://www.cnx-software.com/2026/01/20/envirogo-esp32-s3-wearable-environmental-monitor-features-7-sensors/" target="_blank" rel="noopener">
+        <div class="resource-type rt-news">CNX Software</div>
+        <div class="resource-title">EnviroGo ESP32-S3 Wearable 7 Sensors</div>
+        <div class="resource-url">cnx-software.com · ม.ค. 2026</div>
+      </a>
+      <a class="resource-item" href="https://zbotic.in/esp32-h2-zigbee-and-thread-native-support-guide/" target="_blank" rel="noopener">
+        <div class="resource-type rt-tutorial">Tutorial</div>
+        <div class="resource-title">ESP32-H2 Zigbee + Thread Native Guide</div>
+        <div class="resource-url">zbotic.in</div>
+      </a>
+      <a class="resource-item" href="https://www.xda-developers.com/esp32-board-zigbee-thread-wifi-matter-natively/" target="_blank" rel="noopener">
+        <div class="resource-type rt-news">XDA Developers</div>
+        <div class="resource-title">$5 ESP32-C6 Board: Zigbee+Thread+Wi-Fi+Matter</div>
+        <div class="resource-url">xda-developers.com</div>
+      </a>
+      <a class="resource-item" href="https://www.teachmemicro.com/voice-command-recognition-with-esp32-and-tinyml-using-edge-impulse/" target="_blank" rel="noopener">
+        <div class="resource-type rt-tutorial">Tutorial</div>
+        <div class="resource-title">Voice Command Recognition ESP32 + Edge Impulse</div>
+        <div class="resource-url">teachmemicro.com</div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย <strong>AI ESP32 Researcher</strong> · วันที่ <strong>12 กันยายน 2026</strong></p>
+  <p style="margin-top:6px; color: #475569; font-size:12px;">แหล่งข้อมูล: Hackaday · CNX Software · XDA Developers · Hackster.io · GitHub · Edge Impulse · Espressif Developer Portal</p>
+</footer>
+
+</body>
+</html>
