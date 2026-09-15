@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ESP32 & Sensor Innovations - 15 กันยายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f172a;
+    --bg2: #1e293b;
+    --bg3: #0f172a;
+    --surface: #1e293b;
+    --surface2: #273549;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --danger: #f87171;
+    --grad1: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    --grad2: linear-gradient(135deg, #1e3c72, #2a5298);
+    --grad3: linear-gradient(135deg, #134e5e, #71b280);
+    --grad4: linear-gradient(135deg, #373b44, #4286f4);
+    --grad5: linear-gradient(135deg, #2d1b69, #11998e);
+    --radius: 14px;
+    --shadow: 0 4px 24px rgba(0,0,0,.45);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,.3);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    font-size: 16px;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--grad1);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 70% 40%, rgba(56,189,248,.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(56,189,248,.15);
+    border: 1px solid rgba(56,189,248,.4);
+    color: var(--accent);
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    padding: .3rem .9rem;
+    border-radius: 100px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: .6rem;
+  }
+  header h1 span { color: var(--accent); }
+  header p { color: var(--text-muted); font-size: .95rem; }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: .7rem;
+    margin-top: 1.6rem;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,.07);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: .35rem 1rem;
+    font-size: .82rem;
+    color: var(--text-muted);
+  }
+  .stat-chip strong { color: var(--text); }
+
+  /* ── Layout ── */
+  main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+
+  /* ── Section ── */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1.5rem;
+  }
+  .section-label h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .section-label .badge {
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    padding: .2rem .65rem;
+    border-radius: 100px;
+    background: rgba(56,189,248,.15);
+    color: var(--accent);
+    border: 1px solid rgba(56,189,248,.3);
+    white-space: nowrap;
+  }
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent) 0%, transparent 70%);
+    margin-bottom: 2rem;
+    opacity: .4;
+  }
+
+  section { margin-bottom: 3.5rem; }
+
+  /* ── Cards Grid ── */
+  .grid { display: grid; gap: 1.25rem; }
+  .grid-2 { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.35rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform .2s, box-shadow .2s, border-color .2s;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+    border-color: rgba(56,189,248,.35);
+  }
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+  }
+  .card-icon {
+    font-size: 1.7rem;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: .1rem;
+  }
+  .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .card-subtitle {
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: .1rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .card p { font-size: .9rem; color: var(--text-muted); line-height: 1.7; }
+
+  /* Highlighted card */
+  .card-highlight {
+    border-color: rgba(56,189,248,.35);
+    background: linear-gradient(135deg, rgba(56,189,248,.07) 0%, var(--surface) 60%);
+  }
+
+  /* Tag pills */
+  .tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .3rem; }
+  .tag {
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .2rem .6rem;
+    border-radius: 100px;
+    border: 1px solid;
+  }
+  .tag-blue  { background: rgba(56,189,248,.1);  color: var(--accent);  border-color: rgba(56,189,248,.3); }
+  .tag-green { background: rgba(52,211,153,.1);  color: var(--accent3); border-color: rgba(52,211,153,.3); }
+  .tag-purple{ background: rgba(129,140,248,.1); color: var(--accent2); border-color: rgba(129,140,248,.3); }
+  .tag-orange{ background: rgba(251,146,60,.1);  color: var(--accent4); border-color: rgba(251,146,60,.3); }
+  .tag-pink  { background: rgba(244,114,182,.1); color: var(--accent5); border-color: rgba(244,114,182,.3); }
+  .tag-red   { background: rgba(248,113,113,.1); color: var(--danger);  border-color: rgba(248,113,113,.3); }
+
+  /* ── Hero innovation card ── */
+  .hero-card {
+    background: var(--grad4);
+    border: 1px solid rgba(66,134,244,.4);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow);
+  }
+  .hero-card .hc-label {
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--accent);
+    margin-bottom: .5rem;
+  }
+  .hero-card h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: .6rem;
+    line-height: 1.35;
+  }
+  .hero-card p { font-size: .92rem; color: rgba(226,232,240,.85); line-height: 1.75; }
+  .spec-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-top: .85rem;
+  }
+  .spec-item {
+    background: rgba(255,255,255,.1);
+    border-radius: 8px;
+    padding: .35rem .8rem;
+    font-size: .8rem;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+
+  /* ── Tutorial box ── */
+  .tutorial-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 1.4rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .tutorial-box h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: .6rem;
+  }
+  .tutorial-box p { font-size: .88rem; color: var(--text-muted); line-height: 1.7; }
+  .tutorial-box code {
+    display: block;
+    background: rgba(0,0,0,.4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .85rem 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: .8rem;
+    color: var(--accent3);
+    margin-top: .75rem;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.6;
+  }
+  .step-list { list-style: none; margin-top: .75rem; display: flex; flex-direction: column; gap: .5rem; }
+  .step-list li {
+    display: flex;
+    gap: .7rem;
+    font-size: .88rem;
+    color: var(--text-muted);
+    align-items: flex-start;
+  }
+  .step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(56,189,248,.2);
+    border: 1px solid rgba(56,189,248,.4);
+    color: var(--accent);
+    font-size: .72rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: .15rem;
+  }
+
+  /* ── Sensor card special ── */
+  .sensor-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .sensor-card:hover { border-color: rgba(52,211,153,.4); }
+  .sensor-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--accent3);
+    margin-bottom: .25rem;
+  }
+  .sensor-maker {
+    font-size: .78rem;
+    color: var(--text-muted);
+    margin-bottom: .5rem;
+  }
+  .sensor-card p { font-size: .87rem; color: var(--text-muted); line-height: 1.65; }
+  .sensor-specs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .35rem;
+    margin-top: .7rem;
+  }
+  .spec-kv {
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .35rem .6rem;
+    font-size: .75rem;
+  }
+  .spec-kv span { color: var(--text-muted); display: block; font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; }
+  .spec-kv strong { color: var(--text); }
+
+  /* ── Resources ── */
+  .resource-grid { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+  .resource-item {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .9rem 1rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color .2s, transform .15s;
+  }
+  .resource-item:hover { border-color: rgba(56,189,248,.4); transform: translateY(-2px); }
+  .resource-icon { font-size: 1.4rem; flex-shrink: 0; }
+  .resource-item h4 { font-size: .88rem; font-weight: 700; margin-bottom: .15rem; color: var(--text); }
+  .resource-item p  { font-size: .78rem; color: var(--text-muted); line-height: 1.5; }
+
+  /* ── New badge ── */
+  .new-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: #0f172a;
+    font-size: .65rem;
+    font-weight: 800;
+    padding: .1rem .45rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    vertical-align: middle;
+    margin-left: .35rem;
+  }
+
+  /* ── Footer ── */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 1.75rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: .84rem;
+  }
+  footer strong { color: var(--text); }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    .sensor-specs { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily ESP32 Intelligence</div>
+  <h1>ESP32 &amp; <span>Sensor</span> Innovations</h1>
+  <p>15 กันยายน 2026 · AI Edge · Vision · Wearable · LLM on MCU</p>
+  <div class="stats-row">
+    <div class="stat-chip"><strong>4</strong> นวัตกรรม</div>
+    <div class="stat-chip"><strong>4</strong> ไอเดียโปรเจกต์</div>
+    <div class="stat-chip"><strong>4</strong> Sensor ใหม่</div>
+    <div class="stat-chip"><strong>2</strong> Tutorial</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ════════════════════════════════ INNOVATIONS ════════════════════════════════ -->
+  <section id="innovations">
+    <div class="section-label">
+      <h2>นวัตกรรม ESP32 ใหม่ล่าสุด</h2>
+      <span class="badge">Hot &amp; Fresh</span>
+    </div>
+    <div class="divider"></div>
+
+    <!-- Hero: P4 v3.x -->
+    <div class="hero-card">
+      <div class="hc-label">⚡ Espressif Chip Upgrade · กันยายน 2026</div>
+      <h3>ESP32-P4 v3.x — Clock 400 MHz Stable พร้อมความปลอดภัยระดับใหม่</h3>
+      <p>Espressif ประกาศอัปเกรด ESP32-P4 เป็น v3.x อย่างเป็นทางการ โดยนำ stable clock speed ไว้ที่ <strong>400 MHz</strong> บน dual-core RISC-V ซึ่งให้ throughput สม่ำเสมอในงาน HMI และ Edge AI ที่ต้องการความเสถียร นอกจากนี้ยังเพิ่มความสามารถด้าน image processing, power management และ security ใหม่ ทำให้ ESP32-P4 กลายเป็น MCU ที่ทรงพลังที่สุดในตระกูล Espressif สำหรับ Smart Display และ Vision AI</p>
+      <div class="spec-row">
+        <div class="spec-item">400 MHz Stable Clock</div>
+        <div class="spec-item">Dual-core RISC-V</div>
+        <div class="spec-item">32 MB PSRAM</div>
+        <div class="spec-item">H.264 Encoder</div>
+        <div class="spec-item">MIPI-CSI/DSI</div>
+        <div class="spec-item">USB 2.0</div>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <!-- P4X-EYE -->
+      <div class="card card-highlight">
+        <div class="card-header">
+          <div class="card-icon">📸</div>
+          <div>
+            <div class="card-subtitle">Vision Dev Kit · สิงหาคม 2026</div>
+            <div class="card-title">ESP32-P4X-EYE <span class="new-badge">NEW</span></div>
+          </div>
+        </div>
+        <p>Development Kit ขนาดกะทัดรัดที่ออกแบบมาสำหรับ Smart Surveillance, Vision Model Detection และ Edge Computing ใน IoT โดยเฉพาะ ใช้ชิป ESP32-P4 ที่รันได้ถึง 400 MHz รองรับ MIPI-CSI camera interface, H.264 video encoding และ USB 2.0 ตอนนี้วางจำหน่ายแล้วผ่าน Mouser Electronics</p>
+        <div class="tags">
+          <span class="tag tag-blue">Vision AI</span>
+          <span class="tag tag-green">H.264</span>
+          <span class="tag tag-purple">MIPI-CSI</span>
+          <span class="tag tag-orange">USB 2.0</span>
+        </div>
+      </div>
+
+      <!-- LLM on ESP32-S3 -->
+      <div class="card card-highlight">
+        <div class="card-header">
+          <div class="card-icon">🤖</div>
+          <div>
+            <div class="card-subtitle">Edge AI Breakthrough · กรกฎาคม 2026</div>
+            <div class="card-title">28.9M-Parameter LLM บน ESP32-S3 ที่ $8 <span class="new-badge">Trending</span></div>
+          </div>
+        </div>
+        <p>ก้าวกระโดดสำคัญของ Edge AI! โปรเจกต์ open-source <strong>esp32-ai</strong> รัน LLM ขนาด 28.9 ล้านพารามิเตอร์บน ESP32-S3 ที่ราคาเพียง $8 ได้ <strong>9.5 tokens/วินาที</strong> โดยใช้เทคนิค Per-Layer Embeddings (จาก Google Gemma) เก็บ 25M พารามิเตอร์ใน flash แทน RAM ก่อนหน้านี้ MCU ระดับนี้ทำได้สูงสุดแค่ 260,000 พารามิเตอร์เท่านั้น!</p>
+        <div class="tags">
+          <span class="tag tag-blue">LLM</span>
+          <span class="tag tag-green">No Cloud</span>
+          <span class="tag tag-purple">Open-Source</span>
+          <span class="tag tag-orange">9.5 tok/s</span>
+        </div>
+      </div>
+
+      <!-- ESP32-H4 Wearable -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">⌚</div>
+          <div>
+            <div class="card-subtitle">Espressif New Chip · 2026</div>
+            <div class="card-title">ESP32-H4 — BT 5.4/6.0 สำหรับ Wearable <span class="new-badge">Sample</span></div>
+          </div>
+        </div>
+        <p>Espressif เปิดตัว ESP32-H4 ที่ออกแบบมาสำหรับ Wearable Electronics, Healthcare Devices และ Remote Sensors โดยเฉพาะ รองรับ Bluetooth 5.4 LE อย่างสมบูรณ์และผ่านการ Certified สำหรับ Bluetooth 6.0 แล้ว เน้นประสิทธิภาพพลังงานสูงสุดสำหรับอุปกรณ์ที่ใช้แบตเตอรี่ขนาดเล็ก</p>
+        <div class="tags">
+          <span class="tag tag-pink">Wearable</span>
+          <span class="tag tag-blue">BT 6.0</span>
+          <span class="tag tag-green">Low Power</span>
+          <span class="tag tag-purple">Healthcare</span>
+        </div>
+      </div>
+
+      <!-- p-for-llm 180M MoE -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🧠</div>
+          <div>
+            <div class="card-subtitle">ESP-VISION Framework · 2026</div>
+            <div class="card-title">ESP-VISION: Low-Code Edge AI Framework สำหรับ ESP32-P4</div>
+          </div>
+        </div>
+        <p>Espressif ปล่อย <strong>ESP-VISION</strong> เฟรมเวิร์กสำหรับ Edge AI และ Computer Vision แบบ Low-Code ที่รวม camera capture, image processing, video encoding/decoding, network transmission, model deployment และ AI inference ไว้ในหนึ่งเดียว ใช้ Python API มาตรฐาน ลดเวลา Prototype จากสัปดาห์เหลือวันเดียว</p>
+        <div class="tags">
+          <span class="tag tag-blue">Python API</span>
+          <span class="tag tag-green">Low-Code</span>
+          <span class="tag tag-purple">Camera</span>
+          <span class="tag tag-orange">Model Deploy</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════ PROJECTS ════════════════════════════════ -->
+  <section id="projects">
+    <div class="section-label">
+      <h2>ไอเดียโปรเจกต์ IoT น่าทำ</h2>
+      <span class="badge">Build Ideas</span>
+    </div>
+    <div class="divider"></div>
+
+    <div class="grid grid-2">
+      <!-- AI Smart Doorbell -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🚪</div>
+          <div>
+            <div class="card-subtitle">Vision + LLM · Intermediate</div>
+            <div class="card-title">AI Smart Doorbell — ESP32-P4 บอกได้ว่าใครอยู่หน้าบ้าน</div>
+          </div>
+        </div>
+        <p>ใช้ ESP32-P4X-EYE ร่วมกับ Edge Impulse FOMO model ตรวจจับบุคคลหน้าประตู จากนั้น LLM ขนาดเล็กบน MCU สร้างข้อความบรรยาย เช่น "พบคนแปลกหน้า ถือถุงพัสดุ" แล้วส่งแจ้งเตือน LINE Notify ไม่ต้องส่งภาพขึ้น cloud เลย ความเป็นส่วนตัวสูงสุด</p>
+        <div class="tags">
+          <span class="tag tag-blue">ESP32-P4X-EYE</span>
+          <span class="tag tag-green">Edge Impulse</span>
+          <span class="tag tag-purple">LINE Notify</span>
+          <span class="tag tag-orange">No Cloud</span>
+        </div>
+      </div>
+
+      <!-- Distributed AI 3 ESP32-S3 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">📡</div>
+          <div>
+            <div class="card-subtitle">Multi-Board AI · Advanced</div>
+            <div class="card-title">Distributed LLM — 3 ESP32-S3 แชร์ 56M Parameter ผ่าน ESP-NOW</div>
+          </div>
+        </div>
+        <p>โปรเจกต์ <strong>esp32s3-distributed-ai</strong> แบ่ง LLM 56M พารามิเตอร์ออกเป็น 3 ส่วนบน ESP32-S3 สามตัวที่สื่อสารกันผ่าน ESP-NOW (radio packet 250 bytes) สามารถสร้างข้อความที่ coherent ได้ประมาณ 30 คำ เหมาะสำหรับระบบ Q&amp;A อัจฉริยะแบบ offline สมบูรณ์แบบ</p>
+        <div class="tags">
+          <span class="tag tag-blue">ESP-NOW</span>
+          <span class="tag tag-green">Multi-Board</span>
+          <span class="tag tag-purple">56M Params</span>
+          <span class="tag tag-orange">Distributed</span>
+        </div>
+      </div>
+
+      <!-- Stress Wearable Monitor -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">💓</div>
+          <div>
+            <div class="card-subtitle">Health IoT · Intermediate</div>
+            <div class="card-title">Real-time Stress Monitor ด้วย GSR + HR บน ESP32-H4</div>
+          </div>
+        </div>
+        <p>สร้าง Wearable ตรวจวัดความเครียดแบบ Multimodal โดยใช้ Galvanic Skin Response (GSR) วัดเหงื่อไฟฟ้า + Heart Rate Sensor วัดชีพจรบน ESP32-H4 BT 6.0 ส่งข้อมูลไปยัง App มือถือแบบ real-time ใช้ ML model จำแนก Level: Normal / Moderate / High Stress แจ้งเตือนเมื่อเครียดเกินเกณฑ์</p>
+        <div class="tags">
+          <span class="tag tag-pink">Wearable</span>
+          <span class="tag tag-blue">ESP32-H4</span>
+          <span class="tag tag-green">GSR + HR</span>
+          <span class="tag tag-purple">ML Classify</span>
+        </div>
+      </div>
+
+      <!-- Matter Environmental Sensor -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🌿</div>
+          <div>
+            <div class="card-subtitle">Smart Home · Beginner+</div>
+            <div class="card-title">Matter Environmental Sensor — ESP32-C6 + BME680 ใช้งาน Apple Home ได้ทันที</div>
+          </div>
+        </div>
+        <p>โปรเจกต์ open-source บน GitHub โดย charles-waite สร้าง Matter-enabled Environmental Sensor ด้วย ESP32-C6 + BME680 วัด Temperature, Humidity, Pressure และ IAQ (Indoor Air Quality) ผ่าน BSEC2 library จาก Bosch เชื่อมกับ Apple Home, Google Home หรือ Amazon Alexa ได้ทันทีโดยไม่ต้องตั้งค่า</p>
+        <div class="tags">
+          <span class="tag tag-blue">Matter 1.5</span>
+          <span class="tag tag-green">ESP32-C6</span>
+          <span class="tag tag-purple">BME680</span>
+          <span class="tag tag-orange">Apple Home</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════ SENSORS ════════════════════════════════ -->
+  <section id="sensors">
+    <div class="section-label">
+      <h2>Sensor น่าสนใจประจำวัน</h2>
+      <span class="badge">Hardware Picks</span>
+    </div>
+    <div class="divider"></div>
+
+    <div class="grid grid-2">
+      <!-- SEN66/SEN68 -->
+      <div class="sensor-card">
+        <div class="sensor-name">Sensirion SEN66 / SEN68</div>
+        <div class="sensor-maker">Sensirion AG · Switzerland</div>
+        <p>Sensor สิ่งแวดล้อมแบบ All-in-One ที่ครอบคลุมที่สุด วัด PM1.0/PM2.5/PM4.0/PM10 + Temperature + Humidity + CO₂ (NDIR) + NOx Index + VOC Index ในโมดูลเดียว (SEN68 เพิ่ม Formaldehyde) เชื่อมต่อผ่าน I²C เพียง 2 สาย เหมาะสำหรับสถานีตรวจสอบคุณภาพอากาศระดับ Professional</p>
+        <div class="sensor-specs">
+          <div class="spec-kv"><span>Interface</span><strong>I²C / UART</strong></div>
+          <div class="spec-kv"><span>Voltage</span><strong>3.3–5V</strong></div>
+          <div class="spec-kv"><span>PM Range</span><strong>0–1000 µg/m³</strong></div>
+          <div class="spec-kv"><span>CO₂ Range</span><strong>400–5000 ppm</strong></div>
+        </div>
+        <div class="tags" style="margin-top:.7rem">
+          <span class="tag tag-green">Air Quality</span>
+          <span class="tag tag-blue">PM2.5</span>
+          <span class="tag tag-purple">CO₂ NDIR</span>
+          <span class="tag tag-orange">VOC+NOx</span>
+        </div>
+      </div>
+
+      <!-- MLX90632 -->
+      <div class="sensor-card">
+        <div class="sensor-name">MLX90632</div>
+        <div class="sensor-maker">Melexis · Belgium</div>
+        <p>IR Thermometer แบบ Non-contact ขนาดเล็กที่สุดในตลาด เหมาะสำหรับ Wearable Health Device วัดอุณหภูมิผิวหนังมนุษย์ได้แม่นยำสูง มี Medical Grade Accuracy ±0.2°C (±1°C ในสภาพแวดล้อมทั่วไป) Package เพียง 3×3 mm ใช้ไฟเพียง 1.8V รองรับ I²C ทำให้เชื่อม ESP32-H4 ได้ง่ายมาก</p>
+        <div class="sensor-specs">
+          <div class="spec-kv"><span>Accuracy</span><strong>±0.2°C (med)</strong></div>
+          <div class="spec-kv"><span>Voltage</span><strong>1.8–3.6V</strong></div>
+          <div class="spec-kv"><span>Package</span><strong>3×3 mm SMD</strong></div>
+          <div class="spec-kv"><span>Interface</span><strong>I²C</strong></div>
+        </div>
+        <div class="tags" style="margin-top:.7rem">
+          <span class="tag tag-pink">Wearable</span>
+          <span class="tag tag-blue">Non-contact IR</span>
+          <span class="tag tag-green">Medical Grade</span>
+        </div>
+      </div>
+
+      <!-- GSR Sensor -->
+      <div class="sensor-card">
+        <div class="sensor-name">Grove GSR Sensor</div>
+        <div class="sensor-maker">Seeed Studio · China</div>
+        <p>Galvanic Skin Response (GSR) หรือ Electrodermal Activity (EDA) Sensor วัดการนำไฟฟ้าของผิวหนังที่เปลี่ยนแปลงตามระดับความเครียดและอารมณ์ ใช้งานได้กับนิ้วมือหรือฝ่ามือ ส่งออกสัญญาณ Analog ที่ ESP32 อ่านได้โดยตรง ราคาเพียง $6 เหมาะสำหรับโปรเจกต์ Biofeedback และ Stress Detection</p>
+        <div class="sensor-specs">
+          <div class="spec-kv"><span>Output</span><strong>Analog (0–5V)</strong></div>
+          <div class="spec-kv"><span>Voltage</span><strong>5V</strong></div>
+          <div class="spec-kv"><span>Interface</span><strong>Analog Pin</strong></div>
+          <div class="spec-kv"><span>Price</span><strong>~$6</strong></div>
+        </div>
+        <div class="tags" style="margin-top:.7rem">
+          <span class="tag tag-pink">Biofeedback</span>
+          <span class="tag tag-blue">EDA</span>
+          <span class="tag tag-green">Low Cost</span>
+          <span class="tag tag-orange">Easy Use</span>
+        </div>
+      </div>
+
+      <!-- SHT20 + MQ137 combo -->
+      <div class="sensor-card">
+        <div class="sensor-name">SHT20 + MQ-137 Combo</div>
+        <div class="sensor-maker">Sensirion + Winsen · China</div>
+        <p>คู่หูวัดคุณภาพอากาศในฟาร์มและโรงงาน SHT20 วัด Temperature/Humidity แบบ Digital แม่นยำ (I²C) ขณะที่ MQ-137 วัดก๊าซ Ammonia (NH₃) ซึ่งเป็นก๊าซอันตรายในฟาร์มสัตว์ปีก โรงงานเคมี และห้องเย็น ใช้คู่กันสร้างระบบ Warning อัตโนมัติแจ้งเตือน LINE ได้ทันทีเมื่อค่าเกินมาตรฐาน</p>
+        <div class="sensor-specs">
+          <div class="spec-kv"><span>SHT20 Accuracy</span><strong>±0.3°C / ±3%RH</strong></div>
+          <div class="spec-kv"><span>MQ-137 Range</span><strong>5–500 ppm NH₃</strong></div>
+          <div class="spec-kv"><span>Protocol</span><strong>I²C + Analog</strong></div>
+          <div class="spec-kv"><span>Use Case</span><strong>Farm / Factory</strong></div>
+        </div>
+        <div class="tags" style="margin-top:.7rem">
+          <span class="tag tag-red">Ammonia</span>
+          <span class="tag tag-green">Farm IoT</span>
+          <span class="tag tag-blue">I²C + ADC</span>
+          <span class="tag tag-orange">Safety Alert</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════ TUTORIAL ════════════════════════════════ -->
+  <section id="tutorial">
+    <div class="section-label">
+      <h2>Tutorial ประจำวัน</h2>
+      <span class="badge">Step by Step</span>
+    </div>
+    <div class="divider"></div>
+
+    <div class="tutorial-box">
+      <h3>🤖 รัน LLM 28.9M Parameters บน ESP32-S3 ด้วยเทคนิค Per-Layer Embeddings</h3>
+      <p>Per-Layer Embeddings (PLE) เป็นเทคนิคที่ยืมมาจาก Google Gemma ช่วยให้ 25 ล้านพารามิเตอร์จาก 28.9 ล้านตัวเก็บอยู่ใน Flash แทน RAM ทำให้ ESP32-S3 ที่ RAM เพียง 512KB สามารถรัน LLM ได้จริง</p>
+      <ul class="step-list">
+        <li><span class="step-num">1</span>Clone โปรเจกต์: <code style="display:inline;background:transparent;border:none;color:var(--accent);padding:0">git clone https://github.com/esp32-ai/esp32-ai</code></li>
+        <li><span class="step-num">2</span>ติดตั้ง ESP-IDF v5.3+ และ partition table แบบ Large Flash (8MB+)</li>
+        <li><span class="step-num">3</span>Flash model weights ลง SPI Flash ผ่าน <code style="display:inline;background:transparent;border:none;color:var(--accent);padding:0">esptool.py</code></li>
+        <li><span class="step-num">4</span>Build และ flash firmware: <code style="display:inline;background:transparent;border:none;color:var(--accent);padding:0">idf.py build flash monitor</code></li>
+        <li><span class="step-num">5</span>ส่ง prompt ผ่าน Serial Console และรอ inference ~9.5 tok/s</li>
+      </ul>
+      <code>// ตัวอย่าง prompt ใน Serial Monitor
+"Describe the weather today in Thai language:"
+// Output: "วันนี้อากาศอบอุ่น อุณหภูมิประมาณ 28 องศา..."
+// ~9.5 tokens/second @ 240 MHz</code>
+      <div class="tags" style="margin-top:.75rem">
+        <span class="tag tag-blue">ESP32-S3</span>
+        <span class="tag tag-green">ESP-IDF v5.3+</span>
+        <span class="tag tag-purple">Open-Source</span>
+        <span class="tag tag-orange">8MB Flash</span>
+      </div>
+    </div>
+
+    <div class="tutorial-box" style="border-left-color: var(--accent3)">
+      <h3>🌿 สร้าง Matter Environmental Sensor ด้วย ESP32-C6 + BME680 ใน 1 ชั่วโมง</h3>
+      <p>ใช้ library BSEC2 จาก Bosch วัด IAQ (Indoor Air Quality Index) แบบ Calculated จาก VOC, Humidity, Temperature และ Pressure รวมกัน จากนั้น expose ค่าผ่าน Matter protocol ให้ Apple Home, Google Home หรือ Amazon Alexa อ่านได้ทันที</p>
+      <ul class="step-list">
+        <li><span class="step-num">1</span>ติดตั้ง ESP Matter SDK: <code style="display:inline;background:transparent;border:none;color:var(--accent3);padding:0">idf.py add-dependency esp-matter</code></li>
+        <li><span class="step-num">2</span>เชื่อม BME680 กับ ESP32-C6: SDA→GPIO6, SCL→GPIO7, VCC→3.3V</li>
+        <li><span class="step-num">3</span>เพิ่ม BSEC2 library ใน CMakeLists.txt และ configure IAQ accuracy level</li>
+        <li><span class="step-num">4</span>สร้าง Matter endpoint type: <code style="display:inline;background:transparent;border:none;color:var(--accent3);padding:0">temperature_sensor</code> + <code style="display:inline;background:transparent;border:none;color:var(--accent3);padding:0">humidity_sensor</code></li>
+        <li><span class="step-num">5</span>Commission ผ่าน Apple Home App (QR Code) แล้วดูค่าใน Dashboard ได้เลย</li>
+      </ul>
+      <code>// esp32-c6 + bme680 matter sensor (simplified)
+matter::endpoint::temperature_sensor::config_t temp_cfg;
+temp_cfg.temperature_measurement.measured_value =
+    (int16_t)(bme680_temp * 100); // multiply by 100 for Matter format
+matter::endpoint::temperature_sensor::create(node, &temp_cfg,
+    ENDPOINT_FLAG_NONE, nullptr);</code>
+      <div class="tags" style="margin-top:.75rem">
+        <span class="tag tag-blue">ESP32-C6</span>
+        <span class="tag tag-green">Matter 1.5</span>
+        <span class="tag tag-purple">BSEC2</span>
+        <span class="tag tag-orange">Apple Home</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════ RESOURCES ════════════════════════════════ -->
+  <section id="resources">
+    <div class="section-label">
+      <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+      <span class="badge">Resources</span>
+    </div>
+    <div class="divider"></div>
+
+    <div class="resource-grid">
+      <a class="resource-item" href="https://www.espressif.com/en/products/socs/esp32-p4" target="_blank" rel="noopener">
+        <div class="resource-icon">🔷</div>
+        <div>
+          <h4>ESP32-P4 Official Page</h4>
+          <p>ข้อมูลชิป ESP32-P4 อย่างเป็นทางการจาก Espressif</p>
+        </div>
+      </a>
+      <a class="resource-item" href="https://www.mouser.com/en/newsroom/publicrelations-espressif-esp32-p4x-eye-kit-2026final" target="_blank" rel="noopener">
+        <div class="resource-icon">📸</div>
+        <div>
+          <h4>ESP32-P4X-EYE on Mouser</h4>
+          <p>Dev Kit Vision ล่าสุดสำหรับ AI Edge Applications</p>
+        </div>
+      </a>
+      <a class="resource-item" href="https://www.cnx-software.com/2026/08/03/28-9m-parameter-llm-runs-locally-on-esp32-s3-at-9-tokens-s/" target="_blank" rel="noopener">
+        <div class="resource-icon">🤖</div>
+        <div>
+          <h4>28.9M LLM on ESP32-S3</h4>
+          <p>บทความเจาะลึกการรัน LLM บน MCU $8</p>
+        </div>
+      </a>
+      <a class="resource-item" href="https://github.com/charles-waite/ESP32-Matter-Environmental-Sensor" target="_blank" rel="noopener">
+        <div class="resource-icon">🌿</div>
+        <div>
+          <h4>ESP32-C6 Matter Sensor (GitHub)</h4>
+          <p>Source code: Matter + BME680 พร้อมใช้งานทันที</p>
+        </div>
+      </a>
+      <a class="resource-item" href="https://docs.espressif.com/projects/esp-vision/en/latest/esp32p4/" target="_blank" rel="noopener">
+        <div class="resource-icon">📖</div>
+        <div>
+          <h4>ESP-VISION Documentation</h4>
+          <p>Low-Code Computer Vision Framework สำหรับ ESP32-P4</p>
+        </div>
+      </a>
+      <a class="resource-item" href="https://www.espressif.com/en/news/ESP32_H4_Sample" target="_blank" rel="noopener">
+        <div class="resource-icon">⌚</div>
+        <div>
+          <h4>ESP32-H4 Announcement</h4>
+          <p>ชิปใหม่สำหรับ Wearable BT 6.0 จาก Espressif</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดยอัตโนมัติเมื่อวันที่ <strong>15 กันยายน 2026</strong></p>
+  <p style="margin-top:.4rem">ข้อมูลอ้างอิงจาก Espressif, Mouser Electronics, CNX-Software, GitHub, The AI Vibe, Sensirion</p>
+  <p style="margin-top:.4rem"><a href="https://github.com/somchaipiw/claude-01">github.com/somchaipiw/claude-01</a></p>
+</footer>
+
+</body>
+</html>
