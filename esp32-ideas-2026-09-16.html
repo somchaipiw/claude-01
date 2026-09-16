@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 16 กันยายน 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263348;
+    --accent-blue: #38bdf8;
+    --accent-purple: #a78bfa;
+    --accent-green: #4ade80;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --accent-yellow: #facc15;
+    --text-primary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --gradient-1: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+    --gradient-2: linear-gradient(135deg, #2d1b69 0%, #0f172a 100%);
+    --gradient-3: linear-gradient(135deg, #1a3a2a 0%, #0f172a 100%);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #2d1b69 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(56,189,248,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent-blue);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+  }
+
+  header h1 span {
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-meta {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+  }
+
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+
+  .stat-chip {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.35rem 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+
+  .stat-chip strong { color: var(--text-primary); }
+
+  /* Nav */
+  nav {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1rem;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  nav ul {
+    list-style: none;
+    display: inline-flex;
+    gap: 0;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  nav a {
+    display: block;
+    padding: 0.85rem 1.2rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+
+  nav a:hover {
+    color: var(--accent-blue);
+    border-bottom-color: var(--accent-blue);
+  }
+
+  /* Main Layout */
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  /* Section */
+  section { display: flex; flex-direction: column; gap: 1rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .section-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .icon-blue { background: rgba(56,189,248,0.15); }
+  .icon-purple { background: rgba(167,139,250,0.15); }
+  .icon-green { background: rgba(74,222,128,0.15); }
+  .icon-orange { background: rgba(251,146,60,0.15); }
+
+  .section-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .section-sub {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-left: auto;
+    font-weight: 400;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1.4rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .card:hover {
+    border-color: rgba(56,189,248,0.3);
+    background: var(--bg-card-hover);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .card-badge {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.6rem;
+    border-radius: 0.3rem;
+  }
+
+  .badge-new { background: rgba(56,189,248,0.15); color: var(--accent-blue); border: 1px solid rgba(56,189,248,0.25); }
+  .badge-hot { background: rgba(251,146,60,0.15); color: var(--accent-orange); border: 1px solid rgba(251,146,60,0.25); }
+  .badge-chip { background: rgba(167,139,250,0.15); color: var(--accent-purple); border: 1px solid rgba(167,139,250,0.25); }
+  .badge-sensor { background: rgba(74,222,128,0.15); color: var(--accent-green); border: 1px solid rgba(74,222,128,0.25); }
+  .badge-project { background: rgba(244,114,182,0.15); color: var(--accent-pink); border: 1px solid rgba(244,114,182,0.25); }
+  .badge-tutorial { background: rgba(250,204,21,0.15); color: var(--accent-yellow); border: 1px solid rgba(250,204,21,0.25); }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+
+  .card p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.75;
+  }
+
+  .card p + p { margin-top: 0.5rem; }
+
+  /* Specs grid */
+  .specs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+  }
+
+  .spec-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 0.4rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .spec-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .spec-value {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 0.1rem;
+  }
+
+  /* Steps */
+  .steps { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem; }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .step-num {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent-blue);
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.15rem;
+  }
+
+  .step-text {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  /* Code block */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 0.85rem 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #7dd3fc;
+    overflow-x: auto;
+    margin-top: 0.75rem;
+    line-height: 1.6;
+  }
+
+  .code-comment { color: #475569; }
+  .code-keyword { color: #a78bfa; }
+  .code-string { color: #86efac; }
+  .code-number { color: #fb923c; }
+
+  /* Tag pills */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+
+  .tag {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  /* Highlight box */
+  .highlight-box {
+    background: rgba(56,189,248,0.06);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-left: 3px solid var(--accent-blue);
+    border-radius: 0.5rem;
+    padding: 0.85rem 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+
+  .highlight-box strong { color: var(--accent-blue); }
+
+  .warn-box {
+    background: rgba(251,146,60,0.06);
+    border: 1px solid rgba(251,146,60,0.2);
+    border-left: 3px solid var(--accent-orange);
+    border-radius: 0.5rem;
+    padding: 0.85rem 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+
+  .warn-box strong { color: var(--accent-orange); }
+
+  /* Resource links */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.6rem;
+    padding: 1rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s;
+    display: block;
+  }
+
+  .resource-card:hover { border-color: rgba(56,189,248,0.4); }
+
+  .resource-card .res-type {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 0.35rem;
+  }
+
+  .resource-card .res-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-blue);
+    margin-bottom: 0.3rem;
+    line-height: 1.4;
+  }
+
+  .resource-card .res-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* Divider */
+  hr.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0.5rem 0;
+  }
+
+  /* Footer */
+  footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    line-height: 1.7;
+  }
+
+  footer a { color: var(--accent-blue); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    .specs-grid { grid-template-columns: 1fr 1fr; }
+    .resource-grid { grid-template-columns: 1fr; }
+    nav a { padding: 0.75rem 0.85rem; font-size: 0.82rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">AI Research Daily · ESP32 & IoT</div>
+  <h1>🔌 <span>ESP32 & Sensor Innovations</span></h1>
+  <p style="color:#94a3b8; margin-top:0.4rem; font-size:0.95rem;">วันพุธที่ 16 กันยายน พ.ศ. 2569</p>
+  <div class="stats-row">
+    <div class="stat-chip"><strong>4</strong> นวัตกรรม</div>
+    <div class="stat-chip"><strong>3</strong> ไอเดียโปรเจกต์</div>
+    <div class="stat-chip"><strong>2</strong> Sensors ใหม่</div>
+    <div class="stat-chip"><strong>1</strong> Tutorial</div>
+  </div>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="#innovations">🚀 นวัตกรรม</a></li>
+    <li><a href="#projects">💡 โปรเจกต์</a></li>
+    <li><a href="#sensors">📡 Sensors</a></li>
+    <li><a href="#tutorial">📖 Tutorial</a></li>
+    <li><a href="#resources">🔗 แหล่งข้อมูล</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <!-- ===== INNOVATIONS ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🚀</div>
+      <span class="section-title">นวัตกรรม ESP32 ใหม่ล่าสุด</span>
+      <span class="section-sub">4 รายการ</span>
+    </div>
+
+    <!-- Linux 6.11 on ESP32-S3 -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-badge badge-hot">🔥 ร้อนแรง</span>
+        <h3>รัน Linux Kernel 6.11 บน ESP32-S3 ได้จริงแล้ว!</h3>
+      </div>
+      <p>
+        เมื่อวาน (15 ก.ย. 2569) ชุมชน Hackaday รายงานความก้าวหน้าครั้งสำคัญ — นักพัฒนาสามารถบูต
+        <strong>Linux Kernel 6.11</strong> บน ESP32-S3 ด้วย PSRAM 16 MB ได้สำเร็จ โดย Release 0.8
+        เป็นเวอร์ชันแรกที่บูตได้อย่างเสถียรพร้อม RAM เหลือใช้งานจริง
+      </p>
+      <p>
+        หลังบูตสำเร็จ มี RAM ว่างเหลือ <strong>3.7 MB</strong> พร้อมประสิทธิภาพที่ปรับปรุงดีขึ้นมากจากรุ่นก่อน
+        ถือเป็นก้าวสำคัญสำหรับโลก Embedded Linux บนชิปราคาประหยัด
+      </p>
+
+      <div class="specs-grid">
+        <div class="spec-item">
+          <div class="spec-label">CPU</div>
+          <div class="spec-value">Xtensa LX7 × 2</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Clock</div>
+          <div class="spec-value">240 MHz</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">PSRAM</div>
+          <div class="spec-value">16 MB</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">RAM ว่าง</div>
+          <div class="spec-value">3.7 MB</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Kernel</div>
+          <div class="spec-value">Linux 6.11</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Release</div>
+          <div class="spec-value">v0.8</div>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <strong>ทำไมถึงสำคัญ?</strong> เมื่อ Linux รันได้ ESP32-S3 ก็ใช้ ecosystem เครื่องมือ Linux มาตรฐานได้
+        — shell scripts, Python, toolchains ทั่วไป เปิดโอกาสใหม่สำหรับ embedded dev ราคาต่ำ
+      </div>
+
+      <div class="tags">
+        <span class="tag">Linux 6.11</span>
+        <span class="tag">ESP32-S3</span>
+        <span class="tag">PSRAM</span>
+        <span class="tag">Embedded Linux</span>
+        <span class="tag">Hackaday</span>
+      </div>
+    </div>
+
+    <!-- ESP32-E22 -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-badge badge-chip">🆕 ชิปใหม่</span>
+        <h3>ESP32-E22 — Wi-Fi 6E Tri-Band พร้อม RISC-V 500 MHz</h3>
+      </div>
+      <p>
+        Espressif เปิดตัว <strong>ESP32-E22</strong> ที่ CES 2026 — ชิปตัวใหม่ที่รองรับ
+        <strong>Wi-Fi 6E tri-band</strong> (2.4/5/6 GHz) พร้อม 2×2 MIMO ความเร็วสูงสุดถึง 2.1 Gbps
+        เหมาะสำหรับ gateway ความเร็วสูงและอุปกรณ์ streaming
+      </p>
+
+      <div class="specs-grid">
+        <div class="spec-item">
+          <div class="spec-label">Core</div>
+          <div class="spec-value">RISC-V × 2</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Clock</div>
+          <div class="spec-value">500 MHz</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Memory</div>
+          <div class="spec-value">1 MB on-chip</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Wi-Fi</div>
+          <div class="spec-value">6E tri-band</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Bluetooth</div>
+          <div class="spec-value">BT 6.0 LE+BR/EDR</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Interface</div>
+          <div class="spec-value">PCIe / USB / SDIO</div>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <strong>Use Case หลัก:</strong> ใช้เป็น Wi-Fi 6E co-processor ควบคู่กับ MCU ตัวหลัก เช่น ESP32-P4
+        เหมาะสำหรับ Premium Gateway, Smart Home Hub, Industrial Edge Router
+      </div>
+
+      <div class="tags">
+        <span class="tag">Wi-Fi 6E</span>
+        <span class="tag">RISC-V</span>
+        <span class="tag">ESP32-E22</span>
+        <span class="tag">CES 2026</span>
+        <span class="tag">Tri-band</span>
+      </div>
+    </div>
+
+    <!-- ESP32-H21 -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-badge badge-chip">⚡ Ultra-Low Power</span>
+        <h3>ESP32-H21 — BLE + Thread/Zigbee สำหรับ IoT พลังงานต่ำสุด</h3>
+      </div>
+      <p>
+        คู่หู <strong>ESP32-H21</strong> ถูกออกแบบมาเพื่อ IoT nodes ที่ต้องการพลังงานต่ำที่สุด
+        มี single-core RISC-V @ 96 MHz, RAM 320 KB, รองรับ BLE + IEEE 802.15.4 (Zigbee/Thread)
+        พร้อม integrated DC-DC converter ช่วยลดแรงดันการทำงานต่ำกว่าชิปรุ่นเก่า
+      </p>
+
+      <div class="specs-grid">
+        <div class="spec-item">
+          <div class="spec-label">Core</div>
+          <div class="spec-value">RISC-V × 1</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Clock</div>
+          <div class="spec-value">96 MHz</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">RAM</div>
+          <div class="spec-value">320 KB</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Wireless</div>
+          <div class="spec-value">BLE + 802.15.4</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Protocol</div>
+          <div class="spec-value">Thread / Zigbee</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">DCDC</div>
+          <div class="spec-value">Built-in</div>
+        </div>
+      </div>
+
+      <div class="warn-box">
+        <strong>เลือกระหว่าง H21 กับ C6:</strong> ถ้าต้องการ Wi-Fi ด้วยให้ใช้ ESP32-C6
+        แต่ถ้าต้องการประหยัดพลังงานสูงสุดแบบ Thread/Zigbee only ให้เลือก H21 — sleep current
+        ต่ำกว่าอย่างเห็นได้ชัด
+      </div>
+
+      <div class="tags">
+        <span class="tag">ESP32-H21</span>
+        <span class="tag">Ultra-Low Power</span>
+        <span class="tag">Thread</span>
+        <span class="tag">Zigbee</span>
+        <span class="tag">BLE 5.x</span>
+      </div>
+    </div>
+
+    <!-- ESP32-P4 + E22 combo -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-badge badge-new">ไอเดีย Combo</span>
+        <h3>ESP32-P4 + ESP32-E22 — Edge AI พร้อม Wi-Fi 6E ในชิปเดียวกัน</h3>
+      </div>
+      <p>
+        เนื่องจาก ESP32-P4 ไม่มี Wi-Fi ในตัว วิธีที่ทรงพลังที่สุดในปี 2569 คือจับคู่
+        <strong>ESP32-P4</strong> (AI + multimedia @ 400 MHz) เข้ากับ <strong>ESP32-E22</strong>
+        ผ่าน SDIO/SPI เพื่อได้ทั้ง edge inference, display pipeline, และ Wi-Fi 6E ความเร็วสูง
+      </p>
+      <p>
+        Espressif เรียก pattern นี้ว่า "Host + Co-processor" architecture ซึ่งเห็นได้ใน
+        ESP32-P4-Function-EV-Board development board อย่างเป็นทางการ
+      </p>
+
+      <div class="highlight-box">
+        <strong>กรณีการใช้งาน:</strong> Industrial HMI panel, Smart display hub, AI camera gateway,
+        Home automation controller ที่ต้องการ display + AI + Wi-Fi 6E ในกล่องเดียว
+      </div>
+
+      <div class="tags">
+        <span class="tag">ESP32-P4</span>
+        <span class="tag">ESP32-E22</span>
+        <span class="tag">Edge AI</span>
+        <span class="tag">Co-processor</span>
+        <span class="tag">Host+CP Architecture</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PROJECTS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">💡</div>
+      <span class="section-title">ไอเดียโปรเจกต์ IoT น่าทำ</span>
+      <span class="section-sub">3 ไอเดีย</span>
+    </div>
+
+    <!-- Project 1: Linux ESP32-S3 webserver -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-badge badge-project">🐧 Linux</span>
+        <h3>Pocket Linux Web Server ด้วย ESP32-S3 + PSRAM 16 MB</h3>
+      </div>
+      <p>
+        ตอนนี้ Linux รันบน ESP32-S3 ได้แล้ว ลองสร้าง <strong>micro web server</strong>
+        ที่เล็กที่สุดในโลกด้วย ESP32-S3 — รัน Busybox httpd เสิร์ฟ static files
+        ควบคุม GPIO ผ่าน shell script พลังงานจาก power bank ขนาดเล็ก
+      </p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">ซื้อ ESP32-S3 board ที่มี PSRAM 16 MB (เช่น ESP32-S3-DevKitC-1)</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Clone repo Linux-on-ESP32 v0.8 และ build ด้วย cross-compiler Xtensa</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">Flash kernel image ผ่าน esptool.py พร้อม rootfs บน PSRAM</div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-text">บูตเข้า shell และรัน Busybox httpd เสิร์ฟหน้าเว็บ GPIO control</div>
+        </div>
+      </div>
+
+      <div class="tags">
+        <span class="tag">ESP32-S3</span>
+        <span class="tag">Linux</span>
+        <span class="tag">Busybox</span>
+        <span class="tag">Web Server</span>
+        <span class="tag">PSRAM</span>
+      </div>
+    </div>
+
+    <!-- Project 2: Thread mesh sensor network -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-badge badge-project">🕸️ Mesh</span>
+        <h3>Thread Mesh Sensor Network ด้วย ESP32-H21 + Home Assistant</h3>
+      </div>
+      <p>
+        สร้างเครือข่าย sensor แบบ mesh ทั่วบ้านด้วย <strong>ESP32-H21</strong> 4-6 ตัว
+        แต่ละตัวติด BME280 (ความชื้น/อุณหภูมิ/ความดัน) และทำงานด้วยถ่าน AA 2 ก้อน
+        ยาวนาน 2+ ปี เชื่อมต่อเข้า Home Assistant ผ่าน Thread Border Router (Apple HomePod หรือ
+        Google Nest Hub)
+      </p>
+
+      <div class="highlight-box">
+        <strong>ข้อดีของ Thread:</strong> Self-healing mesh — ถ้า node หนึ่งดับ ข้อมูลวิ่งอ้อมผ่าน
+        node อื่นได้ทันที ไม่ต้องพึ่ง Wi-Fi router กลาง ลด single point of failure
+      </div>
+
+      <div class="tags">
+        <span class="tag">ESP32-H21</span>
+        <span class="tag">Thread</span>
+        <span class="tag">BME280</span>
+        <span class="tag">Mesh Network</span>
+        <span class="tag">Home Assistant</span>
+      </div>
+    </div>
+
+    <!-- Project 3: EnviroGo-inspired wearable -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-badge badge-project">⌚ Wearable</span>
+        <h3>Wearable Environmental Monitor ด้วย ESP32-S3 + 7 Sensors</h3>
+      </div>
+      <p>
+        แรงบันดาลใจจาก <strong>EnviroGo</strong> project — สร้าง wearable ติดตาม
+        สภาพแวดล้อมแบบ real-time ด้วย ESP32-S3 และ sensors 7 ตัว:
+        VOC, UV index, อุณหภูมิ, ความชื้น, ความดัน, แสง, และ 9-axis MEMS (accelerometer + gyro + magnetometer)
+      </p>
+      <p>
+        แสดงผลบน OLED 1.3" แบบ compact ใส่ case พิมพ์ 3D ที่แข็งแรง ชาร์จผ่าน USB-C
+        เก็บ log ลง microSD card ส่งข้อมูลเข้า dashboard ผ่าน Wi-Fi เมื่อเชื่อมต่อได้
+      </p>
+
+      <div class="specs-grid">
+        <div class="spec-item">
+          <div class="spec-label">MCU</div>
+          <div class="spec-value">ESP32-S3</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Display</div>
+          <div class="spec-value">OLED 1.3"</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">VOC</div>
+          <div class="spec-value">SGP40</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Env</div>
+          <div class="spec-value">BME680</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">IMU</div>
+          <div class="spec-value">ICM-42688</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">UV</div>
+          <div class="spec-value">VEML6075</div>
+        </div>
+      </div>
+
+      <div class="tags">
+        <span class="tag">ESP32-S3</span>
+        <span class="tag">Wearable</span>
+        <span class="tag">VOC</span>
+        <span class="tag">UV Index</span>
+        <span class="tag">9-axis IMU</span>
+        <span class="tag">EnviroGo-inspired</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">📡</div>
+      <span class="section-title">Sensors น่าสนใจประจำวัน</span>
+      <span class="section-sub">2 ตัว</span>
+    </div>
+
+    <!-- ICM-42688-P -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-badge badge-sensor">IMU</span>
+        <h3>ICM-42688-P — 6-Axis IMU ความแม่นยำระดับ Industrial</h3>
+      </div>
+      <p>
+        TDK InvenSense <strong>ICM-42688-P</strong> เป็น 6-axis IMU (3-axis accel + 3-axis gyro)
+        ที่ได้รับการยอมรับอย่างกว้างขวางในปี 2569 สำหรับโปรเจกต์ drone, gimbal,
+        และ wearable ระดับสูง noise floor ต่ำกว่า MPU-6050 รุ่นเก่าถึง 10 เท่า
+      </p>
+
+      <div class="specs-grid">
+        <div class="spec-item">
+          <div class="spec-label">Gyro Range</div>
+          <div class="spec-value">±15.625°/s</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Accel Range</div>
+          <div class="spec-value">±2g ~ ±16g</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Interface</div>
+          <div class="spec-value">SPI / I²C</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">ODR</div>
+          <div class="spec-value">32 kHz max</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Package</div>
+          <div class="spec-value">LGA 14-pin</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Supply</div>
+          <div class="spec-value">1.71–3.6 V</div>
+        </div>
+      </div>
+
+      <div class="code-block">
+<span class="code-comment">// เชื่อมต่อ ICM-42688-P กับ ESP32 ผ่าน SPI</span>
+<span class="code-keyword">#include</span> <span class="code-string">"ICM42688.h"</span>
+
+ICM42688 imu(SPI, <span class="code-number">5</span>); <span class="code-comment">// CS pin = 5</span>
+
+<span class="code-keyword">void</span> setup() {
+  imu.begin();
+  imu.setAccelFS(ICM42688::gpm4);
+  imu.setGyroFS(ICM42688::dps500);
+  imu.setFilters(<span class="code-keyword">true</span>, <span class="code-keyword">true</span>);
+}
+
+<span class="code-keyword">void</span> loop() {
+  imu.getAGT();
+  Serial.printf(<span class="code-string">"ax:%.2f ay:%.2f az:%.2f\n"</span>,
+    imu.accX(), imu.accY(), imu.accZ());
+}</div>
+
+      <div class="tags">
+        <span class="tag">ICM-42688-P</span>
+        <span class="tag">6-Axis IMU</span>
+        <span class="tag">SPI</span>
+        <span class="tag">Drone</span>
+        <span class="tag">Wearable</span>
+      </div>
+    </div>
+
+    <!-- SGP41 -->
+    <div class="card">
+      <div class="card-top">
+        <span class="card-badge badge-sensor">VOC/NOx</span>
+        <h3>SGP41 — Multi-Gas Sensor วัด VOC + NOx พร้อมกัน</h3>
+      </div>
+      <p>
+        Sensirion <strong>SGP41</strong> เป็นอัพเกรดจาก SGP40 ที่วัดได้ทั้ง
+        <strong>VOC index</strong> และ <strong>NOx index</strong> พร้อมกันในชิปเดียว
+        เหมาะสำหรับระบบ air quality monitoring ในบ้านหรืออาคาร ใช้ I²C เชื่อมต่อง่ายกับ ESP32
+      </p>
+      <p>
+        ต้องการ temperature/humidity compensation จาก BME280 หรือ SHT40 เพื่อให้ค่าถูกต้อง
+        Sensirion มี Arduino library พร้อม VOC/NOx algorithm แบบ built-in
+      </p>
+
+      <div class="specs-grid">
+        <div class="spec-item">
+          <div class="spec-label">Output</div>
+          <div class="spec-value">VOC + NOx Index</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Interface</div>
+          <div class="spec-value">I²C</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Supply</div>
+          <div class="spec-value">1.7–3.6 V</div>
+        </div>
+        <div class="spec-item">
+          <div class="spec-label">Response</div>
+          <div class="spec-value">1 Hz</div>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <strong>ตัวอย่างการใช้:</strong> ติดตั้งในห้องนอน ถ้า VOC index สูงกว่า 200
+        (บ่งชี้ว่าอากาศไม่ดี) ให้ ESP32 สั่ง relay เปิดพัดลมระบายอากาศอัตโนมัติ
+        แจ้งเตือนผ่าน LINE Notify ด้วย
+      </div>
+
+      <div class="tags">
+        <span class="tag">SGP41</span>
+        <span class="tag">VOC Index</span>
+        <span class="tag">NOx</span>
+        <span class="tag">Air Quality</span>
+        <span class="tag">Sensirion</span>
+        <span class="tag">I²C</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TUTORIAL ===== -->
+  <section id="tutorial">
+    <div class="section-header">
+      <div class="section-icon icon-orange">📖</div>
+      <span class="section-title">Tutorial ประจำวัน</span>
+      <span class="section-sub">1 บทเรียน</span>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <span class="card-badge badge-tutorial">Step-by-Step</span>
+        <h3>สร้าง Thread Border Router ด้วย ESP32-C6 + Raspberry Pi Zero 2 W</h3>
+      </div>
+      <p>
+        Thread Border Router คือสะพานเชื่อม Thread mesh network เข้ากับ IP network (LAN/Wi-Fi)
+        ทำให้ Home Assistant หรือ Apple Home สื่อสารกับ Thread devices ได้
+        ทำเองได้โดยใช้ ESP32-C6 เป็น RCP (Radio Co-Processor) คู่กับ Raspberry Pi Zero 2 W
+      </p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <strong>Flash RCP firmware</strong> ลง ESP32-C6:
+            <code style="background:#0d1117; padding:0.1rem 0.4rem; border-radius:0.25rem; font-size:0.78rem; color:#7dd3fc;">idf.py flash -p /dev/ttyUSB0 -b 460800</code>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            <strong>ติดตั้ง OTBR</strong> บน Pi Zero 2 W:
+            <code style="background:#0d1117; padding:0.1rem 0.4rem; border-radius:0.25rem; font-size:0.78rem; color:#7dd3fc;">docker run --sysctl net.ipv6.conf.all.disable_ipv6=0 openthread/otbr</code>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            <strong>เชื่อมต่อ ESP32-C6 → Pi</strong> ผ่าน USB-Serial (CP2102) กำหนด baudrate 115200
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-text">
+            <strong>สร้าง Thread network</strong> ผ่าน OTBR web UI (http://pi-ip:80)
+            กด "Form Network" และบันทึก Network Key
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-text">
+            <strong>Pair Thread devices</strong> โดยนำ Network Key ใส่ใน firmware ของ ESP32-H21
+            หรือ ESP32-C6 nodes ทั่วบ้าน
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">6</div>
+          <div class="step-text">
+            <strong>เชื่อมกับ Home Assistant</strong> ผ่าน OTBR integration — HA จะเห็น
+            Thread devices ทุกตัวอัตโนมัติ
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <strong>ค่าใช้จ่าย:</strong> ESP32-C6 DevKit (~150 บาท) + Pi Zero 2 W (~700 บาท) +
+        case + power = รวมประมาณ 1,100 บาท ถูกกว่า Apple HomePod Mini 10 เท่า
+      </div>
+
+      <div class="code-block">
+<span class="code-comment"># ติดตั้ง Thread Border Router บน Pi Zero 2 W ด้วย script เดียว</span>
+curl -sSL https://raw.githubusercontent.com/openthread/ot-br-posix/main/script/setup \
+  | sudo bash -s -- --backbone-interface eth0 --radio-url spinel+hdlc+uart:///dev/ttyUSB0?uart-baudrate=115200</div>
+
+      <div class="tags">
+        <span class="tag">Thread Border Router</span>
+        <span class="tag">ESP32-C6</span>
+        <span class="tag">Raspberry Pi</span>
+        <span class="tag">OTBR</span>
+        <span class="tag">Home Assistant</span>
+        <span class="tag">IPv6</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔗</div>
+      <span class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง</span>
+    </div>
+
+    <div class="resource-grid">
+      <a class="resource-card" href="https://hackaday.com/2026/09/15/running-linux-6-11-on-the-esp32-s3-with-a-few-tweaks/" target="_blank" rel="noopener">
+        <div class="res-type">Hackaday · ก.ย. 2026</div>
+        <div class="res-title">Running Linux 6.11 on ESP32-S3</div>
+        <div class="res-desc">รายงาน Release 0.8 ที่บูต Linux kernel ได้เสถียรพร้อม 3.7 MB RAM ว่าง</div>
+      </a>
+
+      <a class="resource-card" href="https://www.espressif.com/en/news/ESP32_E22_Announcement" target="_blank" rel="noopener">
+        <div class="res-type">Espressif Official</div>
+        <div class="res-title">ESP32-E22 Wi-Fi 6E Announcement</div>
+        <div class="res-desc">ประกาศ ESP32-E22 — tri-band Wi-Fi 6E co-processor ตัวแรกจาก Espressif</div>
+      </a>
+
+      <a class="resource-card" href="https://www.cnx-software.com/2026/01/07/espressif-systems-showcases-esp32-e22-wi-fi-6e-soc-and-esp32-h21-ble-mcu-for-battery-powered-devices/" target="_blank" rel="noopener">
+        <div class="res-type">CNX Software · ม.ค. 2026</div>
+        <div class="res-title">ESP32-E22 และ ESP32-H21 ที่ CES 2026</div>
+        <div class="res-desc">รายละเอียด spec และ use case ของชิปใหม่ทั้งสองตัว</div>
+      </a>
+
+      <a class="resource-card" href="https://www.cnx-software.com/2026/01/20/envirogo-esp32-s3-wearable-environmental-monitor-features-7-sensors/" target="_blank" rel="noopener">
+        <div class="res-type">CNX Software · ม.ค. 2026</div>
+        <div class="res-title">EnviroGo Wearable Environmental Monitor</div>
+        <div class="res-desc">ESP32-S3 wearable ติด 7 sensors — VOC, UV, temp, humidity, pressure, light, 9-axis</div>
+      </a>
+
+      <a class="resource-card" href="https://www.elektormagazine.com/news/new-espressif-microcontrollers-ces-2026" target="_blank" rel="noopener">
+        <div class="res-type">Elektor Magazine</div>
+        <div class="res-title">New Espressif Microcontrollers at CES 2026</div>
+        <div class="res-desc">บทความสรุป ESP32-E22 และ ESP32-H21 จาก Elektor</div>
+      </a>
+
+      <a class="resource-card" href="https://wizzdev.com/blog/espressif-soc-esp32/" target="_blank" rel="noopener">
+        <div class="res-type">WizzDev · 2026</div>
+        <div class="res-title">ESP32-S3 vs C6 vs P4: Which SoC for 2026?</div>
+        <div class="res-desc">คู่มือเปรียบเทียบ SoC ทุกตัวเพื่อ roadmap IoT ปี 2569</div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>
+    สร้างโดย AI Researcher อัตโนมัติ · 16 กันยายน พ.ศ. 2569<br>
+    ข้อมูลอ้างอิง: <a href="https://hackaday.com" target="_blank">Hackaday</a> ·
+    <a href="https://www.espressif.com" target="_blank">Espressif Systems</a> ·
+    <a href="https://www.cnx-software.com" target="_blank">CNX Software</a> ·
+    <a href="https://www.elektormagazine.com" target="_blank">Elektor Magazine</a>
+  </p>
+  <p style="margin-top:0.5rem; font-size:0.75rem; color:#475569;">
+    ESP32 &amp; IoT Innovations Daily Report — ไม่ซ้ำกับฉบับก่อนหน้า
+  </p>
+</footer>
+
+</body>
+</html>
