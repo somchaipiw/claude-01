@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 17 กันยายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #263248;
+    --border: #334155;
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --tag-bg: #1e3a5f;
+    --tag-text: #7dd3fc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    padding: 3rem 1rem 2.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 60% 30%, rgba(56,189,248,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse at 20% 80%, rgba(52,211,153,0.10) 0%, transparent 60%);
+  }
+  header .inner { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; }
+  header .badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.35);
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.25rem 0.85rem;
+    border-radius: 20px;
+    letter-spacing: 0.08em;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+  }
+  header h1 span { color: var(--accent); }
+  header p.subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.5rem 1.2rem;
+    text-align: center;
+  }
+  .stat-item .num {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+  }
+  .stat-item .label { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* Nav */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 0.35rem 0.9rem;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+  }
+  nav a:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(56,189,248,0.08);
+  }
+
+  /* Layout */
+  main { max-width: 980px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+
+  section { margin-bottom: 3rem; }
+  section > h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent);
+    border-left: 4px solid var(--accent);
+    padding-left: 0.85rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+    box-shadow: 0 6px 24px rgba(56,189,248,0.12);
+  }
+  .card .chip {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.2rem 0.65rem;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+  }
+  .chip-blue { background: rgba(56,189,248,0.15); color: var(--accent); }
+  .chip-purple { background: rgba(129,140,248,0.15); color: var(--accent2); }
+  .chip-green { background: rgba(52,211,153,0.15); color: var(--accent3); }
+  .chip-orange { background: rgba(251,146,60,0.15); color: var(--accent4); }
+  .chip-pink { background: rgba(244,114,182,0.15); color: var(--accent5); }
+
+  .card h3 {
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 0.85rem;
+  }
+  .card .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .tag {
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-size: 0.73rem;
+    font-weight: 600;
+    padding: 0.15rem 0.55rem;
+    border-radius: 5px;
+  }
+
+  /* Highlight card */
+  .card-featured {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #1e3a5f 0%, #1e293b 100%);
+    border-color: rgba(56,189,248,0.35);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 600px) {
+    .card-featured { grid-template-columns: 1fr; }
+  }
+  .card-featured .feat-left h3 { font-size: 1.15rem; color: var(--accent); }
+
+  /* Sensor table */
+  .sensor-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  .sensor-table th {
+    background: var(--surface2);
+    color: var(--accent);
+    font-weight: 700;
+    padding: 0.7rem 1rem;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+  }
+  .sensor-table td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+  .sensor-table tr:hover td { background: var(--surface2); }
+  .sensor-table tr:last-child td { border-bottom: none; }
+
+  /* Code block */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 1.2rem 1.4rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.83rem;
+    line-height: 1.7;
+    color: #c9d1d9;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+  }
+  .code-block .kw { color: #ff7b72; }
+  .code-block .str { color: #a5d6ff; }
+  .code-block .num { color: #79c0ff; }
+  .code-block .cmt { color: #8b949e; font-style: italic; }
+  .code-block .fn { color: #d2a8ff; }
+
+  /* Tutorial steps */
+  .steps { list-style: none; counter-reset: step; }
+  .steps li {
+    counter-increment: step;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.2rem 1rem 3.5rem;
+    margin-bottom: 0.85rem;
+    position: relative;
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--accent);
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 0.85rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .steps li strong { color: var(--accent3); }
+  .steps li p { font-size: 0.9rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+  /* Resources */
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem 1.2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .resource-card:hover { border-color: var(--accent3); transform: translateY(-2px); }
+  .resource-card .icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .resource-card .info h4 { font-size: 0.92rem; color: #f1f5f9; margin-bottom: 0.2rem; }
+  .resource-card .info p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+
+  /* Insight box */
+  .insight {
+    background: linear-gradient(135deg, rgba(52,211,153,0.08), rgba(56,189,248,0.06));
+    border: 1px solid rgba(52,211,153,0.3);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    margin-top: 1.2rem;
+  }
+  .insight h4 { color: var(--accent3); font-size: 0.9rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .insight p { font-size: 0.88rem; color: var(--text-muted); }
+
+  /* Footer */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  footer strong { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <div class="badge">Daily Research — 17 กันยายน 2026</div>
+    <h1><span>ESP32</span> & Sensor Innovations</h1>
+    <p class="subtitle">นวัตกรรม IoT · เกษตรอัจฉริยะ · Edge AI · Bluetooth LE Audio · Matter 1.4</p>
+    <div class="stats-row">
+      <div class="stat-item"><span class="num">3</span><span class="label">นวัตกรรมใหม่</span></div>
+      <div class="stat-item"><span class="num">3</span><span class="label">ไอเดียโปรเจกต์</span></div>
+      <div class="stat-item"><span class="num">4</span><span class="label">Sensors น่าสนใจ</span></div>
+      <div class="stat-item"><span class="num">1</span><span class="label">Tutorial</span></div>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations">นวัตกรรม</a>
+  <a href="#projects">โปรเจกต์</a>
+  <a href="#sensors">Sensors</a>
+  <a href="#tutorial">Tutorial</a>
+  <a href="#resources">แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- ===== INNOVATIONS ===== -->
+  <section id="innovations">
+    <h2>🚀 นวัตกรรมและข่าวสารใหม่</h2>
+    <div class="card-grid">
+
+      <div class="card card-featured">
+        <div class="feat-left">
+          <span class="chip chip-blue">Amazon + Espressif</span>
+          <h3>ESP32-C6 + Alexa ACK SDK — สร้าง Matter Device ง่ายที่สุดเท่าที่เคยมีมา</h3>
+          <p>Amazon ประกาศ integration ระหว่าง Alexa Connect Kit (ACK) SDK กับ ESP32-C6 อย่างเป็นทางการ นักพัฒนาสามารถสร้างอุปกรณ์ Matter ที่รองรับ Alexa, Apple Home และ Google Home พร้อมกันในโปรเจกต์เดียว โดยได้รับ OTA updates, logging, metrics และ Frustration-Free Setup ที่ช่วยให้อุปกรณ์ auto-connect กับ Wi-Fi ของผู้ใช้โดยอัตโนมัติ</p>
+          <div class="tags">
+            <span class="tag">ESP32-C6</span>
+            <span class="tag">Matter 1.4</span>
+            <span class="tag">Alexa ACK SDK</span>
+            <span class="tag">Wi-Fi 6</span>
+            <span class="tag">Thread</span>
+          </div>
+        </div>
+        <div class="feat-right">
+          <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:0.6rem;">ข้อดีสำคัญ:</p>
+          <ul style="font-size:0.88rem;color:var(--text-muted);padding-left:1.2rem;line-height:1.9;">
+            <li>รองรับทั้ง Matter-over-Wi-Fi และ Matter-over-Thread ในชิปเดียว</li>
+            <li>Multi-Admin: อุปกรณ์ชิ้นเดียวอยู่ใน ecosystem หลายเจ้าพร้อมกัน</li>
+            <li>Energy Management ตาม Matter 1.4 spec</li>
+            <li>OTA อัตโนมัติผ่าน Amazon IoT service</li>
+            <li>RISC-V 160 MHz + Low-power core 20 MHz สำหรับ deep sleep</li>
+          </ul>
+          <div class="insight">
+            <h4>ทำไมถึงสำคัญ</h4>
+            <p>ก่อนหน้านี้การสร้าง Matter device ต้องใช้ SDK หลายตัว แต่ ACK SDK เป็น one-stop solution ที่ลด time-to-market จากหลายเดือนเหลือไม่กี่สัปดาห์</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="chip chip-purple">Edge AI</span>
+        <h3>ESP32-S3 + TinyML — Object Detection &lt;200ms โดยไม่ต้องส่ง Cloud</h3>
+        <p>ด้วย Dual Xtensa LX7 240 MHz + PSRAM 8 MB และ camera interface แบบ parallel ทำให้ ESP32-S3 สามารถรัน Convolutional Neural Network ผ่าน FOMO model (Edge Impulse) แล้วตัดสินใจ object detection ได้ใน 200ms ทั้งหมดบนตัวอุปกรณ์ ไม่ต้องพึ่ง cloud เลย</p>
+        <p>โปรเจกต์ล่าสุดครอบคลุม: pet expression recognition, plant disease detection, smart security camera ที่ detect เฉพาะคนที่รู้จักได้</p>
+        <div class="tags">
+          <span class="tag">ESP32-S3</span>
+          <span class="tag">FOMO Model</span>
+          <span class="tag">Edge Impulse</span>
+          <span class="tag">TFLite Micro</span>
+          <span class="tag">OV2640</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="chip chip-pink">Bluetooth LE Audio</span>
+        <h3>LC3 Codec บน ESP32 — ยุคใหม่ของ Bluetooth Audio ประสิทธิภาพสูง</h3>
+        <p>LC3 (Low Complexity Communication Codec) คือ codec มาตรฐานของ Bluetooth LE Audio (BT 5.2+) ที่ให้คุณภาพเสียงเทียบ SBC@328kbps ด้วยบิตเรตเพียง 160kbps — ประสิทธิภาพดีกว่า 2 เท่า ในปี 2026 มือถือชั้นนำทุกค่ายรองรับ LC3 แล้ว ทำให้นักพัฒนาสามารถสร้าง DIY hearing aid, Auracast speaker หรือ TWS earphone ด้วย ESP32 ได้ในงบต่ำมาก</p>
+        <div class="tags">
+          <span class="tag">LC3 Codec</span>
+          <span class="tag">LE Audio</span>
+          <span class="tag">BLE 5.2</span>
+          <span class="tag">Auracast</span>
+          <span class="tag">LDAC</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== PROJECTS ===== -->
+  <section id="projects">
+    <h2>💡 ไอเดียโปรเจกต์น่าสนใจ</h2>
+    <div class="card-grid">
+
+      <div class="card">
+        <span class="chip chip-green">เกษตรอัจฉริยะ</span>
+        <h3>Automated Hydroponics Monitor — ควบคุม pH, EC, DO อัตโนมัติด้วย ESP32</h3>
+        <p>สร้างระบบ Hydroponics อัตโนมัติที่ตรวจสอบ 4 พารามิเตอร์พร้อมกัน: pH, Electrical Conductivity (EC), Dissolved Oxygen (DO) และอุณหภูมิน้ำ เมื่อค่าเบี่ยงเบน ESP32 จะสั่งปั๊มน้ำยาปรับ pH หรือ nutrient solution โดยอัตโนมัติ ส่งข้อมูลขึ้น MQTT dashboard ดูได้ผ่านมือถือ</p>
+        <p><strong style="color:var(--accent3);">ผลที่พิสูจน์แล้ว:</strong> ลดการใช้น้ำ 42% เพิ่มผลผลิต 11.8% เมื่อเทียบกับระบบ timer แบบดั้งเดิม</p>
+        <div class="code-block">
+<span class="cmt">// ตรวจค่า pH ทุก 30 วินาที</span>
+<span class="kw">if</span> (phValue &lt; <span class="num">5.5</span> || phValue &gt; <span class="num">6.5</span>) {
+  <span class="fn">activateDosePump</span>(phValue &lt; <span class="num">5.5</span> ? <span class="str">"UP"</span> : <span class="str">"DOWN"</span>);
+  <span class="fn">mqttPublish</span>(<span class="str">"alert/ph"</span>, phValue);
+}</div>
+        <div class="tags">
+          <span class="tag">Hydroponics</span>
+          <span class="tag">pH Sensor</span>
+          <span class="tag">EC Sensor</span>
+          <span class="tag">MQTT</span>
+          <span class="tag">Node-RED</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="chip chip-blue">Aquatic IoT</span>
+        <h3>Autonomous Water Quality Robot — หุ่นยนต์ตรวจสอบแหล่งน้ำอัตโนมัติ</h3>
+        <p>สร้างหุ่นยนต์ลอยน้ำควบคุมจาก cloud ด้วย ESP32 + DC motors + conveyor system เพื่อเก็บข้อมูลคุณภาพน้ำ (pH, turbidity, temperature, DO) ในบ่อปลา คลอง หรือแหล่งน้ำเปิด ข้อมูลส่งขึ้น Node-RED dashboard แบบ real-time ผ่าน ESP-NOW + 4G gateway ไม่ต้องเดินสายเลย</p>
+        <p>ใช้โปรโตคอล ESP-NOW สำหรับ short-range relay ระหว่าง sensor module กับ topside gateway ลด latency และประหยัดพลังงานได้มาก</p>
+        <div class="tags">
+          <span class="tag">ESP-NOW</span>
+          <span class="tag">Water Quality</span>
+          <span class="tag">Robotics</span>
+          <span class="tag">Node-RED</span>
+          <span class="tag">4G</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="chip chip-orange">Smart Home AI</span>
+        <h3>DIY Smart Security Camera — รู้จักใบหน้าบนตัวอุปกรณ์ ไม่ต้องส่ง Cloud</h3>
+        <p>ใช้ XIAO ESP32-S3 Sense + OV2640 camera + Edge Impulse FOMO model สร้าง home security camera ที่ detect ใบหน้าและแยกแยะ "คนรู้จัก" vs "คนแปลกหน้า" ได้บนตัวชิปเลย ไม่ส่งภาพออกไปไหน ถ้าตรวจพบคนแปลกหน้าจะแจ้งเตือนผ่าน Home Assistant ทันที ราคาต้นทุนต่ำกว่าระบบ cloud-based มาก และ private ที่สุด</p>
+        <div class="tags">
+          <span class="tag">XIAO ESP32-S3</span>
+          <span class="tag">Face Detection</span>
+          <span class="tag">TinyML</span>
+          <span class="tag">Home Assistant</span>
+          <span class="tag">Privacy</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SENSORS ===== -->
+  <section id="sensors">
+    <h2>🔬 Sensors น่าสนใจ</h2>
+    <table class="sensor-table">
+      <thead>
+        <tr>
+          <th>Sensor</th>
+          <th>วัดอะไร</th>
+          <th>Interface</th>
+          <th>ใช้กับอะไร</th>
+          <th>ราคาประมาณ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong style="color:var(--accent3);">Atlas Scientific EZO-DO</strong></td>
+          <td>Dissolved Oxygen (DO) 0–100%</td>
+          <td>UART / I²C</td>
+          <td>Aquaponics, บ่อปลา, น้ำเสีย</td>
+          <td>~$130–160 USD</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--accent);">DFRobot SEN0169</strong></td>
+          <td>pH 0–14</td>
+          <td>Analog (0–3.3V)</td>
+          <td>Hydroponics, น้ำดื่ม, น้ำเสีย</td>
+          <td>~$20–35 USD</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--accent2);">DFRobot SEN0244</strong></td>
+          <td>EC/TDS (Electrical Conductivity)</td>
+          <td>Analog / I²C</td>
+          <td>Hydroponics, คุณภาพน้ำ</td>
+          <td>~$20–40 USD</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--accent4);">Ultrasonic A02YYUW</strong></td>
+          <td>ระดับน้ำ / ระยะ 3–450 cm</td>
+          <td>UART</td>
+          <td>ถังน้ำ, บ่อน้ำ, flood detection</td>
+          <td>~$15–25 USD</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="insight" style="margin-top:1.2rem;">
+      <h4>Combo ที่ดีที่สุดสำหรับ Hydroponics</h4>
+      <p>ใช้ <strong>EZO-DO + SEN0169 + SEN0244 + DS18B20</strong> ร่วมกัน ครอบคลุมทุก parameter สำคัญ ส่งข้อมูลผ่าน ESP32 + MQTT ไปยัง Home Assistant หรือ Grafana dashboard เพื่อ visualize trend ระยะยาว</p>
+    </div>
+  </section>
+
+  <!-- ===== TUTORIAL ===== -->
+  <section id="tutorial">
+    <h2>📖 Tutorial: สร้าง Smart Hydroponics Monitor ด้วย ESP32 + AquaPi</h2>
+    <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1.2rem;">AquaPi คือ ESPHome component ที่รองรับ Atlas Scientific sensors โดยตรง ทำให้เชื่อมต่อกับ Home Assistant ได้ใน 15 นาที</p>
+    <ol class="steps">
+      <li>
+        <strong>ติดตั้ง ESPHome + AquaPi</strong>
+        <p>เพิ่ม external component ใน ESPHome config: <code style="background:#0d1117;padding:0.1rem 0.4rem;border-radius:4px;font-size:0.82rem;">github://TheRealFalseReality/aquapi</code> จากนั้น flash ไปยัง ESP32</p>
+      </li>
+      <li>
+        <strong>ต่อ Atlas Scientific EZO circuits</strong>
+        <p>ใช้ I²C bus เชื่อม EZO-pH, EZO-EC และ EZO-DO กับ ESP32 (SDA=GPIO21, SCL=GPIO22) แต่ละ module มี address เฉพาะ ไม่ conflict กัน</p>
+      </li>
+      <li>
+        <strong>Calibrate sensors</strong>
+        <p>pH ใช้ buffer solution pH 4.0, 7.0, 10.0 / EC ใช้ standard solution 1413 µS/cm / DO ใช้ atmospheric air calibration</p>
+      </li>
+      <li>
+        <strong>ตั้งค่า automation ใน Home Assistant</strong>
+        <p>สร้าง automation ส่งแจ้งเตือนเมื่อ pH อยู่นอกช่วง 5.5–6.5 หรือ EC ต่ำกว่า 1.2 mS/cm เพื่อให้ปั๊มทำงานอัตโนมัติ</p>
+      </li>
+      <li>
+        <strong>สร้าง Dashboard ด้วย Grafana + InfluxDB</strong>
+        <p>บันทึกข้อมูล sensor ทุก 30 วินาทีลง InfluxDB แล้ว visualize ด้วย Grafana เพื่อดู trend pH และ EC ตลอด 30 วัน วิเคราะห์แพทเทิร์นการเติบโตของพืช</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ===== RESOURCES ===== -->
+  <section id="resources">
+    <h2>🔗 แหล่งข้อมูลและลิงก์</h2>
+    <div class="resources-grid">
+      <a href="https://github.com/TheRealFalseReality/aquapi" class="resource-card" target="_blank" rel="noopener">
+        <span class="icon">🐟</span>
+        <div class="info">
+          <h4>AquaPi — ESPHome + Home Assistant</h4>
+          <p>Component สำหรับ Atlas Scientific sensors รองรับ pH, EC, DO, ORP ใน ESPHome</p>
+        </div>
+      </a>
+      <a href="https://www.dfrobot.com/blog-21377.html" class="resource-card" target="_blank" rel="noopener">
+        <span class="icon">🌿</span>
+        <div class="info">
+          <h4>DFRobot: 2026 Hydroponics Guide</h4>
+          <p>คู่มือครบถ้วนสำหรับสร้างระบบ Hydroponics อัตโนมัติด้วย ESP32</p>
+        </div>
+      </a>
+      <a href="https://dev.to/bittobuild/esp32-s3-tinyml-build-a-real-time-edge-ai-home-security-system-that-runs-without-the-cloud-3c22" class="resource-card" target="_blank" rel="noopener">
+        <span class="icon">🤖</span>
+        <div class="info">
+          <h4>ESP32-S3 + TinyML Home Security</h4>
+          <p>Tutorial สร้าง Edge AI security system บน ESP32-S3 โดยไม่ต้องใช้ cloud</p>
+        </div>
+      </a>
+      <a href="https://developer.amazon.com/en-US/blogs/alexa/device-makers/2026/03/enhanced-device-development-capabilities" class="resource-card" target="_blank" rel="noopener">
+        <span class="icon">🏠</span>
+        <div class="info">
+          <h4>Amazon ACK SDK + ESP32-C6</h4>
+          <p>Official Amazon developer blog เกี่ยวกับ Matter device development ด้วย ESP32-C6</p>
+        </div>
+      </a>
+      <a href="https://medium.com/@smartfarmanywhere/building-a-professional-esp32-hydroponic-monitoring-system-with-cloud-iot-25255551a4c3" class="resource-card" target="_blank" rel="noopener">
+        <span class="icon">☁️</span>
+        <div class="info">
+          <h4>Professional ESP32 Hydroponic + Cloud IoT</h4>
+          <p>บทความ Medium สร้าง professional-grade hydroponics system พร้อม cloud integration</p>
+        </div>
+      </a>
+      <a href="https://zbotic.in/esp32-s3-ai-camera-tinyml-object-detection-on-device/" class="resource-card" target="_blank" rel="noopener">
+        <span class="icon">📷</span>
+        <div class="info">
+          <h4>ESP32-S3 AI Camera TinyML</h4>
+          <p>Object detection on-device ด้วย ESP32-S3 + TFLite Micro ลงรายละเอียดการ implement</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดยอัตโนมัติ · <strong>17 กันยายน 2026</strong></p>
+  <p style="margin-top:0.4rem;">หัวข้อ: เกษตรอัจฉริยะ Hydroponics · Aquatic Water Quality · Edge AI TinyML · Matter 1.4 + ACK SDK · LC3 Bluetooth LE Audio</p>
+  <p style="margin-top:0.4rem;font-size:0.78rem;">แหล่งอ้างอิง: Amazon Developer Blog, DFRobot, Hackster.io, DEV Community, GitHub</p>
+</footer>
+
+</body>
+</html>
