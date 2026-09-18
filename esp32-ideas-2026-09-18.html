@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 18 กันยายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263548;
+    --accent-blue: #38bdf8;
+    --accent-purple: #a78bfa;
+    --accent-green: #34d399;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --accent-yellow: #fbbf24;
+    --text-primary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --tag-bg: #1e3a5f;
+    --tag-text: #7dd3fc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0c1a35 0%, #1a0a2e 50%, #0c2a1a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 40px 24px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: -60px; right: -60px; bottom: -60px;
+    background: radial-gradient(ellipse at 20% 50%, rgba(56,189,248,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 50%, rgba(167,139,250,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(56,189,248,0.12);
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 13px;
+    color: var(--accent-blue);
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-size: clamp(22px, 5vw, 38px);
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+  }
+  .header-meta {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .meta-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  .meta-badge span { color: var(--text-primary); font-weight: 600; }
+
+  /* Nav Pills */
+  .nav-pills {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(15,23,42,0.8);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+  .nav-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  .pill-blue  { background: rgba(56,189,248,0.1); color: var(--accent-blue);   border-color: rgba(56,189,248,0.25); }
+  .pill-purple{ background: rgba(167,139,250,0.1);color: var(--accent-purple); border-color: rgba(167,139,250,0.25);}
+  .pill-green { background: rgba(52,211,153,0.1); color: var(--accent-green);  border-color: rgba(52,211,153,0.25); }
+  .pill-orange{ background: rgba(251,146,60,0.1); color: var(--accent-orange); border-color: rgba(251,146,60,0.25); }
+  .nav-pill:hover { filter: brightness(1.3); transform: translateY(-1px); }
+
+  /* Main layout */
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+  section { margin-bottom: 56px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .icon-blue   { background: rgba(56,189,248,0.15); }
+  .icon-purple { background: rgba(167,139,250,0.15); }
+  .icon-green  { background: rgba(52,211,153,0.15); }
+  .icon-orange { background: rgba(251,146,60,0.15); }
+  .section-title { font-size: 22px; font-weight: 700; }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+  }
+  .card-blue::before   { background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); }
+  .card-green::before  { background: linear-gradient(90deg, var(--accent-green), var(--accent-blue)); }
+  .card-purple::before { background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink)); }
+  .card-orange::before { background: linear-gradient(90deg, var(--accent-orange), var(--accent-yellow)); }
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: #4a6080;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+  }
+  .card-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+  .label-blue   { background: rgba(56,189,248,0.15); color: var(--accent-blue); }
+  .label-green  { background: rgba(52,211,153,0.15); color: var(--accent-green); }
+  .label-purple { background: rgba(167,139,250,0.15); color: var(--accent-purple); }
+  .label-orange { background: rgba(251,146,60,0.15); color: var(--accent-orange); }
+  .label-pink   { background: rgba(244,114,182,0.15); color: var(--accent-pink); }
+  .label-yellow { background: rgba(251,191,36,0.15); color: var(--accent-yellow); }
+  .card h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    color: var(--text-primary);
+  }
+  .card p {
+    font-size: 14.5px;
+    color: var(--text-muted);
+    line-height: 1.75;
+    margin-bottom: 14px;
+  }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .tag {
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-size: 11.5px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+  .tag-green { background: rgba(52,211,153,0.1); color: var(--accent-green); }
+  .tag-purple{ background: rgba(167,139,250,0.1); color: var(--accent-purple); }
+  .tag-orange{ background: rgba(251,146,60,0.1); color: var(--accent-orange); }
+
+  /* Wide card */
+  .card-wide {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media(max-width: 680px) {
+    .card-wide { grid-template-columns: 1fr; }
+  }
+
+  /* Spec table */
+  .spec-table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 12px; }
+  .spec-table td { padding: 7px 10px; border-bottom: 1px solid rgba(51,65,85,0.6); }
+  .spec-table td:first-child { color: var(--text-muted); width: 38%; }
+  .spec-table td:last-child  { color: var(--text-primary); font-weight: 600; }
+
+  /* Code block */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-family: 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 13px;
+    color: #c9d1d9;
+    overflow-x: auto;
+    margin-top: 12px;
+    line-height: 1.7;
+  }
+  .code-block .kw  { color: #ff7b72; }
+  .code-block .fn  { color: #d2a8ff; }
+  .code-block .str { color: #a5d6ff; }
+  .code-block .cm  { color: #8b949e; font-style: italic; }
+  .code-block .num { color: #79c0ff; }
+
+  /* Steps */
+  .steps { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: rgba(15,23,42,0.6);
+    border: 1px solid rgba(51,65,85,0.5);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .step-num {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+    color: #fff;
+  }
+  .step-content { flex: 1; }
+  .step-content strong { display: block; font-size: 15px; margin-bottom: 4px; color: var(--text-primary); }
+  .step-content p { font-size: 13.5px; color: var(--text-muted); margin: 0; }
+
+  /* Highlight box */
+  .highlight-box {
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 14px;
+    font-size: 14px;
+  }
+  .hb-blue   { background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.25); }
+  .hb-green  { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.25); }
+  .hb-purple { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.25); }
+  .hb-orange { background: rgba(251,146,60,0.08); border: 1px solid rgba(251,146,60,0.25); }
+  .highlight-box strong { display: block; margin-bottom: 6px; }
+
+  /* Resource links */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    text-decoration: none;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    transition: all 0.2s;
+  }
+  .resource-card:hover {
+    border-color: #4a6080;
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+  }
+  .resource-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .ri-blue   { background: rgba(56,189,248,0.12); }
+  .ri-green  { background: rgba(52,211,153,0.12); }
+  .ri-purple { background: rgba(167,139,250,0.12); }
+  .ri-orange { background: rgba(251,146,60,0.12); }
+  .resource-text h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--text-primary); }
+  .resource-text p  { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+
+  /* Footer */
+  footer {
+    background: #080e1a;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 32px 24px;
+    color: var(--text-muted);
+    font-size: 13.5px;
+  }
+  footer strong { color: var(--text-primary); }
+  .footer-refs { margin-top: 16px; font-size: 12px; line-height: 2; }
+  .footer-refs a { color: var(--accent-blue); text-decoration: none; }
+  .footer-refs a:hover { text-decoration: underline; }
+
+  @media(max-width: 600px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .resource-grid { grid-template-columns: 1fr; }
+    .header-meta { gap: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-chip">&#128197; Daily Research Report</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p style="color:var(--text-muted); font-size:15px; margin-top:6px;">18 กันยายน 2026 — นวัตกรรม IoT, ESP-KVM, Health Sensors &amp; ESPHome 2026.9</p>
+  <div class="header-meta">
+    <div class="meta-badge">&#128204; <span>4</span> หัวข้อหลัก</div>
+    <div class="meta-badge">&#128161; <span>7</span> ไอเดียโปรเจกต์</div>
+    <div class="meta-badge">&#128300; <span>4</span> Sensors ใหม่</div>
+    <div class="meta-badge">&#128279; <span>8</span> แหล่งอ้างอิง</div>
+  </div>
+</header>
+
+<nav class="nav-pills">
+  <a href="#innovations" class="nav-pill pill-blue">&#128640; นวัตกรรมใหม่</a>
+  <a href="#projects"    class="nav-pill pill-purple">&#128161; ไอเดียโปรเจกต์</a>
+  <a href="#sensors"     class="nav-pill pill-green">&#128300; Sensors</a>
+  <a href="#tutorial"    class="nav-pill pill-orange">&#128214; Tutorial</a>
+  <a href="#resources"   class="nav-pill pill-blue">&#128279; แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- SECTION 1: นวัตกรรม -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">&#128640;</div>
+      <div>
+        <div class="section-title">นวัตกรรมและข่าวสารใหม่ล่าสุด</div>
+        <p style="color:var(--text-muted); font-size:13.5px; margin-top:4px;">ESP-KVM, JetKVM Mini, ESPHome 2026.9.0 — สิ่งที่น่าตื่นเต้นในสัปดาห์นี้</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- ESP-KVM -->
+      <div class="card card-blue">
+        <div class="card-label label-blue">&#128640; ESP32-P4 · ใหม่ล่าสุด</div>
+        <h3>ESP-KVM — IP KVM แบบ Open Source บน ESP32-P4 ราคาเพียง $45</h3>
+        <p>โปรเจกต์ ESP-KVM แปลงบอร์ด Waveshare ESP32-P4-ETH ให้กลายเป็นอุปกรณ์ IP KVM เต็มรูปแบบ — ดักจับ HDMI จากเครื่องเป้าหมาย, จำลองตัวเป็น USB Keyboard + Mouse และให้ควบคุมผ่านเบราว์เซอร์ได้ทุกที่ทุกเวลา</p>
+        <div class="highlight-box hb-blue">
+          <strong>&#9889; ฟีเจอร์หลัก</strong>
+          รองรับ MJPEG (20 FPS) และ H.264 (7 FPS) · HTTPS login ปลอดภัย · Virtual Media · Wake-on-LAN · ATX Power Control · OTA Firmware Update
+        </div>
+        <div class="highlight-box hb-orange" style="margin-top:10px;">
+          <strong>&#128184; ต้นทุนฮาร์ดแวร์</strong>
+          Waveshare ESP32-P4-ETH board + Geekworm MIPI CSI-to-HDMI Adapter (TC358743) รวมประมาณ <strong>$45 เท่านั้น!</strong>
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESP32-P4</span>
+          <span class="tag">KVM</span>
+          <span class="tag tag-green">Open Source</span>
+          <span class="tag tag-orange">HDMI Capture</span>
+          <span class="tag">H.264</span>
+        </div>
+      </div>
+
+      <!-- JetKVM Mini -->
+      <div class="card card-purple">
+        <div class="card-label label-purple">&#128204; เปิดตัวเร็วๆ นี้ · Oct 2026</div>
+        <h3>JetKVM Mini — KVM เชิงพาณิชย์ขนาดกล่องไม้ขีด บน ESP32-P4X</h3>
+        <p>JetKVM Mini เป็นรุ่นเล็กและถูกลงของ JetKVM KVM-over-IP ที่เปลี่ยนจาก Rockchip RV1106G3 + Linux มาใช้ <strong>ESP32-P4X</strong> รัน FreeRTOS แทน — ขนาดเล็กลง ราคาต่ำลง แต่ยังคงประสิทธิภาพระดับพาณิชย์</p>
+        <table class="spec-table">
+          <tr><td>แพลตฟอร์ม</td><td>ESP32-P4X + FreeRTOS</td></tr>
+          <tr><td>ขนาด</td><td>เล็กเท่ากล่องไม้ขีด</td></tr>
+          <tr><td>วางจำหน่าย</td><td>26 ตุลาคม 2026</td></tr>
+          <tr><td>เปรียบกับ</td><td>JetKVM รุ่นเดิม (Rockchip)</td></tr>
+        </table>
+        <div class="tag-row">
+          <span class="tag">ESP32-P4X</span>
+          <span class="tag tag-purple">FreeRTOS</span>
+          <span class="tag">Commercial</span>
+          <span class="tag tag-orange">Compact</span>
+        </div>
+      </div>
+
+      <!-- ESPHome 2026.9.0 -->
+      <div class="card card-green">
+        <div class="card-label label-green">&#128295; ESPHome · Sep 2026</div>
+        <h3>ESPHome 2026.9.0 — อัปเดตเดือนกันยายน พร้อมฟีเจอร์ใหม่รอบด้าน</h3>
+        <p>ESPHome ออกอัปเดตรายเดือนต่อเนื่อง เดือนกันยายน 2026 ประกอบด้วยการปรับปรุงสำหรับ ESP32 ทุกรุ่น ต่อยอดจากรุ่น 2026.4.0 ที่ทำให้ ESP32 ทำงานเร็วขึ้น 33% และเพิ่ม IRAM อีก 40kB</p>
+        <div class="highlight-box hb-green">
+          <strong>&#128200; สิ่งที่ดีขึ้นตั้งแต่ 2026.4.0</strong>
+          ESP32 ทำงานที่ความถี่ CPU สูงสุด → API operations เร็วขึ้น 33% · ปลด IRAM lock เพิ่ม 40kB · Signed OTA verification · Client-side state logging เร็วขึ้น 46x · Bluetooth Proxy ใช้เพียง 1.8% main loop time บน ESP32-C3
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESPHome</span>
+          <span class="tag tag-green">Home Assistant</span>
+          <span class="tag">OTA</span>
+          <span class="tag tag-purple">Bluetooth Proxy</span>
+        </div>
+      </div>
+
+      <!-- ESP-IDF v5.5 + Arduino -->
+      <div class="card card-orange">
+        <div class="card-label label-orange">&#128296; Arduino-ESP32</div>
+        <h3>Arduino-ESP32 อัปเดตรองรับ ESP-IDF v5.5 พร้อม OpenOCD ใหม่</h3>
+        <p>Arduino core สำหรับ ESP32 ได้รับการอัปเดตรองรับ ESP-IDF v5.5 อย่างเป็นทางการ รวมถึง OpenOCD binaries รุ่นใหม่ ทำให้การ debug และพัฒนาโปรแกรม ESP32 ทุกรุ่นทำได้ง่ายและเสถียรมากยิ่งขึ้น</p>
+        <div class="highlight-box hb-orange">
+          <strong>&#128196; สิ่งที่ได้รับในการอัปเดตนี้</strong>
+          ESP-IDF 5.5.x compatibility · ปรับปรุง peripheral support · Bug fixes สำหรับ ESP32-C6, C5, H2 · OpenOCD debugger ใหม่ · รองรับ ESP32-P4 ครบสมบูรณ์
+        </div>
+        <div class="tag-row">
+          <span class="tag">Arduino</span>
+          <span class="tag tag-orange">ESP-IDF 5.5</span>
+          <span class="tag">OpenOCD</span>
+          <span class="tag tag-green">Debug</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 2: Projects -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">&#128161;</div>
+      <div>
+        <div class="section-title">ไอเดียโปรเจกต์ IoT น่าทำ</div>
+        <p style="color:var(--text-muted); font-size:13.5px; margin-top:4px;">DIY IP KVM, Wearable Health Monitor และ Open-Source Patient Monitor</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- DIY IP KVM -->
+      <div class="card card-blue">
+        <div class="card-label label-blue">&#128187; ระดับกลาง</div>
+        <h3>สร้าง DIY IP KVM ด้วย ESP32-P4 — ควบคุม PC ระยะไกลแบบ Professional</h3>
+        <p>ด้วย ESP-KVM คุณสามารถสร้างอุปกรณ์ควบคุม PC จากระยะไกลผ่านเบราว์เซอร์ได้ในราคาเพียง $45 ไม่ต้องต่อสาย ไม่ต้องลงซอฟต์แวร์ใดๆ ในเครื่องเป้าหมาย เหมาะสำหรับ Home Lab, Data Center ขนาดเล็ก หรือ Headless Server</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <strong>เตรียมฮาร์ดแวร์</strong>
+              <p>Waveshare ESP32-P4-ETH (~$30) + Geekworm TC358743 HDMI CSI Adapter (~$15) + สาย HDMI + USB-C</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <strong>Flash Firmware</strong>
+              <p>ดาวน์โหลด espkvm firmware จาก espkvm.io แล้ว flash ผ่าน esptool หรือ Web Flasher</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <strong>เชื่อมต่อ Network</strong>
+              <p>เชื่อมสาย Ethernet เข้า ESP32-P4-ETH ตั้งค่า IP แล้วเปิดเบราว์เซอร์ไปที่ HTTPS address ของอุปกรณ์</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <strong>เชื่อมกับ PC เป้าหมาย</strong>
+              <p>ต่อ HDMI output ของ PC เข้า TC358743 adapter และต่อ USB เข้า PC เพื่อรับ keyboard/mouse</p>
+            </div>
+          </div>
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESP32-P4</span>
+          <span class="tag tag-green">KVM</span>
+          <span class="tag">Network</span>
+          <span class="tag tag-orange">~$45</span>
+        </div>
+      </div>
+
+      <!-- Wearable Health Monitor -->
+      <div class="card card-purple">
+        <div class="card-label label-purple">&#128139; ระดับกลาง</div>
+        <h3>ESP32-S3 Wearable Health Monitor — ECG + SpO2 + ก้าวเดิน + ล้ม ในเครื่องเดียว</h3>
+        <p>สร้างอุปกรณ์ wearable ที่ครบครันด้วย ESP32-S3 + MAX30102 + AD8232 + MPU6050 วัดอัตราการเต้นของหัวใจ, ออกซิเจนในเลือด, คลื่นไฟฟ้าหัวใจ, นับก้าวเดิน และตรวจจับการล้ม ส่งข้อมูลไปยัง BLE app แบบ real-time</p>
+        <div class="code-block"><span class="cm">// เริ่ม Heart Rate + SpO2 บน MAX30102</span>
+<span class="kw">#include</span> <span class="str">&lt;MAX30105.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;heartRate.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;spo2_algorithm.h&gt;</span>
+
+MAX30105 particleSensor;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  particleSensor.<span class="fn">begin</span>(Wire, I2C_SPEED_FAST);
+  particleSensor.<span class="fn">setup</span>(60, 4, 2, 400, 411, 4096);
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">long</span> irValue = particleSensor.<span class="fn">getIR</span>();
+  <span class="kw">if</span> (<span class="fn">checkForBeat</span>(irValue)) {
+    <span class="cm">// คำนวณ BPM จาก R-R interval</span>
+    beatsPerMinute = <span class="num">60</span> / (delta / <span class="num">1000.0</span>);
+  }
+}</div>
+        <div class="tag-row">
+          <span class="tag">ESP32-S3</span>
+          <span class="tag tag-purple">MAX30102</span>
+          <span class="tag">AD8232</span>
+          <span class="tag">MPU6050</span>
+          <span class="tag tag-green">BLE</span>
+        </div>
+      </div>
+
+      <!-- Open Source Patient Monitor -->
+      <div class="card card-green">
+        <div class="card-label label-green">&#127973; ระดับสูง</div>
+        <h3>Open-Source Patient Health Monitor Dashboard — ECG + SpO2 + BPM แบบ Live Web</h3>
+        <p>สร้างระบบ Patient Monitor แบบ Open Source สำหรับใช้ในสถานพยาบาลหรือ Home Care ด้วย ESP32 + AD8232 (ECG) + MAX30102 (SpO2) + BME280 (Temperature/Pressure) ส่งข้อมูลขึ้น Live Web Dashboard ผ่าน WebSocket</p>
+        <div class="highlight-box hb-green">
+          <strong>&#128200; Sensor Suite ที่ใช้</strong>
+          AD8232 — ECG (คลื่นหัวใจ P-QRS-T) · MAX30102 — PPG Heart Rate + SpO2 · BME280 — อุณหภูมิร่างกาย · DS18B20 — Temperature อีกจุด · Wi-Fi → MQTT → Grafana Dashboard
+        </div>
+        <div class="highlight-box hb-blue" style="margin-top:10px;">
+          <strong>&#9888; ข้อควรระวัง</strong>
+          อุปกรณ์นี้เป็นสำหรับการวิจัยและการศึกษา ไม่ใช่อุปกรณ์ทางการแพทย์ที่ได้รับการรับรอง ไม่ควรใช้วินิจฉัยหรือรักษาโรคโดยปราศจากคำแนะนำจากแพทย์
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESP32</span>
+          <span class="tag tag-green">Healthcare IoT</span>
+          <span class="tag tag-orange">WebSocket</span>
+          <span class="tag tag-purple">Grafana</span>
+          <span class="tag">MQTT</span>
+        </div>
+      </div>
+
+      <!-- Machine Anomaly Detection -->
+      <div class="card card-orange">
+        <div class="card-label label-orange">&#129302; Edge AI</div>
+        <h3>ESP32-P4 Machine Anomaly Detector — วิเคราะห์เสียงและกล้องพร้อมกันแบบ On-Device</h3>
+        <p>ใช้ CPU 400 MHz ของ ESP32-P4 ร่วมกับ MEMS Microphone Array และกล้อง วิเคราะห์การสั่นสะเทือนและภาพจากเครื่องจักรพร้อมกัน ตรวจจับ anomaly บน CNC, สายพานลำเลียง หรือเครื่องทอผ้า โดย inference ทำงาน locally ไม่ต้องส่ง Cloud</p>
+        <table class="spec-table">
+          <tr><td>CPU</td><td>ESP32-P4 dual-core RISC-V 400 MHz</td></tr>
+          <tr><td>Audio</td><td>MEMS Microphone Array (I2S)</td></tr>
+          <tr><td>Vision</td><td>MIPI CSI Camera + ISP hardware</td></tr>
+          <tr><td>Inference</td><td>On-device, &lt;100ms latency</td></tr>
+          <tr><td>AI Framework</td><td>ESP-DL + TensorFlow Lite Micro</td></tr>
+        </table>
+        <div class="tag-row">
+          <span class="tag">ESP32-P4</span>
+          <span class="tag tag-orange">Edge AI</span>
+          <span class="tag">Anomaly Detection</span>
+          <span class="tag tag-green">Industrial IoT</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 3: Sensors -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">&#128300;</div>
+      <div>
+        <div class="section-title">Sensors น่าสนใจประจำวัน</div>
+        <p style="color:var(--text-muted); font-size:13.5px; margin-top:4px;">Biometric sensors สำหรับ Health IoT — MAX30102, AD8232, MEMS Mic, TC358743</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- MAX30102 -->
+      <div class="card card-green">
+        <div class="card-label label-green">&#129504; PPG Sensor</div>
+        <h3>MAX30102 — PPG Optical Sensor วัด Heart Rate + SpO2 ราคาต่ำ</h3>
+        <p>Maxim MAX30102 เป็น optical pulse oximeter ที่ใช้ LED สีแดง (660nm) และ Infrared (940nm) วัดการดูดซับแสงในเส้นเลือด คำนวณ Heart Rate และ SpO2 ผ่าน I2C interface ได้ทันที เป็น sensor ที่นิยมที่สุดสำหรับ wearable health project</p>
+        <table class="spec-table">
+          <tr><td>Interface</td><td>I2C (400kHz fast mode)</td></tr>
+          <tr><td>LED</td><td>Red 660nm + IR 940nm</td></tr>
+          <tr><td>SpO2 Accuracy</td><td>±2% (consumer grade)</td></tr>
+          <tr><td>Heart Rate</td><td>±5-10 bpm (no motion)</td></tr>
+          <tr><td>Sampling</td><td>50 – 3,200 samples/sec</td></tr>
+          <tr><td>Supply</td><td>1.8V (core), 3.3V (LED)</td></tr>
+          <tr><td>Package</td><td>5.6mm × 3.3mm OLGA-14</td></tr>
+        </table>
+        <div class="tag-row">
+          <span class="tag tag-green">Heart Rate</span>
+          <span class="tag">SpO2</span>
+          <span class="tag">I2C</span>
+          <span class="tag tag-purple">Wearable</span>
+        </div>
+      </div>
+
+      <!-- AD8232 -->
+      <div class="card card-blue">
+        <div class="card-label label-blue">&#128138; ECG Sensor</div>
+        <h3>AD8232 — Single-Lead ECG Signal Conditioning สำหรับ DIY Cardiac Monitor</h3>
+        <p>Analog Devices AD8232 เป็น IC สำหรับวัดคลื่นไฟฟ้าหัวใจ (ECG) ที่มี instrumentation amplifier, right leg drive, lead-off detection ในชิปเดียว ใช้ขา Leads On/Off ตรวจสอบว่า electrode ยังสัมผัสผิวหนังอยู่ ส่งสัญญาณออกเป็น analog (อ่านด้วย ADC บน ESP32 ได้เลย)</p>
+        <div class="highlight-box hb-blue">
+          <strong>&#128200; วิธีอ่านสัญญาณ ECG ด้วย ESP32</strong>
+          AD8232 OUTPUT → GPIO34 (ADC1_CH6) ของ ESP32 · ตั้ง sampling rate 500 Hz · ใช้ notch filter 50/60 Hz กรอง noise ไฟฟ้า · แสดงผล waveform ผ่าน Serial Plotter หรือ Web Dashboard
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-blue">ECG</span>
+          <span class="tag">Analog</span>
+          <span class="tag tag-orange">3-lead</span>
+          <span class="tag">Medical IoT</span>
+        </div>
+      </div>
+
+      <!-- MEMS Microphone -->
+      <div class="card card-purple">
+        <div class="card-label label-purple">&#127908; MEMS Mic</div>
+        <h3>INMP441 — MEMS Digital Microphone I2S สำหรับ Edge Audio AI บน ESP32</h3>
+        <p>INMP441 เป็น MEMS microphone แบบ I2S digital interface ให้คุณภาพเสียงดีกว่า analog mic มาก เหมาะสำหรับโปรเจกต์ voice recognition, anomaly detection จากเสียงเครื่องจักร และ audio processing บน ESP32-S3 หรือ ESP32-P4</p>
+        <table class="spec-table">
+          <tr><td>Interface</td><td>I2S (24-bit)</td></tr>
+          <tr><td>Frequency</td><td>60 Hz – 15 kHz</td></tr>
+          <tr><td>SNR</td><td>61 dBA</td></tr>
+          <tr><td>Sensitivity</td><td>-26 dBFS</td></tr>
+          <tr><td>Supply</td><td>1.8V – 3.3V</td></tr>
+          <tr><td>Directivity</td><td>Omnidirectional</td></tr>
+        </table>
+        <div class="tag-row">
+          <span class="tag tag-purple">MEMS</span>
+          <span class="tag">I2S</span>
+          <span class="tag tag-green">Edge Audio</span>
+          <span class="tag">Voice AI</span>
+        </div>
+      </div>
+
+      <!-- TC358743 -->
+      <div class="card card-orange">
+        <div class="card-label label-orange">&#127909; HDMI Bridge</div>
+        <h3>TC358743 — HDMI-to-MIPI CSI Bridge IC หัวใจของ ESP-KVM</h3>
+        <p>Toshiba TC358743XBG เป็น IC ที่แปลง HDMI signal ให้เป็น MIPI CSI-2 output ทำให้ ESP32-P4 (ซึ่งมี MIPI CSI interface) สามารถรับภาพจากจอคอมพิวเตอร์ผ่าน HDMI ได้โดยตรง นี่คือ chip สำคัญที่ทำให้ ESP-KVM เป็นไปได้</p>
+        <div class="highlight-box hb-orange">
+          <strong>&#128295; ใช้ใน Geekworm X630 Board</strong>
+          Geekworm X630 เป็น breakout board สำเร็จรูปที่ใส่ TC358743 มาให้แล้ว มี HDMI input + MIPI CSI output connector ตรงพร้อมเชื่อมต่อกับ Waveshare ESP32-P4-ETH ได้ทันที ราคาประมาณ $15
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-orange">HDMI</span>
+          <span class="tag">MIPI CSI-2</span>
+          <span class="tag tag-blue">ESP32-P4</span>
+          <span class="tag">Video Bridge</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 4: Tutorial -->
+  <section id="tutorial">
+    <div class="section-header">
+      <div class="section-icon icon-orange">&#128214;</div>
+      <div>
+        <div class="section-title">Tutorial ประจำวัน</div>
+        <p style="color:var(--text-muted); font-size:13.5px; margin-top:4px;">วัด PPG + SpO2 ด้วย MAX30102 บน ESP32 แบบ Step-by-Step</p>
+      </div>
+    </div>
+
+    <div class="card card-wide card-purple">
+      <div>
+        <div class="card-label label-purple">&#128295; Tutorial · MAX30102</div>
+        <h3>วัด Heart Rate และ SpO2 ด้วย MAX30102 + ESP32 แบบ Real-time</h3>
+        <p>MAX30102 เป็น I2C device ที่อ่านค่าได้ง่ายด้วย library ของ SparkFun ติดตั้งผ่าน Arduino Library Manager แล้วเชื่อมต่อ VCC→3.3V, GND→GND, SDA→GPIO21, SCL→GPIO22 สำหรับ ESP32 classic</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <strong>ติดตั้ง Library</strong>
+              <p>ใน Arduino IDE ไปที่ Library Manager ค้นหา <code>SparkFun MAX3010x</code> และติดตั้ง</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <strong>เชื่อมต่อวงจร</strong>
+              <p>MAX30102 VIN→3.3V · GND→GND · SDA→GPIO21 · SCL→GPIO22 (ESP32) หรือ SDA→GPIO8, SCL→GPIO9 (ESP32-S3 XIAO)</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <strong>เรียกใช้ Example SpO2</strong>
+              <p>File → Examples → SparkFun MAX3010x → Example8_SPO2 จะแสดง BPM และ SpO2 ใน Serial Monitor</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <strong>ปรับแต่งสำหรับ Wearable</strong>
+              <p>เปิด low-power mode, ตั้ง sample rate 50Hz, เพิ่ม moving average filter เพื่อลด noise จากการเคลื่อนไหว</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card-label label-blue">&#128196; Sample Code</div>
+        <h3 style="margin-bottom:10px;">ส่งข้อมูลผ่าน BLE Notify ไปยัง Phone App</h3>
+        <div class="code-block"><span class="kw">#include</span> <span class="str">&lt;BLEDevice.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;BLEServer.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;MAX30105.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;heartRate.h&gt;</span>
+
+<span class="cm">// UUID สำหรับ Heart Rate Service (Standard BLE)</span>
+<span class="kw">#define</span> HR_SERVICE_UUID  <span class="str">"180D"</span>
+<span class="kw">#define</span> HR_CHAR_UUID     <span class="str">"2A37"</span>
+
+MAX30105 sensor;
+BLECharacteristic *pHRChar;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  sensor.<span class="fn">begin</span>(Wire, I2C_SPEED_FAST);
+  sensor.<span class="fn">setup</span>(60, 4, 2, 400, 411, 4096);
+
+  BLEDevice::<span class="fn">init</span>(<span class="str">"ESP32-HealthBand"</span>);
+  BLEServer *pServer = BLEDevice::<span class="fn">createServer</span>();
+  BLEService *pHR = pServer-><span class="fn">createService</span>(HR_SERVICE_UUID);
+  pHRChar = pHR-><span class="fn">createCharacteristic</span>(
+    HR_CHAR_UUID,
+    BLECharacteristic::PROPERTY_NOTIFY
+  );
+  pHR-><span class="fn">start</span>();
+  pServer-><span class="fn">getAdvertising</span>()-><span class="fn">start</span>();
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">long</span> ir = sensor.<span class="fn">getIR</span>();
+  <span class="kw">if</span> (<span class="fn">checkForBeat</span>(ir)) {
+    <span class="kw">uint8_t</span> bpm = (<span class="kw">uint8_t</span>)beatsPerMinute;
+    pHRChar-><span class="fn">setValue</span>(&amp;bpm, <span class="num">1</span>);
+    pHRChar-><span class="fn">notify</span>();
+  }
+  <span class="fn">delay</span>(<span class="num">20</span>);
+}</div>
+        <div class="highlight-box hb-purple" style="margin-top:12px;">
+          <strong>&#128161; เคล็ดลับ</strong>
+          ใช้ Standard BLE Heart Rate Service UUID (0x180D) ทำให้ app สุขภาพบน iOS/Android อย่าง nRF Connect หรือ Heart Rate Monitor apps อ่านค่าได้ทันทีโดยไม่ต้องเขียน custom app
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: Resources -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-blue">&#128279;</div>
+      <div>
+        <div class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง</div>
+        <p style="color:var(--text-muted); font-size:13.5px; margin-top:4px;">ลิงก์โปรเจกต์, repository และ documentation ที่เกี่ยวข้องกับเนื้อหาวันนี้</p>
+      </div>
+    </div>
+    <div class="resource-grid">
+      <a href="https://espkvm.io/" target="_blank" rel="noopener" class="resource-card">
+        <div class="resource-icon ri-blue">&#128187;</div>
+        <div class="resource-text">
+          <h4>espkvm.io</h4>
+          <p>เว็บไซต์หลักของโปรเจกต์ ESP-KVM พร้อม documentation และ download firmware</p>
+        </div>
+      </a>
+      <a href="https://github.com/espkvm/espkvm" target="_blank" rel="noopener" class="resource-card">
+        <div class="resource-icon ri-green">&#128008;</div>
+        <div class="resource-text">
+          <h4>GitHub: espkvm/espkvm</h4>
+          <p>Source code ทั้งหมดของ ESP-KVM — HDMI capture, USB HID, Browser console over HTTPS</p>
+        </div>
+      </a>
+      <a href="https://www.hackster.io/dexif/esp-kvm-a-browser-based-ip-kvm-on-the-esp32-p4-no-soldering-4c4488" target="_blank" rel="noopener" class="resource-card">
+        <div class="resource-icon ri-orange">&#128296;</div>
+        <div class="resource-text">
+          <h4>Hackster.io: ESP-KVM Build Guide</h4>
+          <p>คู่มือสร้าง ESP-KVM แบบ step-by-step ไม่ต้องบัดกรี ใช้เวลาน้อย</p>
+        </div>
+      </a>
+      <a href="https://esphome.io/changelog/2026.9.0/" target="_blank" rel="noopener" class="resource-card">
+        <div class="resource-icon ri-purple">&#128295;</div>
+        <div class="resource-text">
+          <h4>ESPHome 2026.9.0 Changelog</h4>
+          <p>รายละเอียดการอัปเดต ESPHome เดือนกันยายน 2026 ฟีเจอร์ใหม่และ bug fixes</p>
+        </div>
+      </a>
+      <a href="https://github.com/PhamHungTien/esp32-s3-health-monitor" target="_blank" rel="noopener" class="resource-card">
+        <div class="resource-icon ri-green">&#128139;</div>
+        <div class="resource-text">
+          <h4>GitHub: ESP32-S3 Health Monitor</h4>
+          <p>Wearable สำหรับ heart rate, SpO2, step counting, fall detection, GPS ไม่ใช้ third-party library</p>
+        </div>
+      </a>
+      <a href="https://how2electronics.com/esp32-patient-health-monitor-ecg-spo%E2%82%82-bpm-live-dashboard/" target="_blank" rel="noopener" class="resource-card">
+        <div class="resource-icon ri-blue">&#127973;</div>
+        <div class="resource-text">
+          <h4>ESP32 Patient Health Monitor</h4>
+          <p>Guide สร้าง Patient Monitor พร้อม ECG, SpO2, BPM และ Live Web Dashboard</p>
+        </div>
+      </a>
+      <a href="https://www.opensourceforu.com/2026/09/jetkvm-mini-brings-kvm-to-esp32-p4x/" target="_blank" rel="noopener" class="resource-card">
+        <div class="resource-icon ri-orange">&#128204;</div>
+        <div class="resource-text">
+          <h4>JetKVM Mini with ESP32-P4X</h4>
+          <p>บทความเกี่ยวกับ JetKVM Mini KVM เชิงพาณิชย์ขนาดเล็กที่ใช้ ESP32-P4X</p>
+        </div>
+      </a>
+      <a href="https://github.com/espressif/arduino-esp32/pull/12906" target="_blank" rel="noopener" class="resource-card">
+        <div class="resource-icon ri-purple">&#128008;</div>
+        <div class="resource-text">
+          <h4>Arduino-ESP32: IDF v5.5 PR</h4>
+          <p>Pull Request อัปเดต Arduino-ESP32 รองรับ ESP-IDF v5.5 พร้อม OpenOCD ใหม่</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <strong>ESP32 &amp; Sensor Innovations Daily Report</strong><br>
+  สร้างเมื่อ: 18 กันยายน 2026 | AI Research: ESP32 &amp; IoT Daily<br>
+  <div class="footer-refs">
+    แหล่งอ้างอิง:
+    <a href="https://espkvm.io/" target="_blank">espkvm.io</a> ·
+    <a href="https://github.com/espkvm/espkvm" target="_blank">github.com/espkvm/espkvm</a> ·
+    <a href="https://www.hackster.io/news/esphome-2026-4-0-brings-a-big-performance-boost-for-the-espressif-esp32-with-breaking-changes-too-006b26e1b445" target="_blank">Hackster.io — ESPHome 2026.4.0</a> ·
+    <a href="https://esphome.io/changelog/2026.9.0/" target="_blank">ESPHome 2026.9.0</a> ·
+    <a href="https://www.opensourceforu.com/2026/09/jetkvm-mini-brings-kvm-to-esp32-p4x/" target="_blank">JetKVM Mini (OpenSourceForU)</a> ·
+    <a href="https://github.com/PhamHungTien/esp32-s3-health-monitor" target="_blank">ESP32-S3 Health Monitor (GitHub)</a> ·
+    <a href="https://how2electronics.com/esp32-patient-health-monitor-ecg-spo%E2%82%82-bpm-live-dashboard/" target="_blank">How2Electronics — Patient Monitor</a> ·
+    <a href="https://electricalflux.com/mcu-peripherals/interfacing-ppg-sensors-esp32-max30102" target="_blank">ElectricalFlux — PPG Sensors</a>
+  </div>
+</footer>
+
+</body>
+</html>
