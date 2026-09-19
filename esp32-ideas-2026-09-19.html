@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 19 กันยายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1a2540;
+    --bg-card-hover: #1e2d50;
+    --accent-blue: #3b82f6;
+    --accent-cyan: #06b6d4;
+    --accent-green: #10b981;
+    --accent-orange: #f59e0b;
+    --accent-purple: #8b5cf6;
+    --accent-red: #ef4444;
+    --accent-pink: #ec4899;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #2d3f5c;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1a1060 50%, #0c2340 100%);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 50%, rgba(59,130,246,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 40% at 80% 50%, rgba(139,92,246,0.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, var(--accent-orange), var(--accent-red));
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 0.28rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #60a5fa, #a78bfa, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-pill {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.35rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .stat-pill span { color: var(--accent-cyan); font-weight: 600; }
+
+  /* ===== LAYOUT ===== */
+  main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.2rem 4rem; }
+
+  /* ===== SECTION TITLES ===== */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 3rem 0 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .section-title .icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  /* ===== CARDS ===== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    background: var(--bg-card-hover);
+    box-shadow: var(--shadow);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .card-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+
+  .card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.9rem;
+  }
+
+  .tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .tag-blue   { background: rgba(59,130,246,0.15);  color: #60a5fa; }
+  .tag-cyan   { background: rgba(6,182,212,0.15);   color: #22d3ee; }
+  .tag-green  { background: rgba(16,185,129,0.15);  color: #34d399; }
+  .tag-orange { background: rgba(245,158,11,0.15);  color: #fbbf24; }
+  .tag-purple { background: rgba(139,92,246,0.15);  color: #a78bfa; }
+  .tag-red    { background: rgba(239,68,68,0.15);   color: #f87171; }
+  .tag-pink   { background: rgba(236,72,153,0.15);  color: #f472b6; }
+
+  /* ===== SENSOR TABLE ===== */
+  .sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .sensor-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .sensor-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .sensor-spec {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+  }
+
+  .spec-item {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.2rem 0.5rem;
+    color: var(--text-secondary);
+  }
+
+  .spec-item b { color: var(--text-primary); }
+
+  /* ===== TUTORIAL BLOCK ===== */
+  .tutorial-block {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .tutorial-header {
+    background: linear-gradient(90deg, #1a2050, #1f1060);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tutorial-header .ticon {
+    font-size: 2rem;
+  }
+
+  .tutorial-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .tutorial-header p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.2rem;
+  }
+
+  .tutorial-body { padding: 1.5rem; }
+
+  .step {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .step:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+  .step-num {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+  }
+
+  .step-content h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+  }
+
+  .step-content p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  code {
+    font-family: 'Courier New', monospace;
+    background: rgba(255,255,255,0.07);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    color: #7dd3fc;
+  }
+
+  pre {
+    background: #0d1627;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    color: #7dd3fc;
+    margin-top: 0.6rem;
+    line-height: 1.6;
+  }
+
+  /* ===== RESOURCES ===== */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .resource-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+
+  .resource-info .r-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .resource-info .r-url {
+    font-size: 0.78rem;
+    color: var(--accent-cyan);
+    word-break: break-all;
+  }
+
+  /* ===== HIGHLIGHT BOX ===== */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.08));
+    border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-top: 1rem;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .highlight-box strong { color: var(--text-primary); }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+
+  footer strong { color: var(--text-secondary); }
+
+  /* ===== COLORS for section icons ===== */
+  .icon-innovations { background: linear-gradient(135deg,#1d4ed8,#7c3aed); }
+  .icon-projects    { background: linear-gradient(135deg,#065f46,#0891b2); }
+  .icon-sensors     { background: linear-gradient(135deg,#92400e,#b45309); }
+  .icon-tutorial    { background: linear-gradient(135deg,#6d28d9,#db2777); }
+  .icon-resources   { background: linear-gradient(135deg,#1e3a5f,#164e63); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 640px) {
+    .card-grid, .sensor-grid, .resource-grid { grid-template-columns: 1fr; }
+    .header-stats { gap: 0.75rem; }
+    .tutorial-header { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily Research • 19 Sep 2026</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">ยานยนต์ CAN Bus • ควบคุมมอเตอร์ FOC • Smart Energy Metering • เกษตรแม่นยำ</p>
+  <div class="header-stats">
+    <div class="stat-pill">📅 วันที่ <span>19 กันยายน 2026</span></div>
+    <div class="stat-pill">💡 ไอเดีย <span>12 หัวข้อ</span></div>
+    <div class="stat-pill">🔬 Sensors <span>4 ชนิด</span></div>
+    <div class="stat-pill">📚 Tutorial <span>1 บทเรียน</span></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== INNOVATIONS ===== -->
+  <h2 class="section-title">
+    <span class="icon icon-innovations">🚗</span>
+    นวัตกรรม ESP32 ใหม่ล่าสุด
+  </h2>
+
+  <div class="card-grid">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#1d4ed8,#0891b2)">🚘</div>
+        <h3>ESP32 TWAI Controller — CAN Bus ในตัวชิปสำหรับยานยนต์</h3>
+      </div>
+      <p>ESP32 มี TWAI (Two-Wire Automotive Interface) built-in ซึ่งเป็น CAN-compatible controller ที่ไม่ต้องซื้อ IC เพิ่ม เพียงต่อ SN65HVD230 transceiver ราคา $1 ก็เชื่อมต่อ OBD-II ของรถยนต์ได้ทันที อ่านค่า RPM, ความเร็ว, อุณหภูมิน้ำหล่อเย็น, และ DTC error codes แล้วส่งขึ้น cloud ผ่าน Wi-Fi</p>
+      <div class="tag-row">
+        <span class="tag tag-blue">TWAI</span>
+        <span class="tag tag-cyan">CAN Bus</span>
+        <span class="tag tag-orange">OBD-II</span>
+        <span class="tag tag-green">ESP-IDF</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#065f46,#059669)">⚡</div>
+        <h3>SimpleFOC + FOCn Module — ควบคุม BLDC Motor ด้วย ESP32-S3</h3>
+      </div>
+      <p>FOCn เป็น ESP32-S3 based BLDC driver module ที่รองรับ SimpleFOC library ครบครัน มี Wi-Fi + Bluetooth ในตัว, รองรับ motor ถึง 500W, กระแส peak 20A, มี position/velocity/current loop ปรับ PID ได้ผ่าน Serial หรือ Web interface เหมาะสำหรับหุ่นยนต์และ CNC</p>
+      <div class="tag-row">
+        <span class="tag tag-green">SimpleFOC</span>
+        <span class="tag tag-blue">ESP32-S3</span>
+        <span class="tag tag-purple">BLDC</span>
+        <span class="tag tag-orange">FOC</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#7c3aed,#db2777)">⚡</div>
+        <h3>PZEM-004T + ESP32 — Smart Energy Meter Open Source</h3>
+      </div>
+      <p>PZEM-004T วัดค่า Voltage, Current, Power, Energy (kWh), Frequency, และ Power Factor ได้ในชิปเดียว เชื่อมต่อ ESP32 ผ่าน UART ง่ายมาก แล้วส่งข้อมูลผ่าน MQTT ไปแสดงบน Node-RED หรือ Home Assistant ได้ทันที มี alarm แจ้งเตือนเมื่อแรงดันเกินหรือต่ำกว่ากำหนด</p>
+      <div class="tag-row">
+        <span class="tag tag-orange">PZEM-004T</span>
+        <span class="tag tag-blue">MQTT</span>
+        <span class="tag tag-cyan">Home Assistant</span>
+        <span class="tag tag-green">ESPHome</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#854d0e,#b45309)">🌱</div>
+        <h3>Agri-Sentinel AI — ESP32 + Camera + ML สำหรับเกษตรกรรม</h3>
+      </div>
+      <p>โปรเจกต์ open source ล่าสุดที่ใช้ ESP32 + sensors ตรวจ soil moisture, temperature, humidity, rainfall, แสง พร้อม camera + AI สำหรับตรวจโรคพืชและแมลง ทำงานได้แม้ไม่มี internet, มี mobile app แจ้งเตือน พร้อมรองรับภาษาท้องถิ่น เหมาะสำหรับ smallholder farmer</p>
+      <div class="tag-row">
+        <span class="tag tag-green">Agriculture</span>
+        <span class="tag tag-purple">TinyML</span>
+        <span class="tag tag-cyan">Edge AI</span>
+        <span class="tag tag-orange">Offline</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#1e3a8a,#4338ca)">🌊</div>
+        <h3>Smart HydroSense — วัดคุณภาพน้ำแบบ Real-time ด้วย IoT</h3>
+      </div>
+      <p>ระบบ IoT ที่ได้รับการนำเสนอใน SmartCom 2026 ใช้ ESP32 + sensors วัด pH, turbidity, TDS, อุณหภูมิ และ DO (dissolved oxygen) แบบต่อเนื่อง ส่งข้อมูลขึ้น cloud แบบ real-time มี threshold alert เหมาะสำหรับมอนิเตอร์แหล่งน้ำ, บ่อเลี้ยงสัตว์น้ำ, และระบบน้ำประปา</p>
+      <div class="tag-row">
+        <span class="tag tag-blue">pH Sensor</span>
+        <span class="tag tag-cyan">TDS</span>
+        <span class="tag tag-green">DO Sensor</span>
+        <span class="tag tag-orange">Smart Water</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#4a044e,#7e22ce)">🤖</div>
+        <h3>OBD2_CAN_Bus_Library — ISO 15765-4 บน ESP32 Arduino</h3>
+      </div>
+      <p>Library ใหม่ที่รองรับ OBD2 protocol (ISO 15765-4) เต็มรูปแบบบน ESP32 Arduino IDE ใช้ TWAI built-in controller, รองรับทั้ง 11-bit และ 29-bit CAN ID, อ่านค่า PID มาตรฐาน SAE J1979 ได้โดยตรง เช่น engine load, fuel trim, O2 sensor, catalyst temperature และอีกกว่า 100 parameters</p>
+      <div class="tag-row">
+        <span class="tag tag-red">ISO 15765-4</span>
+        <span class="tag tag-blue">Arduino IDE</span>
+        <span class="tag tag-cyan">SAE J1979</span>
+        <span class="tag tag-green">Open Source</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== PROJECTS ===== -->
+  <h2 class="section-title">
+    <span class="icon icon-projects">💡</span>
+    ไอเดียโปรเจกต์ IoT น่าทำ
+  </h2>
+
+  <div class="card-grid">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#0c4a6e,#0369a1)">🚗</div>
+        <h3>DIY OBD-II Vehicle Data Logger — บันทึกข้อมูลรถผ่าน CAN Bus</h3>
+      </div>
+      <p>ใช้ ESP32 + SN65HVD230 เสียบ OBD-II port อ่านค่า RPM, speed, coolant temp, fuel level แบบ real-time บันทึกลง SD card หรือส่งขึ้น MQTT broker เพื่อสร้าง dashboard แสดงผลบน Grafana หรือ Node-RED สร้างเองได้ในราคาไม่ถึง $15</p>
+      <div class="tag-row">
+        <span class="tag tag-blue">CAN Bus</span>
+        <span class="tag tag-cyan">Data Logger</span>
+        <span class="tag tag-orange">Grafana</span>
+        <span class="tag tag-green">&lt;$15</span>
+      </div>
+      <div class="highlight-box">
+        <strong>Hardware ที่ต้องการ:</strong> ESP32 + SN65HVD230 transceiver + DB9 OBD-II cable + SD card module<br>
+        <strong>Library:</strong> OBD2_CAN_Bus_Library (GitHub: muki01) หรือ ESP32-TWAI native API
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#064e3b,#065f46)">⚡</div>
+        <h3>SimpleFOC BLDC Robot Arm — หุ่นยนต์แขนกลควบคุมแม่นยำ</h3>
+      </div>
+      <p>สร้างแขนหุ่นยนต์ 3-axis ด้วย ESP32-S3 + FOCn driver + BLDC motor ในแต่ละข้อ ใช้ SimpleFOC library ควบคุม position และ torque แบบ closed-loop ด้วย magnetic encoder, ส่ง telemetry ผ่าน BLE ไปยัง web interface สั่งงานได้ทาง Wi-Fi precision &lt;0.1°</p>
+      <div class="tag-row">
+        <span class="tag tag-green">Robot Arm</span>
+        <span class="tag tag-purple">SimpleFOC</span>
+        <span class="tag tag-blue">ESP32-S3</span>
+        <span class="tag tag-orange">Torque Control</span>
+      </div>
+      <div class="highlight-box">
+        <strong>Hardware:</strong> ESP32-S3 + FOCn Module + BLDC Motor + AS5047P magnetic encoder<br>
+        <strong>Library:</strong> SimpleFOC v2.3+, espFoC (GitHub: uLipe)
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#4a1d96,#6d28d9)">🔌</div>
+        <h3>Whole-Home Energy Monitor — วัดการใช้ไฟแต่ละวงจรแบบ Real-time</h3>
+      </div>
+      <p>ติด PZEM-004T ที่แต่ละ circuit breaker ในตู้ไฟบ้าน เชื่อม ESP32 กลาง รวบรวมข้อมูลทุก 5 วินาที ส่งผ่าน MQTT ไปแสดงบน Grafana หรือ Home Assistant Energy Dashboard วิเคราะห์ว่าอุปกรณ์ชิ้นไหนกินไฟมากที่สุด ช่วยลดค่าไฟได้ 20-30%</p>
+      <div class="tag-row">
+        <span class="tag tag-orange">Energy</span>
+        <span class="tag tag-blue">MQTT</span>
+        <span class="tag tag-cyan">Grafana</span>
+        <span class="tag tag-green">Home Automation</span>
+      </div>
+      <div class="highlight-box">
+        <strong>Hardware:</strong> ESP32 + PZEM-004T (ต่อ circuit ละ 1 ตัว) + Current Transformer CT<br>
+        <strong>Firmware:</strong> ESPHome PZEM-004T component, ใช้ได้กับ Home Assistant โดยตรง
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== SENSORS ===== -->
+  <h2 class="section-title">
+    <span class="icon icon-sensors">🔬</span>
+    Sensors น่าสนใจประจำวัน
+  </h2>
+
+  <div class="sensor-grid">
+
+    <div class="sensor-card">
+      <div class="sensor-name">⚡ PZEM-004T v3.0</div>
+      <div class="sensor-desc">AC Power Measurement Module วัดค่าไฟฟ้าครบทุกพารามิเตอร์ในโมดูลเดียว</div>
+      <div class="sensor-spec">
+        <div class="spec-item"><b>Voltage:</b> 80–260V AC</div>
+        <div class="spec-item"><b>Current:</b> 0–100A</div>
+        <div class="spec-item"><b>Power:</b> 0–22 kW</div>
+        <div class="spec-item"><b>Interface:</b> UART TTL</div>
+        <div class="spec-item"><b>Baud:</b> 9600</div>
+        <div class="spec-item"><b>ราคา:</b> ~$5–8</div>
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-orange">Energy Meter</span>
+        <span class="tag tag-blue">Power Factor</span>
+      </div>
+    </div>
+
+    <div class="sensor-card">
+      <div class="sensor-name">🚗 SN65HVD230</div>
+      <div class="sensor-desc">CAN Bus Transceiver สำหรับเชื่อมต่อ ESP32 TWAI กับ OBD-II และ Industrial CAN</div>
+      <div class="sensor-spec">
+        <div class="spec-item"><b>Supply:</b> 3.3V</div>
+        <div class="spec-item"><b>Speed:</b> 1 Mbit/s</div>
+        <div class="spec-item"><b>ISO 11898:</b> รองรับ</div>
+        <div class="spec-item"><b>Slope control:</b> มี</div>
+        <div class="spec-item"><b>ESD:</b> ±16 kV</div>
+        <div class="spec-item"><b>ราคา:</b> ~$1</div>
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-cyan">CAN Bus</span>
+        <span class="tag tag-blue">Automotive</span>
+      </div>
+    </div>
+
+    <div class="sensor-card">
+      <div class="sensor-name">🌱 Capacitive Soil Moisture v2.0</div>
+      <div class="sensor-desc">วัดความชื้นดินแบบ capacitive ไม่มีปัญหาการกัดกร่อนเหมือน resistive รุ่นเก่า</div>
+      <div class="sensor-spec">
+        <div class="spec-item"><b>Supply:</b> 3.3–5.5V</div>
+        <div class="spec-item"><b>Output:</b> Analog (0–3V)</div>
+        <div class="spec-item"><b>Depth:</b> 38 mm</div>
+        <div class="spec-item"><b>Range:</b> 0–100% VWC</div>
+        <div class="spec-item"><b>IP:</b> IP67</div>
+        <div class="spec-item"><b>ราคา:</b> ~$2–3</div>
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-green">Agriculture</span>
+        <span class="tag tag-orange">Capacitive</span>
+      </div>
+    </div>
+
+    <div class="sensor-card">
+      <div class="sensor-name">🌊 TDS Meter Sensor Module</div>
+      <div class="sensor-desc">วัดค่า Total Dissolved Solids ในน้ำ บอกคุณภาพน้ำสำหรับดื่ม, ไฮโดรโปนิกส์, และบำบัดน้ำ</div>
+      <div class="sensor-spec">
+        <div class="spec-item"><b>Supply:</b> 3.3–5.5V</div>
+        <div class="spec-item"><b>Output:</b> Analog</div>
+        <div class="spec-item"><b>Range:</b> 0–1000 ppm</div>
+        <div class="spec-item"><b>Temp comp:</b> มี</div>
+        <div class="spec-item"><b>Cable:</b> 1 m</div>
+        <div class="spec-item"><b>ราคา:</b> ~$3–5</div>
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-blue">Water Quality</span>
+        <span class="tag tag-cyan">Hydroponics</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== TUTORIAL ===== -->
+  <h2 class="section-title">
+    <span class="icon icon-tutorial">📖</span>
+    Tutorial ประจำวัน
+  </h2>
+
+  <div class="tutorial-block">
+    <div class="tutorial-header">
+      <div class="ticon">🚗</div>
+      <div>
+        <h3>อ่านข้อมูลรถยนต์ผ่าน OBD-II ด้วย ESP32 TWAI + SN65HVD230</h3>
+        <p>ตั้งแต่ต้นจนจบ — wiring, code, แสดงผลบน Serial และ Web Dashboard</p>
+      </div>
+    </div>
+    <div class="tutorial-body">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>เตรียม Hardware</h4>
+          <p>ต่อ SN65HVD230 กับ ESP32: <code>GPIO_21 → TX</code>, <code>GPIO_22 → RX</code>, <code>3.3V → VCC</code>, <code>GND → GND</code><br>
+          ต่อ CANH และ CANL ของ SN65HVD230 เข้ากับสาย OBD-II (pin 6 = CANH, pin 14 = CANL)<br>
+          หมายเหตุ: ใช้ resistor 120Ω เป็น termination ถ้าสายยาวเกิน 1 เมตร</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>ติดตั้ง Library และตั้งค่า Arduino IDE</h4>
+          <p>เปิด Arduino IDE → Library Manager → ค้นหา <code>OBD2_CAN_Bus_Library</code> ติดตั้ง library ของ muki01 หรือใช้ ESP-IDF TWAI native API สำหรับ ESP-IDF environment</p>
+          <pre>// ตัวอย่าง config TWAI ด้วย ESP-IDF
+#include "driver/twai.h"
+
+twai_general_config_t g_config =
+    TWAI_GENERAL_CONFIG_DEFAULT(GPIO_NUM_21, GPIO_NUM_22,
+                                TWAI_MODE_NORMAL);
+twai_timing_config_t t_config = TWAI_TIMING_CONFIG_500KBITS();
+twai_filter_config_t f_config = TWAI_FILTER_CONFIG_ACCEPT_ALL();</pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>ส่ง OBD-II Request PID และรับผล</h4>
+          <p>OBD-II ใช้ CAN ID 0x7DF สำหรับ broadcast request และ 0x7E8 สำหรับ ECU response<br>
+          Service 0x01 = show current data, PID 0x0C = Engine RPM, PID 0x0D = Vehicle Speed</p>
+          <pre>// ส่ง request อ่าน RPM (PID 0x0C)
+uint8_t data[8] = {0x02, 0x01, 0x0C, 0,0,0,0,0};
+twai_message_t msg;
+msg.identifier = 0x7DF;
+msg.data_length_code = 8;
+memcpy(msg.data, data, 8);
+twai_transmit(&msg, pdMS_TO_TICKS(100));
+
+// ถอดรหัส RPM จาก response
+// RPM = ((A*256) + B) / 4
+uint16_t rpm = ((resp.data[3] * 256) + resp.data[4]) / 4;</pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>ส่งข้อมูลขึ้น MQTT และแสดงบน Dashboard</h4>
+          <p>ใช้ PubSubClient library ส่งค่า RPM, speed, coolant temp ทุก 1 วินาที<br>
+          Subscribe topic บน Node-RED แล้วสร้าง gauge chart แสดงผล real-time ได้เลย</p>
+          <pre>// Publish ค่า RPM ไป MQTT
+char payload[32];
+snprintf(payload, sizeof(payload), "{\"rpm\":%d}", rpm);
+client.publish("vehicle/obd/rpm", payload);</pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h4>เพิ่มฟีเจอร์: อ่าน DTC Error Code</h4>
+          <p>ใช้ Service 0x03 อ่าน Diagnostic Trouble Codes (DTC) ที่ค้างอยู่ในรถ<br>
+          แปลค่าตาม OBD-II DTC format เช่น P0301 = Cylinder 1 Misfire Detected<br>
+          ใช้ Service 0x04 เพื่อ clear DTC ได้โดยไม่ต้องมี scan tool</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== RESOURCES ===== -->
+  <h2 class="section-title">
+    <span class="icon icon-resources">🔗</span>
+    แหล่งข้อมูลและลิงก์อ้างอิง
+  </h2>
+
+  <div class="resource-grid">
+    <div class="resource-card">
+      <div class="resource-icon">📦</div>
+      <div class="resource-info">
+        <div class="r-title">OBD2_CAN_Bus_Library (muki01)</div>
+        <div class="r-url">github.com/muki01/OBD2_CAN_Bus_Library</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon">🔧</div>
+      <div class="resource-info">
+        <div class="r-title">SimpleFOC Arduino Library</div>
+        <div class="r-url">github.com/simplefoc/Arduino-FOC</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon">⚡</div>
+      <div class="resource-info">
+        <div class="r-title">FOCn ESP32-S3 BLDC Driver</div>
+        <div class="r-url">github.com/mrmp17/FOCn</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon">🌿</div>
+      <div class="resource-info">
+        <div class="r-title">Agri-Sentinel AI Project</div>
+        <div class="r-url">github.com/vennelasadam52-maker/agri-sentinal-ai</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon">💧</div>
+      <div class="resource-info">
+        <div class="r-title">IoT Water Quality Monitor</div>
+        <div class="r-url">github.com/mhdjishan/water-quality-monitor</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon">⚙️</div>
+      <div class="resource-info">
+        <div class="r-title">espFoC — FOC Motor Control ESP-IDF</div>
+        <div class="r-url">github.com/uLipe/espFoC</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon">🏠</div>
+      <div class="resource-info">
+        <div class="r-title">ESP32 Home Energy Meter (Hackaday)</div>
+        <div class="r-url">hackaday.io/project/158956-esp32-home-energy-meter</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon">📡</div>
+      <div class="resource-info">
+        <div class="r-title">Read Car Data with ESP32 (CAN+OBD-II)</div>
+        <div class="r-url">dash.risal.io/blog/esp32-can-obd2/</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p><strong>ESP32 & Sensor Innovations</strong> — สร้างโดย AI Research Agent อัตโนมัติ</p>
+  <p style="margin-top:0.5rem">วันที่สร้าง: 19 กันยายน 2026 &nbsp;•&nbsp; หัวข้อวันนี้: CAN Bus / OBD-II • SimpleFOC / BLDC Control • Smart Energy Meter • Precision Agriculture</p>
+  <p style="margin-top:0.5rem; color: #475569;">แหล่งอ้างอิง: Espressif Systems, GitHub (muki01, mrmp17, uLipe, simplefoc), Hackaday.io, SmartCom 2026, PCBWay, Edge Impulse Docs</p>
+</footer>
+
+</body>
+</html>
