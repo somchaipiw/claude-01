@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 20 กันยายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263148;
+    --border: #334155;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-blue: #38bdf8;
+    --accent-purple: #a78bfa;
+    --accent-green: #34d399;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --accent-yellow: #facc15;
+    --gradient-header: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    --gradient-blue: linear-gradient(135deg, #0ea5e9, #6366f1);
+    --gradient-green: linear-gradient(135deg, #10b981, #06b6d4);
+    --gradient-orange: linear-gradient(135deg, #f97316, #eab308);
+    --gradient-purple: linear-gradient(135deg, #8b5cf6, #ec4899);
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.8; }
+
+  /* ===== HEADER ===== */
+  header {
+    background: var(--gradient-header);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 24px 36px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(99,102,241,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.12);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent-blue);
+    padding: 4px 16px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #38bdf8, #a78bfa, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+  header p { color: var(--text-secondary); font-size: 1rem; }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 28px;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+  .stat-pill span { color: var(--text-primary); font-weight: 700; }
+
+  /* ===== NAV ===== */
+  nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  nav a:hover { background: rgba(56,189,248,0.1); color: var(--accent-blue); }
+
+  /* ===== MAIN LAYOUT ===== */
+  main { max-width: 1100px; margin: 0 auto; padding: 40px 20px 60px; }
+
+  /* ===== SECTION ===== */
+  section { margin-bottom: 56px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: linear-gradient(135deg, rgba(14,165,233,0.2), rgba(99,102,241,0.2)); border: 1px solid rgba(56,189,248,0.3); }
+  .icon-green { background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(6,182,212,0.2)); border: 1px solid rgba(52,211,153,0.3); }
+  .icon-orange { background: linear-gradient(135deg, rgba(249,115,22,0.2), rgba(234,179,8,0.2)); border: 1px solid rgba(251,146,60,0.3); }
+  .icon-purple { background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(236,72,153,0.2)); border: 1px solid rgba(167,139,250,0.3); }
+  .section-title { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); }
+  .section-subtitle { font-size: 0.9rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* ===== CARD GRID ===== */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+  .card-grid-2 { grid-template-columns: repeat(auto-fill, minmax(460px, 1fr)); }
+
+  /* ===== CARD ===== */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover { border-color: rgba(56,189,248,0.4); transform: translateY(-2px); box-shadow: var(--shadow); }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+  }
+  .card.blue::before { background: var(--gradient-blue); }
+  .card.green::before { background: var(--gradient-green); }
+  .card.orange::before { background: var(--gradient-orange); }
+  .card.purple::before { background: var(--gradient-purple); }
+
+  .card-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+  }
+  .tag-blue { background: rgba(56,189,248,0.12); color: var(--accent-blue); border: 1px solid rgba(56,189,248,0.25); }
+  .tag-green { background: rgba(52,211,153,0.12); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.25); }
+  .tag-orange { background: rgba(251,146,60,0.12); color: var(--accent-orange); border: 1px solid rgba(251,146,60,0.25); }
+  .tag-purple { background: rgba(167,139,250,0.12); color: var(--accent-purple); border: 1px solid rgba(167,139,250,0.25); }
+  .tag-pink { background: rgba(244,114,182,0.12); color: var(--accent-pink); border: 1px solid rgba(244,114,182,0.25); }
+  .tag-yellow { background: rgba(250,204,21,0.12); color: var(--accent-yellow); border: 1px solid rgba(250,204,21,0.25); }
+
+  .card h3 { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; line-height: 1.4; }
+  .card p { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.75; }
+
+  /* ===== SPEC TABLE ===== */
+  .spec-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-top: 14px; }
+  .spec-table tr { border-bottom: 1px solid rgba(51,65,85,0.5); }
+  .spec-table tr:last-child { border-bottom: none; }
+  .spec-table td { padding: 6px 8px; }
+  .spec-table td:first-child { color: var(--text-muted); width: 40%; }
+  .spec-table td:last-child { color: var(--text-primary); font-weight: 600; }
+
+  /* ===== CHIP COMPARE ===== */
+  .chip-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 12px;
+  }
+  .chip-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .chip-box h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; }
+  .chip-box ul { list-style: none; }
+  .chip-box li { font-size: 0.82rem; color: var(--text-secondary); padding: 2px 0; padding-left: 14px; position: relative; }
+  .chip-box li::before { content: '▸'; position: absolute; left: 0; color: var(--text-muted); }
+
+  /* ===== TUTORIAL STEPS ===== */
+  .steps { counter-reset: step; }
+  .step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+  }
+  .step-num {
+    counter-increment: step;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--gradient-blue);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .step-num::after { content: counter(step); }
+  .step-body h4 { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+  .step-body p { font-size: 0.9rem; color: var(--text-secondary); }
+
+  /* ===== CODE BLOCK ===== */
+  pre {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: #86efac;
+    margin-top: 10px;
+  }
+  .code-keyword { color: #93c5fd; }
+  .code-string { color: #fde68a; }
+  .code-comment { color: #6b7280; }
+
+  /* ===== HIGHLIGHT BOX ===== */
+  .highlight-box {
+    background: rgba(56,189,248,0.05);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-left: 4px solid var(--accent-blue);
+    border-radius: 0 10px 10px 0;
+    padding: 16px 20px;
+    margin-top: 16px;
+  }
+  .highlight-box.green { border-left-color: var(--accent-green); background: rgba(52,211,153,0.05); border-color: rgba(52,211,153,0.2); }
+  .highlight-box.orange { border-left-color: var(--accent-orange); background: rgba(251,146,60,0.05); border-color: rgba(251,146,60,0.2); }
+  .highlight-box p { font-size: 0.9rem; color: var(--text-secondary); margin: 0; }
+  .highlight-box strong { color: var(--text-primary); }
+
+  /* ===== TAG LIST ===== */
+  .tag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .tag-item {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+
+  /* ===== RESOURCE LINKS ===== */
+  .resource-list { display: grid; gap: 12px; }
+  .resource-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+  }
+  .resource-item:hover { border-color: rgba(56,189,248,0.4); background: var(--bg-card-hover); }
+  .resource-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 2px; }
+  .resource-title { font-size: 0.95rem; font-weight: 700; color: var(--accent-blue); }
+  .resource-desc { font-size: 0.85rem; color: var(--text-secondary); margin-top: 2px; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 32px 24px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  footer a { color: var(--accent-blue); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 600px) {
+    header { padding: 36px 16px 28px; }
+    .card-grid-2 { grid-template-columns: 1fr; }
+    .chip-compare { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-badge">AI Research Daily · ESP32 & IoT</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p>20 กันยายน 2026 · LoRa Mesh · mmWave Radar · UWB Positioning · C5/C61 Update</p>
+  <div class="stats-row">
+    <div class="stat-pill"><span>4</span> หัวข้อหลัก</div>
+    <div class="stat-pill"><span>12+</span> ไอเดียและโปรเจกต์</div>
+    <div class="stat-pill"><span>6</span> Sensor ใหม่</div>
+    <div class="stat-pill">วันที่ <span>20/09/2026</span></div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <a href="#innovations">🚀 นวัตกรรม</a>
+  <a href="#projects">💡 โปรเจกต์</a>
+  <a href="#sensors">🔬 Sensors</a>
+  <a href="#tutorial">📖 Tutorial</a>
+  <a href="#resources">🔗 แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🚀</div>
+      <div>
+        <div class="section-title">นวัตกรรมและข่าวสารใหม่</div>
+        <div class="section-subtitle">ESP32-C5/C61 stable release · Meshtastic BuildOff 2026 · ESP-IDF v6.0</div>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Card 1 -->
+      <div class="card blue">
+        <div class="card-tag tag-blue">🆕 ESP-IDF v6.0</div>
+        <h3>ESP32-C5 ได้ Stable Support แล้ว — Dual-Band Wi-Fi 6 บน RISC-V 240 MHz</h3>
+        <p>ESP-IDF v6.0 เลื่อนสถานะ ESP32-C5 จาก Preview เป็น Stable พร้อม OTA Safe Bootloader, Wi-Fi 6 ทั้ง 2.4 GHz และ 5 GHz ในชิปเดียว รองรับ Zigbee, Thread และ Matter อย่างสมบูรณ์</p>
+        <table class="spec-table">
+          <tr><td>CPU</td><td>RISC-V Single-Core 240 MHz</td></tr>
+          <tr><td>RAM</td><td>400 KB SRAM</td></tr>
+          <tr><td>Wi-Fi</td><td>2.4 GHz + 5 GHz (Wi-Fi 6)</td></tr>
+          <tr><td>Wireless</td><td>BLE 5.0, Zigbee, Thread, Matter</td></tr>
+          <tr><td>Framework</td><td>ESP-IDF v6.0 (Stable)</td></tr>
+        </table>
+        <div class="highlight-box">
+          <p><strong>จุดเด่น:</strong> เป็น ESP32 ตัวแรกที่รองรับ 5 GHz Wi-Fi 6 — เหมาะสำหรับโปรเจกต์ Smart Home ที่ต้องการแบนด์วิดท์สูงและ latency ต่ำ</p>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card purple">
+        <div class="card-tag tag-purple">📦 Mass Production</div>
+        <h3>ESP32-C61 เข้าสู่ Mass Production — Wi-Fi 6 ราคาประหยัดที่สุดในตระกูล C</h3>
+        <p>Espressif ประกาศ ESP32-C61 เข้าสู่สายการผลิตจริงแล้ว เน้นเป็น Wi-Fi 6 co-processor ราคาต่ำมาก เหมาะสำหรับบอร์ดที่ต้องการเพิ่มความสามารถไร้สาย</p>
+        <div class="chip-compare">
+          <div class="chip-box">
+            <h4 style="color: var(--accent-blue);">ESP32-C6</h4>
+            <ul>
+              <li>160 MHz RISC-V HP</li>
+              <li>Wi-Fi 6 + BLE 5.0</li>
+              <li>Zigbee + Thread</li>
+              <li>512 KB SRAM</li>
+              <li>ราคา: ปกติ</li>
+            </ul>
+          </div>
+          <div class="chip-box">
+            <h4 style="color: var(--accent-purple);">ESP32-C61</h4>
+            <ul>
+              <li>160 MHz RISC-V</li>
+              <li>Wi-Fi 6 + BLE 5.0</li>
+              <li>ไม่มี Zigbee/Thread</li>
+              <li>256 KB SRAM</li>
+              <li>ราคา: ถูกกว่ามาก</li>
+            </ul>
+          </div>
+        </div>
+        <div class="highlight-box" style="border-left-color: var(--accent-purple); background: rgba(167,139,250,0.05); border-color: rgba(167,139,250,0.2);">
+          <p><strong>Use Case:</strong> เหมาะกับ consumer electronics ที่ต้องการ Wi-Fi 6 แต่ไม่จำเป็นต้องใช้ Zigbee/Thread เช่น Smart Plug, Smart Bulb, IP Camera</p>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card green">
+        <div class="card-tag tag-green">🏆 BuildOff 2026</div>
+        <h3>Meshtastic BuildOff 2026 โดย Seeed Studio — แข่งขันสร้าง LoRa Mesh Node ดีที่สุด</h3>
+        <p>Seeed Studio ร่วมกับ Meshtastic จัดแข่งขัน BuildOff 2026 เปิดให้ maker ทั่วโลกสร้าง Meshtastic node จาก ESP32-S3 + LoRa SX1262 ส่งผลงานชิงรางวัลและการยอมรับในชุมชน</p>
+        <div class="tag-list">
+          <span class="tag-item">Meshtastic Firmware</span>
+          <span class="tag-item">LoRa SX1262</span>
+          <span class="tag-item">ESP32-S3</span>
+          <span class="tag-item">Off-Grid Mesh</span>
+          <span class="tag-item">Open Source</span>
+        </div>
+        <div class="highlight-box green">
+          <p><strong>เหตุผลที่น่าสนใจ:</strong> Meshtastic v3.x รองรับ MQTT bridging แบบ end-to-end encrypted ทำให้ mesh node สามารถเชื่อมต่อ internet gateway ได้อย่างปลอดภัย</p>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="card orange">
+        <div class="card-tag tag-orange">⚙️ Framework</div>
+        <h3>ESP-IDF v6.0 — Installation Manager ใหม่ + Picolibc + OTA Bootloader</h3>
+        <p>นอกจาก C5/C61 support แล้ว ESP-IDF v6.0 ยังมาพร้อม ESP-IDF Installation Manager (EIM) ที่ทำให้ติดตั้ง framework ง่ายขึ้นมาก เปลี่ยนมาใช้ Picolibc แทน newlib เพื่อ footprint ที่เล็กลง และรองรับการอัปเดต Bootloader ผ่าน OTA</p>
+        <table class="spec-table">
+          <tr><td>EIM</td><td>ติดตั้ง/อัปเดต framework ง่ายใน 1 คำสั่ง</td></tr>
+          <tr><td>Picolibc</td><td>C library ขนาดเล็ก — ประหยัด Flash ~8%</td></tr>
+          <tr><td>OTA Bootloader</td><td>อัปเดต secure bootloader ไม่ต้อง flash ด้วยมือ</td></tr>
+          <tr><td>Wi-Fi 6</td><td>TWT (Target Wake Time) ประหยัดพลังงาน IoT</td></tr>
+          <tr><td>Support ใหม่</td><td>C5 Stable, C61 Stable, H21/H4 Preview</td></tr>
+        </table>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-green">💡</div>
+      <div>
+        <div class="section-title">ไอเดียโปรเจกต์ IoT น่าทำ</div>
+        <div class="section-subtitle">Meshtastic mesh · mmWave presence · UWB indoor tracking · Smart zone automation</div>
+      </div>
+    </div>
+
+    <div class="card-grid card-grid-2">
+
+      <!-- Project 1 -->
+      <div class="card blue">
+        <div class="card-tag tag-blue">📡 LoRa Mesh</div>
+        <h3>Private LoRa Mesh Network ด้วย Meshtastic + ESP32-S3 — Off-Grid สื่อสารไร้อินเทอร์เน็ต</h3>
+        <p>สร้างเครือข่ายสื่อสารแบบ mesh ระยะไกลด้วย ESP32-S3 + SX1262 LoRa module และ Meshtastic firmware แต่ละ node ทำหน้าที่เป็น repeater อัตโนมัติ ส่งข้อความหา-รับ Encrypted text, GPS position และ telemetry ได้ไกลถึง 10-20 km ในพื้นที่โล่ง</p>
+        <table class="spec-table">
+          <tr><td>Hardware</td><td>Heltec WiFi LoRa 32 V3 หรือ TTGO LoRa32</td></tr>
+          <tr><td>Firmware</td><td>Meshtastic v3.x (ติดตั้งง่ายผ่าน Web Flasher)</td></tr>
+          <tr><td>ระยะส่ง</td><td>2-5 km ในเมือง / 10-20 km พื้นที่โล่ง</td></tr>
+          <tr><td>Band</td><td>868 MHz (EU) / 915 MHz (US) / 923 MHz (APAC)</td></tr>
+          <tr><td>App</td><td>Meshtastic App (Android/iOS) ต่อผ่าน BLE</td></tr>
+          <tr><td>ค่าใช้จ่าย</td><td>เริ่มต้น ~600 บาท/node</td></tr>
+        </table>
+        <div class="highlight-box">
+          <p><strong>Use Case:</strong> ทีมงานนอกสถานที่, กิจกรรมกลางแจ้ง, ระบบเตือนภัยชุมชน, งานกู้ภัยพื้นที่ไม่มีสัญญาณมือถือ</p>
+        </div>
+      </div>
+
+      <!-- Project 2 -->
+      <div class="card purple">
+        <div class="card-tag tag-purple">📍 LoRaWAN</div>
+        <h3>LoRaWAN Environmental Sensor Node — ส่งข้อมูลสภาพแวดล้อมผ่าน TTN/ChirpStack ทุก 5 นาที</h3>
+        <p>สร้าง sensor node กินไฟต่ำ ส่งข้อมูล temperature, humidity, CO2 และ pressure ขึ้น The Things Network หรือ ChirpStack server แบตเตอรี่ 18650 เดียวใช้ได้นาน 1-2 ปี ด้วยเทคนิค deep sleep + LoRaWAN OTAA</p>
+        <table class="spec-table">
+          <tr><td>MCU</td><td>ESP32 + SX1276/SX1262</td></tr>
+          <tr><td>Sensors</td><td>BME280 (T/H/P) + SCD40 (CO2)</td></tr>
+          <tr><td>Network</td><td>LoRaWAN Class A, OTAA Join</td></tr>
+          <tr><td>Battery Life</td><td>12-24 เดือน (18650 3000 mAh)</td></tr>
+          <tr><td>Library</td><td>LMIC / RadioLib สำหรับ Arduino</td></tr>
+          <tr><td>Dashboard</td><td>Grafana + InfluxDB ผ่าน TTN Integration</td></tr>
+        </table>
+        <div class="highlight-box" style="border-left-color: var(--accent-purple); background: rgba(167,139,250,0.05); border-color: rgba(167,139,250,0.2);">
+          <p><strong>เคล็ดลับ:</strong> ใช้ ADR (Adaptive Data Rate) ของ LoRaWAN ให้เครือข่ายปรับ spreading factor อัตโนมัติเพื่อประหยัดพลังงาน</p>
+        </div>
+      </div>
+
+      <!-- Project 3 -->
+      <div class="card green">
+        <div class="card-tag tag-green">👁️ mmWave Presence</div>
+        <h3>Smart Room Presence System — LD2450 + ESP32-C6 + ESPHome ตรวจจับหลายคนพร้อมกัน</h3>
+        <p>ระบบตรวจจับการมีคนในห้องแบบ multi-target ด้วย HLK-LD2450 24 GHz mmWave radar เชื่อมต่อ ESP32-C6 ผ่าน UART และ expose ผ่าน ESPHome เข้า Home Assistant สามารถติดตาม X/Y coordinate ของสูงสุด 3 คนพร้อมกัน พร้อมแบ่ง zone อัตโนมัติ</p>
+        <table class="spec-table">
+          <tr><td>Radar</td><td>HLK-LD2450 (24 GHz, UART)</td></tr>
+          <tr><td>MCU</td><td>ESP32-C6 (Zigbee + Wi-Fi 6)</td></tr>
+          <tr><td>Detection</td><td>Multi-target: สูงสุด 3 คน</td></tr>
+          <tr><td>Output</td><td>X/Y coordinate, speed, distance</td></tr>
+          <tr><td>Integration</td><td>ESPHome → Home Assistant</td></tr>
+          <tr><td>Zone Config</td><td>กำหนด zone 1-3 ผ่าน HA UI</td></tr>
+        </table>
+        <div class="highlight-box green">
+          <p><strong>Automation ตัวอย่าง:</strong> เปิดไฟเมื่อมีคนเข้าโซน 1, หรี่ไฟเมื่อทุกคนอยู่โซน 2 (โซฟา), ปิดไฟเมื่อไม่มีคน 5 นาที</p>
+        </div>
+      </div>
+
+      <!-- Project 4 -->
+      <div class="card orange">
+        <div class="card-tag tag-orange">📐 UWB RTLS</div>
+        <h3>UWB Indoor Positioning System — ESP32-S3 + DWM3000 ติดตาม Asset แม่นยำ 10 cm</h3>
+        <p>ระบบ Real-Time Location System (RTLS) ในอาคารโดยใช้ Ultra-Wideband (UWB) กับ Qorvo DWM3000 module ติดตั้ง anchor 3 จุดขึ้นไปตามมุมห้อง แล้วใช้ tag ที่ผู้คนหรือสินทรัพย์พกพา วัด ToF (Time of Flight) ได้ความแม่นยำ ~10 cm</p>
+        <table class="spec-table">
+          <tr><td>MCU+UWB</td><td>ESP32-S3 + Qorvo DWM3000 (SPI)</td></tr>
+          <tr><td>Accuracy</td><td>~10 cm (ดีกว่า BLE RSSI 10x)</td></tr>
+          <tr><td>Topology</td><td>≥3 Anchors + N Tags</td></tr>
+          <tr><td>Algorithm</td><td>TWR (Two-Way Ranging) → Trilateration</td></tr>
+          <tr><td>Output</td><td>JSON ผ่าน Wi-Fi/MQTT ทุก 100 ms</td></tr>
+          <tr><td>Use Case</td><td>Warehouse, Healthcare, AR/VR, Robot Nav</td></tr>
+        </table>
+        <div class="highlight-box orange">
+          <p><strong>เปรียบเทียบ:</strong> BLE iBeacon ≈ 1-3 m accuracy · Wi-Fi RTT ≈ 1-2 m · UWB DWM3000 ≈ 0.1 m — ต่างกัน 10-30 เท่า!</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔬</div>
+      <div>
+        <div class="section-title">Sensors น่าสนใจ</div>
+        <div class="section-subtitle">mmWave Radar · UWB Module · LoRa Radio IC · Soil & Water sensors</div>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Sensor 1 -->
+      <div class="card blue">
+        <div class="card-tag tag-blue">📡 24 GHz mmWave</div>
+        <h3>HLK-LD2410C — Human Micro-Motion Presence Sensor</h3>
+        <p>radar 24 GHz จาก Hi-Link ตรวจจับทั้ง macro motion (เดิน) และ micro motion (หายใจขณะนั่งนิ่ง) ระยะสูงสุด 6 เมตร ราคาถูก เชื่อมต่อผ่าน UART 256000 baud</p>
+        <table class="spec-table">
+          <tr><td>Frequency</td><td>24 GHz FMCW</td></tr>
+          <tr><td>Interface</td><td>UART 3.3V, 256000 baud</td></tr>
+          <tr><td>Detection</td><td>Macro + Micro motion (breathing)</td></tr>
+          <tr><td>Range</td><td>0.2 – 6.0 m</td></tr>
+          <tr><td>Library</td><td>esphome ld2410 component</td></tr>
+          <tr><td>ราคา</td><td>~120-180 บาท</td></tr>
+        </table>
+      </div>
+
+      <!-- Sensor 2 -->
+      <div class="card purple">
+        <div class="card-tag tag-purple">🎯 Multi-Target</div>
+        <h3>HLK-LD2450 — Multi-Target Position Tracking Radar</h3>
+        <p>รุ่นพี่ของ LD2410 รองรับการติดตามสูงสุด 3 เป้าหมายพร้อมกัน พร้อม coordinate (X, Y) และ speed ของแต่ละเป้า ESPHome รองรับ native component ตั้งแต่ v2026.7</p>
+        <table class="spec-table">
+          <tr><td>Frequency</td><td>24 GHz FMCW</td></tr>
+          <tr><td>Targets</td><td>สูงสุด 3 คนพร้อมกัน</td></tr>
+          <tr><td>Output</td><td>X, Y coordinate + speed (UART)</td></tr>
+          <tr><td>Coverage</td><td>6 m × 6 m (±60°)</td></tr>
+          <tr><td>ESPHome</td><td>ld2450 component (v2026.7+)</td></tr>
+          <tr><td>ราคา</td><td>~250-350 บาท</td></tr>
+        </table>
+      </div>
+
+      <!-- Sensor 3 -->
+      <div class="card green">
+        <div class="card-tag tag-green">📻 UWB IC</div>
+        <h3>Qorvo DWM3000 — Ultra-Wideband Module สำหรับ Centimeter-Level Positioning</h3>
+        <p>Module UWB สำเร็จรูปจาก Qorvo มี antenna, RF circuit, crystal ในตัว เชื่อมต่อ ESP32 ผ่าน SPI ใช้วัด Time of Flight ระหว่าง node ได้แม่นยำระดับ 10 cm รองรับ IEEE 802.15.4a/4z</p>
+        <table class="spec-table">
+          <tr><td>Chip</td><td>DW3110 (UWB IC)</td></tr>
+          <tr><td>Interface</td><td>SPI (최대 38 MHz)</td></tr>
+          <tr><td>Standard</td><td>IEEE 802.15.4a, 4z HRP</td></tr>
+          <tr><td>Channels</td><td>5 (6.5 GHz) หรือ 9 (8 GHz)</td></tr>
+          <tr><td>Accuracy</td><td>&lt;10 cm (NLOS ≈ 30 cm)</td></tr>
+          <tr><td>Library</td><td>DW3000_Arduino (GitHub)</td></tr>
+        </table>
+      </div>
+
+      <!-- Sensor 4 -->
+      <div class="card orange">
+        <div class="card-tag tag-orange">📡 LoRa Radio</div>
+        <h3>Semtech SX1262 — LoRa Radio IC ประสิทธิภาพสูงสำหรับ ESP32</h3>
+        <p>IC LoRa รุ่นใหม่จาก Semtech รองรับความถี่ 150-960 MHz ให้ receiver sensitivity ดีกว่า SX1276 ถึง 3 dB ใช้พลังงานน้อยลง 50% เหมาะสำหรับ Meshtastic, LoRaWAN และ Proprietary Long Range</p>
+        <table class="spec-table">
+          <tr><td>Frequency</td><td>150 – 960 MHz</td></tr>
+          <tr><td>Interface</td><td>SPI</td></tr>
+          <tr><td>Sensitivity</td><td>-148 dBm (SF12, 125 kHz)</td></tr>
+          <tr><td>Output Power</td><td>สูงสุด +22 dBm</td></tr>
+          <tr><td>Modulation</td><td>LoRa, FSK, GFSK, MSK, BPSK</td></tr>
+          <tr><td>บอร์ดยอดนิยม</td><td>TTGO LoRa32 V2.1, Heltec V3</td></tr>
+        </table>
+      </div>
+
+      <!-- Sensor 5 -->
+      <div class="card blue" style="grid-column: span 1;">
+        <div class="card-tag tag-pink">🌱 Capacitive</div>
+        <h3>Capacitive Soil Moisture v2.0 — ปลอดสนิม วัดความชื้นดินแม่นยำกว่าแบบ Resistive</h3>
+        <p>Sensor วัดความชื้นดินแบบ capacitive ไม่มีหน้าสัมผัสโลหะในดิน ทำให้ไม่เกิดปัญหาการกัดกร่อน อายุการใช้งานยาวนานกว่า และให้ค่าที่เสถียรกว่า แบบ resistive อย่างเห็นได้ชัด</p>
+        <table class="spec-table">
+          <tr><td>Output</td><td>Analog (0-3.3V) หรือ I2C (v2.0+)</td></tr>
+          <tr><td>Power</td><td>3.3V / 5V</td></tr>
+          <tr><td>Lifespan</td><td>&gt;5 ปี (vs Resistive &lt;3 เดือน)</td></tr>
+          <tr><td>ความแม่นยำ</td><td>±3% RH (ดีกว่า resistive ~5x)</td></tr>
+          <tr><td>ราคา</td><td>~80-150 บาท</td></tr>
+        </table>
+      </div>
+
+      <!-- Sensor 6 -->
+      <div class="card green" style="grid-column: span 1;">
+        <div class="card-tag tag-yellow">🌊 Flow Sensor</div>
+        <h3>YF-S201 Water Flow Sensor — วัดอัตราการไหลของน้ำด้วย Hall Effect</h3>
+        <p>Sensor วัดอัตราการไหลของน้ำแบบ Hall effect ส่ง pulse ออกมาตามรอบการหมุนของ impeller 1 L น้ำ = 450 pulse (calibrate ได้) เชื่อมต่อ ESP32 ผ่าน GPIO interrupt ใช้ในโปรเจกต์ smart irrigation, water meter และ leak detection</p>
+        <table class="spec-table">
+          <tr><td>Interface</td><td>Pulse (GPIO + Interrupt)</td></tr>
+          <tr><td>Flow Rate</td><td>1-30 L/min</td></tr>
+          <tr><td>Pressure</td><td>สูงสุด 1.75 MPa</td></tr>
+          <tr><td>Temperature</td><td>0 – 80°C</td></tr>
+          <tr><td>ราคา</td><td>~100-150 บาท</td></tr>
+        </table>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: TUTORIAL ===== -->
+  <section id="tutorial">
+    <div class="section-header">
+      <div class="section-icon icon-purple">📖</div>
+      <div>
+        <div class="section-title">Tutorial ประจำวัน</div>
+        <div class="section-subtitle">สร้าง Meshtastic Node แบบ DIY ด้วย ESP32-S3 + SX1262 LoRa</div>
+      </div>
+    </div>
+
+    <div class="card blue" style="margin-bottom: 20px;">
+      <div class="card-tag tag-blue">🛠️ DIY Tutorial</div>
+      <h3>สร้าง Meshtastic LoRa Node ตั้งแต่ศูนย์ — Off-Grid สื่อสารระยะ 10+ km</h3>
+      <p style="margin-bottom: 20px;">Meshtastic เป็น open-source firmware ที่ทำให้ ESP32 + LoRa กลายเป็น mesh communication node ส่งข้อความ, GPS location และ telemetry ระหว่างทีมงานได้โดยไม่ต้องมี internet หรือสัญญาณมือถือ</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <h4>เตรียม Hardware</h4>
+            <p>ซื้อบอร์ด Heltec WiFi LoRa 32 V3 (ESP32-S3 + SX1262, ~900 บาท) หรือ TTGO LoRa32 V2.1 (~650 บาท) ทั้งคู่มี LoRa antenna built-in และ OLED display สำหรับแสดงข้อมูล</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <h4>Flash Meshtastic Firmware ผ่าน Web Flasher</h4>
+            <p>เปิด flasher.meshtastic.org ในเบราว์เซอร์ Chrome, เสียบบอร์ดด้วย USB, เลือก device type และ click Flash — ใช้เวลา 2 นาที ไม่ต้องติดตั้ง software อะไรเลย</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <h4>ตั้งค่าผ่าน Meshtastic App</h4>
+            <p>ดาวน์โหลด Meshtastic app (Android/iOS) เปิด Bluetooth เพื่อ pair กับบอร์ด ตั้งค่า Region (Thailand = LORA_REGION_SEA_923), ตั้งชื่อ node และ enable GPS ถ้ามี GPS module</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <h4>เพิ่ม GPS Module (optional แต่แนะนำ)</h4>
+            <p>ต่อ U-blox NEO-6M หรือ NEO-M8N เข้า UART2 ของ ESP32 (GPIO 34=RX, GPIO 12=TX) ตั้งค่า GPS_TX/RX pin ใน Meshtastic app — node จะส่ง GPS coordinate ให้ทีมเห็น realtime บน map</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <h4>ทดสอบการส่งข้อความและ Range</h4>
+            <p>นำ node สองตัว ออกไปทดสอบ กด Send message ใน app แล้วเดินออกไปเรื่อยๆ ดู SNR และ RSSI ที่ลดลงใน app สำหรับ Thailand Band 923 MHz — ในเมือง ≈ 2-4 km, พื้นที่โล่ง ≈ 10-20 km</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num"></div>
+          <div class="step-body">
+            <h4>ต่อยอด: MQTT Bridge สู่ Internet</h4>
+            <p>ถ้ามี node หนึ่งตัวที่เชื่อมต่อ Wi-Fi ได้ ตั้งค่า MQTT uplink ใน Meshtastic app เพื่อ bridge ข้อมูล mesh ออก internet ทำให้คนที่ไม่มีบอร์ดก็ติดตาม node บน map.meshtastic.org ได้</p>
+          </div>
+        </div>
+      </div>
+
+      <pre><span class="code-comment"># ติดตั้ง meshtastic Python CLI สำหรับ advanced config</span>
+pip install meshtastic
+
+<span class="code-comment"># อ่านค่า config ปัจจุบันจาก node</span>
+meshtastic --info
+
+<span class="code-comment"># ตั้ง region เป็น SEA (Southeast Asia 923 MHz)</span>
+meshtastic --set lora.region SEA_923
+
+<span class="code-comment"># ส่งข้อความทดสอบผ่าน CLI</span>
+meshtastic --sendtext "Hello from ESP32 Mesh!"
+
+<span class="code-comment"># ดู list ของ nodes ในเครือข่าย</span>
+meshtastic --nodes</pre>
+
+      <div class="highlight-box green" style="margin-top: 16px;">
+        <p><strong>Pro Tip:</strong> ใช้ Solar panel 5V 2W + LiPo 18650 สร้าง outdoor node ที่ทำงานได้ตลอด 24 ชั่วโมงโดยไม่ต้องชาร์จ เหมาะสำหรับ repeater node ติดบนหลังคาหรือยอดเขา</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ===== SECTION 5: RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔗</div>
+      <div>
+        <div class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง</div>
+        <div class="section-subtitle">เอกสาร · Tutorial · GitHub · Community</div>
+      </div>
+    </div>
+
+    <div class="resource-list">
+      <a href="https://www.cnx-software.com/2026/03/24/esp-idf-v6-0-framework-adds-support-for-esp32-c5-and-esp32-c61-preview-for-esp32-h21-and-esp32-h4/" class="resource-item">
+        <div class="resource-icon">📰</div>
+        <div>
+          <div class="resource-title">ESP-IDF v6.0 เพิ่ม support ESP32-C5, C61 และ Preview H21/H4 — CNX Software</div>
+          <div class="resource-desc">รายละเอียดการอัปเดต ESP-IDF v6.0, EIM Installation Manager, Picolibc และ OTA Bootloader</div>
+        </div>
+      </a>
+      <a href="https://www.espressif.com/en/news/C61_Mass_Production" class="resource-item">
+        <div class="resource-icon">🏭</div>
+        <div>
+          <div class="resource-title">ESP32-C61 เข้าสู่ Mass Production — Espressif Official</div>
+          <div class="resource-desc">ประกาศทางการจาก Espressif เกี่ยวกับ ESP32-C61 production-ready Wi-Fi 6 budget SoC</div>
+        </div>
+      </a>
+      <a href="https://www.hackster.io/Shilleh/build-a-private-lora-mesh-network-with-esp32-d08fdd" class="resource-item">
+        <div class="resource-icon">🛠️</div>
+        <div>
+          <div class="resource-title">Build a Private LoRa Mesh Network with ESP32 — Hackster.io</div>
+          <div class="resource-desc">Tutorial สร้าง private encrypted mesh network ด้วย ESP32 LoRa + Meshtastic firmware ทีละขั้นตอน</div>
+        </div>
+      </a>
+      <a href="https://smarthomescene.com/guides/diy-zigbee-mmwave-presence-sensor-with-esp32-c6-and-ld2410/" class="resource-item">
+        <div class="resource-icon">📡</div>
+        <div>
+          <div class="resource-title">DIY Zigbee Presence Sensor ESP32-C6 + LD2410 — SmartHomeScene</div>
+          <div class="resource-desc">คู่มือสร้าง mmWave presence sensor แบบ Zigbee ด้วย ESP32-C6 และ HLK-LD2410C พร้อม ESPHome config</div>
+        </div>
+      </a>
+      <a href="https://esphome.io/components/sensor/ld2450/" class="resource-item">
+        <div class="resource-icon">📋</div>
+        <div>
+          <div class="resource-title">LD2450 Component Documentation — ESPHome Official</div>
+          <div class="resource-desc">เอกสารทางการของ ESPHome สำหรับ LD2450 multi-target radar ครอบคลุม YAML config, zone setup และ coordinate output</div>
+        </div>
+      </a>
+      <a href="https://circuitdigest.com/microcontrollers-projects/diy-indoor-uwb-positioning-system-using-esp32-and-qorvo-dwm3000" class="resource-item">
+        <div class="resource-icon">📍</div>
+        <div>
+          <div class="resource-title">DIY UWB Indoor Positioning System ESP32 + DWM3000 — CircuitDigest</div>
+          <div class="resource-desc">Tutorial ครบถ้วนสร้าง UWB RTLS ด้วย ESP32-S3 + Qorvo DWM3000 — hardware, firmware, trilateration algorithm</div>
+        </div>
+      </a>
+      <a href="https://github.com/DhamuVkl/ESP32-DWM3000-UWB-Indoor-RTLS-Tracker" class="resource-item">
+        <div class="resource-icon">💻</div>
+        <div>
+          <div class="resource-title">ESP32-DWM3000-UWB-Indoor-RTLS-Tracker — GitHub</div>
+          <div class="resource-desc">Source code เต็มสำหรับ real-time indoor positioning system ด้วย ESP32 + DWM3000, รวม anchor/tag firmware</div>
+        </div>
+      </a>
+      <a href="https://meshtastic.org/docs/getting-started/" class="resource-item">
+        <div class="resource-icon">📡</div>
+        <div>
+          <div class="resource-title">Meshtastic Getting Started — meshtastic.org</div>
+          <div class="resource-desc">เอกสาร Official Meshtastic สำหรับผู้เริ่มต้น ครอบคลุมการ flash firmware, ตั้งค่า region และใช้งาน app</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <p style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">ESP32 & IoT Research Daily</p>
+  <p style="margin-bottom: 4px;">สร้างเมื่อ: 20 กันยายน 2026 | AI Research Agent</p>
+  <p>หัวข้อวันนี้: ESP32-C5/C61 (ESP-IDF v6.0) · Meshtastic LoRa Mesh · mmWave Presence Radar · UWB Indoor Positioning</p>
+  <p style="margin-top: 12px; font-size: 0.8rem;">
+    แหล่งข้อมูล: <a href="https://espressif.com">Espressif</a> ·
+    <a href="https://meshtastic.org">Meshtastic.org</a> ·
+    <a href="https://esphome.io">ESPHome</a> ·
+    <a href="https://hackster.io">Hackster.io</a> ·
+    <a href="https://circuitdigest.com">CircuitDigest</a>
+  </p>
+</footer>
+
+</body>
+</html>
