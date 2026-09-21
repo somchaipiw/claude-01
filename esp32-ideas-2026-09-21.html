@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 21 กันยายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1a2744;
+    --bg-card-hover: #1f2f52;
+    --accent-primary: #38bdf8;
+    --accent-secondary: #818cf8;
+    --accent-green: #34d399;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --accent-yellow: #fbbf24;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #64748b;
+    --border: #334155;
+    --gradient-1: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    --gradient-hero: linear-gradient(135deg, #1e40af 0%, #7c3aed 50%, #0e7490 100%);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: var(--gradient-hero);
+    padding: 48px 24px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(56,189,248,0.15) 0%, transparent 70%);
+  }
+  .header-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 0.82rem;
+    color: #bae6fd;
+    margin-bottom: 20px;
+    backdrop-filter: blur(8px);
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.3;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  header h1 span { color: #7dd3fc; }
+  .header-subtitle {
+    color: #bae6fd;
+    font-size: 1rem;
+    opacity: 0.9;
+    margin-bottom: 28px;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .stat-item { text-align: center; }
+  .stat-number {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.78rem;
+    color: #bae6fd;
+    opacity: 0.8;
+  }
+
+  /* Layout */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 20px;
+  }
+
+  /* Section */
+  section { margin-bottom: 60px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .section-icon {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); }
+  .icon-purple { background: rgba(129,140,248,0.15); border: 1px solid rgba(129,140,248,0.3); }
+  .icon-green { background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.3); }
+  .icon-orange { background: rgba(251,146,60,0.15); border: 1px solid rgba(251,146,60,0.3); }
+
+  .section-title { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); }
+  .section-subtitle { font-size: 0.88rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* Divider */
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary), transparent);
+    margin-bottom: 28px;
+    opacity: 0.3;
+  }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+
+  /* Card */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: transform 0.2s, background 0.2s, border-color 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    background: var(--bg-card-hover);
+    border-color: rgba(56,189,248,0.3);
+  }
+  .card-label {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 100px;
+    margin-bottom: 12px;
+  }
+  .label-new { background: rgba(56,189,248,0.15); color: var(--accent-primary); border: 1px solid rgba(56,189,248,0.25); }
+  .label-hot { background: rgba(251,146,60,0.15); color: var(--accent-orange); border: 1px solid rgba(251,146,60,0.25); }
+  .label-idea { background: rgba(129,140,248,0.15); color: var(--accent-secondary); border: 1px solid rgba(129,140,248,0.25); }
+  .label-sensor { background: rgba(52,211,153,0.15); color: var(--accent-green); border: 1px solid rgba(52,211,153,0.25); }
+  .label-tip { background: rgba(251,191,36,0.15); color: var(--accent-yellow); border: 1px solid rgba(251,191,36,0.25); }
+
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .card p { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.75; }
+
+  /* Specs list */
+  .spec-list {
+    list-style: none;
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .spec-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+  }
+  .spec-list li::before {
+    content: '▸';
+    color: var(--accent-primary);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .spec-list li strong { color: var(--text-primary); min-width: 110px; display: inline-block; }
+
+  /* Highlight box */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(129,140,248,0.08));
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-top: 14px;
+    font-size: 0.88rem;
+  }
+  .highlight-box strong { color: var(--accent-primary); }
+
+  /* Code chip */
+  code {
+    background: rgba(56,189,248,0.1);
+    color: var(--accent-primary);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.84rem;
+  }
+
+  /* Tag row */
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .tag {
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 100px;
+    background: rgba(100,116,139,0.2);
+    color: var(--text-muted);
+    border: 1px solid rgba(100,116,139,0.2);
+  }
+
+  /* Feature hero */
+  .feature-hero {
+    background: linear-gradient(135deg, rgba(30,64,175,0.3), rgba(124,58,237,0.3));
+    border: 1px solid rgba(129,140,248,0.3);
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 28px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+  }
+  .feature-hero h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+  }
+  .feature-hero p { font-size: 0.93rem; line-height: 1.75; }
+  .hero-chip {
+    background: rgba(129,140,248,0.2);
+    border: 1px solid rgba(129,140,248,0.3);
+    border-radius: 16px;
+    padding: 20px 24px;
+    text-align: center;
+    min-width: 120px;
+  }
+  .hero-chip .chip-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    display: block;
+    line-height: 1;
+  }
+  .hero-chip .chip-unit { font-size: 0.78rem; color: var(--accent-secondary); margin-top: 4px; }
+
+  /* Resources */
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .resource-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    display: block;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .resource-item:hover { border-color: rgba(56,189,248,0.4); background: var(--bg-card); }
+  .resource-item .res-icon { font-size: 1.3rem; margin-bottom: 8px; }
+  .resource-item .res-title { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+  .resource-item .res-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 36px 24px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  footer a { color: var(--accent-primary); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 640px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .feature-hero { grid-template-columns: 1fr; }
+    .hero-chip { min-width: auto; }
+    .stats-row { gap: 20px; }
+    main { padding: 32px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">
+    <span>📅</span>
+    <span>21 กันยายน 2026 · ESP32 & IoT Daily Research</span>
+  </div>
+  <h1>ESP32 <span>Vision AI</span> &<br>Biometric IoT Innovations</h1>
+  <p class="header-subtitle">ESP32-P4X-EYE · Thread/Matter Smart Home · Wearable Biometrics · Smart Aquarium Sensors</p>
+  <div class="stats-row">
+    <div class="stat-item">
+      <span class="stat-number">3</span>
+      <span class="stat-label">นวัตกรรมใหม่</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">4</span>
+      <span class="stat-label">ไอเดียโปรเจกต์</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">5</span>
+      <span class="stat-label">Sensors น่าสนใจ</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">8</span>
+      <span class="stat-label">แหล่งข้อมูล</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== INNOVATIONS ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🚀</div>
+      <div>
+        <div class="section-title">นวัตกรรมและข่าวสารใหม่</div>
+        <div class="section-subtitle">ESP32-P4X-EYE shipping · Matter/Thread Border Router · M5Stack Contest 2026</div>
+      </div>
+    </div>
+    <div class="section-divider"></div>
+
+    <!-- Feature Hero -->
+    <div class="feature-hero">
+      <div>
+        <span class="card-label label-new">🆕 Just Shipped</span>
+        <h2>ESP32-P4X-EYE Vision Development Kit — Mouser เริ่มจัดส่งแล้ว!</h2>
+        <p>
+          Espressif และ Mouser เพิ่งเริ่มจัดส่ง <strong style="color:#7dd3fc">ESP32-P4X-EYE</strong> ในเดือนสิงหาคม 2026 — บอร์ดกล้อง AI รูปร่างเหมือนกล้องดิจิตัลขนาดจิ๋ว
+          ที่รวม Edge AI Processing พร้อม Wi-Fi/Bluetooth ในตัวเดียว ใช้ CPU RISC-V Dual-Core 400 MHz
+          พร้อม PSRAM 32 MB, H.264 Encoder, MIPI-CSI/DSI และกล้อง OV5647 built-in
+          รองรับ YOLOv11-nano object detection แบบ real-time โดยไม่ต้องพึ่ง cloud
+        </p>
+        <div class="tag-row">
+          <span class="tag">ESP32-P4</span>
+          <span class="tag">400 MHz RISC-V</span>
+          <span class="tag">H.264 Encoder</span>
+          <span class="tag">YOLOv11</span>
+          <span class="tag">Edge AI</span>
+          <span class="tag">MIPI Camera</span>
+        </div>
+      </div>
+      <div class="hero-chip">
+        <span class="chip-value">400</span>
+        <div class="chip-unit">MHz Dual-Core</div>
+        <div style="margin-top:12px;font-size:1.4rem">📷</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <span class="card-label label-hot">🔥 HOT</span>
+        <h3>ESP32-C6 เป็น Thread Border Router สำหรับ Matter Smart Home</h3>
+        <p>
+          ในปี 2026 Espressif ออก certified stack ที่ทำให้ ESP32-C6 กลายเป็น Thread Border Router
+          สำหรับ Matter เชื่อมต่อกับ Home Assistant, Apple Home และ Google Home ได้โดยตรง
+          ESP32-C6 ราคาเพียง ~150 บาท สามารถ flash ด้วย OpenThread RCP firmware แล้วเสียบ USB
+          เข้า Home Assistant ได้เลย — Thread mesh จะเชื่อมอุปกรณ์ Matter ทั่วบ้านแบบ vendor-agnostic
+        </p>
+        <ul class="spec-list">
+          <li><strong>Tech Stack:</strong> ESP32-C6 + OpenThread RCP + Spinel Protocol</li>
+          <li><strong>Partner SoC:</strong> ESP32-H2 (Radio Co-Processor)</li>
+          <li><strong>Ecosystems:</strong> Home Assistant, Apple Home, Google Home</li>
+          <li><strong>ต้นทุน:</strong> ESP32-C6-WROOM ≈ €5 (~175 บาท)</li>
+        </ul>
+        <div class="highlight-box">
+          <strong>ทำไมถึงดี:</strong> Thread แก้ปัญหา mesh networking พลังงานต่ำ ส่วน Matter แก้ปัญหา interoperability — ทั้งคู่ทำงานร่วมกันเพื่อ Smart Home ที่ไม่ผูกติดแบรนด์
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-new">🏆 Contest</span>
+        <h3>M5Stack Global Innovation Contest 2026 — ส่งผลงาน IoT บน Hackster.io</h3>
+        <p>
+          M5Stack จัดการแข่งขันนวัตกรรมระดับโลก 2026 รับผลงาน <em>practical, playful, experimental,
+          educational, artistic, หรือ industrial</em> ทุกประเภท
+          โพสต์โปรเจกต์บน Hackster.io ใช้ M5Stack module และอุปกรณ์ที่เชื่อมต่อได้
+          รางวัลรวมมูลค่าหลายพันดอลลาร์ พร้อมโอกาสแสดงผลงานระดับ global
+        </p>
+        <ul class="spec-list">
+          <li><strong>Platform:</strong> Hackster.io + M5Stack ecosystem</li>
+          <li><strong>หมวด:</strong> Industrial, Education, Art, Prototype</li>
+          <li><strong>SoC หลัก:</strong> ESP32-S3 บน M5Stack Core S3</li>
+          <li><strong>Sensor support:</strong> 100+ M5Stack sensor units</li>
+        </ul>
+        <div class="highlight-box">
+          <strong>ไอเดียไทย:</strong> ระบบ Smart Farm วัดค่า NPK, pH, อุณหภูมิดิน แจ้งเตือนผ่าน LINE Notify — เหมาะแก่ community ไทยส่งประกวด
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PROJECTS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">💡</div>
+      <div>
+        <div class="section-title">ไอเดียโปรเจกต์ IoT น่าทำ</div>
+        <div class="section-subtitle">AI Camera · Wearable Health · Biometric Lock · Smart Aquarium</div>
+      </div>
+    </div>
+    <div class="section-divider"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <span class="card-label label-idea">🤖 AI Vision</span>
+        <h3>ESP32-P4 AI Security Camera — YOLOv11 Object Detection แบบ Offline</h3>
+        <p>
+          สร้างกล้องวงจรปิด AI ที่ตรวจจับคน, ยานพาหนะ, และสัตว์ได้แบบ real-time บน ESP32-P4
+          โดยไม่ต้องส่งข้อมูลขึ้น cloud — เพิ่มความเป็นส่วนตัว ลด latency และใช้งานได้แม้ไม่มีอินเทอร์เน็ต
+        </p>
+        <ul class="spec-list">
+          <li><strong>Hardware:</strong> ESP32-P4X-EYE Dev Kit</li>
+          <li><strong>Model:</strong> YOLOv11-nano (ESDL inference engine)</li>
+          <li><strong>Use case:</strong> ตรวจจับ intruder, นับคน, จำหน้า</li>
+          <li><strong>Storage:</strong> บันทึกวิดีโอ H.264 ลง MicroSD</li>
+          <li><strong>Alert:</strong> ส่ง webhook ผ่าน ESP32-C6 Wi-Fi module</li>
+        </ul>
+        <div class="highlight-box">
+          <strong>เคล็ดลับ:</strong> ใช้ ESDL framework แปลง ONNX model จาก PC → deploy บน ESP32-P4 ได้โดยตรง
+          รองรับ face detection, pedestrian detection, custom object class
+        </div>
+        <div class="tag-row">
+          <span class="tag">Computer Vision</span>
+          <span class="tag">Edge AI</span>
+          <span class="tag">Privacy-First</span>
+          <span class="tag">H.264</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-idea">❤️ Wearable</span>
+        <h3>DIY Smart Wristband — Heart Rate + SpO2 + Motion Tracking ต้นทุน &lt;500 บาท</h3>
+        <p>
+          สร้าง fitness tracker ด้วย ESP32-S3 ขนาดเล็ก, sensor MAX30102 (heart rate + SpO2),
+          MPU6050 (accelerometer + gyro) และ OLED 0.96" — รายงานค่าสุขภาพ real-time ผ่าน BLE
+          ไปยังสมาร์ทโฟน หรือ MQTT broker สำหรับ dashboard
+        </p>
+        <ul class="spec-list">
+          <li><strong>MCU:</strong> ESP32-S3 mini (+ BLE 5.0)</li>
+          <li><strong>Heart Rate:</strong> MAX30102 — Infrared + Red LED PPG</li>
+          <li><strong>Motion:</strong> MPU6050 — 6-axis IMU สำหรับนับก้าว</li>
+          <li><strong>Display:</strong> SSD1306 OLED 0.96"</li>
+          <li><strong>Power:</strong> LiPo 150 mAh, ชาร์จ USB-C</li>
+        </ul>
+        <div class="highlight-box">
+          <strong>Algorithm:</strong> ใช้ rolling 4-beat average บน MAX30102 IR signal — แม่นยำกว่า peak detection แบบเดิม
+          SpO2 คำนวณจาก ratio R/IR ตาม Beer-Lambert law
+        </div>
+        <div class="tag-row">
+          <span class="tag">Health Monitor</span>
+          <span class="tag">BLE 5.0</span>
+          <span class="tag">PPG Sensor</span>
+          <span class="tag">Wearable</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-idea">🔐 Security</span>
+        <h3>IoT Biometric Door Lock — Fingerprint + ESP32 + MQTT + Home Assistant</h3>
+        <p>
+          ระบบประตูล็อกอัจฉริยะที่ใช้ลายนิ้วมือ (R307 Capacitive Fingerprint sensor) ยืนยันตัวตน
+          บันทึก log การเข้าออก timestamp ส่งผ่าน MQTT ไปยัง Home Assistant
+          รองรับผู้ใช้ได้ถึง 162 fingerprint template พร้อม OTA update firmware ผ่าน Wi-Fi
+        </p>
+        <ul class="spec-list">
+          <li><strong>Sensor:</strong> R307 Fingerprint (UART, FAR &lt;0.001%)</li>
+          <li><strong>MCU:</strong> ESP32-C3 (ขนาดเล็ก, ราคาถูก)</li>
+          <li><strong>Protocol:</strong> MQTT + Home Assistant integration</li>
+          <li><strong>Actuator:</strong> Solenoid lock 12V หรือ Servo motor</li>
+          <li><strong>Extra:</strong> LED status indicator + buzzer</li>
+        </ul>
+        <div class="highlight-box">
+          <strong>Security Note:</strong> เก็บ fingerprint template ใน sensor flash (ไม่ผ่าน ESP32)
+          ทำให้ข้อมูล biometric ปลอดภัย แม้ ESP32 ถูก hack ก็ไม่สามารถ extract fingerprint ได้
+        </div>
+        <div class="tag-row">
+          <span class="tag">Biometric</span>
+          <span class="tag">MQTT</span>
+          <span class="tag">Home Assistant</span>
+          <span class="tag">Access Control</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-idea">🐟 Smart Home</span>
+        <h3>Smart Aquarium System — Multi-Parameter Water Monitor + Auto Dosing</h3>
+        <p>
+          ระบบตู้ปลาอัจฉริยะวัดค่า pH, TDS, อุณหภูมิ, ความขุ่น และออกซิเจนละลาย
+          ควบคุม pump auto-dosing ปรับค่า pH อัตโนมัติ เชื่อมต่อ dashboard
+          แจ้งเตือน LINE เมื่อค่าออกนอก range — เหมาะสำหรับตู้ปลาสวยงาม, aquaponics หรืองานวิจัย
+        </p>
+        <ul class="spec-list">
+          <li><strong>MCU:</strong> ESP32-S3 (Wi-Fi + BLE + PSRAM)</li>
+          <li><strong>pH Sensor:</strong> Atlas Scientific EZO-pH module</li>
+          <li><strong>TDS Sensor:</strong> TDS-3 or DFRobot SEN0244</li>
+          <li><strong>Temp:</strong> DS18B20 waterproof probe</li>
+          <li><strong>Dosing:</strong> Peristaltic pump 3.3V (3 channel)</li>
+        </ul>
+        <div class="highlight-box">
+          <strong>2026 Trend:</strong> Turbidity sensor เชื่อมต่อ smart filter — เมื่อค่าความขุ่นเกิน threshold
+          ระบบจะสั่งกรองอัตโนมัติ ลดการดูแลตู้ปลาลงได้ 70%
+        </div>
+        <div class="tag-row">
+          <span class="tag">Aquaponics</span>
+          <span class="tag">pH Monitor</span>
+          <span class="tag">Auto Dosing</span>
+          <span class="tag">LoRaWAN</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">🔬</div>
+      <div>
+        <div class="section-title">Sensors น่าสนใจ</div>
+        <div class="section-subtitle">MAX30102 · AS7341 · SEN0546 · SHTC3 · OV5647</div>
+      </div>
+    </div>
+    <div class="section-divider"></div>
+
+    <div class="grid-3">
+      <div class="card">
+        <span class="card-label label-sensor">💗 Biometric</span>
+        <h3>MAX30102 — Pulse Oximeter & Heart Rate Sensor</h3>
+        <p>Sensor PPG คุณภาพสูงในตัวเดียว วัด Heart Rate และ SpO2 ด้วย LED อินฟราเรด + แดง
+          ADC 18-bit built-in, I²C interface, พลังงานต่ำมาก 0.7 mA ขณะวัด</p>
+        <ul class="spec-list">
+          <li><strong>Interface:</strong> I²C (400 kHz)</li>
+          <li><strong>Wavelength:</strong> 660 nm (Red) + 880 nm (IR)</li>
+          <li><strong>Accuracy:</strong> ±2% SpO2, ±3 bpm HR</li>
+          <li><strong>Voltage:</strong> 1.8–3.3V</li>
+          <li><strong>ราคา:</strong> ~50–80 บาท</li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag">PPG</span>
+          <span class="tag">SpO2</span>
+          <span class="tag">Heart Rate</span>
+          <span class="tag">I²C</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-sensor">🌈 Spectral</span>
+        <h3>AS7341 — 11-Channel Multi-Spectral Sensor</h3>
+        <p>วัดแสงได้ 8 ช่อง visible spectrum (415–680 nm) + Near-IR + Clear + Flicker
+          เหมาะสำหรับ plant health monitoring, color detection, spectral analysis ราคาประหยัด</p>
+        <ul class="spec-list">
+          <li><strong>Channels:</strong> F1-F8 (415–680nm) + NIR + Clear</li>
+          <li><strong>Interface:</strong> I²C</li>
+          <li><strong>Use case:</strong> ตรวจสุขภาพพืช, วิเคราะห์สี, แสงสว่าง</li>
+          <li><strong>ราคา:</strong> ~120–180 บาท (breakout board)</li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag">Spectral</span>
+          <span class="tag">Plant Monitoring</span>
+          <span class="tag">Color Sensing</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-sensor">💧 Water</span>
+        <h3>SEN0546 — Gravity Turbidity Sensor (DFRobot)</h3>
+        <p>Sensor วัดความขุ่นของน้ำ สำหรับ aquarium, ระบบกรองน้ำ, water treatment
+          ส่งออก analog voltage 0–4.5V ตาม turbidity level — เชื่อมต่อ ESP32 ADC โดยตรง</p>
+        <ul class="spec-list">
+          <li><strong>Output:</strong> Analog 0–4.5V</li>
+          <li><strong>Range:</strong> 0–3000 NTU</li>
+          <li><strong>Supply:</strong> 5V DC</li>
+          <li><strong>Use case:</strong> Smart filter trigger, water QC</li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag">Turbidity</span>
+          <span class="tag">Water Quality</span>
+          <span class="tag">Analog</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-sensor">🌡️ Environmental</span>
+        <h3>SHTC3 — Ultra-Compact Humidity & Temperature Sensor</h3>
+        <p>Sensor RH+T เล็กที่สุดในตลาด (2×2 mm) จาก Sensirion ใช้พลังงานน้อยมาก
+          เหมาะสำหรับ wearable, smart label หรืออุปกรณ์ battery-operated ขนาดจิ๋ว</p>
+        <ul class="spec-list">
+          <li><strong>Interface:</strong> I²C (1 MHz fast mode+)</li>
+          <li><strong>Accuracy:</strong> ±2% RH, ±0.2°C</li>
+          <li><strong>Current:</strong> 0.9 µA (sleep mode)</li>
+          <li><strong>Package:</strong> DFN 2×2 mm</li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag">Ultra-Low Power</span>
+          <span class="tag">Wearable</span>
+          <span class="tag">I²C</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-sensor">📷 Camera</span>
+        <h3>OV5647 — 5 MP MIPI-CSI Camera for ESP32-P4</h3>
+        <p>กล้อง MIPI-CSI 5 MP ที่ใช้ใน Raspberry Pi Camera v1.3 และ ESP32-P4X-EYE
+          รองรับ 1080p@30fps และ 720p@60fps — paired กับ ESP32-P4 ได้ performance สูงสุด</p>
+        <ul class="spec-list">
+          <li><strong>Resolution:</strong> 2592×1944 (5MP)</li>
+          <li><strong>Interface:</strong> MIPI-CSI 2-lane</li>
+          <li><strong>Video:</strong> 1080p@30fps</li>
+          <li><strong>FOV:</strong> 54° (Standard lens)</li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag">MIPI-CSI</span>
+          <span class="tag">1080p</span>
+          <span class="tag">ESP32-P4</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">📚</div>
+      <div>
+        <div class="section-title">แหล่งข้อมูลและลิงก์น่าสนใจ</div>
+        <div class="section-subtitle">Documentation · Tutorials · Community · Dev Kits</div>
+      </div>
+    </div>
+    <div class="section-divider"></div>
+
+    <div class="resource-grid">
+      <a href="https://www.mouser.com/en/newsroom/publicrelations-espressif-esp32-p4x-eye-kit-2026final" target="_blank" rel="noopener" class="resource-item">
+        <div class="res-icon">🛒</div>
+        <div class="res-title">ESP32-P4X-EYE @ Mouser</div>
+        <div class="res-desc">ข้อมูลการสั่งซื้อและ spec sheet ของ ESP32-P4X-EYE Development Kit</div>
+      </a>
+      <a href="https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4x-eye/user_guide.html" target="_blank" rel="noopener" class="resource-item">
+        <div class="res-icon">📖</div>
+        <div class="res-title">ESP32-P4X-EYE User Guide</div>
+        <div class="res-desc">คู่มือการใช้งานอย่างเป็นทางการจาก Espressif Developer Portal</div>
+      </a>
+      <a href="https://derekmolloy.ie/a-low-cost-thread-border-router-esp32-c6-wroom-as-an-openthread-rcp-for-home-assistant-in-docker/" target="_blank" rel="noopener" class="resource-item">
+        <div class="res-icon">🏠</div>
+        <div class="res-title">ESP32-C6 Thread Border Router</div>
+        <div class="res-desc">Tutorial สร้าง OpenThread RCP ราคาประหยัด เชื่อมกับ Home Assistant</div>
+      </a>
+      <a href="https://github.com/p01di/esp32c6-thread-border-router" target="_blank" rel="noopener" class="resource-item">
+        <div class="res-icon">💻</div>
+        <div class="res-title">GitHub: esp32c6-thread-border-router</div>
+        <div class="res-desc">Single-chip ESP32-C6 Thread Border Router สำหรับ Home Assistant</div>
+      </a>
+      <a href="https://m5stack.com/global-innovation-contest-2026" target="_blank" rel="noopener" class="resource-item">
+        <div class="res-icon">🏆</div>
+        <div class="res-title">M5Stack Innovation Contest 2026</div>
+        <div class="res-desc">แข่งขันสร้างโปรเจกต์ IoT ระดับโลก โพสต์ผลงานบน Hackster.io</div>
+      </a>
+      <a href="https://embeddedprep.com/esp32-with-fingerprint-sensor/" target="_blank" rel="noopener" class="resource-item">
+        <div class="res-icon">🔐</div>
+        <div class="res-title">ESP32 + Fingerprint Sensor Guide</div>
+        <div class="res-desc">คู่มือครบจบ Beginner-to-Advanced สำหรับ biometric security project</div>
+      </a>
+      <a href="https://thesmartsnout.com/2026/02/08/iot-sensors-in-aquarium-tech-the-2026-smart-tank/" target="_blank" rel="noopener" class="resource-item">
+        <div class="res-icon">🐠</div>
+        <div class="res-title">IoT Sensors in Aquarium Tech 2026</div>
+        <div class="res-desc">เทรนด์ Smart Aquarium และ sensor technology สำหรับตู้ปลาอัจฉริยะ</div>
+      </a>
+      <a href="https://developer.espressif.com/blog/2025/05/introducing-p4-eye/" target="_blank" rel="noopener" class="resource-item">
+        <div class="res-icon">👁️</div>
+        <div class="res-title">Introducing ESP32-P4-EYE (Blog)</div>
+        <div class="res-desc">บทความ official จาก Espressif แนะนำ P4-EYE สำหรับ Edge AI Vision</div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p style="margin-bottom:10px">
+    สร้างโดย AI Research Agent · วันที่ <strong style="color:#94a3b8">21 กันยายน 2026</strong>
+  </p>
+  <p style="margin-bottom:16px; font-size:0.8rem; color:#475569">
+    แหล่งอ้างอิงหลัก:
+    <a href="https://www.espressif.com/en/products/socs/esp32-p4" target="_blank">Espressif ESP32-P4</a> ·
+    <a href="https://www.mouser.com/en/newsroom/publicrelations-espressif-esp32-p4x-eye-kit-2026final" target="_blank">Mouser ESP32-P4X-EYE</a> ·
+    <a href="https://datawiresolutions.com/blog/matter-thread-explained-2026" target="_blank">Matter &amp; Thread 2026</a> ·
+    <a href="https://yourmatterhome.com/11-best-thread-border-routers-for-matter-smart-home-2026-guide/" target="_blank">YourMatterHome</a>
+  </p>
+  <p style="font-size:0.78rem; color:#334155">
+    ESP32 Daily Research · ข้อมูลเพื่อการศึกษาและพัฒนา IoT · somchaipiw
+  </p>
+</footer>
+
+</body>
+</html>
