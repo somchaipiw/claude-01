@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 &amp; Sensor Innovations - 23 กันยายน 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f172a;
+    --bg2: #1e293b;
+    --bg3: #0f2040;
+    --card: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent1: #38bdf8;
+    --accent2: #818cf8;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --accent6: #facc15;
+    --red: #f87171;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #0f2040 0%, #1a1060 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(56,189,248,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 50%, rgba(129,140,248,0.08) 0%, transparent 60%);
+  }
+  header .badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.4);
+    color: var(--accent1);
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.25rem 0.9rem;
+    border-radius: 99px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+  header p { color: var(--muted); font-size: 1rem; position: relative; }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    position: relative;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.45rem 1rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .stat-chip span { color: var(--text); font-weight: 600; margin-right: 0.3rem; }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1rem 4rem;
+  }
+  section { margin-bottom: 3.5rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .section-icon {
+    width: 2.5rem; height: 2.5rem;
+    border-radius: 10px;
+    display: grid; place-items: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  /* ── CARDS ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .card:hover { transform: translateY(-3px); border-color: rgba(56,189,248,0.4); }
+  .card-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.65rem;
+    border-radius: 99px;
+    margin-bottom: 0.75rem;
+  }
+  .card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .card p { font-size: 0.92rem; color: var(--muted); margin-bottom: 0.75rem; }
+  .card ul { list-style: none; padding: 0; }
+  .card ul li { font-size: 0.88rem; color: var(--muted); padding: 0.2rem 0; }
+  .card ul li::before { content: '›'; margin-right: 0.5rem; color: var(--accent3); }
+
+  /* ── HIGHLIGHT CARD (full width) ── */
+  .card-full {
+    background: linear-gradient(135deg, #0f2040 0%, #1a1060 100%);
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 16px;
+    padding: 1.8rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-full::after {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(56,189,248,0.12), transparent 70%);
+  }
+  .card-full .chip-row {
+    display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;
+  }
+  .chip {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.8rem;
+    color: var(--text);
+  }
+
+  /* ── CODE BLOCK ── */
+  .code-box {
+    background: #0d1321;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin-top: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.83rem;
+    color: var(--accent3);
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  /* ── SENSOR TABLE ── */
+  .sensor-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+  }
+  .sensor-table th {
+    background: rgba(255,255,255,0.06);
+    color: var(--muted);
+    font-weight: 600;
+    padding: 0.65rem 0.9rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .sensor-table td {
+    padding: 0.65rem 0.9rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: var(--text);
+    vertical-align: top;
+  }
+  .sensor-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .sensor-name { font-weight: 600; color: var(--accent1); }
+
+  /* ── COLOR TAGS ── */
+  .tag-blue  { background: rgba(56,189,248,0.12);  color: var(--accent1); }
+  .tag-purple{ background: rgba(129,140,248,0.12); color: var(--accent2); }
+  .tag-green { background: rgba(52,211,153,0.12);  color: var(--accent3); }
+  .tag-orange{ background: rgba(251,146,60,0.12);  color: var(--accent4); }
+  .tag-pink  { background: rgba(244,114,182,0.12); color: var(--accent5); }
+  .tag-yellow{ background: rgba(250,204,21,0.12);  color: var(--accent6); }
+  .tag-red   { background: rgba(248,113,113,0.12); color: var(--red); }
+
+  .icon-blue   { background: rgba(56,189,248,0.15);  color: var(--accent1); }
+  .icon-purple { background: rgba(129,140,248,0.15); color: var(--accent2); }
+  .icon-green  { background: rgba(52,211,153,0.15);  color: var(--accent3); }
+  .icon-orange { background: rgba(251,146,60,0.15);  color: var(--accent4); }
+
+  /* ── RESOURCES ── */
+  .resource-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.85rem; }
+  .resource-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    transition: border-color 0.2s;
+  }
+  .resource-item:hover { border-color: rgba(56,189,248,0.35); }
+  .resource-item .r-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.3rem; }
+  .resource-item .r-title { font-size: 0.95rem; font-weight: 600; color: var(--accent1); margin-bottom: 0.3rem; }
+  .resource-item .r-desc  { font-size: 0.83rem; color: var(--muted); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+  footer a { color: var(--accent1); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .footer-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 1.5rem; margin-top: 0.75rem; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  @media (max-width: 600px) {
+    header { padding: 2rem 1rem 1.5rem; }
+    .card-grid { grid-template-columns: 1fr; }
+    .resource-list { grid-template-columns: 1fr; }
+    .sensor-table { display: block; overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Daily Research Digest</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p>23 กันยายน 2569 &nbsp;|&nbsp; ESPHome 2026.9 · Matter 1.5 · ESP32-P4 Video · Water Quality IoT</p>
+  <div class="stats-row">
+    <div class="stat-chip"><span>4</span>หัวข้อหลัก</div>
+    <div class="stat-chip"><span>12+</span>ไอเดียโปรเจกต์</div>
+    <div class="stat-chip"><span>8</span>Sensors ใหม่</div>
+    <div class="stat-chip"><span>6</span>Resources</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 1 – INNOVATIONS
+  ══════════════════════════════════════════ -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🚀</div>
+      <h2>นวัตกรรม ESP32 ล่าสุด</h2>
+    </div>
+
+    <!-- ESPHome 2026.9 highlight -->
+    <div class="card-full">
+      <span class="card-tag tag-blue" style="margin-bottom:0.6rem;display:inline-block">🔥 FEATURED</span>
+      <h3 style="font-size:1.25rem;margin-bottom:0.6rem;color:var(--accent1)">ESPHome 2026.9.0 — Encrypted OTA + Parallel Builds</h3>
+      <p style="color:var(--muted);font-size:0.95rem;margin-bottom:0.8rem">
+        ESPHome ออก release ใหม่เดือนกันยายน 2026 มาพร้อมสองฟีเจอร์ใหญ่: OTA Encrypted ด้วย ChaCha20-Poly1305 ใช้ key เดียวกับ Home Assistant API และ Parallel Build ที่ลดเวลา build phase ลงจาก 36% เหลือ 25% บน CI
+      </p>
+      <div class="chip-row">
+        <span class="chip">🔐 Noise/ChaCha20 OTA</span>
+        <span class="chip">⚡ Parallel PlatformIO install</span>
+        <span class="chip">📦 6 components ใหม่</span>
+        <span class="chip">🖧 ESP-NOW v2 payloads</span>
+        <span class="chip">🎞️ LVGL animations</span>
+        <span class="chip">ESP32-S31 Gigabit Ethernet</span>
+        <span class="chip">ccache + shared toolchain</span>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <span class="card-tag tag-purple">ESP32-P4</span>
+        <h3>Video Alarm Clock บน ESP32-P4</h3>
+        <p>โปรเจกต์นาฬิกาปลุกที่ตื่นด้วย video แทนเสียงบี๊บ ทำงานบน Waveshare ESP32-P4-WIFI6-Touch-LCD-4B ใช้ชิปที่มี ISP, H.264 encode 1080p@30fps และ 2D graphics accelerator</p>
+        <ul>
+          <li>ชิป dual-core RISC-V 400 MHz + 32 MB PSRAM</li>
+          <li>H.264 encoding สูงสุด 1080p@30fps</li>
+          <li>ESP32-C6 module สำหรับ Wi-Fi 6</li>
+          <li>เหมาะกับงาน HMI, media, camera pipeline</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-green">Matter 1.5</span>
+        <h3>ESP32-C6/H2 + Matter-over-Thread</h3>
+        <p>Matter 1.5 เพิ่ม device category ใหม่: soil sensors, cameras, closures, smart energy metering และ EV charging ทำให้ ESP32-C6 (Wi-Fi 6 + Thread) เป็นตัวเลือกสำหรับ battery sensor ยุคใหม่</p>
+        <ul>
+          <li>ESP32-C6: RISC-V 160 MHz, Wi-Fi 6, BLE 5, Thread/Zigbee</li>
+          <li>ESP32-H2: Thread/Zigbee sleepy-end-device ประหยัดพลังงาน</li>
+          <li>Native OpenThread ใน ESPHome ตั้งแต่ 2025.11</li>
+          <li>Matter 1.5 รองรับ soil sensor endpoint แล้ว</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-orange">ESP-IDF Edgent</span>
+        <h3>ESP-IDF Edgent — Production IoT Firmware</h3>
+        <p>เปิดตัว March 2026 เป็น production path สำหรับ ESP32 firmware พร้อม BLE provisioning, OTA via Blynk.Air, network manager บันทึก Wi-Fi ได้ 16 เครือข่าย และ secure MQTT</p>
+        <ul>
+          <li>BLE-assisted WiFi provisioning</li>
+          <li>FOTA (Firmware OTA) สำหรับ field-deployed devices</li>
+          <li>Network manager: บันทึก 16 SSIDs</li>
+          <li>Secure MQTT เข้ารหัสครบวงจร</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-pink">ESP32-P4 Vision</span>
+        <h3>ESP-VISION SDK สำหรับ Computer Vision</h3>
+        <p>Espressif ปล่อย ESP-VISION Programming Guide (July 2026) สำหรับ ESP32-P4 โดยเฉพาะ รองรับ camera pipeline, image processing, และ AI inference แบบ end-to-end บน edge</p>
+        <ul>
+          <li>Hardware ISP บน ESP32-P4</li>
+          <li>AI inference edge (TFLite/ESP-DL)</li>
+          <li>Camera → ISP → AI → LVGL display pipeline</li>
+          <li>Function-EV-Board: display + camera + audio</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════
+       SECTION 2 – PROJECTS
+  ══════════════════════════════════════════ -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">💡</div>
+      <h2>ไอเดียโปรเจกต์ IoT ที่น่าสนใจ</h2>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <span class="card-tag tag-blue">Water Quality</span>
+        <h3>Smart Water Quality Monitor</h3>
+        <p>ระบบตรวจสอบคุณภาพน้ำแบบ real-time ส่งข้อมูลผ่าน MQTT ไปยัง Home Assistant หรือ Dashboard</p>
+        <ul>
+          <li>pH Sensor (E-201C): ตรวจค่าความเป็นกรด-ด่าง</li>
+          <li>TDS Sensor: วัดปริมาณของแข็งละลายในน้ำ</li>
+          <li>Turbidity Sensor: วัดความขุ่นใสของน้ำ</li>
+          <li>DS18B20: อุณหภูมิน้ำ (Waterproof)</li>
+          <li>ESP32 + MQTT + Node-RED Dashboard</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-green">Smart Farm</span>
+        <h3>Soil Moisture → Matter Endpoint</h3>
+        <p>สร้าง Matter 1.5 soil sensor node โดยใช้ ESP32-H2 (Thread radio) วัดความชื้นดิน แล้ว integrate เข้า Apple Home / Google Home / Home Assistant โดยตรง</p>
+        <ul>
+          <li>Capacitive Soil Moisture Sensor v2</li>
+          <li>ESP32-H2 deep sleep &lt; 10 µA</li>
+          <li>Matter Soil Moisture Endpoint (Matter 1.5)</li>
+          <li>Battery CR2032 อยู่ได้ 6–12 เดือน</li>
+          <li>Auto water pump control via Matter automation</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-orange">Biometric</span>
+        <h3>Portable ECG Monitor ด้วย AD8232</h3>
+        <p>วัดคลื่นไฟฟ้าหัวใจ (ECG) ด้วย AD8232 sensor + ESP32 ส่งข้อมูลผ่าน BLE ไปยัง smartphone แบบ real-time เหมาะสำหรับ health monitoring prototype</p>
+        <ul>
+          <li>AD8232: Single-lead ECG front-end</li>
+          <li>3 electrodes: RA, LA, RL (right leg)</li>
+          <li>ESP32 ADC 12-bit sampling 1 kHz</li>
+          <li>BLE streaming ไปยัง app (Web BLE)</li>
+          <li>เก็บ waveform ใน SPIFFS/SD card</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-red">Air Quality</span>
+        <h3>Multi-Gas Air Quality Station</h3>
+        <p>สถานีตรวจคุณภาพอากาศหลาย parameter ด้วย ESP32 + sensors หลายตัว ส่งข้อมูลไปยัง MQTT Broker แล้ว visualize บน Grafana</p>
+        <ul>
+          <li>MQ-2: แก๊ส LPG, methane, smoke</li>
+          <li>MQ-9: CO (Carbon Monoxide)</li>
+          <li>SFA40 (ESPHome component ใหม่): Formaldehyde</li>
+          <li>PM2.5 / PM10: ฝุ่นละออง</li>
+          <li>Stack: ESP32 → MQTT → InfluxDB → Grafana</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-purple">Energy</span>
+        <h3>Smart Energy Monitor ด้วย PZEM-004T</h3>
+        <p>ระบบ monitor การใช้ไฟฟ้าในบ้านแบบ real-time รองรับ Matter Energy Management (Matter 1.4/1.5) พร้อมแจ้งเตือนเมื่อใช้ไฟเกินกำหนด</p>
+        <ul>
+          <li>PZEM-004T v3: Voltage, Current, Power, Energy</li>
+          <li>ESP32 + ESP-IDF Edgent (OTA-ready)</li>
+          <li>Matter Energy Device Profile</li>
+          <li>Blynk.Air FOTA สำหรับ field update</li>
+          <li>แสดงผลบน OLED 1.3" + Blynk Dashboard</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-yellow">HMI</span>
+        <h3>ESP32-P4 Industrial HMI Dashboard</h3>
+        <p>สร้าง touchscreen HMI prototype สำหรับงานอุตสาหกรรม ใช้ ESP32-P4-Function-EV-Board + LVGL animations (ฟีเจอร์ใหม่ใน ESPHome 2026.9) หรือ ESP-IDF native</p>
+        <ul>
+          <li>ESP32-P4: 2D Accelerator + 55 GPIO</li>
+          <li>LVGL 9.x: animations, dynamic rotation</li>
+          <li>Touch display 4–7 นิ้ว SPI/RGB parallel</li>
+          <li>Real-time sensor graph (Modbus RTU/TCP)</li>
+          <li>ESP-NOW v2 สำหรับ wireless sensor node</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════
+       SECTION 3 – SENSORS
+  ══════════════════════════════════════════ -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">🔬</div>
+      <h2>Sensors น่าสนใจ</h2>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:1.25rem">
+      <table class="sensor-table">
+        <thead>
+          <tr>
+            <th>Sensor</th>
+            <th>วัดอะไร</th>
+            <th>Interface</th>
+            <th>ใช้คู่กับ</th>
+            <th>หมายเหตุ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="sensor-name">AD8232</span></td>
+            <td>ECG / Heart Rate</td>
+            <td>Analog + GPIO</td>
+            <td>ESP32 ADC + BLE</td>
+            <td>Single-lead ECG, ราคาถูก, ใช้ง่าย</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">SFA40</span></td>
+            <td>Formaldehyde (HCHO)</td>
+            <td>I2C / UART</td>
+            <td>ESPHome 2026.9 component ใหม่</td>
+            <td>Sensirion sensor, รองรับ ESPHome นอกกล่อง</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">DS1603L</span></td>
+            <td>ระดับน้ำ (Ultrasonic)</td>
+            <td>UART</td>
+            <td>ESPHome 2026.9 component ใหม่</td>
+            <td>Waterproof ultrasonic, ตรวจระดับน้ำถัง</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">PZEM-004T v3</span></td>
+            <td>Voltage / Current / Power</td>
+            <td>UART (RS-485)</td>
+            <td>ESP32 + Matter Energy</td>
+            <td>วัดไฟ AC ได้ถึง 100A</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">TDS Sensor</span></td>
+            <td>Total Dissolved Solids</td>
+            <td>Analog</td>
+            <td>ESP32 ADC</td>
+            <td>วัดคุณภาพน้ำดื่ม/ระบบ hydroponics</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">Capacitive Soil v2</span></td>
+            <td>ความชื้นดิน</td>
+            <td>Analog</td>
+            <td>ESP32-H2 + Matter 1.5</td>
+            <td>ทนทาน ไม่กัดกร่อนเหมือน resistive</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">SDS011</span></td>
+            <td>PM2.5 / PM10</td>
+            <td>UART</td>
+            <td>ESP32 + Grafana stack</td>
+            <td>Laser particle sensor ความแม่นยำสูง</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">E-201C pH</span></td>
+            <td>pH (0–14)</td>
+            <td>Analog (BNC)</td>
+            <td>ESP32 ADC + Water Monitor</td>
+            <td>ต้อง calibrate ด้วย buffer solution</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <span class="card-tag tag-blue">Tip: Water Sensors</span>
+        <h3>ระบบ Water Quality พื้นฐาน</h3>
+        <p>สำหรับ aquaponics หรือ hydroponics ควรวัดอย่างน้อย 3 ค่า:</p>
+        <ul>
+          <li>pH: ควรอยู่ 6.0–7.0 สำหรับผัก</li>
+          <li>TDS/EC: ความเข้มข้นธาตุอาหาร</li>
+          <li>อุณหภูมิน้ำ: DS18B20 Waterproof</li>
+          <li>Data log ทุก 15 นาที → InfluxDB</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="card-tag tag-green">Tip: ESPHome New Components</span>
+        <h3>Components ใหม่ใน ESPHome 2026.9</h3>
+        <p>เพิ่มเติม 6 components ใหม่ที่ใช้งานได้ทันทีใน YAML:</p>
+        <ul>
+          <li><code>ds1603l</code> — Ultrasonic water level</li>
+          <li><code>sfa40</code> — Sensirion formaldehyde</li>
+          <li><code>snapshot</code> — Camera snapshot trigger</li>
+          <li><code>noise</code> — Noise encryption component</li>
+          <li><code>d01</code> — Fingerprint sensor</li>
+          <li><code>mk2pvrouter</code> — Energy router</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════
+       SECTION 4 – CODE EXAMPLE
+  ══════════════════════════════════════════ -->
+  <section id="code">
+    <div class="section-header">
+      <div class="section-icon icon-orange">📝</div>
+      <h2>ตัวอย่าง Code และ Tutorial</h2>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <span class="card-tag tag-green">ESPHome YAML</span>
+        <h3>OTA Encrypted ใน ESPHome 2026.9</h3>
+        <p>ตัวอย่างการเปิดใช้ Noise Encryption สำหรับ OTA update:</p>
+        <div class="code-box">esphome:
+  name: my-esp32
+
+esp32:
+  board: esp32-c6-devkitc-1
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+  encryption:
+    key: !secret api_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_pass
+
+# Component ใหม่: Formaldehyde
+sensor:
+  - platform: sfa40
+    formaldehyde:
+      name: "HCHO Level"
+    update_interval: 60s</div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-blue">Arduino/ESP-IDF</span>
+        <h3>Water Quality Sensor พื้นฐาน</h3>
+        <p>อ่านค่า TDS และ pH พร้อมส่ง MQTT ด้วย ESP32:</p>
+        <div class="code-box">#include &lt;WiFi.h&gt;
+#include &lt;PubSubClient.h&gt;
+
+#define TDS_PIN  34
+#define PH_PIN   35
+
+float readTDS() {
+  int raw = analogRead(TDS_PIN);
+  float voltage = raw * 3.3 / 4095.0;
+  // Compensation formula
+  return (133.42 * pow(voltage, 3)
+        - 255.86 * pow(voltage, 2)
+        + 857.39 * voltage) * 0.5;
+}
+
+void loop() {
+  float tds = readTDS();
+  char msg[64];
+  snprintf(msg, sizeof(msg),
+    "{\"tds\":%.1f}", tds);
+  client.publish("water/quality", msg);
+  delay(15000);
+}</div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-purple">Matter / Thread</span>
+        <h3>ESP32-H2 Soil Sensor (Matter 1.5)</h3>
+        <p>โครงสร้าง firmware สำหรับ battery-powered Matter soil sensor:</p>
+        <div class="code-box">// esp-matter example sketch
+#include &lt;esp_matter.h&gt;
+#include &lt;app/clusters/soil-moisture/
+         soil-moisture-cluster.h&gt;
+
+// Endpoint ID สำหรับ soil sensor
+uint16_t soil_endpoint_id = 0;
+
+void app_main() {
+  // Initialize Matter stack
+  esp_matter::start();
+
+  // Create soil moisture endpoint
+  // (Matter 1.5 device type 0x0307)
+  soil_endpoint_id =
+    esp_matter_soil_moisture_create(
+      node, &config);
+
+  // Deep sleep 5 min between readings
+  esp_sleep_enable_timer_wakeup(
+    5 * 60 * 1000000ULL);
+  esp_deep_sleep_start();
+}</div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ══════════════════════════════════════════
+       SECTION 5 – RESOURCES
+  ══════════════════════════════════════════ -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔗</div>
+      <h2>แหล่งข้อมูลและลิงก์</h2>
+    </div>
+    <div class="resource-list">
+
+      <div class="resource-item">
+        <div class="r-label">Official</div>
+        <div class="r-title">ESPHome 2026.9.0 Changelog</div>
+        <div class="r-desc">รายการ features และ components ทั้งหมดใน release ล่าสุด</div>
+      </div>
+
+      <div class="resource-item">
+        <div class="r-label">Espressif</div>
+        <div class="r-title">ESP32-P4 High-Performance SoC</div>
+        <div class="r-desc">หน้าผลิตภัณฑ์อย่างเป็นทางการ: spec, dev board, SDK</div>
+      </div>
+
+      <div class="resource-item">
+        <div class="r-label">Adafruit Blog</div>
+        <div class="r-title">ESP32-P4 Video Alarm Clock</div>
+        <div class="r-desc">โปรเจกต์ตัวอย่างบน ESP32-P4 กับ LCD touch panel</div>
+      </div>
+
+      <div class="resource-item">
+        <div class="r-label">Hackster.io</div>
+        <div class="r-title">ESP32 Smart Water Quality Checker</div>
+        <div class="r-desc">Tutorial ระบบตรวจคุณภาพน้ำแบบ complete project</div>
+      </div>
+
+      <div class="resource-item">
+        <div class="r-label">Espressif Docs</div>
+        <div class="r-title">ESP-VISION Programming Guide 2026</div>
+        <div class="r-desc">คู่มือ Computer Vision pipeline บน ESP32-P4</div>
+      </div>
+
+      <div class="resource-item">
+        <div class="r-label">Matter Alpha</div>
+        <div class="r-title">Espressif Next-Gen Matter Chipsets</div>
+        <div class="r-desc">ข่าว Espressif ออก chipset และ SDK รองรับ Matter ใหม่</div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Researcher อัตโนมัติ · 23 กันยายน 2569 (2026)</p>
+  <div class="footer-grid">
+    <span>🔑 ESPHome 2026.9 Encrypted OTA</span>
+    <span>📡 Matter 1.5 Soil Sensor</span>
+    <span>🎬 ESP32-P4 Video Projects</span>
+    <span>💧 Water Quality IoT</span>
+    <span>❤️ ECG/AD8232 Biometric</span>
+    <span>⚡ PZEM-004T Energy Monitor</span>
+  </div>
+  <p style="margin-top:1rem;font-size:0.8rem">
+    แหล่งอ้างอิง:
+    esphome.io/changelog/2026.9.0 · espressif.com/esp32-p4 ·
+    adafruit.com/blog · hackster.io · matteralpha.com · electricalflux.com
+  </p>
+</footer>
+
+</body>
+</html>
