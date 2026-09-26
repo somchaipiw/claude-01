@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 26 กันยายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263348;
+    --accent-1: #6366f1;
+    --accent-2: #22d3ee;
+    --accent-3: #f59e0b;
+    --accent-4: #10b981;
+    --accent-5: #f43f5e;
+    --text-primary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --tag-bg: rgba(99,102,241,0.15);
+    --tag-text: #a5b4fc;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 40%, #042f2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(99,102,241,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 30%, rgba(34,211,238,0.1) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.25rem 1rem;
+    border-radius: 9999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #a5b4fc, #67e8f9, #6ee7b7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+  header .subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-item .num {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent-2), var(--accent-4));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-item .label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* ===== LAYOUT ===== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* ===== SECTION HEADERS ===== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 2.5rem 0 1.5rem;
+  }
+  .section-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+
+  /* ===== CARDS ===== */
+  .card-grid {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.25s ease;
+  }
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--accent-1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(99,102,241,0.15);
+  }
+  .card-accent {
+    width: 100%;
+    height: 3px;
+    border-radius: 2px;
+    margin-bottom: 1rem;
+  }
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+  }
+  .card p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* FEATURE CARD (wide) */
+  .card-feature {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #1e1b4b 0%, var(--bg-card) 100%);
+    border-color: var(--accent-1);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  @media (min-width: 640px) {
+    .card-feature { grid-template-columns: 1fr 1fr; }
+  }
+  .card-feature .feature-left h3 {
+    font-size: 1.3rem;
+    background: linear-gradient(90deg, #a5b4fc, #67e8f9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .card-feature .feature-right {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+  }
+  @media (min-width: 640px) {
+    .card-feature .feature-right {
+      border-top: none;
+      border-left: 1px solid var(--border);
+      padding-top: 0;
+      padding-left: 1rem;
+    }
+  }
+
+  /* TAG */
+  .tag {
+    display: inline-block;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+    margin: 0.15rem;
+    border: 1px solid rgba(99,102,241,0.3);
+  }
+  .tag.green { background: rgba(16,185,129,0.12); color: #6ee7b7; border-color: rgba(16,185,129,0.3); }
+  .tag.yellow { background: rgba(245,158,11,0.12); color: #fcd34d; border-color: rgba(245,158,11,0.3); }
+  .tag.red { background: rgba(244,63,94,0.12); color: #fda4af; border-color: rgba(244,63,94,0.3); }
+  .tag.cyan { background: rgba(34,211,238,0.12); color: #67e8f9; border-color: rgba(34,211,238,0.3); }
+
+  /* BADGE NEW */
+  .badge-new {
+    background: linear-gradient(90deg, #f59e0b, #f43f5e);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    padding: 0.1rem 0.5rem;
+    border-radius: 9999px;
+    vertical-align: middle;
+    margin-left: 0.5rem;
+  }
+
+  /* SPEC LIST */
+  .spec-list {
+    list-style: none;
+    margin-top: 0.75rem;
+  }
+  .spec-list li {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    display: flex;
+    gap: 0.5rem;
+  }
+  .spec-list li:last-child { border-bottom: none; }
+  .spec-list .key {
+    color: var(--accent-2);
+    font-weight: 600;
+    min-width: 100px;
+    flex-shrink: 0;
+  }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    margin-top: 0.75rem;
+    overflow-x: auto;
+  }
+  .code-block pre {
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: #c9d1d9;
+  }
+  .code-block .c-green { color: #7ee787; }
+  .code-block .c-blue { color: #79c0ff; }
+  .code-block .c-yellow { color: #e3b341; }
+  .code-block .c-purple { color: #d2a8ff; }
+  .code-block .c-orange { color: #ffa657; }
+
+  /* HIGHLIGHT BOX */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(34,211,238,0.08));
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    margin-top: 0.75rem;
+    font-size: 0.88rem;
+    color: #c7d2fe;
+  }
+
+  /* SENSOR TABLE */
+  .sensor-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+  }
+  .sensor-table th {
+    background: rgba(99,102,241,0.15);
+    color: var(--accent-2);
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+  }
+  .sensor-table td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+    vertical-align: top;
+  }
+  .sensor-table tr:last-child td { border-bottom: none; }
+  .sensor-table tr:hover td { background: rgba(99,102,241,0.05); }
+  .sensor-name { color: var(--text-primary); font-weight: 600; }
+
+  /* STEP LIST */
+  .step-list {
+    list-style: none;
+    counter-reset: steps;
+    margin-top: 0.75rem;
+  }
+  .step-list li {
+    counter-increment: steps;
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  .step-list li::before {
+    content: counter(steps);
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    color: #fff;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+
+  /* LINK LIST */
+  .link-list { list-style: none; }
+  .link-list li {
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 0;
+    font-size: 0.88rem;
+  }
+  .link-list li:last-child { border-bottom: none; }
+  .link-list a {
+    color: var(--accent-2);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .link-list a:hover { text-decoration: underline; }
+  .link-list .link-desc {
+    color: var(--text-muted);
+    margin-left: 0.5rem;
+  }
+
+  /* CROWDFUND BOX */
+  .fund-box {
+    background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(244,63,94,0.08));
+    border: 1px solid rgba(245,158,11,0.3);
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    margin-top: 0.75rem;
+    font-size: 0.88rem;
+  }
+  .fund-box .fund-price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #fcd34d;
+  }
+
+  /* FOOTER */
+  footer {
+    background: #0b1120;
+    border-top: 1px solid var(--border);
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+  footer a { color: var(--accent-2); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily ESP32 Research</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">26 กันยายน 2026 &nbsp;|&nbsp; ข่าวสารและไอเดียประจำวัน</p>
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="num">4</div>
+      <div class="label">นวัตกรรมใหม่</div>
+    </div>
+    <div class="stat-item">
+      <div class="num">5</div>
+      <div class="label">ไอเดียโปรเจกต์</div>
+    </div>
+    <div class="stat-item">
+      <div class="num">4</div>
+      <div class="label">Sensors น่าสนใจ</div>
+    </div>
+    <div class="stat-item">
+      <div class="num">3</div>
+      <div class="label">ตัวอย่าง Code</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <div class="section-header">
+    <div class="section-icon" style="background: linear-gradient(135deg,#4f46e5,#6366f1);">💡</div>
+    <h2 style="background: linear-gradient(90deg,#a5b4fc,#67e8f9); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">นวัตกรรม ESP32 ล่าสุด</h2>
+  </div>
+
+  <div class="card-grid">
+
+    <!-- Feature: ESP32-S31 runs Linux -->
+    <div class="card card-feature">
+      <div class="feature-left">
+        <div class="card-accent" style="background: linear-gradient(90deg,#6366f1,#22d3ee);"></div>
+        <h3>ESP32-S31 รัน Linux 6.18 / 7.1 ได้แล้ว! <span class="badge-new">BREAKING</span></h3>
+        <p>เหตุการณ์สำคัญครั้งประวัติศาสตร์ — ESP32-S31 กลายเป็น ESP32 ตัวแรกที่รัน Linux kernel เต็มรูปแบบได้ เนื่องจากมี <strong style="color:#67e8f9;">MMU (Memory Management Unit)</strong> แท้จริง ซึ่งรุ่นก่อนหน้าทั้งหมดไม่มี Espressif ออก Linux BSP Developer Preview บน Buildroot 2025.02 พร้อม U-Boot</p>
+        <div style="margin-top:0.75rem;">
+          <span class="tag cyan">Linux 6.18</span>
+          <span class="tag cyan">Linux 7.1</span>
+          <span class="tag green">MMU</span>
+          <span class="tag">RISC-V</span>
+          <span class="tag yellow">Developer Preview</span>
+        </div>
+        <div class="highlight-box" style="margin-top:1rem;">
+          <strong>ทำไมถึงสำคัญมาก?</strong> Linux kernel ต้องการ MMU สำหรับ virtual memory และ process isolation ESP32-P4 ยังใช้แค่ PMP (Physical Memory Protection) ทำให้รัน Linux จริงไม่ได้ แต่ ESP32-S31 มี MMU เต็มรูปแบบ — เปลี่ยนเกมทั้งหมด
+        </div>
+      </div>
+      <div class="feature-right">
+        <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.75rem; font-weight:600; color:var(--accent-2);">สเปค ESP32-S31 ที่ทำให้ Linux เป็นไปได้</div>
+        <ul class="spec-list">
+          <li><span class="key">CPU</span> Dual-core RISC-V @ 320 MHz</li>
+          <li><span class="key">MMU</span> ✅ มี (ต่างจาก ESP32-P4 ที่ใช้ PMP)</li>
+          <li><span class="key">Wi-Fi</span> Wi-Fi 6 (802.11ax)</li>
+          <li><span class="key">Ethernet</span> Gigabit Ethernet ในตัว</li>
+          <li><span class="key">Linux ver.</span> 6.18 (ไดร์เวอร์ครบ) / 7.1 (LCD 800×480)</li>
+          <li><span class="key">สถานะ</span> Developer Preview (ไม่สำหรับ Production)</li>
+          <li><span class="key">Buildroot</span> 2025.02 + U-Boot</li>
+        </ul>
+        <div class="highlight-box" style="margin-top:0.75rem; background: rgba(16,185,129,0.08); border-color:rgba(16,185,129,0.3); color:#6ee7b7;">
+          ⚡ ใครทำได้ก่อน? นักพัฒนา port Linux 7.1 ให้แสดง console บน LCD 800×480 ได้แล้ว — ใกล้ Raspberry Pi Zero มากขึ้นทุกที
+        </div>
+      </div>
+    </div>
+
+    <!-- OpenMote -->
+    <div class="card">
+      <div class="card-accent" style="background: linear-gradient(90deg,#f59e0b,#f43f5e);"></div>
+      <h3>OpenMote — รีโมต ESP32-S3 ทรง Wiimote <span class="badge-new">Crowdfunding</span></h3>
+      <p>Hat &amp; Hammer เปิดตัว OpenMote บน Crowd Supply — รีโมตคอนโทรลโปรแกรมได้ในเปลือก Nintendo Wiimote ขับเคลื่อนด้วย ESP32-S3 ไม่ต้องพึ่ง Cloud ใดๆ</p>
+      <div style="margin-top:0.5rem;">
+        <span class="tag">ESP32-S3</span>
+        <span class="tag cyan">IR Transceiver</span>
+        <span class="tag green">Home Assistant</span>
+        <span class="tag">ESPHome</span>
+        <span class="tag yellow">Open Source</span>
+      </div>
+      <div class="fund-box">
+        <div>ราคา: <span class="fund-price">$59</span> (PCB เปล่า) / <span class="fund-price">$99</span> (ประกอบแล้ว)</div>
+        <div style="margin-top:0.25rem; color:var(--text-muted);">Crowdfunding สิ้นสุด 29 ต.ค. 2026 · ส่งมอบ ก.พ. 2027</div>
+      </div>
+      <ul class="spec-list" style="margin-top:0.75rem;">
+        <li><span class="key">Wi-Fi/BLE</span> ESP32-S3 เต็มรูปแบบ</li>
+        <li><span class="key">IMU</span> 6-axis (Gyro + Accel)</li>
+        <li><span class="key">IR</span> IR transceiver ควบคุม TV/AC</li>
+        <li><span class="key">Audio</span> ไมโครโฟน + ลำโพงในตัว</li>
+        <li><span class="key">Expansion</span> Qwiic / STEMMA QT connector</li>
+        <li><span class="key">Software</span> Arduino / PlatformIO / ESP-IDF</li>
+      </ul>
+    </div>
+
+    <!-- Linux 6.11 on ESP32-S3 -->
+    <div class="card">
+      <div class="card-accent" style="background: linear-gradient(90deg,#10b981,#22d3ee);"></div>
+      <h3>Linux 6.11 บน ESP32-S3 "ดั้งเดิม" — ทำได้ด้วย Trick</h3>
+      <p>นักพัฒนา port Linux 6.11 ให้รันบน ESP32-S3 รุ่นเก่าได้ แม้ไม่มี MMU ต้องใช้เทคนิคพิเศษ — รันใน noMMU mode โดย kernel ทำงานใน flat address space ไม่รองรับ multi-process แต่ใช้เป็น demo/proof of concept ได้</p>
+      <div style="margin-top:0.5rem;">
+        <span class="tag">ESP32-S3</span>
+        <span class="tag cyan">Linux 6.11</span>
+        <span class="tag yellow">noMMU mode</span>
+        <span class="tag red">PoC Only</span>
+      </div>
+      <div class="highlight-box" style="margin-top:0.75rem;">
+        <strong>ข้อจำกัด:</strong> ไม่มี virtual memory, ไม่รองรับ process isolation, รัน application เดียวกันเวลาเดียว — แต่เปิด shell ได้! Hackaday ลงข่าวเมื่อ 15 ก.ย. 2026
+      </div>
+    </div>
+
+    <!-- ESPHome 2026.7 -->
+    <div class="card">
+      <div class="card-accent" style="background: linear-gradient(90deg,#8b5cf6,#6366f1);"></div>
+      <h3>ESPHome 2026.7 — Native Toolchain + ESP-NOW v2</h3>
+      <p>อัปเดตใหญ่ ESPHome นำ native toolchain มาเป็นค่าเริ่มต้นบน ESP32 และ nRF52 ลดเวลา build ลงอย่างมาก พร้อม ESP-NOW v2 payloads, OpenThread บน Zephyr/nRF52 และ LVGL animations</p>
+      <div style="margin-top:0.5rem;">
+        <span class="tag">ESPHome</span>
+        <span class="tag green">Faster Build</span>
+        <span class="tag cyan">ESP-NOW v2</span>
+        <span class="tag">OpenThread</span>
+        <span class="tag">LVGL Animation</span>
+      </div>
+      <ul class="spec-list" style="margin-top:0.75rem;">
+        <li><span class="key">Build</span> ccache + shared toolchain caches</li>
+        <li><span class="key">OTA</span> Deep sleep update queuing</li>
+        <li><span class="key">Network</span> Gigabit Ethernet บน ESP32-S31</li>
+        <li><span class="key">YAML</span> Auto-fix อธิบาย error</li>
+        <li><span class="key">Modbus</span> Overhaul ครั้งใหญ่</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- ===== SECTION 2: PROJECT IDEAS ===== -->
+  <div class="section-header">
+    <div class="section-icon" style="background: linear-gradient(135deg,#0891b2,#22d3ee);">🚀</div>
+    <h2 style="background: linear-gradient(90deg,#67e8f9,#6ee7b7); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">ไอเดียโปรเจกต์ IoT ที่น่าสนใจ</h2>
+  </div>
+
+  <div class="card-grid">
+
+    <!-- Project 1: Linux on ESP32-S31 edge server -->
+    <div class="card">
+      <div class="card-accent" style="background: linear-gradient(90deg,#6366f1,#a855f7);"></div>
+      <h3>ESP32-S31 Mini Linux Edge Server — Self-Hosted IoT Gateway</h3>
+      <p>ใช้ ESP32-S31 รัน Linux เป็น edge server ขนาดจิ๋ว รันซอฟต์แวร์ Linux จริง เช่น Mosquitto MQTT broker, Node-RED, InfluxDB lite หรือ Python script โดยไม่ต้องใช้ Raspberry Pi</p>
+      <div style="margin-top:0.5rem;">
+        <span class="tag">ESP32-S31</span>
+        <span class="tag cyan">Linux</span>
+        <span class="tag green">MQTT</span>
+        <span class="tag">Node-RED</span>
+      </div>
+      <ul class="step-list">
+        <li>Flash Linux BSP Buildroot image ผ่าน esptool</li>
+        <li>เชื่อมต่อ Gigabit Ethernet หรือ Wi-Fi 6</li>
+        <li>ติดตั้ง Mosquitto broker บน Linux filesystem</li>
+        <li>เชื่อม ESP32-C6 sensors ผ่าน MQTT มายัง broker</li>
+        <li>สร้าง dashboard ด้วย Grafana/Node-RED</li>
+      </ul>
+      <div class="highlight-box" style="margin-top:0.75rem;">
+        💰 ต้นทุนคาดการณ์: ESP32-S31 module ~$8-12 + carrier board — ถูกกว่า Pi Zero W 2 มาก
+      </div>
+    </div>
+
+    <!-- Project 2: OpenMote Smart Home Controller -->
+    <div class="card">
+      <div class="card-accent" style="background: linear-gradient(90deg,#f59e0b,#f43f5e);"></div>
+      <h3>OpenMote DIY — รีโมตจิ้มอากาศควบคุม Smart Home</h3>
+      <p>สร้าง gesture-controlled smart home remote โดยใช้ ESP32-S3 + IMU ตรวจจับการหมุน เอียง โบก แปลงเป็น command ส่งผ่าน BLE ไปยัง Home Assistant เปลี่ยนไฟ, ปรับแอร์, เล่น/หยุดเพลง</p>
+      <div style="margin-top:0.5rem;">
+        <span class="tag">ESP32-S3</span>
+        <span class="tag cyan">MPU6050</span>
+        <span class="tag green">BLE HID</span>
+        <span class="tag">Home Assistant</span>
+      </div>
+      <div class="code-block">
+        <pre><span class="c-green">// ตรวจจับ gesture จาก IMU</span>
+<span class="c-blue">float</span> ax, ay, az, gx, gy, gz;
+mpu.getMotion6(&amp;ax, &amp;ay, &amp;az, &amp;gx, &amp;gy, &amp;gz);
+
+<span class="c-green">// Swipe right → เพิ่มความสว่าง</span>
+<span class="c-blue">if</span> (gy > <span class="c-yellow">15000</span> &amp;&amp; millis() - lastGesture > <span class="c-yellow">500</span>) {
+  ha.callService(<span class="c-orange">"light"</span>, <span class="c-orange">"turn_on"</span>,
+    {<span class="c-orange">"brightness_step"</span>: <span class="c-yellow">25</span>});
+  lastGesture = millis();
+}</pre>
+      </div>
+    </div>
+
+    <!-- Project 3: Smart Terrarium -->
+    <div class="card">
+      <div class="card-accent" style="background: linear-gradient(90deg,#10b981,#059669);"></div>
+      <h3>Smart Terrarium อัจฉริยะ — ที่อยู่อาศัยสัตว์เลื้อยคลานอัตโนมัติ</h3>
+      <p>ตู้สัตว์เลื้อยคลาน/สัตว์สะเทินน้ำสะเทินบก ที่ควบคุมสภาพแวดล้อมอัตโนมัติ วัดอุณหภูมิ ความชื้น แสง UV ควบคุมหลอดความร้อน ไฟ UV และหมอกพ่นผ่าน ESP32</p>
+      <div style="margin-top:0.5rem;">
+        <span class="tag">ESP32-C3</span>
+        <span class="tag cyan">DHT22</span>
+        <span class="tag green">MQTT</span>
+        <span class="tag yellow">Relay Control</span>
+      </div>
+      <ul class="spec-list" style="margin-top:0.75rem;">
+        <li><span class="key">อุณหภูมิ</span> DHT22 / SHT31 — ±0.3°C</li>
+        <li><span class="key">ความชื้น</span> 40-80% ควบคุมหมอกพ่น</li>
+        <li><span class="key">UV index</span> VEML6075 ควบคุมไฟ UV-B</li>
+        <li><span class="key">แสง</span> BH1750 วัดความสว่าง lux</li>
+        <li><span class="key">Relay</span> 4-channel ควบคุมทุกอุปกรณ์</li>
+        <li><span class="key">Dashboard</span> MQTT → Home Assistant</li>
+      </ul>
+    </div>
+
+    <!-- Project 4: Smart Waste Monitor -->
+    <div class="card">
+      <div class="card-accent" style="background: linear-gradient(90deg,#0ea5e9,#6366f1);"></div>
+      <h3>Smart Waste Monitor — ถังขยะแจ้งเตือนอัตโนมัติทั่วเมือง</h3>
+      <p>ติดตั้ง ESP32 + Ultrasonic Sensor ในถังขยะสาธารณะ วัดระดับขยะ ส่งข้อมูลผ่าน Wi-Fi / LoRa ไปยัง dashboard กลาง แผนที่แสดงสถานะแบบ real-time เพื่อวางแผน route เก็บขยะให้มีประสิทธิภาพ</p>
+      <div style="margin-top:0.5rem;">
+        <span class="tag">ESP32-C6</span>
+        <span class="tag cyan">HC-SR04</span>
+        <span class="tag green">LoRaWAN</span>
+        <span class="tag">Dashboard</span>
+      </div>
+      <div class="highlight-box" style="margin-top:0.75rem;">
+        🏙️ ใช้ ESP32-C6 เพราะมี Wi-Fi 6 + Zigbee ในตัว — ส่งข้อมูลผ่าน Zigbee mesh ลดการใช้ Wi-Fi router ทุกจุด ประหยัดค่าใช้จ่ายโครงสร้างพื้นฐาน
+      </div>
+    </div>
+
+    <!-- Project 5: 60GHz Sleep Monitor -->
+    <div class="card" style="grid-column: span 1;">
+      <div class="card-accent" style="background: linear-gradient(90deg,#a855f7,#ec4899);"></div>
+      <h3>60GHz mmWave Sleep Monitor — ตรวจคุณภาพการนอน + แจ้งเตือนล้ม</h3>
+      <p>ใช้ C1001 60GHz mmWave sensor กับ ESP32-S3 วัดการหายใจ อัตราการเต้นหัวใจ และตรวจจับการล้มขณะนอน เหมาะสำหรับผู้สูงอายุหรือผู้ป่วยที่ต้องการดูแล ส่งแจ้งเตือนผ่าน Line Notify / Telegram</p>
+      <div style="margin-top:0.5rem;">
+        <span class="tag">ESP32-S3</span>
+        <span class="tag cyan">60GHz mmWave</span>
+        <span class="tag red">Fall Detection</span>
+        <span class="tag green">Non-Contact</span>
+      </div>
+      <ul class="spec-list" style="margin-top:0.75rem;">
+        <li><span class="key">Sensor</span> DFRobot C1001 60GHz mmWave</li>
+        <li><span class="key">ตรวจจับ</span> การหายใจ, หัวใจ, การล้ม, การนอน</li>
+        <li><span class="key">Protocol</span> UART → ESP32-S3</li>
+        <li><span class="key">แจ้งเตือน</span> Line Notify / Telegram Bot</li>
+        <li><span class="key">ข้อดี</span> ไม่ต้องสัมผัสร่างกาย, privacy-safe</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <div class="section-header">
+    <div class="section-icon" style="background: linear-gradient(135deg,#0d9488,#10b981);">📡</div>
+    <h2 style="background: linear-gradient(90deg,#6ee7b7,#67e8f9); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">Sensors น่าสนใจ</h2>
+  </div>
+
+  <div class="card" style="margin-bottom: 1.25rem;">
+    <div class="card-accent" style="background: linear-gradient(90deg,#10b981,#22d3ee);"></div>
+    <h3>เปรียบเทียบ 60GHz mmWave Sensors สำหรับ ESP32</h3>
+    <div style="overflow-x:auto; margin-top:0.5rem;">
+      <table class="sensor-table">
+        <thead>
+          <tr>
+            <th>รุ่น</th>
+            <th>ความสามารถ</th>
+            <th>Interface</th>
+            <th>ราคาประมาณ</th>
+            <th>เหมาะกับ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="sensor-name">DFRobot C1001</span></td>
+            <td>ตรวจการล้ม, นอน, หายใจ, หัวใจ</td>
+            <td>UART</td>
+            <td>~$35</td>
+            <td>ผู้สูงอายุ, ผู้ป่วย</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">Seeed MR60BHA2</span></td>
+            <td>Breathing + Heartbeat 60GHz</td>
+            <td>UART/I2C</td>
+            <td>~$20</td>
+            <td>Sleep monitor</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">Seeed MR60FDA2</span></td>
+            <td>Fall detection เฉพาะทาง</td>
+            <td>UART</td>
+            <td>~$22</td>
+            <td>ป้องกันการล้ม</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">HLK-LD2410C</span></td>
+            <td>Human presence (24GHz)</td>
+            <td>UART/GPIO</td>
+            <td>~$5</td>
+            <td>ไฟอัตโนมัติทั่วไป</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="highlight-box" style="margin-top:0.75rem;">
+      💡 <strong>คำแนะนำ:</strong> 60GHz ให้ความแม่นยำสูงกว่า 24GHz มาก ตรวจจับ micro-motion ได้ (การหายใจ, เต้นหัวใจ) แต่ราคาแพงกว่า 4-7 เท่า ใช้ 24GHz สำหรับ presence detection ทั่วไป และ 60GHz เฉพาะงาน health monitoring
+    </div>
+  </div>
+
+  <div class="card-grid">
+
+    <div class="card">
+      <div class="card-accent" style="background: linear-gradient(90deg,#a855f7,#6366f1);"></div>
+      <h3>VEML6075 — UV Index Sensor ราคาถูกสำหรับ ESP32</h3>
+      <p>Vishay VEML6075 วัด UVA และ UVB แยกกัน คำนวณ UV index อัตโนมัติ ใช้ I2C ทำงานได้กับ 3.3V โดยตรง เหมาะสำหรับ outdoor weather station และ smart terrarium ที่ต้องควบคุมแสง UV สำหรับสัตว์เลื้อยคลาน</p>
+      <div style="margin-top:0.5rem;">
+        <span class="tag">I2C</span>
+        <span class="tag green">3.3V</span>
+        <span class="tag cyan">UVA + UVB</span>
+      </div>
+      <ul class="spec-list" style="margin-top:0.75rem;">
+        <li><span class="key">วัด</span> UVA 315-400nm, UVB 280-315nm</li>
+        <li><span class="key">Output</span> UV Index 0-11+</li>
+        <li><span class="key">Interface</span> I2C (addr 0x10)</li>
+        <li><span class="key">ราคา</span> ~$2-4 (breakout board)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-accent" style="background: linear-gradient(90deg,#f59e0b,#f97316);"></div>
+      <h3>Seeed mmWave Library v2.0-RC — รองรับ 60GHz ครบทุกรุ่น</h3>
+      <p>Seeed Studio ปล่อย v2.0.0-rc สำหรับ Arduino/ESP32 รองรับ MR60BHA2 และ MR60FDA2 บน XIAO ESP32-C6 มี API ง่ายขึ้นมาก parse ข้อมูล fall/breath/heart ได้ทันที ไม่ต้องเขียน protocol เอง</p>
+      <div style="margin-top:0.5rem;">
+        <span class="tag">Arduino</span>
+        <span class="tag cyan">XIAO ESP32-C6</span>
+        <span class="tag green">v2.0-rc</span>
+        <span class="tag">GitHub</span>
+      </div>
+      <div class="code-block">
+        <pre><span class="c-green">// ติดตั้ง: GitHub Love4yzp/Seeed-mmWave-library</span>
+<span class="c-purple">#include</span> <span class="c-orange">"Seeed_mmWave.h"</span>
+MR60BHA2 mmWave(&amp;Serial1);
+
+<span class="c-blue">void</span> loop() {
+  mmWave.update();
+  <span class="c-blue">float</span> bpm = mmWave.heartRate;
+  <span class="c-blue">float</span> rr  = mmWave.breathRate;
+  Serial.printf(<span class="c-orange">"HR: %.1f BPM, RR: %.1f\n"</span>, bpm, rr);
+}</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent" style="background: linear-gradient(90deg,#22d3ee,#0ea5e9);"></div>
+      <h3>HC-SR04 + ESP32 — Ultrasonic ที่ยังทรงพลัง ราคา 30 บาท</h3>
+      <p>แม้เป็น sensor เก่า แต่ HC-SR04 ยังคงทำงานดีมากกับ ESP32 สำหรับ waste monitoring และ liquid level sensor ใช้ trigPin + echoPin ง่ายมาก ระยะ 2cm - 400cm ความแม่นยำ ±3mm</p>
+      <div style="margin-top:0.5rem;">
+        <span class="tag">GPIO</span>
+        <span class="tag green">2-400cm</span>
+        <span class="tag yellow">5V (ต้องแปลงแรงดัน)</span>
+      </div>
+      <div class="highlight-box" style="margin-top:0.75rem;">
+        ⚠️ ESP32 ใช้ 3.3V — ต้องใช้ voltage divider หรือ logic level converter สำหรับ echo pin ของ HC-SR04 (5V output) หรือใช้ JS-DSP01 รุ่น 3.3V แทน
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== SECTION 4: CODE EXAMPLES ===== -->
+  <div class="section-header">
+    <div class="section-icon" style="background: linear-gradient(135deg,#7c3aed,#a855f7);">&lt;/&gt;</div>
+    <h2 style="background: linear-gradient(90deg,#d8b4fe,#a5b4fc); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">ตัวอย่าง Code</h2>
+  </div>
+
+  <div class="card-grid">
+
+    <div class="card">
+      <div class="card-accent" style="background: linear-gradient(90deg,#a855f7,#6366f1);"></div>
+      <h3>Smart Terrarium — ควบคุม Relay ตามอุณหภูมิ/ความชื้น</h3>
+      <div class="code-block">
+        <pre><span class="c-purple">#include</span> <span class="c-orange">&lt;DHT.h&gt;</span>
+DHT dht(<span class="c-yellow">4</span>, DHT22);
+
+<span class="c-blue">const int</span> RELAY_HEAT = <span class="c-yellow">12</span>;
+<span class="c-blue">const int</span> RELAY_FOG  = <span class="c-yellow">13</span>;
+<span class="c-blue">float</span> TARGET_TEMP = <span class="c-yellow">28.0</span>;  <span class="c-green">// °C</span>
+<span class="c-blue">float</span> TARGET_HUM  = <span class="c-yellow">65.0</span>;  <span class="c-green">// %</span>
+
+<span class="c-blue">void</span> loop() {
+  <span class="c-blue">float</span> t = dht.readTemperature();
+  <span class="c-blue">float</span> h = dht.readHumidity();
+
+  <span class="c-green">// ควบคุมหลอดความร้อน</span>
+  digitalWrite(RELAY_HEAT, t &lt; TARGET_TEMP);
+  <span class="c-green">// ควบคุมหมอกพ่น</span>
+  digitalWrite(RELAY_FOG,  h &lt; TARGET_HUM);
+
+  delay(<span class="c-yellow">5000</span>);
+}</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent" style="background: linear-gradient(90deg,#10b981,#22d3ee);"></div>
+      <h3>Waste Monitor — วัดระดับขยะ + ส่ง MQTT</h3>
+      <div class="code-block">
+        <pre><span class="c-green">// วัดระดับขยะด้วย Ultrasonic</span>
+<span class="c-blue">long</span> getWasteLevel() {
+  digitalWrite(TRIG, LOW); delayMicroseconds(<span class="c-yellow">2</span>);
+  digitalWrite(TRIG, HIGH); delayMicroseconds(<span class="c-yellow">10</span>);
+  digitalWrite(TRIG, LOW);
+  <span class="c-blue">long</span> dur = pulseIn(ECHO, HIGH);
+  <span class="c-blue">long</span> dist = dur * <span class="c-yellow">0.034</span> / <span class="c-yellow">2</span>; <span class="c-green">// cm</span>
+  <span class="c-blue">int</span> fill = map(dist, BIN_DEPTH, <span class="c-yellow">5</span>, <span class="c-yellow">0</span>, <span class="c-yellow">100</span>);
+  <span class="c-blue">return</span> constrain(fill, <span class="c-yellow">0</span>, <span class="c-yellow">100</span>);
+}
+
+<span class="c-blue">void</span> loop() {
+  <span class="c-blue">int</span> pct = getWasteLevel();
+  <span class="c-green">// ส่ง MQTT เมื่อขยะเกิน 80%</span>
+  <span class="c-blue">if</span> (pct > <span class="c-yellow">80</span>) {
+    mqtt.publish(<span class="c-orange">"bin/alert"</span>,
+      String(pct).c_str());
+  }
+  delay(<span class="c-yellow">60000</span>); <span class="c-green">// ทุก 1 นาที</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent" style="background: linear-gradient(90deg,#f59e0b,#f43f5e);"></div>
+      <h3>OpenMote-style — IR + BLE ด้วย ESP32-S3</h3>
+      <div class="code-block">
+        <pre><span class="c-purple">#include</span> <span class="c-orange">&lt;IRremoteESP8266.h&gt;</span>
+<span class="c-purple">#include</span> <span class="c-orange">&lt;BleKeyboard.h&gt;</span>
+
+IRsend irsend(<span class="c-yellow">4</span>);   <span class="c-green">// IR LED pin</span>
+BleKeyboard bleKb(<span class="c-orange">"OpenMote"</span>);
+
+<span class="c-blue">void</span> setup() {
+  irsend.begin();
+  bleKb.begin();
+}
+
+<span class="c-blue">void</span> loop() {
+  <span class="c-blue">if</span> (digitalRead(BTN_A) == LOW) {
+    <span class="c-green">// ส่ง IR ปิด/เปิด TV Samsung</span>
+    irsend.sendSAMSUNG(<span class="c-yellow">0xE0E040BF</span>, <span class="c-yellow">32</span>);
+  }
+  <span class="c-blue">if</span> (digitalRead(BTN_B) == LOW) {
+    <span class="c-green">// ส่ง BLE media play/pause</span>
+    bleKb.write(KEY_MEDIA_PLAY_PAUSE);
+  }
+}</pre>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== SECTION 5: RESOURCES ===== -->
+  <div class="section-header">
+    <div class="section-icon" style="background: linear-gradient(135deg,#b45309,#d97706);">🔗</div>
+    <h2 style="background: linear-gradient(90deg,#fcd34d,#fca5a5); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">แหล่งข้อมูลและลิงก์</h2>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-accent" style="background: linear-gradient(90deg,#6366f1,#22d3ee);"></div>
+      <h3>ข่าวสาร ESP32-S31 Linux</h3>
+      <ul class="link-list">
+        <li>
+          <a href="https://www.espressif.com/en/products/socs/esp32-s31" target="_blank">Espressif ESP32-S31 Official Page</a>
+          <span class="link-desc">— ข้อมูล spec และ datasheet ทางการ</span>
+        </li>
+        <li>
+          <a href="https://blog.adafruit.com/2026/08/25/espressif-posts-a-linux-bsp-for-the-esp32-s31/" target="_blank">Adafruit Blog: ESP32-S31 Linux BSP</a>
+          <span class="link-desc">— รายงาน Linux BSP developer preview</span>
+        </li>
+        <li>
+          <a href="https://www.xda-developers.com/newest-esp32-run-linux-close-to-raspberry-pi/" target="_blank">XDA Developers: ESP32 runs Linux</a>
+          <span class="link-desc">— บทวิเคราะห์ความสำคัญของ ESP32-S31</span>
+        </li>
+        <li>
+          <a href="https://linuxgizmos.com/espressif-begins-mass-production-of-esp32-s31-wireless-risc-v-soc/" target="_blank">LinuxGizmos: ESP32-S31 Mass Production</a>
+          <span class="link-desc">— ข่าวเริ่ม Mass Production</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-accent" style="background: linear-gradient(90deg,#f59e0b,#f43f5e);"></div>
+      <h3>OpenMote &amp; mmWave</h3>
+      <ul class="link-list">
+        <li>
+          <a href="https://www.crowdsupply.com/hat-and-hammer/openmote" target="_blank">OpenMote Crowd Supply Campaign</a>
+          <span class="link-desc">— หน้า crowdfunding อย่างเป็นทางการ</span>
+        </li>
+        <li>
+          <a href="https://circuitdigest.com/news/openmote-an-esp32-s3-based-smart-controller-for-makers" target="_blank">Circuit Digest: OpenMote รีวิว</a>
+          <span class="link-desc">— รีวิวและ spec โดยละเอียด</span>
+        </li>
+        <li>
+          <a href="https://how2electronics.com/esp32-c1001-mmwave-sensor-for-sleep-fall-life-detection/" target="_blank">How2Electronics: C1001 mmWave Tutorial</a>
+          <span class="link-desc">— Tutorial ใช้ C1001 กับ ESP32</span>
+        </li>
+        <li>
+          <a href="https://github.com/Love4yzp/Seeed-mmWave-library" target="_blank">GitHub: Seeed mmWave Library</a>
+          <span class="link-desc">— Library v2.0-rc สำหรับ MR60BHA2/FDA2</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-accent" style="background: linear-gradient(90deg,#10b981,#22d3ee);"></div>
+      <h3>โปรเจกต์ IoT บน Hackster</h3>
+      <ul class="link-list">
+        <li>
+          <a href="https://www.hackster.io/rau7han/iot-based-esp32-smart-terrarium-19ed25" target="_blank">Hackster: ESP32 Smart Terrarium</a>
+          <span class="link-desc">— โปรเจกต์ตู้สัตว์เลื้อยคลาน IoT</span>
+        </li>
+        <li>
+          <a href="https://www.hackster.io/techgyanset/iot-based-smart-waste-monitoring-system-using-esp32-f03906" target="_blank">Hackster: Smart Waste Monitor</a>
+          <span class="link-desc">— ถังขยะอัจฉริยะด้วย ESP32</span>
+        </li>
+        <li>
+          <a href="https://www.hackster.io/tech_nickk/radar-based-home-security-system-using-rd-03d-and-esp32-c6-72fd6e" target="_blank">Hackster: Radar Security + ESP32-C6</a>
+          <span class="link-desc">— ระบบรักษาความปลอดภัยด้วย Radar + C6</span>
+        </li>
+        <li>
+          <a href="https://m5stack.com/global-innovation-contest-2026" target="_blank">M5Stack Global Innovation Contest 2026</a>
+          <span class="link-desc">— แข่งขันสร้างโปรเจกต์ IoT ชิงเงินรางวัล</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Researcher อัตโนมัติ &nbsp;|&nbsp; วันที่ 26 กันยายน 2026</p>
+  <p style="margin-top:0.5rem;">แหล่งอ้างอิง: Espressif Systems, Adafruit Blog, XDA Developers, Hackster.io, Crowd Supply, Circuit Digest, LinuxGizmos, How2Electronics, GitHub</p>
+</footer>
+
+</body>
+</html>
