@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 27 กันยายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263348;
+    --accent1: #8b5cf6;
+    --accent2: #06b6d4;
+    --accent3: #f59e0b;
+    --accent4: #10b981;
+    --accent5: #f43f5e;
+    --text-primary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --tag-bg: rgba(139,92,246,0.15);
+    --tag-text: #c4b5fd;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 45%, #0c1a2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(139,92,246,0.18) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 20%, rgba(6,182,212,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 80%, rgba(16,185,129,0.08) 0%, transparent 40%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.25rem 1rem;
+    border-radius: 9999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.8rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #c4b5fd, #67e8f9, #6ee7b7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.4rem;
+    position: relative;
+  }
+  header .subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    padding: 0.35rem 1.1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .stat-pill strong { color: var(--text-primary); }
+
+  /* ===== LAYOUT ===== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 4rem;
+  }
+
+  /* ===== SECTION TITLE ===== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    margin-top: 3rem;
+  }
+  .section-header:first-child { margin-top: 0; }
+  .section-icon {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+  .section-divider {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  /* ===== CARDS GRID ===== */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.875rem;
+    padding: 1.4rem 1.5rem;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 0.875rem 0.875rem 0 0;
+  }
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: #475569;
+    transform: translateY(-2px);
+  }
+  .card.c1::before { background: linear-gradient(90deg, var(--accent1), var(--accent2)); }
+  .card.c2::before { background: linear-gradient(90deg, var(--accent2), var(--accent4)); }
+  .card.c3::before { background: linear-gradient(90deg, var(--accent3), var(--accent5)); }
+  .card.c4::before { background: linear-gradient(90deg, var(--accent4), var(--accent2)); }
+  .card.c5::before { background: linear-gradient(90deg, var(--accent5), var(--accent3)); }
+
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card h3.c1 { color: var(--accent1); }
+  .card h3.c2 { color: var(--accent2); }
+  .card h3.c3 { color: var(--accent3); }
+  .card h3.c4 { color: var(--accent4); }
+  .card h3.c5 { color: var(--accent5); }
+
+  .card p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .card-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.9rem;
+  }
+  .tag {
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(139,92,246,0.2);
+  }
+  .tag.t2 { background: rgba(6,182,212,0.12); color: #67e8f9; border-color: rgba(6,182,212,0.2); }
+  .tag.t3 { background: rgba(245,158,11,0.12); color: #fcd34d; border-color: rgba(245,158,11,0.2); }
+  .tag.t4 { background: rgba(16,185,129,0.12); color: #6ee7b7; border-color: rgba(16,185,129,0.2); }
+  .tag.t5 { background: rgba(244,63,94,0.12); color: #fda4af; border-color: rgba(244,63,94,0.2); }
+
+  /* ===== CODE BLOCK ===== */
+  .code-wrap {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    margin-top: 1rem;
+  }
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.55rem 1rem;
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    font-size: 0.78rem;
+    color: #8b949e;
+  }
+  .code-header .lang { color: #58a6ff; font-weight: 600; }
+  pre {
+    padding: 1.1rem 1.2rem;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    font-family: 'Courier New', Courier, monospace;
+  }
+  .kw { color: #ff7b72; }
+  .fn { color: #d2a8ff; }
+  .str { color: #a5d6ff; }
+  .cmt { color: #8b949e; font-style: italic; }
+  .num { color: #79c0ff; }
+  .var { color: #ffa657; }
+
+  /* ===== SENSOR TABLE ===== */
+  .sensor-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  .sensor-table th {
+    text-align: left;
+    padding: 0.7rem 1rem;
+    background: rgba(139,92,246,0.1);
+    border-bottom: 2px solid var(--accent1);
+    color: var(--tag-text);
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .sensor-table td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+    vertical-align: top;
+  }
+  .sensor-table tr:last-child td { border-bottom: none; }
+  .sensor-table tr:hover td { background: rgba(255,255,255,0.02); color: var(--text-primary); }
+  .sensor-table td:first-child { color: var(--accent2); font-weight: 600; }
+
+  /* ===== RESOURCE GRID ===== */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+    transition: border-color 0.2s, background 0.2s;
+    text-decoration: none;
+    color: inherit;
+  }
+  .resource-card:hover {
+    border-color: var(--accent1);
+    background: var(--bg-card-hover);
+  }
+  .resource-icon {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    background: var(--tag-bg);
+  }
+  .resource-info .r-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.2rem;
+  }
+  .resource-info .r-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  .resource-info .r-url {
+    font-size: 0.72rem;
+    color: var(--accent2);
+    margin-top: 0.2rem;
+    word-break: break-all;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+  footer a { color: var(--accent2); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ===== HIGHLIGHT BOX ===== */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(6,182,212,0.06));
+    border: 1px solid rgba(139,92,246,0.25);
+    border-radius: 0.875rem;
+    padding: 1.4rem 1.5rem;
+    margin-top: 1.5rem;
+  }
+  .highlight-box h4 {
+    color: var(--accent2);
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+  .highlight-box ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .highlight-box li {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    padding-left: 1.2rem;
+    position: relative;
+  }
+  .highlight-box li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--accent1);
+  }
+
+  @media (max-width: 600px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .resource-grid { grid-template-columns: 1fr; }
+    header { padding: 2rem 1rem 1.75rem; }
+    main { padding: 2rem 1rem 3rem; }
+    .sensor-table { font-size: 0.8rem; }
+    .sensor-table th, .sensor-table td { padding: 0.5rem 0.65rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily Research Report</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">27 กันยายน 2026 &nbsp;·&nbsp; BLE Mesh · Audio AI · Predictive Maintenance · Hydroponics IoT</p>
+  <div class="stats-row">
+    <div class="stat-pill"><strong>4</strong> นวัตกรรมใหม่</div>
+    <div class="stat-pill"><strong>6</strong> ไอเดียโปรเจกต์</div>
+    <div class="stat-pill"><strong>4</strong> Sensors โฟกัส</div>
+    <div class="stat-pill"><strong>3</strong> ตัวอย่าง Code</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <div class="section-header" id="innovations">
+    <div class="section-icon" style="background:rgba(139,92,246,0.15);">⚡</div>
+    <h2 style="color:var(--accent1)">นวัตกรรม ESP32 ล่าสุด</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="cards-grid">
+
+    <div class="card c1">
+      <h3 class="c1">ESP32-S3 + BLE Mesh 1.1 — Smart Building Sensor Network</h3>
+      <p>Espressif ปล่อย ESP-BLE-MESH SDK รองรับ Bluetooth Mesh Profile 1.1 บน ESP32-S3 เต็มรูปแบบ รองรับ Directed Forwarding ทำให้แพ็กเก็ตเดินทางสั้นลง ลดแลตเตนซีและประหยัดไฟ เหมาะกับการสร้าง sensor network ขนาดใหญ่ในอาคาร ไม่ต้องพึ่ง Wi-Fi router เลย</p>
+      <div class="card-meta">
+        <span class="tag">BLE Mesh 1.1</span>
+        <span class="tag t2">ESP32-S3</span>
+        <span class="tag t4">Smart Building</span>
+      </div>
+    </div>
+
+    <div class="card c2">
+      <h3 class="c2">ESP-ADF 2.7 — Audio Development Framework ใหม่</h3>
+      <p>Espressif Audio Development Framework เวอร์ชัน 2.7 เพิ่ม pipeline สำหรับ real-time acoustic event detection บน ESP32-S3 รองรับ wake word ภาษาไทยผ่าน ESP-SR, streaming MP3/AAC ผ่าน Wi-Fi, และ AEC (Acoustic Echo Cancellation) ในตัว เหมาะสร้าง smart speaker หรือ voice-controlled device ราคาประหยัด</p>
+      <div class="card-meta">
+        <span class="tag t2">ESP-ADF 2.7</span>
+        <span class="tag">ESP-SR</span>
+        <span class="tag t3">Voice AI</span>
+      </div>
+    </div>
+
+    <div class="card c3">
+      <h3 class="c3">ESP32-C6 Zigbee Coordinator Mode — Open Source Stack</h3>
+      <p>esp-zigbee-sdk เวอร์ชันล่าสุดรองรับ ESP32-C6 เป็น Zigbee Coordinator แบบ full-featured ควบคุมอุปกรณ์ Zigbee 3.0 จาก Philips Hue, IKEA Tradfri และอื่นๆ ผ่าน ESP-IDF โดยตรง ไม่ต้องใช้ Zigbee2MQTT หรือ Sonoff Dongle ต่างหาก ต้นทุนลดเหลือแค่ ESP32-C6 DevKit ราคา ~$5</p>
+      <div class="card-meta">
+        <span class="tag t3">Zigbee Coordinator</span>
+        <span class="tag t2">ESP32-C6</span>
+        <span class="tag t4">esp-zigbee-sdk</span>
+      </div>
+    </div>
+
+    <div class="card c4">
+      <h3 class="c4">ESP32-P4 USB Host Mode — อ่านข้อมูลจาก USB Device โดยตรง</h3>
+      <p>ESP32-P4 มี USB 2.0 OTG ในตัวทั้ง host และ device mode ESP-IDF 5.4+ รองรับ USB HID, CDC-ACM, และ Mass Storage Class ทำให้ต่อ USB keyboard, flash drive, หรือ sensor USB ได้โดยตรง โดยไม่ต้องใช้ USB host shield ภายนอก เปิดโอกาสสร้าง industrial HMI ที่รับข้อมูลจาก USB instrument ได้ทันที</p>
+      <div class="card-meta">
+        <span class="tag t4">ESP32-P4</span>
+        <span class="tag t2">USB Host</span>
+        <span class="tag">ESP-IDF 5.4</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <div class="section-header" id="projects">
+    <div class="section-icon" style="background:rgba(6,182,212,0.12);">🔧</div>
+    <h2 style="color:var(--accent2)">ไอเดียโปรเจกต์ IoT ที่น่าสนใจ</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="cards-grid">
+
+    <div class="card c1">
+      <h3 class="c1">BLE Mesh Lighting Control — ระบบแสงสว่างอัจฉริยะ 50+ โหนด</h3>
+      <p>ใช้ ESP32-S3 + BLE Mesh 1.1 สร้างระบบควบคุมไฟ LED ทั้งอาคารผ่าน mesh network แต่ละโหนดเป็น ESP32-S3 mini ราคา $3 ต่อ SSR relay หรือ MOSFET ควบคุมไฟ และมี light sensor OPT3001 เพื่อ auto-adjust ความสว่าง ควบคุมทั้งหมดผ่าน Home Assistant ด้วย ESPHome BLE proxy สร้างได้ทั้งบ้านในงบต่ำกว่า $200</p>
+      <div class="card-meta">
+        <span class="tag">BLE Mesh</span>
+        <span class="tag t2">Home Automation</span>
+        <span class="tag t4">OPT3001</span>
+        <span class="tag t3">ESPHome</span>
+      </div>
+    </div>
+
+    <div class="card c2">
+      <h3 class="c2">Predictive Maintenance Vibration Monitor — ESP32-S3 + ADXL355</h3>
+      <p>ติด ADXL355 low-noise accelerometer บนมอเตอร์หรือเครื่องจักร ESP32-S3 เก็บ FFT ของ vibration signal ด้วย DSP instructions ในตัว ตรวจจับ anomaly ด้วย autoencoder TFLite Micro เตือนล่วงหน้าก่อนมอเตอร์จะพัง ลงแดชบอร์ด Grafana ผ่าน MQTT ใช้แบตเตอรี่ 18650 เดียวนาน 3 เดือนด้วย deep sleep</p>
+      <div class="card-meta">
+        <span class="tag t2">ADXL355</span>
+        <span class="tag">Predictive Maintenance</span>
+        <span class="tag t4">TFLite Micro</span>
+        <span class="tag t3">FFT</span>
+      </div>
+    </div>
+
+    <div class="card c3">
+      <h3 class="c3">Smart Hydroponics Controller — ควบคุม pH + EC + อุณหภูมิ อัตโนมัติ</h3>
+      <p>ใช้ ESP32-S3 + Atlas Scientific EZO-pH + EZO-EC module อ่านค่า pH และ electrical conductivity ของน้ำ Hydroponic ทุก 15 นาที ถ้า pH เบี่ยงจากช่วง 5.8–6.2 จะสั่ง peristaltic pump เติม pH up/down อัตโนมัติ EC ต่ำก็เติม nutrient solution แสดงผลบน OLED 2.42" และส่ง Line Notify แจ้งเตือน</p>
+      <div class="card-meta">
+        <span class="tag t3">EZO-pH</span>
+        <span class="tag t2">EZO-EC</span>
+        <span class="tag t4">Hydroponics</span>
+        <span class="tag">Peristaltic Pump</span>
+      </div>
+    </div>
+
+    <div class="card c4">
+      <h3 class="c4">Acoustic Event Detector — ESP32-S3 ฟังเสียงแตกไฟไหม้และกระจกแตก</h3>
+      <p>ใช้ ESP32-S3 + INMP441 MEMS microphone รัน audio classification model ด้วย Edge Impulse SDK ตรวจจับ glass break, smoke alarm beep, dog bark, และ baby cry ด้วย accuracy &gt;95% โมเดล 50KB รันบน ESP32-S3 ได้ภายใน 80ms ไม่ส่งเสียงขึ้น cloud สมบูรณ์แบบสำหรับ privacy-first home security</p>
+      <div class="card-meta">
+        <span class="tag t5">Acoustic AI</span>
+        <span class="tag t2">INMP441</span>
+        <span class="tag">Edge Impulse</span>
+        <span class="tag t3">Security</span>
+      </div>
+    </div>
+
+    <div class="card c5">
+      <h3 class="c5">Zigbee Coordinator ด้วย ESP32-C6 + Home Assistant</h3>
+      <p>แปลง ESP32-C6 DevKit ให้เป็น Zigbee Coordinator ผ่าน esp-zigbee-sdk + EZSP serial adapter เชื่อมต่อ Home Assistant ผ่าน ZHA integration ควบคุม Zigbee bulbs, plugs, sensors ทุก brand จากที่เดียว ต้นทุนรวมต่ำกว่า $10 แทน Zigbee hub ราคาหลายพันบาท</p>
+      <div class="card-meta">
+        <span class="tag t5">Zigbee</span>
+        <span class="tag t2">ESP32-C6</span>
+        <span class="tag t4">Home Assistant</span>
+        <span class="tag t3">ZHA</span>
+      </div>
+    </div>
+
+    <div class="card c1">
+      <h3 class="c1">DS18B20 Multi-Point Temperature Network — ตรวจสอบอุณหภูมิ 30+ จุด</h3>
+      <p>ใช้ 1-Wire bus ต่อ DS18B20 สูงสุด 30–50 ตัวบน ESP32 สายเดียว แมพตำแหน่งแต่ละ sensor ด้วย ROM address เฉพาะตัว ใช้งานในคลังสินค้าเย็น ห้องเซิร์ฟเวอร์ หรือ greenhouse ส่งข้อมูลทุก 30 วินาทีผ่าน MQTT + InfluxDB + Grafana dashboard แสดง heatmap อุณหภูมิแบบ real-time</p>
+      <div class="card-meta">
+        <span class="tag">DS18B20</span>
+        <span class="tag t2">1-Wire Bus</span>
+        <span class="tag t4">Grafana</span>
+        <span class="tag t3">Cold Chain</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <div class="section-header" id="sensors">
+    <div class="section-icon" style="background:rgba(245,158,11,0.12);">🔬</div>
+    <h2 style="color:var(--accent3)">Sensors น่าสนใจประจำวัน</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:0.875rem;overflow:hidden;">
+    <table class="sensor-table">
+      <thead>
+        <tr>
+          <th>Sensor</th>
+          <th>วัดอะไร</th>
+          <th>Interface</th>
+          <th>ราคาโดยประมาณ</th>
+          <th>จุดเด่น</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ADXL355</td>
+          <td>3-Axis Acceleration (ultra low-noise)</td>
+          <td>SPI / I2C</td>
+          <td>~$15–20</td>
+          <td>Noise 25µg/√Hz เหมาะ vibration analysis, ringing &lt;0.1Hz</td>
+        </tr>
+        <tr>
+          <td>Atlas EZO-pH</td>
+          <td>pH 0.001 resolution</td>
+          <td>I2C / UART</td>
+          <td>~$40–50</td>
+          <td>Calibration ถาวร, ทนน้ำ, ใช้ใน Hydroponic/Aquaculture จริง</td>
+        </tr>
+        <tr>
+          <td>SCD41</td>
+          <td>CO₂ / Temp / RH</td>
+          <td>I2C</td>
+          <td>~$12–15</td>
+          <td>Photoacoustic NDIR ไม่ drift, ใช้ไฟน้อยกว่า SCD30 มาก</td>
+        </tr>
+        <tr>
+          <td>DS18B20</td>
+          <td>Temperature (−55 to +125°C)</td>
+          <td>1-Wire</td>
+          <td>~$1–2</td>
+          <td>30+ ตัวต่อสายเดียว, Waterproof probe มี, accuracy ±0.5°C</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box">
+    <h4>เปรียบเทียบ Accelerometer สำหรับ Predictive Maintenance</h4>
+    <ul>
+      <li><strong>ADXL345</strong> — ราคาถูก ($2–3), ใช้ทั่วไป แต่ noise สูงกว่า ADXL355 ถึง 10×</li>
+      <li><strong>ADXL355</strong> — ราคากลาง ($15–20), noise ต่ำมาก เหมาะ FFT spectrum analysis จริงจัง</li>
+      <li><strong>ICM-42688-P</strong> — ราคาปานกลาง ($5–8), IMU คุณภาพสูง bandwidth 32kHz เหมาะ drone/robotics</li>
+      <li><strong>LIS2DW12</strong> — Ultra-low-power ($2–4), ใช้แบตอย่างประหยัด เหมาะ IoT ที่นาน &gt;6 เดือนต่อชาร์จ</li>
+    </ul>
+  </div>
+
+  <!-- ===== SECTION 4: CODE ===== -->
+  <div class="section-header" id="code">
+    <div class="section-icon" style="background:rgba(16,185,129,0.12);">💻</div>
+    <h2 style="color:var(--accent4)">ตัวอย่าง Code</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="cards-grid" style="grid-template-columns:1fr;">
+
+    <!-- Code 1 -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:0.875rem;padding:1.4rem 1.5rem;">
+      <h3 style="color:var(--accent1);margin-bottom:0.4rem;">DS18B20 Multi-Sensor บน 1-Wire — อ่านค่า 10 ตัวพร้อมกัน</h3>
+      <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:0.5rem;">ใช้ library <code>OneWire</code> + <code>DallasTemperature</code> สแกน ROM address ทุก sensor และอ่านค่าแบบ async</p>
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="lang">C++ (Arduino / ESP32)</span>
+          <span>DS18B20 Multi-Point</span>
+        </div>
+        <pre><span class="kw">#include</span> <span class="str">&lt;OneWire.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;DallasTemperature.h&gt;</span>
+
+<span class="kw">#define</span> <span class="var">ONE_WIRE_PIN</span> <span class="num">4</span>
+<span class="var">OneWire</span> ow(<span class="var">ONE_WIRE_PIN</span>);
+<span class="var">DallasTemperature</span> sensors(&amp;ow);
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  Serial.<span class="fn">begin</span>(<span class="num">115200</span>);
+  sensors.<span class="fn">begin</span>();
+  sensors.<span class="fn">setResolution</span>(<span class="num">12</span>);          <span class="cmt">// 12-bit = 0.0625°C</span>
+  sensors.<span class="fn">setWaitForConversion</span>(<span class="kw">false</span>); <span class="cmt">// async mode</span>
+  Serial.<span class="fn">printf</span>(<span class="str">"Found %d sensors\n"</span>, sensors.<span class="fn">getDeviceCount</span>());
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  sensors.<span class="fn">requestTemperatures</span>(); <span class="cmt">// kick conversion</span>
+  <span class="fn">delay</span>(<span class="num">750</span>);                      <span class="cmt">// wait 12-bit conversion</span>
+
+  <span class="kw">int</span> count = sensors.<span class="fn">getDeviceCount</span>();
+  <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; count; i++) {
+    <span class="kw">float</span> temp = sensors.<span class="fn">getTempCByIndex</span>(i);
+    Serial.<span class="fn">printf</span>(<span class="str">"Sensor[%d]: %.2f°C\n"</span>, i, temp);
+  }
+  <span class="fn">delay</span>(<span class="num">30000</span>); <span class="cmt">// อ่านทุก 30 วิ</span>
+}</pre>
+      </div>
+    </div>
+
+    <!-- Code 2 -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:0.875rem;padding:1.4rem 1.5rem;">
+      <h3 style="color:var(--accent2);margin-bottom:0.4rem;">SCD41 อ่านค่า CO₂ ด้วย I2C — พร้อม Low-Power Periodic Measurement</h3>
+      <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:0.5rem;">ใช้ Sensirion Arduino library <code>Sensirion I2C SCD4x</code> อ่าน CO₂/Temp/RH ทุก 5 วินาที พร้อม low-power mode สำหรับ battery device</p>
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="lang">C++ (Arduino / ESP32)</span>
+          <span>SCD41 CO₂ Sensor</span>
+        </div>
+        <pre><span class="kw">#include</span> <span class="str">&lt;Wire.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;SensirionI2CScd4x.h&gt;</span>
+
+<span class="var">SensirionI2CScd4x</span> scd4x;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  Serial.<span class="fn">begin</span>(<span class="num">115200</span>);
+  Wire.<span class="fn">begin</span>();
+  scd4x.<span class="fn">begin</span>(Wire);
+  scd4x.<span class="fn">stopPeriodicMeasurement</span>();  <span class="cmt">// reset if was running</span>
+  scd4x.<span class="fn">startLowPowerPeriodicMeasurement</span>(); <span class="cmt">// อ่านทุก 30 วิ กินไฟน้อย</span>
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">bool</span> isReady = <span class="kw">false</span>;
+  scd4x.<span class="fn">getDataReadyFlag</span>(isReady);
+
+  <span class="kw">if</span> (isReady) {
+    <span class="kw">uint16_t</span> co2;
+    <span class="kw">float</span> temp, humidity;
+    scd4x.<span class="fn">readMeasurement</span>(co2, temp, humidity);
+    Serial.<span class="fn">printf</span>(<span class="str">"CO2: %u ppm | Temp: %.1f°C | RH: %.1f%%\n"</span>,
+                  co2, temp, humidity);
+  }
+  <span class="fn">delay</span>(<span class="num">5000</span>);
+}</pre>
+      </div>
+    </div>
+
+    <!-- Code 3 -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:0.875rem;padding:1.4rem 1.5rem;">
+      <h3 style="color:var(--accent3);margin-bottom:0.4rem;">Hydroponics pH Control — อ่าน Atlas EZO-pH + ควบคุม Peristaltic Pump</h3>
+      <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:0.5rem;">ตรวจ pH น้ำ Hydroponic ทุก 15 นาที ถ้าออกนอก range 5.8–6.2 จะสั่ง pump เติม pH up/down</p>
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="lang">C++ (Arduino / ESP32)</span>
+          <span>pH Control Loop</span>
+        </div>
+        <pre><span class="kw">#include</span> <span class="str">&lt;Wire.h&gt;</span>
+<span class="kw">#define</span> <span class="var">EZO_PH_ADDR</span>  <span class="num">0x63</span>  <span class="cmt">// default I2C address</span>
+<span class="kw">#define</span> <span class="var">PUMP_UP_PIN</span>  <span class="num">18</span>    <span class="cmt">// pH UP pump relay</span>
+<span class="kw">#define</span> <span class="var">PUMP_DN_PIN</span>  <span class="num">19</span>    <span class="cmt">// pH DOWN pump relay</span>
+
+<span class="kw">float</span> <span class="fn">readPH</span>() {
+  Wire.<span class="fn">beginTransmission</span>(<span class="var">EZO_PH_ADDR</span>);
+  Wire.<span class="fn">write</span>(<span class="str">"R"</span>);             <span class="cmt">// send Read command</span>
+  Wire.<span class="fn">endTransmission</span>();
+  <span class="fn">delay</span>(<span class="num">900</span>);               <span class="cmt">// EZO needs 900ms</span>
+  Wire.<span class="fn">requestFrom</span>(<span class="var">EZO_PH_ADDR</span>, <span class="num">20</span>);
+  <span class="kw">char</span> buf[<span class="num">20</span>] = {<span class="num">0</span>};
+  <span class="kw">int</span> i = <span class="num">0</span>;
+  <span class="kw">while</span> (Wire.<span class="fn">available</span>()) buf[i++] = Wire.<span class="fn">read</span>();
+  <span class="kw">return</span> <span class="fn">atof</span>(buf + <span class="num">1</span>); <span class="cmt">// skip status byte</span>
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">float</span> ph = <span class="fn">readPH</span>();
+  Serial.<span class="fn">printf</span>(<span class="str">"pH: %.3f\n"</span>, ph);
+
+  <span class="kw">if</span> (ph &lt; <span class="num">5.8</span>) {
+    <span class="fn">digitalWrite</span>(<span class="var">PUMP_UP_PIN</span>, HIGH); <span class="fn">delay</span>(<span class="num">500</span>);
+    <span class="fn">digitalWrite</span>(<span class="var">PUMP_UP_PIN</span>, LOW);
+    Serial.<span class="fn">println</span>(<span class="str">"pH low — added pH UP"</span>);
+  } <span class="kw">else if</span> (ph &gt; <span class="num">6.2</span>) {
+    <span class="fn">digitalWrite</span>(<span class="var">PUMP_DN_PIN</span>, HIGH); <span class="fn">delay</span>(<span class="num">500</span>);
+    <span class="fn">digitalWrite</span>(<span class="var">PUMP_DN_PIN</span>, LOW);
+    Serial.<span class="fn">println</span>(<span class="str">"pH high — added pH DOWN"</span>);
+  }
+  <span class="fn">delay</span>(<span class="num">900000</span>); <span class="cmt">// ตรวจทุก 15 นาที</span>
+}</pre>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== SECTION 5: RESOURCES ===== -->
+  <div class="section-header" id="resources">
+    <div class="section-icon" style="background:rgba(244,63,94,0.1);">🔗</div>
+    <h2 style="color:var(--accent5)">แหล่งข้อมูลและลิงก์</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="resource-grid">
+
+    <a href="https://docs.espressif.com/projects/esp-adf/en/latest/" target="_blank" rel="noopener" class="resource-card">
+      <div class="resource-icon">🎵</div>
+      <div class="resource-info">
+        <div class="r-title">ESP-ADF Documentation</div>
+        <div class="r-desc">Audio Development Framework สำหรับ ESP32-S3/P4 — pipeline, codec, AEC</div>
+        <div class="r-url">docs.espressif.com/projects/esp-adf</div>
+      </div>
+    </a>
+
+    <a href="https://docs.espressif.com/projects/esp-zigbee-sdk/en/latest/" target="_blank" rel="noopener" class="resource-card">
+      <div class="resource-icon">🏠</div>
+      <div class="resource-info">
+        <div class="r-title">ESP Zigbee SDK Docs</div>
+        <div class="r-desc">สร้าง Zigbee Coordinator / Router / End Device ด้วย ESP32-C6/H2</div>
+        <div class="r-url">docs.espressif.com/projects/esp-zigbee-sdk</div>
+      </div>
+    </a>
+
+    <a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-guides/bluetooth/esp-ble-mesh/" target="_blank" rel="noopener" class="resource-card">
+      <div class="resource-icon">📡</div>
+      <div class="resource-info">
+        <div class="r-title">ESP-BLE-MESH Guide</div>
+        <div class="r-desc">BLE Mesh 1.1 provisioning, models, network key management</div>
+        <div class="r-url">ESP-IDF BLE Mesh API Guide</div>
+      </div>
+    </a>
+
+    <a href="https://www.atlas-scientific.com/ezo-ph/" target="_blank" rel="noopener" class="resource-card">
+      <div class="resource-icon">⚗️</div>
+      <div class="resource-info">
+        <div class="r-title">Atlas Scientific EZO-pH</div>
+        <div class="r-desc">pH circuit แม่นยำสูง พร้อม library Arduino และ datasheet ครบ</div>
+        <div class="r-url">atlas-scientific.com/ezo-ph</div>
+      </div>
+    </a>
+
+    <a href="https://sensirion.com/products/catalog/SCD41/" target="_blank" rel="noopener" class="resource-card">
+      <div class="resource-icon">🌬️</div>
+      <div class="resource-info">
+        <div class="r-title">Sensirion SCD41 Datasheet</div>
+        <div class="r-desc">CO₂ sensor photoacoustic NDIR ประหยัดไฟ ใช้ใน indoor air quality</div>
+        <div class="r-url">sensirion.com — SCD41</div>
+      </div>
+    </a>
+
+    <a href="https://www.hackster.io/news/predictive-maintenance-with-esp32" target="_blank" rel="noopener" class="resource-card">
+      <div class="resource-icon">🔩</div>
+      <div class="resource-info">
+        <div class="r-title">Hackster.io — Predictive Maintenance</div>
+        <div class="r-desc">โปรเจกต์ vibration monitoring + ML บน microcontroller จาก community</div>
+        <div class="r-url">hackster.io/predictive-maintenance</div>
+      </div>
+    </a>
+
+    <a href="https://edgeimpulse.com/blog/esp32-s3-audio-classifier" target="_blank" rel="noopener" class="resource-card">
+      <div class="resource-icon">🎤</div>
+      <div class="resource-info">
+        <div class="r-title">Edge Impulse — Audio on ESP32-S3</div>
+        <div class="r-desc">Guide การ train audio classifier แล้ว deploy บน ESP32-S3 ทั้ง pipeline</div>
+        <div class="r-url">edgeimpulse.com/blog</div>
+      </div>
+    </a>
+
+    <a href="https://esphome.io/components/dallas.html" target="_blank" rel="noopener" class="resource-card">
+      <div class="resource-icon">🌡️</div>
+      <div class="resource-info">
+        <div class="r-title">ESPHome — Dallas DS18B20</div>
+        <div class="r-desc">ตั้งค่า DS18B20 multi-sensor ผ่าน ESPHome ง่ายที่สุด พร้อม YAML config</div>
+        <div class="r-url">esphome.io/components/dallas</div>
+      </div>
+    </a>
+
+  </div>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Researcher อัตโนมัติ &nbsp;·&nbsp; 27 กันยายน 2026</p>
+  <p style="margin-top:0.4rem;">
+    แหล่งอ้างอิง:
+    <a href="https://docs.espressif.com/" target="_blank" rel="noopener">Espressif Docs</a> ·
+    <a href="https://www.atlas-scientific.com/" target="_blank" rel="noopener">Atlas Scientific</a> ·
+    <a href="https://sensirion.com/" target="_blank" rel="noopener">Sensirion</a> ·
+    <a href="https://edgeimpulse.com/" target="_blank" rel="noopener">Edge Impulse</a> ·
+    <a href="https://esphome.io/" target="_blank" rel="noopener">ESPHome</a>
+  </p>
+</footer>
+
+</body>
+</html>
