@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 28 กันยายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #080f1e;
+    --bg2:     #0f1a2e;
+    --bg3:     #1a2540;
+    --surface: #1e2d45;
+    --border:  #2a3f5f;
+    --text:    #dce8f8;
+    --muted:   #7a9bbf;
+    --a1: #38bdf8;  /* sky   */
+    --a2: #34d399;  /* emerald */
+    --a3: #fb923c;  /* orange */
+    --a4: #c084fc;  /* violet */
+    --a5: #f472b6;  /* pink  */
+    --a6: #facc15;  /* yellow */
+    --grd1: linear-gradient(135deg,#0ea5e9 0%,#6366f1 100%);
+    --grd2: linear-gradient(135deg,#10b981 0%,#06b6d4 100%);
+    --grd3: linear-gradient(135deg,#f97316 0%,#eab308 100%);
+    --grd4: linear-gradient(135deg,#a855f7 0%,#ec4899 100%);
+    --grd5: linear-gradient(135deg,#14b8a6 0%,#22c55e 100%);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.85;
+    font-size: 1rem;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--grd1);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  header .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.35);
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 0.9rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.35);
+    margin-bottom: 0.5rem;
+  }
+  header p.subtitle {
+    color: rgba(255,255,255,0.85);
+    font-size: 1.05rem;
+    max-width: 620px;
+    margin: 0 auto 1.5rem;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.2rem;
+    margin-top: 0.4rem;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.3rem 0.9rem;
+    border-radius: 999px;
+  }
+
+  /* ── NAV ── */
+  nav {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    padding: 0 1.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  nav ul {
+    display: flex;
+    gap: 0;
+    list-style: none;
+    white-space: nowrap;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  nav a {
+    display: block;
+    padding: 0.85rem 1.1rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+    transition: color .2s, border-color .2s;
+  }
+  nav a:hover { color: var(--a1); border-bottom-color: var(--a1); }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-bottom: 1.8rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+  }
+
+  /* ── CARD GRID ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.3rem;
+    margin-bottom: 3.5rem;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.35rem 1.4rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .card.c1::before { background: var(--grd1); }
+  .card.c2::before { background: var(--grd2); }
+  .card.c3::before { background: var(--grd3); }
+  .card.c4::before { background: var(--grd4); }
+  .card.c5::before { background: var(--grd5); }
+
+  .card-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.65rem;
+    border-radius: 999px;
+    margin-bottom: 0.65rem;
+  }
+  .tag-sky    { background: rgba(56,189,248,0.15); color: var(--a1); }
+  .tag-em     { background: rgba(52,211,153,0.15); color: var(--a2); }
+  .tag-or     { background: rgba(251,146,60,0.15);  color: var(--a3); }
+  .tag-vi     { background: rgba(192,132,252,0.15); color: var(--a4); }
+  .tag-pk     { background: rgba(244,114,182,0.15); color: var(--a5); }
+  .tag-ye     { background: rgba(250,204,21,0.15);  color: var(--a6); }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.55rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .card .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.85rem;
+  }
+  .chip {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── SENSOR TABLE ── */
+  .sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.1rem;
+    margin-bottom: 3.5rem;
+  }
+  .sensor-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.15rem 1.2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .sensor-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+  .sensor-info h4 {
+    font-size: 0.92rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .sensor-info p {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .sensor-spec {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+  .spec-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── CODE ── */
+  .code-section { margin-bottom: 3.5rem; }
+  .code-block {
+    background: #040a14;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg3);
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .code-title { font-size: 0.83rem; font-weight: 600; color: var(--a1); }
+  .code-lang {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 0.15rem 0.5rem;
+    border-radius: 5px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  pre {
+    padding: 1.2rem 1.3rem;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.75;
+    color: #cdd6f4;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  pre .kw  { color: #cba6f7; }
+  pre .fn  { color: #89b4fa; }
+  pre .str { color: #a6e3a1; }
+  pre .num { color: #fab387; }
+  pre .cmt { color: #45475a; }
+  pre .typ { color: #f9e2af; }
+  pre .var { color: #cdd6f4; }
+
+  /* ── RESOURCES ── */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.1rem;
+    margin-bottom: 3.5rem;
+  }
+  .resource-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.2rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color .2s, background .2s;
+    display: block;
+  }
+  .resource-card:hover {
+    border-color: var(--a1);
+    background: var(--surface);
+  }
+  .resource-card .r-cat {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--a1);
+    margin-bottom: 0.35rem;
+  }
+  .resource-card h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+    color: var(--text);
+  }
+  .resource-card p {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+  footer strong { color: var(--a1); }
+
+  @media (max-width: 600px) {
+    header { padding: 2rem 1rem 1.8rem; }
+    main { padding: 1.5rem 1rem 3rem; }
+    .card-grid, .sensor-grid, .resource-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Daily ESP32 Research — 28 กันยายน 2026</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">นวัตกรรม IoT วันนี้: CAN Bus ยานยนต์, Smart Beehive, สระว่ายน้ำอัตโนมัติ, Solar Off-Grid, และ E-Paper Display</p>
+  <div class="stat-row">
+    <span class="stat-pill">🔋 4 นวัตกรรมใหม่</span>
+    <span class="stat-pill">🚀 5 ไอเดียโปรเจกต์</span>
+    <span class="stat-pill">🔬 5 Sensors &amp; ICs</span>
+    <span class="stat-pill">💻 3 ตัวอย่าง Code</span>
+  </div>
+</header>
+
+<nav>
+  <ul>
+    <li><a href="#innovations">นวัตกรรม</a></li>
+    <li><a href="#projects">ไอเดียโปรเจกต์</a></li>
+    <li><a href="#sensors">Sensors &amp; ICs</a></li>
+    <li><a href="#code">Code ตัวอย่าง</a></li>
+    <li><a href="#resources">แหล่งข้อมูล</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <!-- ══ INNOVATIONS ══ -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--grd1)">⚡</div>
+      <h2 style="color:var(--a1)">นวัตกรรม ESP32 ล่าสุด</h2>
+    </div>
+    <div class="card-grid">
+
+      <div class="card c1">
+        <span class="card-tag tag-sky">New Module</span>
+        <h3>ESP32-C61-MINI-1/1U — Wi-Fi 6 BLE5 ราคา $2 พร้อมจำหน่ายแล้ว</h3>
+        <p>Espressif เปิดตัว MINI-family module บน ESP32-C61 อย่างเป็นทางการในเดือนสิงหาคม 2026 ราคาเพียง ~$2/ชิ้น บน AliExpress โดยรองรับ Wi-Fi 6 (2.4 GHz), Bluetooth 5 LE, พร้อม ESP-IDF v6.0+ เป็น RISC-V single-core 160 MHz กินไฟต่ำกว่า ESP32-C6 เหมาะสำหรับ Matter/Zigbee nodes ราคาประหยัด มี variant U สำหรับ external antenna</p>
+        <div class="meta">
+          <span class="chip">Wi-Fi 6</span>
+          <span class="chip">BLE 5</span>
+          <span class="chip">RISC-V</span>
+          <span class="chip">Matter</span>
+          <span class="chip">~$2</span>
+        </div>
+      </div>
+
+      <div class="card c2">
+        <span class="card-tag tag-em">Solar Board</span>
+        <h3>ESP32-S3 PowerFeather V2 — LiFePO4 Solar พร้อม pseudo-MPPT</h3>
+        <p>PowerFeather V2 (พฤษภาคม 2026) รองรับ LiFePO4 แบตเตอรีเพิ่มจาก V1 ที่รองรับแค่ LiPo/Li-Ion ใช้ TI BQ25628E charger IC + Onsemi LC709204F fuel gauge รองรับแผงโซลาร์สูงสุด 18V, กระแส charge 2A, quiescent current 20µA ใน deep sleep พิน solar มี pseudo-MPPT ในตัว เหมาะสำหรับโปรเจกต์ off-grid ที่ต้องการ battery health ที่ดีกว่า LiPo</p>
+        <div class="meta">
+          <span class="chip">ESP32-S3</span>
+          <span class="chip">LiFePO4</span>
+          <span class="chip">BQ25628E</span>
+          <span class="chip">18V Solar</span>
+          <span class="chip">Feather</span>
+        </div>
+      </div>
+
+      <div class="card c3">
+        <span class="card-tag tag-or">Protocol</span>
+        <h3>ESP32-C5 รองรับ CAN FD — TWAI ใหม่ใน ESP-IDF v6.0</h3>
+        <p>ESP32-C5 เป็นชิปแรกในตระกูล ESP32 ที่ TWAI controller รองรับ CAN FD (Flexible Data-rate) ตามมาตรฐาน ISO 11898-1 ทำงานได้ทั้ง classic CAN และ CAN FD frames ในขณะที่ ESP32/S3 รองรับแค่ Classic CAN ทำให้ ESP32-C5 เหมาะสำหรับงาน automotive/industrial ระดับสูงที่ต้องการ data rate สูงถึง 8 Mbit/s และ payload ใหญ่ขึ้น (64 bytes vs 8 bytes)</p>
+        <div class="meta">
+          <span class="chip">CAN FD</span>
+          <span class="chip">ESP32-C5</span>
+          <span class="chip">8 Mbit/s</span>
+          <span class="chip">64B frame</span>
+          <span class="chip">ESP-IDF v6</span>
+        </div>
+      </div>
+
+      <div class="card c4">
+        <span class="card-tag tag-vi">E-Ink</span>
+        <h3>M5Paper Color ESP32S3 — จอ E-Ink สี 4 นิ้วสำหรับ Maker</h3>
+        <p>M5Stack เปิดตัว M5Paper Color รุ่นใหม่ปี 2026 ใช้ ESP32-S3 เป็น MCU พร้อมจอ E-Paper สี 4 นิ้วที่ไม่ต้องการไฟเพื่อคงภาพ รองรับ Touch input และรวม battery onboard กินไฟต่ำมากเมื่อใช้ deep sleep เหมาะสำหรับ Home Assistant dashboard, ป้ายราคาอิเล็กทรอนิกส์, name badge, ตารางงาน/ตารางประชุม และงาน ESPHome ที่ต้องแสดงผลตลอดเวลาโดยไม่ต้องต่อไฟ</p>
+        <div class="meta">
+          <span class="chip">ESP32-S3</span>
+          <span class="chip">4" Color</span>
+          <span class="chip">Touch</span>
+          <span class="chip">E-Paper</span>
+          <span class="chip">HA Integration</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ PROJECTS ══ -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--grd2)">🚀</div>
+      <h2 style="color:var(--a2)">ไอเดียโปรเจกต์ IoT ที่น่าสนใจ</h2>
+    </div>
+    <div class="card-grid">
+
+      <div class="card c2">
+        <span class="card-tag tag-em">Agriculture IoT</span>
+        <h3>Smart Beehive Monitor — ESP32 + BME680 + HX711 ดูแลรังผึ้ง IoT</h3>
+        <p>ติดตั้ง sensor ในรังผึ้งเพื่อวัด: น้ำหนักรัง (HX711 + load cell), อุณหภูมิ/ความชื้น/VOC ภายใน (BME680), เสียงผึ้ง/Queen bee acoustics (INMP441 I2S mic), การเคลื่อนไหวของผึ้ง (TCRT5000) ส่งข้อมูลผ่าน Firebase + React dashboard ทำงานบน solar + LiPo ใช้ deep sleep ระหว่าง interval ช่วยพยากรณ์ผลผลิตน้ำผึ้งและตรวจจับ swarming ก่อนเกิด</p>
+        <div class="meta">
+          <span class="chip">HX711</span>
+          <span class="chip">BME680</span>
+          <span class="chip">INMP441</span>
+          <span class="chip">Firebase</span>
+          <span class="chip">Solar</span>
+        </div>
+      </div>
+
+      <div class="card c1">
+        <span class="card-tag tag-sky">Home IoT</span>
+        <h3>Swimming Pool Automation — ESP32-PoolMaster ควบคุม pH+ORP อัตโนมัติ</h3>
+        <p>โปรเจกต์ ESP32-PoolMaster (open source บน GitHub) ติดตาม pH, ORP, อุณหภูมิน้ำ และแรงดันน้ำ ใช้ PID loop 2 ช่องแยกกันสำหรับ acid dosing (pH) และ chlorine dosing (ORP) ควบคุม Stenner peristaltic pump ผ่าน relay ผนวกกับ Home Assistant และ MQTT แจ้งเตือนบน smartphone เมื่อค่าเกิน threshold ประหยัดค่าสารเคมีกว่าเติมเองถึง 40%</p>
+        <div class="meta">
+          <span class="chip">pH Sensor</span>
+          <span class="chip">ORP/EZO</span>
+          <span class="chip">PID</span>
+          <span class="chip">MQTT</span>
+          <span class="chip">HA</span>
+        </div>
+      </div>
+
+      <div class="card c3">
+        <span class="card-tag tag-or">Automotive</span>
+        <h3>DIY Vehicle OBD-II Logger — ESP32 TWAI + SN65HVD230 + GPS</h3>
+        <p>ESP32 มี CAN controller (TWAI) ในตัว เพิ่มแค่ SN65HVD230 CAN transceiver ราคา ~15 บาท ต่อกับ OBD-II port บันทึก PID data เช่น RPM, ความเร็ว, อุณหภูมิน้ำ, แรงดันน้ำมัน รวมกับ GPS (NEO-M8N) แล้วส่งขึ้น MQTT/InfluxDB แสดงผล Grafana วิเคราะห์พฤติกรรมการขับ, fuel efficiency และเตือนเมื่อ engine fault code ขึ้น เหมาะสำหรับ fleet monitoring ราคาประหยัด</p>
+        <div class="meta">
+          <span class="chip">TWAI/CAN</span>
+          <span class="chip">SN65HVD230</span>
+          <span class="chip">OBD-II PID</span>
+          <span class="chip">NEO-M8N GPS</span>
+          <span class="chip">Grafana</span>
+        </div>
+      </div>
+
+      <div class="card c4">
+        <span class="card-tag tag-vi">Robotics</span>
+        <h3>DIY Drone Flight Controller — ESP32-S3 + MPU6050 + madflight</h3>
+        <p>ใช้ ESP32-S3 เป็น flight controller ร่วมกับ madflight (open-source firmware รองรับทั้ง ESP32 และ Raspberry Pi Pico) + MPU6050 gyro/accel + BMP390 barometer ควบคุมมอเตอร์ 4 ตัวผ่าน PWM DSHOT protocol FreeRTOS จัดการ task แยก PID loop (1 kHz), telemetry UART, RC receiver (SBUS) และ battery monitor รองรับ auto-arming failsafe เมื่อสัญญาณ RC หาย ค่าใช้จ่ายต่ำกว่า F4/F7 flight controller 5–10 เท่า</p>
+        <div class="meta">
+          <span class="chip">ESP32-S3</span>
+          <span class="chip">MPU6050</span>
+          <span class="chip">madflight</span>
+          <span class="chip">DSHOT</span>
+          <span class="chip">FreeRTOS</span>
+        </div>
+      </div>
+
+      <div class="card c5">
+        <span class="card-tag tag-em">Energy</span>
+        <h3>Solar Off-Grid Sensor Node — PowerFeather V2 + LiFePO4 ไม่เปลี่ยนแบต</h3>
+        <p>ใช้ PowerFeather V2 (ESP32-S3) ต่อแผงโซลาร์ 5W + แบต LiFePO4 18650 2,000 mAh วัดข้อมูลสภาพแวดล้อม (SHT41 + BH1750 + rain gauge) ส่ง MQTT ผ่าน Wi-Fi ทุก 5 นาที แล้ว deep sleep ในช่วงที่เหลือ กินไฟ ~20 µA ขณะ sleep อ่านสถานะแบตเตอรี่จาก fuel gauge IC (LC709204F) แจ้งเตือน Home Assistant หากแบตต่ำกว่า 20% ไม่ต้องเปลี่ยนแบตหรือชาร์จตลอดชีพ</p>
+        <div class="meta">
+          <span class="chip">PowerFeather V2</span>
+          <span class="chip">LiFePO4</span>
+          <span class="chip">SHT41</span>
+          <span class="chip">20µA sleep</span>
+          <span class="chip">pseudo-MPPT</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ SENSORS ══ -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--grd3)">🔬</div>
+      <h2 style="color:var(--a3)">Sensors &amp; ICs น่าสนใจประจำวัน</h2>
+    </div>
+    <div class="sensor-grid">
+
+      <div class="sensor-card">
+        <div class="sensor-icon" style="background:rgba(56,189,248,0.12)">🚗</div>
+        <div class="sensor-info">
+          <h4>SN65HVD230 — CAN Bus Transceiver</h4>
+          <p>Texas Instruments CAN transceiver ราคา ~15 บาท เชื่อมต่อ ESP32 TWAI ด้วย 3 สาย (TX, RX, GND) รองรับ 1 Mbit/s ทนทานต่อ automotive EMI มี fault protection ใช้งานร่วมกับ OBD-II cable ได้ทันที</p>
+          <div class="sensor-spec">
+            <span class="spec-badge" style="background:rgba(56,189,248,0.15);color:var(--a1)">3.3V</span>
+            <span class="spec-badge" style="background:rgba(56,189,248,0.15);color:var(--a1)">1 Mbit/s</span>
+            <span class="spec-badge" style="background:rgba(56,189,248,0.15);color:var(--a1)">SPI-less</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon" style="background:rgba(52,211,153,0.12)">⚖️</div>
+        <div class="sensor-info">
+          <h4>HX711 — 24-bit Load Cell ADC</h4>
+          <p>ADC ความละเอียดสูงสำหรับ load cell (Wheatstone bridge) ราคา ~30 บาท อ่านค่าผ่าน 2 GPIO สายดิจิทัล (CLK + DATA) ใช้งานในโปรเจกต์ชั่งน้ำหนักรังผึ้ง, ถังน้ำ, ดิน หรือ postal scale อ่านน้ำหนักได้ละเอียด ±0.1 กรัม กับ load cell ที่เหมาะสม</p>
+          <div class="sensor-spec">
+            <span class="spec-badge" style="background:rgba(52,211,153,0.15);color:var(--a2)">24-bit</span>
+            <span class="spec-badge" style="background:rgba(52,211,153,0.15);color:var(--a2)">2-wire</span>
+            <span class="spec-badge" style="background:rgba(52,211,153,0.15);color:var(--a2)">80/10 SPS</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon" style="background:rgba(251,146,60,0.12)">🏊</div>
+        <div class="sensor-info">
+          <h4>Atlas Scientific EZO-ORP — Oxidation-Reduction Potential</h4>
+          <p>ORP probe อุตสาหกรรมจาก Atlas Scientific ใช้สำหรับวัดค่า Oxidation-Reduction Potential ในสระว่ายน้ำ (ค่าที่ดี: 650–750 mV) บ่งบอกประสิทธิภาพคลอรีน รองรับ I2C/UART เชื่อมต่อ ESP32 ง่าย มี Library Arduino พร้อมใช้</p>
+          <div class="sensor-spec">
+            <span class="spec-badge" style="background:rgba(251,146,60,0.15);color:var(--a3)">I2C/UART</span>
+            <span class="spec-badge" style="background:rgba(251,146,60,0.15);color:var(--a3)">±1 mV</span>
+            <span class="spec-badge" style="background:rgba(251,146,60,0.15);color:var(--a3)">Waterproof</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon" style="background:rgba(192,132,252,0.12)">🔋</div>
+        <div class="sensor-info">
+          <h4>BQ25628E — Solar-Input Battery Charger IC</h4>
+          <p>Texas Instruments charger IC ที่ใช้ใน PowerFeather V2 รองรับ input 5–18V จากแผงโซลาร์ หรือ USB-C PD ชาร์จ LiPo/Li-Ion/LiFePO4 กระแสสูงสุด 2A มี pseudo-MPPT (input voltage regulation) quiescent current 20µA ควบคุม charging profile ผ่าน I2C</p>
+          <div class="sensor-spec">
+            <span class="spec-badge" style="background:rgba(192,132,252,0.15);color:var(--a4)">5–18V in</span>
+            <span class="spec-badge" style="background:rgba(192,132,252,0.15);color:var(--a4)">2A</span>
+            <span class="spec-badge" style="background:rgba(192,132,252,0.15);color:var(--a4)">I2C ctrl</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon" style="background:rgba(244,114,182,0.12)">🐝</div>
+        <div class="sensor-info">
+          <h4>TCRT5000 — Reflective Optical Sensor</h4>
+          <p>sensor IR สะท้อนแสงราคา ~5 บาท ใช้ตรวจจับการเคลื่อนไหวของผึ้งที่ปากรัง นับจำนวนผึ้งเข้า-ออก ตรวจสอบกิจกรรมของรัง ต่อง่ายกับ GPIO analog/digital คู่กับ ESP32 เพื่อนับ event แบบ interrupt-driven ใช้กันแพร่หลายในโปรเจกต์ beehive monitor DIY</p>
+          <div class="sensor-spec">
+            <span class="spec-badge" style="background:rgba(244,114,182,0.15);color:var(--a5)">IR Optical</span>
+            <span class="spec-badge" style="background:rgba(244,114,182,0.15);color:var(--a5)">~5 บาท</span>
+            <span class="spec-badge" style="background:rgba(244,114,182,0.15);color:var(--a5)">Analog/Digital</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ CODE ══ -->
+  <section id="code" class="code-section">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--grd4)">💻</div>
+      <h2 style="color:var(--a4)">ตัวอย่าง Code</h2>
+    </div>
+
+    <!-- Code 1: TWAI OBD-II -->
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-title">ESP32 TWAI + SN65HVD230 — อ่าน OBD-II PID (RPM, Speed)</span>
+        <span class="code-lang">C++ / Arduino</span>
+      </div>
+<pre><span class="cmt">// CAN transceiver: SN65HVD230</span>
+<span class="cmt">// TX → GPIO21 | RX → GPIO22 | VCC → 3.3V</span>
+<span class="kw">#include</span> <span class="str">"driver/twai.h"</span>
+
+<span class="kw">#define</span> <span class="var">CAN_TX</span> <span class="num">21</span>
+<span class="kw">#define</span> <span class="var">CAN_RX</span> <span class="num">22</span>
+<span class="kw">#define</span> <span class="var">OBD_REQUEST_ID</span>  <span class="num">0x7DF</span>
+<span class="kw">#define</span> <span class="var">OBD_RESPONSE_ID</span> <span class="num">0x7E8</span>
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  Serial.<span class="fn">begin</span>(<span class="num">115200</span>);
+  twai_general_config_t g_config =
+    <span class="fn">TWAI_GENERAL_CONFIG_DEFAULT</span>((<span class="typ">gpio_num_t</span>)<span class="var">CAN_TX</span>,
+                                   (<span class="typ">gpio_num_t</span>)<span class="var">CAN_RX</span>,
+                                   <span class="var">TWAI_MODE_NORMAL</span>);
+  twai_timing_config_t  t_config = <span class="fn">TWAI_TIMING_CONFIG_500KBITS</span>();
+  twai_filter_config_t  f_config = <span class="fn">TWAI_FILTER_CONFIG_ACCEPT_ALL</span>();
+  twai_<span class="fn">driver_install</span>(&amp;g_config, &amp;t_config, &amp;f_config);
+  twai_<span class="fn">start</span>();
+}
+
+<span class="cmt">// ส่ง OBD-II request PID 0x0C (RPM)</span>
+<span class="kw">void</span> <span class="fn">requestOBD</span>(<span class="typ">uint8_t</span> pid) {
+  twai_message_t msg = {};
+  msg.identifier   = <span class="var">OBD_REQUEST_ID</span>;
+  msg.data_length_code = <span class="num">8</span>;
+  msg.data[<span class="num">0</span>] = <span class="num">0x02</span>; <span class="cmt">// 2 bytes follow</span>
+  msg.data[<span class="num">1</span>] = <span class="num">0x01</span>; <span class="cmt">// Mode 01 (current data)</span>
+  msg.data[<span class="num">2</span>] = pid;
+  twai_<span class="fn">transmit</span>(&amp;msg, <span class="fn">pdMS_TO_TICKS</span>(<span class="num">100</span>));
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="fn">requestOBD</span>(<span class="num">0x0C</span>); <span class="cmt">// PID: RPM</span>
+  twai_message_t rx;
+  <span class="kw">if</span> (twai_<span class="fn">receive</span>(&amp;rx, <span class="fn">pdMS_TO_TICKS</span>(<span class="num">200</span>)) == <span class="var">ESP_OK</span>) {
+    <span class="kw">if</span> (rx.identifier == <span class="var">OBD_RESPONSE_ID</span> &amp;&amp; rx.data[<span class="num">2</span>] == <span class="num">0x0C</span>) {
+      <span class="typ">uint16_t</span> rpm = ((rx.data[<span class="num">3</span>] &lt;&lt; <span class="num">8</span>) | rx.data[<span class="num">4</span>]) / <span class="num">4</span>;
+      Serial.<span class="fn">printf</span>(<span class="str">"RPM: %d\n"</span>, rpm);
+    }
+  }
+  <span class="fn">delay</span>(<span class="num">500</span>);
+}</pre>
+    </div>
+
+    <!-- Code 2: HX711 Beehive Weight -->
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-title">HX711 Beehive Scale — อ่านน้ำหนักรังผึ้ง + ส่ง MQTT</span>
+        <span class="code-lang">C++ / Arduino</span>
+      </div>
+<pre><span class="cmt">// Library: bogde/HX711-Arduino-Library</span>
+<span class="kw">#include</span> <span class="str">"HX711.h"</span>
+<span class="kw">#include</span> <span class="str">&lt;WiFi.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;PubSubClient.h&gt;</span>
+
+<span class="kw">#define</span> <span class="var">DOUT</span> <span class="num">4</span>
+<span class="kw">#define</span> <span class="var">CLK</span>  <span class="num">5</span>
+<span class="kw">const float</span> <span class="var">CALIBRATION_FACTOR</span> = <span class="num">-7050.0</span>; <span class="cmt">// ปรับตาม load cell</span>
+
+<span class="typ">HX711</span> scale;
+<span class="typ">WiFiClient</span> espClient;
+<span class="typ">PubSubClient</span> mqtt(espClient);
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  scale.<span class="fn">begin</span>(<span class="var">DOUT</span>, <span class="var">CLK</span>);
+  scale.<span class="fn">set_scale</span>(<span class="var">CALIBRATION_FACTOR</span>);
+  scale.<span class="fn">tare</span>(); <span class="cmt">// ศูนย์น้ำหนักเปล่า</span>
+  <span class="cmt">// WiFi.begin(...) + mqtt.connect(...)</span>
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">if</span> (scale.<span class="fn">is_ready</span>()) {
+    <span class="kw">float</span> weight = scale.<span class="fn">get_units</span>(<span class="num">10</span>); <span class="cmt">// เฉลี่ย 10 ครั้ง (กิโลกรัม)</span>
+    <span class="typ">char</span> buf[<span class="num">16</span>];
+    <span class="fn">snprintf</span>(buf, <span class="kw">sizeof</span>(buf), <span class="str">"%.3f"</span>, weight);
+    mqtt.<span class="fn">publish</span>(<span class="str">"beehive/weight"</span>, buf);
+    Serial.<span class="fn">printf</span>(<span class="str">"น้ำหนักรัง: %.3f kg\n"</span>, weight);
+  }
+  <span class="cmt">// deep sleep ระหว่าง interval 5 นาที</span>
+  esp_sleep_enable_timer_wakeup(<span class="num">5</span> * <span class="num">60</span> * <span class="num">1000000ULL</span>);
+  esp_deep_sleep_start();
+}</pre>
+    </div>
+
+    <!-- Code 3: Atlas EZO-ORP Pool -->
+    <div class="code-block">
+      <div class="code-header">
+        <span class="code-title">Atlas EZO-ORP I2C — อ่านค่า ORP สระว่ายน้ำ + ตัดสินใจ Chlorine Dosing</span>
+        <span class="code-lang">C++ / Arduino</span>
+      </div>
+<pre><span class="cmt">// Atlas EZO-ORP default I2C address: 0x62</span>
+<span class="kw">#include</span> <span class="str">&lt;Wire.h&gt;</span>
+
+<span class="kw">const</span> <span class="typ">uint8_t</span> <span class="var">EZO_ORP_ADDR</span> = <span class="num">0x62</span>;
+<span class="kw">const int</span>    <span class="var">RELAY_CHLORINE</span> = <span class="num">26</span>; <span class="cmt">// relay ต่อ Stenner pump</span>
+<span class="kw">const float</span>  <span class="var">ORP_TARGET</span>     = <span class="num">700.0</span>; <span class="cmt">// mV เป้าหมาย</span>
+
+<span class="kw">float</span> <span class="fn">readORP</span>() {
+  Wire.<span class="fn">beginTransmission</span>(<span class="var">EZO_ORP_ADDR</span>);
+  Wire.<span class="fn">write</span>(<span class="str">"R"</span>);              <span class="cmt">// คำสั่งอ่าน</span>
+  Wire.<span class="fn">endTransmission</span>();
+  <span class="fn">delay</span>(<span class="num">1000</span>);                  <span class="cmt">// รอ conversion</span>
+  Wire.<span class="fn">requestFrom</span>(<span class="var">EZO_ORP_ADDR</span>, (<span class="typ">uint8_t</span>)<span class="num">20</span>);
+  <span class="typ">char</span> buf[<span class="num">20</span>] = {};
+  <span class="typ">uint8_t</span> i = <span class="num">0</span>;
+  <span class="kw">while</span> (Wire.<span class="fn">available</span>() &amp;&amp; i &lt; <span class="num">19</span>) buf[i++] = Wire.<span class="fn">read</span>();
+  <span class="kw">return</span> <span class="fn">atof</span>(buf + <span class="num">1</span>); <span class="cmt">// skip status byte</span>
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">float</span> orp = <span class="fn">readORP</span>();
+  Serial.<span class="fn">printf</span>(<span class="str">"ORP: %.1f mV\n"</span>, orp);
+
+  <span class="kw">if</span> (orp &lt; <span class="var">ORP_TARGET</span> - <span class="num">30</span>) {
+    <span class="cmt">// ORP ต่ำเกินไป → เปิด chlorine pump 10 วินาที</span>
+    digitalWrite(<span class="var">RELAY_CHLORINE</span>, HIGH);
+    <span class="fn">delay</span>(<span class="num">10000</span>);
+    digitalWrite(<span class="var">RELAY_CHLORINE</span>, LOW);
+  }
+  <span class="fn">delay</span>(<span class="num">60000</span>); <span class="cmt">// วัดทุก 1 นาที</span>
+}</pre>
+    </div>
+  </section>
+
+  <!-- ══ RESOURCES ══ -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--grd5)">📚</div>
+      <h2 style="color:var(--a2)">แหล่งข้อมูลและลิงก์สำคัญ</h2>
+    </div>
+    <div class="resource-grid">
+
+      <div class="resource-card">
+        <div class="r-cat">Module Release</div>
+        <h4>ESP32-C61-MINI-1 — CNX Software</h4>
+        <p>รายงานเปิดตัว ESP32-C61-MINI module family สิงหาคม 2026 พร้อมราคา ~$2 และ spec ครบ</p>
+      </div>
+
+      <div class="resource-card">
+        <div class="r-cat">Solar Board</div>
+        <h4>ESP32-S3 PowerFeather V2 — powerfeather.dev</h4>
+        <p>เอกสารและ SDK อย่างเป็นทางการสำหรับ PowerFeather V2 พร้อม example โค้ด ESPHome</p>
+      </div>
+
+      <div class="resource-card">
+        <div class="r-cat">GitHub</div>
+        <h4>deaneeth/smart-beehive-monitor</h4>
+        <p>โปรเจกต์ Smart Beehive ครบวงจร ESP32 + Firebase + React dashboard พร้อม solar power</p>
+      </div>
+
+      <div class="resource-card">
+        <div class="r-cat">Tutorial</div>
+        <h4>ESP32 CAN Bus + OBD-II — dash.risal.io</h4>
+        <p>คู่มือ step-by-step อ่านข้อมูลรถยนต์ด้วย ESP32 TWAI + SN65HVD230 พร้อม code ตัวอย่าง</p>
+      </div>
+
+      <div class="resource-card">
+        <div class="r-cat">GitHub</div>
+        <h4>Gixy31/ESP32-PoolMaster — Pool Automation</h4>
+        <p>Fork ของ PoolMaster ที่ port มาบน ESP32 ครบ pH + ORP + chlorine dosing + Home Assistant</p>
+      </div>
+
+      <div class="resource-card">
+        <div class="r-cat">Firmware</div>
+        <h4>madflight — Open Source Drone Flight Controller</h4>
+        <p>Firmware ควบคุม drone รองรับ ESP32/ESP32-S3/Pico/STM32 พร้อม PID, SBUS, telemetry</p>
+      </div>
+
+      <div class="resource-card">
+        <div class="r-cat">ESP-IDF Docs</div>
+        <h4>ESP32-C5 TWAI CAN FD — Espressif Documentation</h4>
+        <p>เอกสาร API TWAI ของ ESP32-C5 ที่รองรับ CAN FD ใน ESP-IDF v6.0+ พร้อม code example</p>
+      </div>
+
+      <div class="resource-card">
+        <div class="r-cat">Article</div>
+        <h4>How to Upgrade Your Home with E-Paper Displays in 2026 — boe.com</h4>
+        <p>บทความรวมโปรเจกต์ ESP32 E-Paper สำหรับ smart home: weather display, calendar, ESPHome</p>
+      </div>
+
+      <div class="resource-card">
+        <div class="r-cat">Library</div>
+        <h4>bogde/HX711-Arduino-Library — GitHub</h4>
+        <p>Library ยอดนิยมสำหรับ HX711 load cell ADC รองรับ ESP32 calibration, tare, average reading</p>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>
+    สร้างโดย <strong>AI ESP32 Researcher</strong> &nbsp;•&nbsp;
+    วันที่สร้าง: <strong>28 กันยายน 2026</strong> &nbsp;•&nbsp;
+    หัวข้อวันนี้: CAN Bus ยานยนต์ · Smart Beehive · Pool Automation · Solar Off-Grid · E-Ink Display
+  </p>
+  <p style="margin-top:0.5rem;font-size:0.75rem;">
+    แหล่งอ้างอิง: Espressif Systems · CNX Software · Hackster.io · powerfeather.dev · GitHub · dash.risal.io · M5Stack · Atlas Scientific
+  </p>
+</footer>
+
+</body>
+</html>
