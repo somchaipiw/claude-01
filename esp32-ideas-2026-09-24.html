@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 &amp; Sensor Innovations - 24 กันยายน 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card2: #162032;
+    --accent1: #38bdf8;
+    --accent2: #a78bfa;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --text-primary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: #334155;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.8; }
+
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1a2744 40%, #0f2a3a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(56,189,248,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.4);
+    color: var(--accent1);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 5vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .header-sub {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+  .header-meta {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1.2rem;
+    flex-wrap: wrap;
+  }
+  .header-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .header-stat span { color: var(--text-primary); font-weight: 600; }
+
+  main { max-width: 960px; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+
+  section { margin-bottom: 3.5rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 2.4rem; height: 2.4rem;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: rgba(56,189,248,0.18); }
+  .icon-purple { background: rgba(167,139,250,0.18); }
+  .icon-green { background: rgba(52,211,153,0.18); }
+  .icon-orange { background: rgba(251,146,60,0.18); }
+  .section-header h2 { font-size: 1.35rem; font-weight: 700; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem 1.5rem;
+    margin-bottom: 1.1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover { border-color: rgba(56,189,248,0.4); box-shadow: 0 4px 24px rgba(56,189,248,0.08); }
+  .card-accent-line {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    border-radius: 3px 0 0 3px;
+  }
+  .line-blue { background: var(--accent1); }
+  .line-purple { background: var(--accent2); }
+  .line-green { background: var(--accent3); }
+  .line-orange { background: var(--accent4); }
+  .line-pink { background: var(--accent5); }
+  .card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .card p { color: #b0c0d8; font-size: 0.95rem; margin-bottom: 0.6rem; }
+  .card p:last-child { margin-bottom: 0; }
+
+  .tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.7rem; }
+  .tag {
+    font-size: 0.74rem; font-weight: 600; padding: 0.2rem 0.65rem;
+    border-radius: 999px; letter-spacing: 0.04em;
+  }
+  .tag-blue { background: rgba(56,189,248,0.15); color: var(--accent1); border: 1px solid rgba(56,189,248,0.3); }
+  .tag-purple { background: rgba(167,139,250,0.15); color: var(--accent2); border: 1px solid rgba(167,139,250,0.3); }
+  .tag-green { background: rgba(52,211,153,0.15); color: var(--accent3); border: 1px solid rgba(52,211,153,0.3); }
+  .tag-orange { background: rgba(251,146,60,0.15); color: var(--accent4); border: 1px solid rgba(251,146,60,0.3); }
+  .tag-pink { background: rgba(244,114,182,0.15); color: var(--accent5); border: 1px solid rgba(244,114,182,0.3); }
+
+  .highlight-box {
+    background: rgba(56,189,248,0.07);
+    border: 1px solid rgba(56,189,248,0.25);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-top: 0.8rem;
+    font-size: 0.9rem;
+    color: #a0c8e0;
+  }
+  .highlight-box strong { color: var(--accent1); }
+
+  .spec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.7rem;
+    margin-top: 0.8rem;
+  }
+  .spec-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
+  }
+  .spec-label { color: var(--text-muted); font-size: 0.78rem; display: block; }
+  .spec-value { color: var(--text-primary); font-weight: 600; }
+
+  .step-list { list-style: none; padding: 0; margin-top: 0.8rem; }
+  .step-list li {
+    display: flex; gap: 0.7rem; align-items: flex-start;
+    padding: 0.45rem 0;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    font-size: 0.92rem;
+    color: #b0c0d8;
+  }
+  .step-list li:last-child { border-bottom: none; }
+  .step-num {
+    width: 1.5rem; height: 1.5rem; border-radius: 50%; flex-shrink: 0;
+    background: rgba(56,189,248,0.18); color: var(--accent1);
+    font-size: 0.75rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 0.15rem;
+  }
+
+  .resource-link {
+    display: flex; align-items: center; gap: 0.6rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 0.65rem 1rem;
+    margin-bottom: 0.5rem;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .resource-link:hover { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.4); }
+  .resource-link-icon { font-size: 1.1rem; flex-shrink: 0; }
+  .resource-link-text { font-size: 0.88rem; color: var(--text-muted); }
+  .resource-link-text strong { color: var(--text-primary); display: block; font-size: 0.92rem; }
+
+  footer {
+    background: var(--bg-card2);
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+  footer a { color: var(--accent1); text-decoration: none; }
+  .footer-refs { margin-top: 0.6rem; font-size: 0.78rem; opacity: 0.75; }
+
+  @media (max-width: 600px) {
+    main { padding: 1.5rem 1rem 3rem; }
+    .card { padding: 1.1rem 1.1rem 1.1rem 1.4rem; }
+    .spec-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily Research Report</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="header-sub">รายงานนวัตกรรมและไอเดียโปรเจกต์ประจำวัน</p>
+  <div class="header-meta">
+    <div class="header-stat">📅 <span>24 กันยายน 2569</span></div>
+    <div class="header-stat">💡 <span>16</span> ไอเดีย</div>
+    <div class="header-stat">🔬 <span>4</span> หัวข้อหลัก</div>
+    <div class="header-stat">🤖 <span>TinyML + Edge AI</span></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- SECTION 1: INNOVATIONS -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🚀</div>
+      <h2>นวัตกรรม ESP32 ล่าสุด</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-line line-blue"></div>
+      <h3 style="color:var(--accent1)">Arduino ESP32 Core v3.3.12 — ESP-IDF v5.5.5</h3>
+      <p>Espressif ปล่อย Arduino ESP32 Core เวอร์ชัน 3.3.12 เมื่อวันที่ 18 กันยายน 2569 พัฒนาบนฐาน ESP-IDF v5.5.5 ซึ่งเป็น patch release ล่าสุดในสาย v5.5.x รองรับบอร์ด ESP32 ทุกซีรีส์รวมถึง ESP32-S3, C6, H2 และ P4</p>
+      <p>ไฮไลต์สำคัญ: ปรับปรุงความเสถียร BLE stack, แก้บัค Wi-Fi reconnect, รองรับ Arduino IDE 2.x อย่างเต็มที่ และอัปเดต toolchain สำหรับ RISC-V targets</p>
+      <div class="highlight-box">
+        ⚠️ หมายเหตุ: <strong>ESP-IDF v5.2 ถึงวันหมดอายุ (EOL) แล้วในเดือนสิงหาคม 2569</strong> ควรอัปเกรดโปรเจกต์ไปใช้ v5.3+ หรือ v6.0 เพื่อรับ security patch และฟีเจอร์ใหม่
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-blue">Arduino Core</span>
+        <span class="tag tag-blue">ESP-IDF v5.5.5</span>
+        <span class="tag tag-green">Stable Release</span>
+        <span class="tag tag-orange">Security Patch</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-line line-purple"></div>
+      <h3 style="color:var(--accent2)">TinyML บน ESP32-S3 — Production-Ready ในปี 2569</h3>
+      <p>TinyML (Machine Learning บน Microcontroller) บน ESP32-S3 ก้าวพ้นจากการเป็น proof-of-concept แล้ว ในปี 2569 ถือว่าพร้อมใช้งานจริง (production-ready) สำหรับ Smart Home Security, Fall Detection, Keyword Spotting และ Object Classification</p>
+      <p>ตัวอย่างที่น่าประทับใจ: Plumerai People Detection บน ESP32-S3 สามารถตรวจจับคนได้สูงสุด 20 คนพร้อมกัน ระยะ 65+ ฟุต ทำงานได้ <em>ทั้งหมดบน chip</em> โดยไม่ต้องส่งข้อมูลไป Cloud</p>
+      <div class="spec-grid">
+        <div class="spec-item"><span class="spec-label">Chip แนะนำ</span><span class="spec-value">ESP32-S3 (PSRAM 8MB)</span></div>
+        <div class="spec-item"><span class="spec-label">Framework</span><span class="spec-value">TensorFlow Lite Micro</span></div>
+        <div class="spec-item"><span class="spec-label">Tool หลัก</span><span class="spec-value">Edge Impulse Studio</span></div>
+        <div class="spec-item"><span class="spec-label">Use Case</span><span class="spec-value">Vision, Audio, Motion</span></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-purple">TinyML</span>
+        <span class="tag tag-purple">Edge AI</span>
+        <span class="tag tag-blue">ESP32-S3</span>
+        <span class="tag tag-green">On-Device</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-line line-green"></div>
+      <h3 style="color:var(--accent3)">EnviroGo — Wearable ESP32-S3 Environmental Monitor 7-in-1</h3>
+      <p>EnviroGo คือ wearable device สำหรับตรวจสอบสภาพแวดล้อม 7 พารามิเตอร์พร้อมกัน ออกแบบบน ESP32-S3 มี built-in Wi-Fi + Bluetooth สามารถสวมใส่, หนีบกระเป๋า หรือดูดติดแม่เหล็กได้</p>
+      <p>เหมาะสำหรับ: บ้าน, สำนักงาน, การเดินทาง, ห้องปฏิบัติการ และการเก็บข้อมูลสภาพแวดล้อมแบบ real-time พร้อม microSD card logging และ RTC timestamp</p>
+      <div class="spec-grid">
+        <div class="spec-item"><span class="spec-label">Chip</span><span class="spec-value">ESP32-S3</span></div>
+        <div class="spec-item"><span class="spec-label">Display</span><span class="spec-value">0.96" IPS Color</span></div>
+        <div class="spec-item"><span class="spec-label">Storage</span><span class="spec-value">microSD Card</span></div>
+        <div class="spec-item"><span class="spec-label">Sensors</span><span class="spec-value">7 พารามิเตอร์</span></div>
+      </div>
+      <div class="highlight-box">
+        <strong>7 sensors ในเครื่องเดียว:</strong> VOC, UV Index, อุณหภูมิ, ความชื้น, ความดันอากาศ, แสง และ Motion (9-axis MEMS IMU)
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-green">Wearable</span>
+        <span class="tag tag-blue">ESP32-S3</span>
+        <span class="tag tag-green">Environmental</span>
+        <span class="tag tag-orange">Crowdfunding 2026</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-line line-orange"></div>
+      <h3 style="color:var(--accent4)">ESP32-C6 Multi-Sensor Board — Plug &amp; Play ครบในบอร์ดเดียว</h3>
+      <p>Elecrow เปิดตัว ESP32-C6 Multi-Sensor Board ที่รวม sensor 8 ชนิดไว้ในบอร์ดเดียว รองรับ USB Type-C plug-and-play เหมาะสำหรับ Smart Indoor Monitor, Air Quality Station และ Home Automation Node</p>
+      <p>ใช้ ESP32-C6 ซึ่งรองรับ Wi-Fi 6, Bluetooth 5, Zigbee 3.0 และ Thread/Matter protocol ในตัว ทำให้เชื่อมต่อกับระบบ Smart Home รุ่นใหม่ได้ทันที</p>
+      <div class="highlight-box">
+        <strong>8 parameters:</strong> CO₂, VOC, อุณหภูมิ, ความชื้น, ความดัน, แสง, Human Presence (mmWave) และ 6-axis IMU
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-orange">ESP32-C6</span>
+        <span class="tag tag-blue">Wi-Fi 6</span>
+        <span class="tag tag-purple">Matter</span>
+        <span class="tag tag-green">All-in-One</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: PROJECTS -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">💡</div>
+      <h2>ไอเดียโปรเจกต์ IoT ที่น่าสนใจ</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-line line-purple"></div>
+      <h3 style="color:var(--accent2)">Elderly Fall Detection System — ESP32-S3 + Edge Impulse</h3>
+      <p>ระบบตรวจจับการหกล้มสำหรับผู้สูงอายุ โดยใช้ XIAO ESP32-S3 + MPU6050 และโมเดล TinyML ที่ train ด้วย Edge Impulse Studio แสดงผลความแม่นยำ 95-96% ในการทดสอบจริง</p>
+      <p>เมื่อตรวจจับการหกล้ม ระบบส่ง GPS Location + แจ้งเตือนไปยังผู้ดูแลผ่าน Blynk App หรือ WhatsApp API มี 10-วินาที cancellation window เพื่อลด false alarm</p>
+      <ul class="step-list">
+        <li><span class="step-num">1</span>เก็บ IMU data (accelerometer + gyroscope) จาก MPU6050</li>
+        <li><span class="step-num">2</span>Train โมเดล classifier ด้วย Edge Impulse (Normal / Fall)</li>
+        <li><span class="step-num">3</span>Export โมเดลเป็น Arduino library และ deploy บน ESP32-S3</li>
+        <li><span class="step-num">4</span>เพิ่ม GPS module (NEO-6M) และ GSM/Wi-Fi notification</li>
+        <li><span class="step-num">5</span>ทดสอบ + Calibrate ด้วย real-world fall scenarios</li>
+      </ul>
+      <div class="tag-row">
+        <span class="tag tag-purple">TinyML</span>
+        <span class="tag tag-blue">XIAO ESP32-S3</span>
+        <span class="tag tag-orange">Healthcare</span>
+        <span class="tag tag-green">MPU6050</span>
+        <span class="tag tag-pink">Edge Impulse</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-line line-blue"></div>
+      <h3 style="color:var(--accent1)">Edge AI Home Security Camera — ไม่ต้องพึ่ง Cloud</h3>
+      <p>ระบบ Security Camera อัจฉริยะที่ run โมเดล Object Detection บน ESP32-S3 โดยตรง ใช้ OV2640 camera module + TensorFlow Lite Micro ตรวจจับคน, ยานพาหนะ และสิ่งผิดปกติแบบ real-time</p>
+      <p>จุดเด่น: ข้อมูลไม่ออกนอกบ้าน, latency ต่ำ, ทำงานได้แม้ไม่มีอินเทอร์เน็ต เหมาะกับพื้นที่ห่างไกลหรือสถานที่ต้องการความเป็นส่วนตัวสูง</p>
+      <div class="spec-grid">
+        <div class="spec-item"><span class="spec-label">MCU</span><span class="spec-value">ESP32-S3 + PSRAM</span></div>
+        <div class="spec-item"><span class="spec-label">Camera</span><span class="spec-value">OV2640 2MP</span></div>
+        <div class="spec-item"><span class="spec-label">Model</span><span class="spec-value">MobileNet-SSD Lite</span></div>
+        <div class="spec-item"><span class="spec-label">Alert</span><span class="spec-value">MQTT / Local Only</span></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-blue">ESP32-S3</span>
+        <span class="tag tag-purple">Computer Vision</span>
+        <span class="tag tag-green">Privacy-First</span>
+        <span class="tag tag-orange">Offline AI</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-line line-green"></div>
+      <h3 style="color:var(--accent3)">IoT Vehicle Motion Analyzer — MPU6050 + LIS3MDL + Dashboard</h3>
+      <p>อุปกรณ์วิเคราะห์การขับขี่แบบ real-time ติดในรถยนต์ ใช้ MPU6050 (accelerometer + gyroscope) ร่วมกับ LIS3MDL (3-axis magnetometer) เพื่อวิเคราะห์: การเบรกหนัก, เลี้ยวเร็ว, ความเร่ง, ทิศทาง และ G-force</p>
+      <p>ข้อมูลส่งผ่าน MQTT ขึ้น dashboard บน Grafana/Node-RED แสดงสถิติการขับขี่ คำนวณ driving score และแจ้งเตือนเมื่อขับขี่ไม่ปลอดภัย</p>
+      <div class="tag-row">
+        <span class="tag tag-green">MPU6050</span>
+        <span class="tag tag-green">LIS3MDL</span>
+        <span class="tag tag-blue">MQTT</span>
+        <span class="tag tag-orange">Grafana</span>
+        <span class="tag tag-purple">Driving Safety</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-line line-orange"></div>
+      <h3 style="color:var(--accent4)">Smart Noise Pollution Monitor — ตรวจเสียงรบกวนแบบ IoT</h3>
+      <p>สถานี monitor เสียงรบกวน (Noise Pollution) ด้วย ESP32 + MEMS Microphone (INMP441) วัดระดับเสียง dB, ความถี่ spectrum และ peak noise events ส่งข้อมูลขึ้น cloud ทุก 1 นาที</p>
+      <p>เหมาะสำหรับ: โรงเรียน, โรงพยาบาล, ชุมชนใกล้โรงงาน/สนามบิน, หรือติด track ในเมืองเพื่อข้อมูลเชิงนโยบาย</p>
+      <div class="tag-row">
+        <span class="tag tag-orange">INMP441</span>
+        <span class="tag tag-blue">I2S Audio</span>
+        <span class="tag tag-green">Environmental</span>
+        <span class="tag tag-purple">Smart City</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-line line-pink"></div>
+      <h3 style="color:var(--accent5)">Smart Cooker Whistle Counter — ห้องครัว IoT ต้นทุนต่ำ</h3>
+      <p>โปรเจกต์ที่น่ารัก: ใช้ ESP32 + microphone นับเสียงนกหวีด (whistle) ของหม้อแรงดัน/หม้อหุงข้าว ส่งแจ้งเตือนผ่าน Telegram หรือ Line Notify เมื่อถึงจำนวน whistle ที่ตั้งไว้</p>
+      <p>ต้นทุนต่ำมาก ESP32 + microphone module รวมไม่เกิน 150 บาท แต่ช่วยป้องกันอาหารไหม้หรือหม้อแตกได้จริง — ตัวอย่างดีว่า IoT ไม่จำเป็นต้องซับซ้อน</p>
+      <div class="tag-row">
+        <span class="tag tag-pink">Kitchen IoT</span>
+        <span class="tag tag-orange">Audio Detection</span>
+        <span class="tag tag-blue">Telegram Bot</span>
+        <span class="tag tag-green">Low Cost &lt;150฿</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: SENSORS -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">🔬</div>
+      <h2>Sensors น่าสนใจ</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-line line-green"></div>
+      <h3 style="color:var(--accent3)">MPU6050 — 6-axis IMU คลาสสิกที่ยังครองตลาด</h3>
+      <p>MPU6050 ยังคงเป็น IMU sensor ที่นิยมที่สุดสำหรับ ESP32 แม้จะมีอายุหลายปี เพราะราคาถูก (~20-40 บาท), library ครบ, tutorial เยอะ และ accuracy ดีพอสำหรับ hobby/prosumer projects</p>
+      <p>รองรับ: 3-axis Accelerometer (±2g ถึง ±16g) + 3-axis Gyroscope (±250°/s ถึง ±2000°/s) + built-in Temperature sensor + DMP (Digital Motion Processor) สำหรับคำนวณ Euler angle ในชิปเลย</p>
+      <div class="spec-grid">
+        <div class="spec-item"><span class="spec-label">Interface</span><span class="spec-value">I2C / SPI</span></div>
+        <div class="spec-item"><span class="spec-label">Power</span><span class="spec-value">3.3V / 5V</span></div>
+        <div class="spec-item"><span class="spec-label">ราคา</span><span class="spec-value">~25 บาท</span></div>
+        <div class="spec-item"><span class="spec-label">Use Case</span><span class="spec-value">Fall Detection, Drone</span></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-green">6-axis IMU</span>
+        <span class="tag tag-blue">I2C</span>
+        <span class="tag tag-orange">DMP Built-in</span>
+        <span class="tag tag-green">ยอดนิยม</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-line line-blue"></div>
+      <h3 style="color:var(--accent1)">LIS3MDL — 3-axis Magnetometer ความแม่นยำสูง</h3>
+      <p>ST LIS3MDL เป็น 3-axis magnetometer ที่ออกแบบมาสำหรับ compass และ orientation applications ความละเอียดสูง 16-bit, noise ต่ำ และกินไฟน้อย เหมาะคู่กับ MPU6050 สร้างระบบ 9-axis IMU เต็มรูปแบบ</p>
+      <p>ใช้ร่วม MPU6050+LIS3MDL เพื่อ sensor fusion (Madgwick/Mahony filter) สร้าง AHRS (Attitude and Heading Reference System) แม่นยำสำหรับ robot/drone/navigation</p>
+      <div class="spec-grid">
+        <div class="spec-item"><span class="spec-label">Range</span><span class="spec-value">±4 to ±16 Gauss</span></div>
+        <div class="spec-item"><span class="spec-label">Interface</span><span class="spec-value">I2C / SPI</span></div>
+        <div class="spec-item"><span class="spec-label">ODR</span><span class="spec-value">สูงสุด 1000 Hz</span></div>
+        <div class="spec-item"><span class="spec-label">ราคา</span><span class="spec-value">~80 บาท</span></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-blue">Magnetometer</span>
+        <span class="tag tag-green">3-axis</span>
+        <span class="tag tag-purple">AHRS</span>
+        <span class="tag tag-orange">ST Microelectronics</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-line line-purple"></div>
+      <h3 style="color:var(--accent2)">INMP441 — MEMS I2S Microphone สำหรับ Audio AI</h3>
+      <p>INMP441 เป็น MEMS microphone ที่สื่อสารผ่าน I2S protocol ตรงกับ ESP32 native I2S peripheral ทำให้ได้ audio quality ดี noise floor ต่ำ และสามารถ run TinyML audio model (Keyword Spotting, Sound Classification) ได้โดยตรง</p>
+      <p>เหมาะสำหรับ: Wake word detection ("Hey ESP!"), เสียงเตือนภัย, noise monitoring, baby monitor อัจฉริยะ และ speech analytics</p>
+      <div class="spec-grid">
+        <div class="spec-item"><span class="spec-label">Interface</span><span class="spec-value">I2S (PDM)</span></div>
+        <div class="spec-item"><span class="spec-label">Freq Range</span><span class="spec-value">60 Hz – 15 kHz</span></div>
+        <div class="spec-item"><span class="spec-label">SNR</span><span class="spec-value">61 dBA</span></div>
+        <div class="spec-item"><span class="spec-label">ราคา</span><span class="spec-value">~35 บาท</span></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-purple">MEMS Mic</span>
+        <span class="tag tag-blue">I2S</span>
+        <span class="tag tag-green">TinyML Audio</span>
+        <span class="tag tag-orange">Keyword Spotting</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-line line-orange"></div>
+      <h3 style="color:var(--accent4)">ENS160 — MOX Gas Sensor ยุคใหม่ แทน CCS811</h3>
+      <p>ScioSense ENS160 เป็น Metal Oxide (MOX) gas sensor รุ่นใหม่ที่ออกแบบมาแทน CCS811 โดยตรง วัด TVOC, eCO2 (equivalent CO2) และ AQI (Air Quality Index) มี built-in AI algorithm ประมวลผลในชิป calibration ดีกว่า CCS811 มาก</p>
+      <p>มักใช้คู่กับ AHT21/SHT4x เพื่อ humidity compensation ทำให้ค่า VOC/CO2 แม่นยำขึ้น เหมาะสำหรับ Indoor Air Quality Station, Smart Ventilation และ Classroom Monitor</p>
+      <div class="spec-grid">
+        <div class="spec-item"><span class="spec-label">TVOC Range</span><span class="spec-value">0 – 65,000 ppb</span></div>
+        <div class="spec-item"><span class="spec-label">eCO2 Range</span><span class="spec-value">400 – 65,000 ppm</span></div>
+        <div class="spec-item"><span class="spec-label">Interface</span><span class="spec-value">I2C / SPI</span></div>
+        <div class="spec-item"><span class="spec-label">ราคา</span><span class="spec-value">~120 บาท</span></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-orange">ENS160</span>
+        <span class="tag tag-blue">VOC / CO2</span>
+        <span class="tag tag-green">Indoor Air Quality</span>
+        <span class="tag tag-purple">MOX Sensor</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: RESOURCES -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔗</div>
+      <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-line line-orange"></div>
+      <h3 style="color:var(--accent4);margin-bottom:1rem">แหล่งข้อมูลสำคัญประจำวันนี้</h3>
+
+      <a class="resource-link" href="https://github.com/espressif/arduino-esp32/releases" target="_blank" rel="noopener">
+        <span class="resource-link-icon">📦</span>
+        <div class="resource-link-text">
+          <strong>Arduino ESP32 Releases — GitHub</strong>
+          รายการ release notes ทั้งหมด รวมถึง v3.3.12 ล่าสุด
+        </div>
+      </a>
+
+      <a class="resource-link" href="https://developer.espressif.com/blog/2026/03/idf-v6-0-release/" target="_blank" rel="noopener">
+        <span class="resource-link-icon">⚡</span>
+        <div class="resource-link-text">
+          <strong>ESP-IDF v6.0 Release Blog — Espressif Developer Portal</strong>
+          รายละเอียดฟีเจอร์ใหม่ใน IDF v6.0 สำหรับ ESP32 ทุกรุ่น
+        </div>
+      </a>
+
+      <a class="resource-link" href="https://dev.to/bittobuild/esp32-s3-tinyml-build-a-real-time-edge-ai-home-security-system-that-runs-without-the-cloud-3c22" target="_blank" rel="noopener">
+        <span class="resource-link-icon">🤖</span>
+        <div class="resource-link-text">
+          <strong>ESP32-S3 + TinyML: Edge AI Home Security (DEV Community)</strong>
+          บทความครบชุดสร้างระบบ security ไม่ต้องพึ่ง cloud
+        </div>
+      </a>
+
+      <a class="resource-link" href="https://circuitdigest.com/microcontroller-projects/elderly-fall-detection-system-using-esp32" target="_blank" rel="noopener">
+        <span class="resource-link-icon">🏥</span>
+        <div class="resource-link-text">
+          <strong>Elderly Fall Detection System — Circuit Digest</strong>
+          Tutorial สมบูรณ์ตั้งแต่ circuit diagram จนถึง firmware บน XIAO ESP32-S3
+        </div>
+      </a>
+
+      <a class="resource-link" href="https://www.dfrobot.com/blog-13902.html" target="_blank" rel="noopener">
+        <span class="resource-link-icon">📚</span>
+        <div class="resource-link-text">
+          <strong>TinyML + ESP32 Integration Overview — DFRobot Blog</strong>
+          ภาพรวม use cases และ workflow ของ TinyML บน ESP32 ทั้งหมด
+        </div>
+      </a>
+
+      <a class="resource-link" href="https://www.cnx-software.com/2026/01/20/envirogo-esp32-s3-wearable-environmental-monitor-features-7-sensors/" target="_blank" rel="noopener">
+        <span class="resource-link-icon">🌿</span>
+        <div class="resource-link-text">
+          <strong>EnviroGo ESP32-S3 Wearable Monitor Review — CNX Software</strong>
+          รีวิวละเอียด EnviroGo wearable 7-in-1 environmental monitor
+        </div>
+      </a>
+
+      <a class="resource-link" href="https://how2electronics.com/esp32-iot-vehicle-motion-analyzer-with-mpu6050-lis3mdl/" target="_blank" rel="noopener">
+        <span class="resource-link-icon">🚗</span>
+        <div class="resource-link-text">
+          <strong>Vehicle Motion Analyzer: MPU6050 + LIS3MDL — How2Electronics</strong>
+          Tutorial สร้าง IoT Vehicle Motion Analyzer พร้อม code และ diagram
+        </div>
+      </a>
+
+      <a class="resource-link" href="https://randomnerdtutorials.com/projects-esp32/" target="_blank" rel="noopener">
+        <span class="resource-link-icon">🛠️</span>
+        <div class="resource-link-text">
+          <strong>250+ ESP32 Projects — Random Nerd Tutorials</strong>
+          คลังโปรเจกต์ครบที่สุด อัปเดตสม่ำเสมอ พร้อม code และ wiring diagram
+        </div>
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-line line-blue"></div>
+      <h3 style="color:var(--accent1);margin-bottom:0.8rem">💻 เครื่องมือสำคัญประจำสัปดาห์นี้</h3>
+      <p style="margin-bottom:0.7rem">สำหรับผู้เริ่มต้นทำ TinyML บน ESP32 เครื่องมือที่แนะนำมากที่สุดคือ <strong style="color:var(--accent1)">Edge Impulse Studio</strong> — ครบวงจรตั้งแต่ data collection, labeling, training จนถึง export เป็น Arduino library พร้อม deploy</p>
+      <div class="highlight-box">
+        🔑 <strong>Workflow ย่อ:</strong> เก็บ sensor data → อัปโหลดขึ้น Edge Impulse → Design impulse (preprocessing + model) → Train → Test accuracy → Export Arduino library → Flash บน ESP32-S3 → Done!
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Research Bot | ข้อมูล ณ วันที่ <strong>24 กันยายน 2569</strong></p>
+  <div class="footer-refs">
+    แหล่งอ้างอิง: GitHub Espressif, CircuitDigest, DEV Community, DFRobot, CNX-Software, How2Electronics, Random Nerd Tutorials, Edge Impulse, Elecrow
+  </div>
+</footer>
+
+</body>
+</html>
