@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 2 ตุลาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card2: #162032;
+    --accent1: #38bdf8;
+    --accent2: #a78bfa;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: #334155;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(56,189,248,0.12) 0%, transparent 70%);
+  }
+  header .tag {
+    display: inline-block;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.35);
+    color: var(--accent1);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 0.9rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+  header .subtitle {
+    color: var(--muted);
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+    position: relative;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .stat-chip span { color: var(--text); font-weight: 600; }
+
+  /* ===== LAYOUT ===== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  /* ===== SECTION HEADERS ===== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 2.5rem 0 1.25rem;
+  }
+  .section-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-blue  { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); }
+  .icon-purple{ background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3); }
+  .icon-green { background: rgba(52,211,153,0.15);  border: 1px solid rgba(52,211,153,0.3);  }
+  .icon-orange{ background: rgba(251,146,60,0.15);  border: 1px solid rgba(251,146,60,0.3);  }
+
+  .section-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .section-header h2 small {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: var(--muted);
+    margin-top: 0.1rem;
+  }
+
+  /* ===== GRID ===== */
+  .grid { display: grid; gap: 1rem; }
+  .grid-2 { grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); }
+
+  /* ===== CARD ===== */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.875rem;
+    padding: 1.4rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: #475569; transform: translateY(-2px); }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    margin-bottom: 0.9rem;
+  }
+  .card-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+  }
+  .badge-blue   { background: rgba(56,189,248,0.15);  color: var(--accent1); border: 1px solid rgba(56,189,248,0.3); }
+  .badge-purple { background: rgba(167,139,250,0.15); color: var(--accent2); border: 1px solid rgba(167,139,250,0.3); }
+  .badge-green  { background: rgba(52,211,153,0.15);  color: var(--accent3); border: 1px solid rgba(52,211,153,0.3); }
+  .badge-orange { background: rgba(251,146,60,0.15);  color: var(--accent4); border: 1px solid rgba(251,146,60,0.3); }
+  .badge-pink   { background: rgba(244,114,182,0.15); color: var(--accent5); border: 1px solid rgba(244,114,182,0.3); }
+  .badge-red    { background: rgba(239,68,68,0.15);   color: #f87171;        border: 1px solid rgba(239,68,68,0.3); }
+
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.35;
+  }
+  .card p { color: var(--muted); font-size: 0.9rem; margin-bottom: 0.6rem; }
+  .card p:last-child { margin-bottom: 0; }
+
+  .feature-list {
+    list-style: none;
+    margin: 0.6rem 0 0;
+  }
+  .feature-list li {
+    font-size: 0.88rem;
+    color: var(--muted);
+    padding: 0.2rem 0 0.2rem 1.25rem;
+    position: relative;
+  }
+  .feature-list li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--accent3);
+    font-size: 0.75rem;
+    top: 0.3rem;
+  }
+
+  /* ===== HIGHLIGHT BOX ===== */
+  .highlight {
+    background: linear-gradient(135deg, rgba(56,189,248,0.08) 0%, rgba(167,139,250,0.06) 100%);
+    border: 1px solid rgba(56,189,248,0.25);
+    border-radius: 0.875rem;
+    padding: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .highlight .label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent1);
+    margin-bottom: 0.4rem;
+  }
+  .highlight h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .highlight p  { color: var(--muted); font-size: 0.9rem; }
+
+  /* ===== SENSOR TABLE ===== */
+  .sensor-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-top: 0.5rem; }
+  .sensor-table th {
+    text-align: left;
+    padding: 0.55rem 0.9rem;
+    background: rgba(255,255,255,0.04);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+  .sensor-table td {
+    padding: 0.55rem 0.9rem;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    color: var(--muted);
+    vertical-align: top;
+  }
+  .sensor-table td:first-child { color: var(--text); font-weight: 600; }
+  .sensor-table tr:last-child td { border-bottom: none; }
+  .sensor-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ===== CODE BLOCK ===== */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 0.6rem;
+    padding: 1rem 1.1rem;
+    margin: 0.75rem 0 0;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: #a5d6ff;
+  }
+  .code-block .cm { color: #8b949e; }
+  .code-block .kw { color: #ff7b72; }
+  .code-block .fn { color: #d2a8ff; }
+  .code-block .st { color: #a5d6ff; }
+  .code-block .nu { color: #79c0ff; }
+
+  /* ===== RESOURCE LINKS ===== */
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.75rem; }
+  .resource-card {
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1rem 1.1rem;
+    transition: border-color 0.2s;
+  }
+  .resource-card:hover { border-color: #475569; }
+  .resource-card .res-type { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent2); margin-bottom: 0.3rem; }
+  .resource-card h4 { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.3rem; }
+  .resource-card p  { font-size: 0.8rem; color: var(--muted); }
+  .resource-card a  { color: var(--accent1); text-decoration: none; font-size: 0.78rem; }
+  .resource-card a:hover { text-decoration: underline; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+  footer a { color: var(--accent1); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 640px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    header { padding: 2rem 1rem 1.5rem; }
+    main { padding: 1.5rem 1rem 3rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Daily Research · ESP32 & IoT Innovations</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">วันศุกร์ที่ 2 ตุลาคม 2569 — รวบรวมโดย AI Researcher</p>
+  <div class="stats-row">
+    <div class="stat-chip">ไอเดียวันนี้: <span>14 หัวข้อ</span></div>
+    <div class="stat-chip">หมวด: <span>4 หมวด</span></div>
+    <div class="stat-chip">โฟกัส: <span>Tiny LLM · LE Audio · Industrial IoT · Safety Wearable</span></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <div class="section-header">
+    <div class="section-icon icon-blue">⚡</div>
+    <h2>นวัตกรรมและเทคโนโลยีใหม่
+      <small>ข่าวล่าสุดจาก Espressif และ Community</small>
+    </h2>
+  </div>
+
+  <!-- Highlight: Tiny LLM -->
+  <div class="highlight">
+    <div class="label">🔥 Breakthrough ประจำสัปดาห์</div>
+    <h3>LLM 28.9 ล้าน Parameter รันบน ESP32-S3 — ที่ 9.5 token/วินาที!</h3>
+    <p>
+      ไม่ต้องพึ่งคลาวด์อีกต่อไป! นักพัฒนาจาก <em>runaihome.com</em> สาธิตการรัน Tiny LLM ขนาด 28.9M parameter
+      บนชิป ESP32-S3 ราคาเพียง $8 โดยใช้ PSRAM 8 MB และ INT8 Quantization
+      ได้ความเร็ว <strong>9.5 tok/s</strong> — เพียงพอสำหรับ chatbot คำสั่งงาน, ตอบโต้ sensor alert
+      และ Edge NLP โดยไม่ส่งข้อมูลออกเครือข่ายเลย
+    </p>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-badge badge-blue">ESP32-S31</span>
+        <h3>LE Audio Unicast + Broadcast บน ESP32-S31</h3>
+      </div>
+      <p>
+        Espressif ปล่อย demo ใหม่สำหรับ <strong>ESP32-S31</strong> ที่รวม Classic Bluetooth A2DP
+        และ <strong>LE Audio</strong> (Bluetooth 5.2+) เอาไว้ในชิปเดียว
+        รองรับ Unicast (ต่อหูฟังโดยตรง) และ <strong>Broadcast (Auracast)</strong> — ส่งเสียงไปยังผู้รับหลายคนพร้อมกันโดยไม่ต้อง Pair
+      </p>
+      <ul class="feature-list">
+        <li>Classic BT A2DP + AVRCP พร้อมเมตาดาต้าเพลง</li>
+        <li>LE Audio Unicast: หูฟัง 2 ข้างซ้าย-ขวา sync</li>
+        <li>Broadcast Auracast: ส่งเสียงไปโรงภาพยนตร์ / โรงพยาบาล</li>
+        <li>HFP Two-Way Call พร้อม echo cancellation</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-badge badge-purple">ESP-IDF v5.5.5</span>
+        <h3>ESP-IDF v5.5.5 — Security Patch สำคัญ (กรกฎาคม 2569)</h3>
+      </div>
+      <p>
+        รีลีสแบบ Bugfix ที่สำคัญมากสำหรับโปรเจกต์ Production:
+      </p>
+      <ul class="feature-list">
+        <li><strong>Unencrypted PSRAM Option</strong> — ตั้งค่า PSRAM ไม่เข้ารหัสได้ เพิ่มประสิทธิภาพบางกรณี</li>
+        <li><strong>jpeg_decoder ป้องกัน Buffer Attack</strong> — ตรวจสอบ header ที่ผิดรูปแบบก่อนถอดรหัส</li>
+        <li><strong>ECDSA Secure Boot V2 ถูกปิด</strong> บน ESP32-H2, C5, P4 — พบช่องโหว่ ควรอัปเดตทันที</li>
+        <li>แนะนำอัปเดตจาก v5.5.x ทุก Production Device โดยด่วน</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-badge badge-green">TinyML</span>
+        <h3>Plumerai People Detection — ตรวจจับ 20 คน ที่ระยะ 20 เมตร</h3>
+      </div>
+      <p>
+        โมเดล <strong>Plumerai People Detection</strong> (quantized INT8) รันบน ESP32-S3 ด้วย TensorFlow Lite Micro
+        สามารถตรวจจับคนได้ถึง 20 คนพร้อมกัน ในระยะไกลกว่า 20 เมตร โดยไม่ต้องเชื่อมต่ออินเทอร์เน็ต
+        เหมาะสำหรับระบบนับคนเข้า-ออก, ตรวจสอบ Social Distancing และ Smart Retail Analytics
+      </p>
+      <ul class="feature-list">
+        <li>Edge Impulse สนับสนุน deployment บน ESP32-S3 แบบ one-click</li>
+        <li>ใช้ PIE Vector Instructions เร่งความเร็ว MAC operation</li>
+        <li>ทำงานคู่กับ ESP32-P4 AI Accelerator ได้ดียิ่งขึ้น</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-badge badge-orange">Industrial</span>
+        <h3>ESP-IDF v6.0 MCP Server — AI Coding Assistant สำหรับ Firmware</h3>
+      </div>
+      <p>
+        ESP-IDF v6.0 เพิ่ม <strong>MCP (Model Context Protocol) Server</strong> built-in ทำให้เชื่อมต่อกับ
+        AI Development Tools เช่น Claude, Copilot, Cursor ได้โดยตรง
+        AI ช่วย generate boilerplate, อธิบาย API, debug และแนะนำ config ได้แบบ context-aware
+      </p>
+      <ul class="feature-list">
+        <li>เชื่อมต่อกับ IDE ผ่าน stdio transport</li>
+        <li>ให้ข้อมูล chip capabilities, peripheral pinout, API reference</li>
+        <li>ช่วยวิเคราะห์ stack trace และ crash log อัตโนมัติ</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <div class="section-header">
+    <div class="section-icon icon-purple">🚀</div>
+    <h2>ไอเดียโปรเจกต์ที่น่าสร้าง
+      <small>Unique builds จาก Community — หัวข้อที่ยังไม่มีใครทำมาก</small>
+    </h2>
+  </div>
+
+  <div class="grid grid-2">
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-badge badge-orange">Wearable Safety</span>
+        <h3>TrailGuard — Smart Hiking Safety Wearable</h3>
+      </div>
+      <p>
+        อุปกรณ์ Wearable สำหรับนักปีนเขา/เดินป่า ติด <strong>ESP32 + IMU Gyroscope + GPS</strong>
+        ตรวจจับการล้มอัตโนมัติด้วย threshold ของ angular velocity
+        เมื่อตรวจพบ — ส่งพิกัด GPS ผ่าน Blynk IoT Platform ให้ผู้ติดต่อฉุกเฉิน
+      </p>
+      <ul class="feature-list">
+        <li>MPU6050 / ICM42688-P ตรวจจับ fall event ด้วย interrupt</li>
+        <li>NEO-6M / L76K GPS module แนบท้ายพิกัด Google Maps</li>
+        <li>กด Cancel ภายใน 10 วินาที หากเป็นการสะดุดเล็กน้อย</li>
+        <li>Battery 300 mAh + deep sleep → ใช้งาน 24–48 ชั่วโมง</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-badge badge-blue">Astronomy IoT</span>
+        <h3>Light Pollution Meter — วัดความสว่างท้องฟ้าคืน</h3>
+      </div>
+      <p>
+        โปรเจกต์ที่หายาก! ใช้ <strong>TSL237 Light-to-Frequency Sensor</strong> หรือ <strong>SQM (Sky Quality Meter)</strong>
+        วัดค่า mpsas (magnitudes per square arcsecond) ของท้องฟ้า
+        บันทึกพร้อม GPS พิกัดและ BME280 สภาพอากาศ ส่งขึ้น MQTT → InfluxDB → Grafana
+      </p>
+      <ul class="feature-list">
+        <li>แผนที่ Light Pollution ชุมชนแบบ crowd-sourced</li>
+        <li>ช่วยเลือก site ดูดาว / กล้องโทรทรรศน์</li>
+        <li>LoRa ส่งข้อมูลจากพื้นที่ห่างไกลไม่มี WiFi</li>
+        <li>ต้นทุน: TSL237 ≈ 150 บาท + ESP32 C3 mini</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-badge badge-green">Smart Farm</span>
+        <h3>Plant Growth Recorder — บันทึกการเจริญเติบโตพืชด้วย AI</h3>
+      </div>
+      <p>
+        ระบบ time-lapse อัตโนมัติพร้อม sensor fusion: <strong>ESP32-CAM + BME280 + BH1750 + UV-Index Sensor</strong>
+        ถ่ายภาพทุก 30 นาที พร้อมบันทึก Temp/Humidity/Pressure/Light/UV
+        ให้ AI วิเคราะห์ว่าปัจจัยใดส่งผลต่ออัตราการเติบโตมากที่สุด
+      </p>
+      <ul class="feature-list">
+        <li>OV2640 + SD Card บันทึกภาพ + JSON data log</li>
+        <li>BH1750 วัด lux แม่นยำ, GUVA-S12SD วัด UV Index</li>
+        <li>Dashboard Node-RED แสดง timeline growth + สภาพแวดล้อม</li>
+        <li>Export ข้อมูลเป็น CSV สำหรับ Google Sheets / Excel</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-badge badge-red">Industrial</span>
+        <h3>ESP32 Modbus Gateway — เชื่อมต่อ PLC โรงงานสู่ Cloud</h3>
+      </div>
+      <p>
+        <strong>ESP32 + SN65HVD230 (RS-485)</strong> ทำหน้าที่เป็น Protocol Converter
+        รับข้อมูลจาก PLC/sensor เก่าผ่าน <strong>Modbus RTU (RS-485)</strong> หรือ Modbus TCP
+        แปลงเป็น MQTT ส่งขึ้น AWS IoT / ThingsBoard / Home Assistant
+      </p>
+      <ul class="feature-list">
+        <li>รองรับ Modbus Function Code 01–04 (Coil, Register)</li>
+        <li>Auto-detect baud rate 9600–115200 bps</li>
+        <li>FOTA update และ Watchdog timer สำหรับ unattended operation</li>
+        <li>รองรับโรงงาน, ฟาร์ม, ระบบน้ำประปา — PLC Siemens/Mitsubishi</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-badge badge-purple">Audio AI</span>
+        <h3>ESP32 Anomaly Sound Detector — ตรวจจับเสียงผิดปกติในโรงงาน</h3>
+      </div>
+      <p>
+        ใช้ <strong>INMP441 I²S MEMS Microphone</strong> + TinyML (Edge Impulse)
+        เทรนโมเดลให้รู้จัก "เสียงปกติ" ของเครื่องจักร
+        เมื่อเกิดเสียงผิดปกติ (เบียริงสึก, belt หลุด) จะแจ้งเตือนผ่าน LINE Notify / MQTT ทันที
+        เป็น Predictive Maintenance ราคาประหยัดสุด
+      </p>
+      <ul class="feature-list">
+        <li>INMP441 ราคา ≈ 80 บาท — ไม่ต้องใช้ ADC เพราะเป็น I²S ดิจิทัล</li>
+        <li>Edge Impulse spectral analysis / MFCC feature extraction</li>
+        <li>Accuracy &gt; 95% บน ESP32-S3 (8 MB PSRAM)</li>
+        <li>ติดตั้งด้วย 3M tape ข้างมอเตอร์/คอมเพรสเซอร์</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-badge badge-pink">Smart Home</span>
+        <h3>Tiny LLM Voice Assistant — Offline AI Speaker ราคาไม่ถึง 500 บาท</h3>
+      </div>
+      <p>
+        ผสาน Tiny LLM บน ESP32-S3 กับ INMP441 microphone และ MAX98357 I²S Amplifier
+        สร้าง <strong>Voice Assistant ทำงาน 100% Offline</strong>
+        ไม่มีค่าบริการรายเดือน ไม่ส่งข้อมูลออกบ้าน
+        ควบคุม Home Assistant ด้วยเสียงและตอบโต้ด้วยประโยคสั้นๆ
+      </p>
+      <ul class="feature-list">
+        <li>Wake word detection ด้วย MicroWakeWord บน ESP32-S3</li>
+        <li>STT → Tiny LLM inference → TTS ทั้งหมดบนชิปเดียว</li>
+        <li>รองรับภาษาไทยได้ระดับหนึ่ง (fine-tune กับ dataset ภาษาไทย)</li>
+        <li>ต้นทุนรวม: XIAO ESP32-S3 (≈350฿) + INMP441 + MAX98357</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <div class="section-header">
+    <div class="section-icon icon-green">🔬</div>
+    <h2>Sensors น่าสนใจสำหรับโปรเจกต์ใหม่
+      <small>ยังไม่ถูกนำมาใช้อย่างแพร่หลายในชุมชน Maker ไทย</small>
+    </h2>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem;">
+    <table class="sensor-table">
+      <thead>
+        <tr>
+          <th>ชื่อ Sensor</th>
+          <th>วัดอะไร</th>
+          <th>Interface</th>
+          <th>ราคาประมาณ</th>
+          <th>จุดเด่น</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>TSL237S</td>
+          <td>Light-to-Frequency (Sky Brightness)</td>
+          <td>Digital Pulse</td>
+          <td>150–200 ฿</td>
+          <td>ความละเอียดสูง วัด mpsas ดูดาว</td>
+        </tr>
+        <tr>
+          <td>GUVA-S12SD</td>
+          <td>UV Index (200–370 nm)</td>
+          <td>Analog</td>
+          <td>80–120 ฿</td>
+          <td>ขนาดเล็ก ต่อตรงกับ ADC ESP32</td>
+        </tr>
+        <tr>
+          <td>INMP441</td>
+          <td>เสียง MEMS I²S</td>
+          <td>I²S Digital</td>
+          <td>60–100 ฿</td>
+          <td>ไม่ต้องใช้ ADC ลดสัญญาณรบกวน</td>
+        </tr>
+        <tr>
+          <td>INA3221</td>
+          <td>แรงดัน + กระแส 3 ช่อง</td>
+          <td>I²C</td>
+          <td>120–180 ฿</td>
+          <td>Monitor พลังงาน 3 วงจรพร้อมกัน</td>
+        </tr>
+        <tr>
+          <td>AS5600</td>
+          <td>มุมหมุน Magnetic Encoder</td>
+          <td>I²C / PWM</td>
+          <td>100–150 ฿</td>
+          <td>Contactless ไม่สึกหรอ แม่นยำ 12-bit</td>
+        </tr>
+        <tr>
+          <td>VL53L5CX</td>
+          <td>ToF Matrix 8×8 Distance</td>
+          <td>I²C</td>
+          <td>350–500 ฿</td>
+          <td>วัดระยะ 64 จุดพร้อมกัน gesture + presence</td>
+        </tr>
+        <tr>
+          <td>MQ-7B</td>
+          <td>Carbon Monoxide (CO)</td>
+          <td>Analog</td>
+          <td>80–130 ฿</td>
+          <td>ตรวจ CO จากเตาแก๊ส/ไอเสียรถ — Safety critical</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-badge badge-green">ToF Sensor</span>
+        <h3>VL53L5CX — Eyes ของ ESP32</h3>
+      </div>
+      <p>
+        ST Microelectronics VL53L5CX เป็น <strong>Time-of-Flight Matrix Sensor</strong>
+        วัดระยะ 64 จุดพร้อมกัน (8×8 grid) ในระยะ 0–400 cm
+        ใช้ detect presence, count people, hand gesture และ obstacle avoidance สำหรับ Robot
+      </p>
+      <div class="code-block">
+<span class="cm">// ตัวอย่าง I²C setup สำหรับ VL53L5CX</span>
+<span class="kw">#include</span> <span class="st">&lt;SparkFun_VL53L5CX.h&gt;</span>
+SparkFun_VL53L5CX sensor;
+sensor.<span class="fn">begin</span>(Wire, 400000); <span class="cm">// 400kHz I²C</span>
+sensor.<span class="fn">setResolution</span>(<span class="nu">64</span>); <span class="cm">// 8x8</span>
+sensor.<span class="fn">startRanging</span>();
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-badge badge-blue">Magnetic Encoder</span>
+        <h3>AS5600 — วัดมุมหมุนแบบไม่สัมผัส</h3>
+      </div>
+      <p>
+        <strong>AS5600</strong> เป็น 12-bit magnetic rotary encoder อ่านมุม 0–360° ผ่าน I²C
+        ไม่มีชิ้นส่วนสัมผัสกัน อายุการใช้งานยาวนาน
+        ใช้กับมอเตอร์ BLDC, ปุ่มหมุน encoder, หัวหุ่นยนต์, pan-tilt camera mount
+      </p>
+      <ul class="feature-list">
+        <li>ติดแม่เหล็ก diametric บน shaft โดยตรง</li>
+        <li>Output: raw angle, RPM, direction</li>
+        <li>ราคาเพียง 100–150 บาท บน AliExpress</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-badge badge-red">Safety Sensor</span>
+        <h3>MQ-7B — CO Detector สำหรับบ้านและโรงงาน</h3>
+      </div>
+      <p>
+        Carbon Monoxide เป็น "ฆาตกรเงียบ" ตรวจไม่ได้ด้วยประสาทสัมผัสมนุษย์
+        <strong>MQ-7B</strong> วัด CO ช่วง 10–500 ppm ต่อกับ ADC ESP32 ได้เลย
+        ตั้ง threshold &gt; 35 ppm แจ้งเตือน LINE ทันที — โปรเจกต์ช่วยชีวิตได้จริง
+      </p>
+      <ul class="feature-list">
+        <li>ต้องใช้ heater cycle (5V 60 วินาที / 1.4V 90 วินาที)</li>
+        <li>ราคา 80–130 บาท — คืนทุนด้วยความปลอดภัย</li>
+        <li>สร้าง CO Alert Dashboard บน Grafana</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 4: RESOURCES ===== -->
+  <div class="section-header">
+    <div class="section-icon icon-orange">📚</div>
+    <h2>แหล่งข้อมูลและเครื่องมือที่แนะนำ
+      <small>Tools, libraries และ community ที่ช่วยเร่งการพัฒนา</small>
+    </h2>
+  </div>
+
+  <div class="resource-grid">
+    <div class="resource-card">
+      <div class="res-type">TinyML Platform</div>
+      <h4>Edge Impulse Studio</h4>
+      <p>Train + Deploy TinyML บน ESP32-S3 แบบ drag-and-drop ไม่ต้องเขียน code training เอง</p>
+      <a href="https://edgeimpulse.com" target="_blank" rel="noopener">→ edgeimpulse.com</a>
+    </div>
+    <div class="resource-card">
+      <div class="res-type">ESP Framework</div>
+      <h4>ESP-ADF (Audio Dev Framework)</h4>
+      <p>Library อย่างเป็นทางการจาก Espressif สำหรับ Audio: BT A2DP, LE Audio, VAD, speech recognition</p>
+      <a href="https://github.com/espressif/esp-adf" target="_blank" rel="noopener">→ github.com/espressif/esp-adf</a>
+    </div>
+    <div class="resource-card">
+      <div class="res-type">Tiny LLM</div>
+      <h4>llm.c for ESP32-S3</h4>
+      <p>Port ของ llm.c (Andrej Karpathy) ให้รันบน ESP32-S3 พร้อม INT8 quantization</p>
+      <a href="https://runaihome.com/blog/tiny-llm-microcontroller-8-dollar-chip-edge-ai-2026/" target="_blank" rel="noopener">→ runaihome.com</a>
+    </div>
+    <div class="resource-card">
+      <div class="res-type">ESP Components</div>
+      <h4>Espressif Component Registry</h4>
+      <p>Registry ส่วนกลางสำหรับ ESP-IDF components รวมถึง esp_bt_audio, esp_wifi_mesh, tflite-micro</p>
+      <a href="https://components.espressif.com" target="_blank" rel="noopener">→ components.espressif.com</a>
+    </div>
+    <div class="resource-card">
+      <div class="res-type">Industrial</div>
+      <h4>ESP32 Modbus Library</h4>
+      <p>Library modbus_controller ใน ESPHome ใช้กับ RS-485 Slave ได้ตรง ไม่ต้องเขียน protocol เอง</p>
+      <a href="https://esphome.io/components/modbus_controller" target="_blank" rel="noopener">→ esphome.io/modbus_controller</a>
+    </div>
+    <div class="resource-card">
+      <div class="res-type">Safety Wearable</div>
+      <h4>Blynk IoT Platform</h4>
+      <p>Backend + Mobile app สำหรับโปรเจกต์ Wearable ส่ง GPS alert, Dashboard real-time ง่ายมาก</p>
+      <a href="https://blynk.io" target="_blank" rel="noopener">→ blynk.io</a>
+    </div>
+    <div class="resource-card">
+      <div class="res-type">Astronomy</div>
+      <h4>Globe at Night Project</h4>
+      <p>โปรเจกต์ Citizen Science วัด Light Pollution ทั่วโลก ส่งค่า SQM จาก ESP32 เข้า database ได้เลย</p>
+      <a href="https://www.globeatnight.org" target="_blank" rel="noopener">→ globeatnight.org</a>
+    </div>
+    <div class="resource-card">
+      <div class="res-type">AI + ESP32</div>
+      <h4>MicroWakeWord (ESPHome)</h4>
+      <p>On-device wake word detection ใน ESPHome ใช้ทรัพยากรน้อยมาก เหมาะทำ "Hey ESP" ก่อนคำสั่งเสียง</p>
+      <a href="https://esphome.io/components/micro_wake_word.html" target="_blank" rel="noopener">→ esphome.io/micro_wake_word</a>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Researcher อัตโนมัติ &mdash; วันศุกร์ที่ 2 ตุลาคม 2569 &mdash; ข้อมูลอ้างอิงจาก Espressif, DEV Community, CNX-Software, Edge Impulse, runaihome.com</p>
+  <p style="margin-top:0.4rem;">
+    <a href="https://www.espressif.com" target="_blank" rel="noopener">espressif.com</a> &nbsp;|&nbsp;
+    <a href="https://edgeimpulse.com" target="_blank" rel="noopener">edgeimpulse.com</a> &nbsp;|&nbsp;
+    <a href="https://esphome.io" target="_blank" rel="noopener">esphome.io</a>
+  </p>
+</footer>
+
+</body>
+</html>
