@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 4 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0a0f1e;
+    --bg-secondary: #111827;
+    --bg-card: #1a2035;
+    --bg-card-hover: #1f2a42;
+    --accent-blue: #3b82f6;
+    --accent-green: #10b981;
+    --accent-purple: #8b5cf6;
+    --accent-orange: #f59e0b;
+    --accent-pink: #ec4899;
+    --accent-teal: #14b8a6;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #1e293b;
+    --border-bright: #334155;
+    --tag-bg: rgba(59,130,246,0.15);
+    --tag-border: rgba(59,130,246,0.4);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #0f172a 100%);
+    border-bottom: 1px solid var(--border-bright);
+    padding: 48px 24px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.18) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(139,92,246,0.15);
+    border: 1px solid rgba(139,92,246,0.4);
+    border-radius: 50px;
+    padding: 6px 18px;
+    font-size: 13px;
+    color: #a78bfa;
+    letter-spacing: .5px;
+    margin-bottom: 20px;
+  }
+  header h1 {
+    font-size: clamp(1.7rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #a78bfa, #60a5fa, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+  .header-meta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-top: 16px;
+  }
+  .header-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .header-tag {
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.35);
+    color: #6ee7b7;
+    border-radius: 4px;
+    padding: 2px 10px;
+    font-size: 12px;
+  }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 16px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+
+  section { }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .section-icon {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 20px;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: border-color .2s, background .2s, transform .15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+  }
+  .card:hover {
+    border-color: var(--border-bright);
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+  }
+  .card-accent-blue::before  { background: linear-gradient(90deg, #3b82f6, #6366f1); }
+  .card-accent-green::before { background: linear-gradient(90deg, #10b981, #059669); }
+  .card-accent-purple::before{ background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+  .card-accent-orange::before{ background: linear-gradient(90deg, #f59e0b, #f97316); }
+  .card-accent-pink::before  { background: linear-gradient(90deg, #ec4899, #f43f5e); }
+  .card-accent-teal::before  { background: linear-gradient(90deg, #14b8a6, #06b6d4); }
+
+  .card-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.75;
+  }
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 50px;
+    background: var(--tag-bg);
+    border: 1px solid var(--tag-border);
+    color: #93c5fd;
+    letter-spacing: .3px;
+  }
+  .tag-green  { background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.35); color: #6ee7b7; }
+  .tag-purple { background: rgba(139,92,246,.12); border-color: rgba(139,92,246,.35); color: #c4b5fd; }
+  .tag-orange { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.35); color: #fcd34d; }
+  .tag-pink   { background: rgba(236,72,153,.12); border-color: rgba(236,72,153,.35); color: #f9a8d4; }
+  .tag-teal   { background: rgba(20,184,166,.12); border-color: rgba(20,184,166,.35); color: #5eead4; }
+
+  .highlight {
+    background: linear-gradient(135deg, rgba(16,185,129,.08), rgba(59,130,246,.08));
+    border: 1px solid rgba(16,185,129,.25);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-top: 10px;
+    font-size: 13.5px;
+    color: var(--text-secondary);
+  }
+  .highlight strong { color: #6ee7b7; }
+
+  .code-block {
+    background: #050d1a;
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-family: 'Courier New', monospace;
+    font-size: 12.5px;
+    color: #7dd3fc;
+    overflow-x: auto;
+    margin-top: 12px;
+    line-height: 1.6;
+  }
+  .code-block .kw  { color: #c084fc; }
+  .code-block .str { color: #86efac; }
+  .code-block .cmt { color: var(--text-muted); font-style: italic; }
+  .code-block .num { color: #fbbf24; }
+
+  .resource-list { display: flex; flex-direction: column; gap: 14px; }
+  .resource-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    transition: border-color .2s;
+  }
+  .resource-item:hover { border-color: var(--border-bright); }
+  .resource-emoji { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .resource-content h4 {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .resource-content p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .resource-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #60a5fa;
+    margin-top: 6px;
+    text-decoration: none;
+    word-break: break-all;
+  }
+  .resource-link:hover { color: #93c5fd; text-decoration: underline; }
+
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin-top: 12px;
+  }
+  .spec-table th {
+    text-align: left;
+    padding: 10px 14px;
+    background: rgba(59,130,246,.12);
+    color: #93c5fd;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-bright);
+  }
+  .spec-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  .spec-table tr:last-child td { border-bottom: none; }
+  .spec-table tr:hover td { background: rgba(255,255,255,.02); }
+  .spec-val { color: var(--text-primary); font-weight: 600; }
+
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 32px 24px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.9;
+  }
+  footer strong { color: var(--text-secondary); }
+
+  @media (max-width: 600px) {
+    .cards { grid-template-columns: 1fr; }
+    header { padding: 32px 16px 28px; }
+    .section-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .spec-table { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">🤖 AI Research Daily — ESP32 & IoT</div>
+  <h1>TinyML, Smart Agriculture & Sensor Fusion</h1>
+  <p style="color:var(--text-secondary);font-size:15px;max-width:640px;margin:0 auto;">
+    นวัตกรรม ESP32 ประจำวันที่ 4 ตุลาคม 2026 · เน้น Edge AI บน Microcontroller, การเกษตรอัจฉริยะ และการรวมข้อมูลจาก Sensors หลายตัว
+  </p>
+  <div class="header-meta">
+    <span>📅 4 ตุลาคม 2026</span>
+    <span class="header-tag">TinyML / Edge AI</span>
+    <span class="header-tag">Smart Agriculture</span>
+    <span class="header-tag">Sensor Fusion</span>
+    <span>📡 18 ไอเดียใหม่</span>
+  </div>
+</header>
+
+<main>
+
+  <section id="tinyml">
+    <div class="section-header">
+      <div class="section-icon" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);">🧠</div>
+      <div>
+        <div class="section-title">TinyML & Edge AI บน ESP32</div>
+        <div class="section-subtitle">On-device ML inference · TensorFlow Lite Micro · Sensor Fusion · ไม่ต้องพึ่ง Cloud</div>
+      </div>
+    </div>
+    <div class="cards">
+      <div class="card card-accent-purple">
+        <span class="card-icon">🤖</span>
+        <h3>TensorFlow Lite Micro (TFLM) บน ESP32-S3</h3>
+        <p>รัน ML model โดยตรงบน ESP32-S3 (512 KB SRAM + PSRAM ถึง 8 MB) โดยไม่ส่งข้อมูลขึ้น Cloud เลย TFLM ใช้ RAM ขั้นต่ำเพียง 16 KB เหมาะกับ keyword spotting, gesture recognition, anomaly detection บน MCU ราคาถูก ประมวลผล audio window 1 วินาทีใน 30–100 ms</p>
+        <div class="card-tags">
+          <span class="tag tag-purple">TFLite Micro</span>
+          <span class="tag tag-purple">ESP32-S3</span>
+          <span class="tag">Edge AI</span>
+          <span class="tag">No Cloud</span>
+        </div>
+      </div>
+      <div class="card card-accent-blue">
+        <span class="card-icon">👋</span>
+        <h3>Gesture Recognition ด้วย IMU + TFLM</h3>
+        <p>ใช้ MPU-6050 หรือ ICM-42688 ส่งข้อมูล 6-DoF ให้ ESP32-S3 ประมวลผลด้วย TFLM แยกแยะท่ามือได้ถึง 10+ gesture แบบ real-time ใช้สำหรับควบคุมอุปกรณ์ smart home, สั่งงานไฟฟ้า, หรือเป็น HMI ที่ไม่ต้องสัมผัส เหมาะมากสำหรับ hospital หรือ clean room</p>
+        <div class="card-tags">
+          <span class="tag">MPU-6050</span>
+          <span class="tag tag-purple">TFLM</span>
+          <span class="tag">IMU</span>
+          <span class="tag">Gesture</span>
+        </div>
+      </div>
+      <div class="card card-accent-teal">
+        <span class="card-icon">🔊</span>
+        <h3>Keyword Spotting ด้วย ESP32-S3 + Microphone</h3>
+        <p>ตรวจจับคำสั่งเสียง (wake word) ด้วย INMP441 digital microphone + TFLM โดยไม่ต้องอินเทอร์เน็ต Model DS-CNN ขนาดเล็กสามารถแยกแยะ 10–20 คำได้ accuracy &gt;90% ESP32-S3 มี hardware audio accelerator ช่วยลดการใช้พลังงานขณะ inference</p>
+        <div class="card-tags">
+          <span class="tag tag-teal">INMP441</span>
+          <span class="tag tag-purple">DS-CNN</span>
+          <span class="tag">Wake Word</span>
+          <span class="tag">Offline</span>
+        </div>
+      </div>
+      <div class="card card-accent-orange">
+        <span class="card-icon">⚠️</span>
+        <h3>Vibration Anomaly Detection — ตรวจเครื่องจักรด้วย AI</h3>
+        <p>ติด ADXL345 หรือ IIS3DWB vibration sensor บน motor หรือ pump แล้วให้ ESP32-S3 รัน autoencoder TFLM model ตรวจหา anomaly ก่อนเครื่องจักรพัง ประหยัดค่าซ่อมได้มหาศาล เหมาะกับโรงงานที่ต้องการ Predictive Maintenance ราคาถูก</p>
+        <div class="card-tags">
+          <span class="tag tag-orange">ADXL345</span>
+          <span class="tag tag-purple">Autoencoder</span>
+          <span class="tag">Predictive Maintenance</span>
+          <span class="tag">Industry 4.0</span>
+        </div>
+      </div>
+      <div class="card card-accent-pink">
+        <span class="card-icon">🫀</span>
+        <h3>Wearable Stress Detection — PPG + ML</h3>
+        <p>รวม MAX30102 (PPG/SpO2) + MPU-6050 (accelerometer) ให้ ESP32-S3 วิเคราะห์ HRV (Heart Rate Variability) แล้วประเมินระดับความเครียดด้วย TFLM model trained จาก physiological dataset ข้อมูลอยู่บน device ไม่รั่วออกนอก privacy-first wearable</p>
+        <div class="card-tags">
+          <span class="tag tag-pink">MAX30102</span>
+          <span class="tag">HRV</span>
+          <span class="tag">Wearable</span>
+          <span class="tag">Privacy</span>
+        </div>
+      </div>
+      <div class="card card-accent-green">
+        <span class="card-icon">📊</span>
+        <h3>Sensor Fusion — รวม Sensors ให้ฉลาดกว่าใช้ตัวเดียว</h3>
+        <p>Sensor Fusion คือการรวมข้อมูลจาก sensors หลายตัว (เช่น temp + humidity + CO2 + light) เข้าด้วยกันด้วย Kalman Filter หรือ complementary filter ทำให้ได้ค่าที่แม่นยำกว่า และ ESP32 สามารถรัน fusion algorithm นี้ได้ real-time ตัวอย่างเช่น indoor air quality score จาก 4 sensors</p>
+        <div class="card-tags">
+          <span class="tag tag-green">Kalman Filter</span>
+          <span class="tag">Multi-Sensor</span>
+          <span class="tag">Fusion</span>
+          <span class="tag">IAQ</span>
+        </div>
+      </div>
+    </div>
+    <div class="highlight" style="margin-top:24px;">
+      <strong>📦 Resource ใหม่ 2026:</strong> หนังสือ <em>"Embedded Intelligence: Implementing On-Device TinyML on the ESP32"</em> (มกราคม 2026) ครอบคลุมตั้งแต่ data collection, model training ด้วย Edge Impulse, ไปจนถึง deployment บน ESP32-S3 พร้อม code ตัวอย่างครบชุด เหมาะสำหรับผู้เริ่มต้น TinyML
+    </div>
+    <div class="code-block">
+<span class="cmt">// ตัวอย่าง: โหลด TFLM model บน ESP32-S3</span>
+<span class="kw">#include</span> <span class="str">"tensorflow/lite/micro/micro_interpreter.h"</span>
+<span class="kw">#include</span> <span class="str">"model_data.h"</span>  <span class="cmt">// model ที่ convert มาจาก .tflite</span>
+
+<span class="kw">constexpr int</span> kTensorArenaSize = <span class="num">60</span> * <span class="num">1024</span>;  <span class="cmt">// 60 KB arena</span>
+<span class="kw">uint8_t</span> tensor_arena[kTensorArenaSize];
+
+tflite::MicroInterpreter interpreter(
+  tflite::GetModel(g_model_data), resolver,
+  tensor_arena, kTensorArenaSize
+);
+interpreter.AllocateTensors();   <span class="cmt">// จัดสรร memory</span>
+interpreter.Invoke();            <span class="cmt">// รัน inference</span>
+    </div>
+  </section>
+
+  <section id="agriculture">
+    <div class="section-header">
+      <div class="section-icon" style="background:linear-gradient(135deg,#065f46,#059669);">🌱</div>
+      <div>
+        <div class="section-title">Smart Agriculture & Water Quality IoT</div>
+        <div class="section-subtitle">โปรเจกต์เกษตรอัจฉริยะ · คุณภาพน้ำ · ดิน · Hydroponic · Aquaponics</div>
+      </div>
+    </div>
+    <div class="cards">
+      <div class="card card-accent-green">
+        <span class="card-icon">💧</span>
+        <h3>ระบบ Water Quality Monitor — TDS + pH + Turbidity</h3>
+        <p>ESP32 + เซนเซอร์ TDS (Total Dissolved Solids) + pH probe + turbidity sensor ตรวจคุณภาพน้ำ real-time จัดระดับเป็น 3 สถานะ: ปลอดภัย / เตือน / อันตราย ส่งข้อมูลขึ้น Cloud แสดงผลบน dashboard เหมาะสำหรับบ่อปลา, สวน hydroponic, แหล่งน้ำดื่ม</p>
+        <div class="card-tags">
+          <span class="tag tag-green">TDS Sensor</span>
+          <span class="tag tag-green">pH Probe</span>
+          <span class="tag">Turbidity</span>
+          <span class="tag">Aquaculture</span>
+        </div>
+      </div>
+      <div class="card card-accent-blue">
+        <span class="card-icon">🐠</span>
+        <h3>Autonomous Aquaponics Monitor — Solar Powered</h3>
+        <p>ระบบ aquaponics อัตโนมัติพลังงานแสงอาทิตย์ ESP32 + solar panel + LiFePO4 battery ควบคุมปั๊มน้ำ ตรวจ DO (Dissolved Oxygen), อุณหภูมิน้ำ, pH, แอมโมเนีย แจ้งเตือนผ่าน LINE Notify เมื่อค่าผิดปกติ ทำงานได้โดยไม่ต้องมีไฟบ้านใกล้เคียง</p>
+        <div class="card-tags">
+          <span class="tag">DO Sensor</span>
+          <span class="tag tag-orange">Solar</span>
+          <span class="tag">LiFePO4</span>
+          <span class="tag">LINE Alert</span>
+        </div>
+      </div>
+      <div class="card card-accent-teal">
+        <span class="card-icon">🪴</span>
+        <h3>Smart Hydroponic Controller — EC + pH Automation</h3>
+        <p>ควบคุม nutrient solution ใน hydroponic อัตโนมัติด้วย ESP32 วัดค่า EC (Electrical Conductivity) ด้วย Atlas Scientific EZO-EC และ pH ด้วย EZO-pH สั่งงาน peristaltic pump เพิ่ม nutrient หรือ pH adjuster โดยอัตโนมัติตามค่าที่ตั้ง พร้อม web dashboard บน ESP32</p>
+        <div class="card-tags">
+          <span class="tag tag-teal">EC Sensor</span>
+          <span class="tag tag-green">Atlas Scientific</span>
+          <span class="tag">Peristaltic Pump</span>
+          <span class="tag">Hydroponic</span>
+        </div>
+      </div>
+      <div class="card card-accent-orange">
+        <span class="card-icon">🌾</span>
+        <h3>Soil Moisture + NPK Sensor Node LoRa Mesh</h3>
+        <p>กระจาย node ESP32 + SX1262 LoRa ทั่วไร่นา แต่ละ node มี capacitive soil moisture sensor + NPK sensor (ไนโตรเจน-ฟอสฟอรัส-โพแทสเซียม) ส่งข้อมูลผ่าน LoRa mesh ทุก 15 นาที Gateway รวบรวมข้อมูลส่งขึ้น MQTT broker พร้อม map แสดงสุขภาพดินทั้งไร่</p>
+        <div class="card-tags">
+          <span class="tag tag-orange">NPK Sensor</span>
+          <span class="tag">LoRa SX1262</span>
+          <span class="tag">Mesh</span>
+          <span class="tag">MQTT</span>
+        </div>
+      </div>
+      <div class="card card-accent-purple">
+        <span class="card-icon">🌡️</span>
+        <h3>Greenhouse Multi-Zone Environmental Monitor</h3>
+        <p>ติดตั้ง ESP32 หลายตัวในโรงเรือน แต่ละตัวมี BME688 (temp/humidity/pressure/VOC), VEML7700 (lux meter), CO2 sensor รวมข้อมูลทุก zone แสดงบน Grafana dashboard ตั้ง threshold สั่งเปิด-ปิดพัดลม, shading net, หัวพ่นหมอกอัตโนมัติ</p>
+        <div class="card-tags">
+          <span class="tag tag-purple">BME688</span>
+          <span class="tag">VEML7700</span>
+          <span class="tag">CO2</span>
+          <span class="tag">Grafana</span>
+        </div>
+      </div>
+      <div class="card card-accent-pink">
+        <span class="card-icon">🔍</span>
+        <h3>ESP32 + Camera AI — ตรวจโรคพืชด้วยภาพ</h3>
+        <p>OV2640 camera + ESP32-S3 รัน MobileNetV2 TFLM model วิเคราะห์ใบไม้หาโรค เช่น โรคราน้ำค้าง, โรคใบไหม้ ตรวจจับได้ accuracy &gt;85% โดยไม่ต้องอัพโหลดภาพขึ้น cloud ชาวไร่ถ่ายภาพผ่าน ESP32 WebServer ได้ผลวินิจฉัยภายใน 2 วินาที</p>
+        <div class="card-tags">
+          <span class="tag tag-pink">OV2640</span>
+          <span class="tag tag-purple">MobileNetV2</span>
+          <span class="tag">Plant Disease</span>
+          <span class="tag">Computer Vision</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon" style="background:linear-gradient(135deg,#7c2d12,#dc2626);">🔬</div>
+      <div>
+        <div class="section-title">Sensors ที่น่าสนใจและการประยุกต์ใช้ใหม่</div>
+        <div class="section-subtitle">Gas sensors · Biometric · Environmental · Soil · Precision measurement</div>
+      </div>
+    </div>
+    <table class="spec-table">
+      <thead>
+        <tr>
+          <th>Sensor / Module</th>
+          <th>วัดอะไร</th>
+          <th>Interface</th>
+          <th>การใช้งานที่น่าสนใจ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="spec-val">Bosch BME688</span></td><td>Temp / Humidity / Pressure / VOC / AI nose</td><td>I2C / SPI</td><td>Indoor Air Quality Score, BSEC library ให้ IAQ index อัตโนมัติ</td></tr>
+        <tr><td><span class="spec-val">Atlas Scientific EZO-CO2</span></td><td>CO2 (NDIR) 0–10,000 ppm</td><td>UART / I2C</td><td>Greenhouse CO2 control, ventilation automation</td></tr>
+        <tr><td><span class="spec-val">TDK InvenSense IIS3DWB</span></td><td>High-freq vibration ±16g / 26.7 kHz BW</td><td>SPI</td><td>Predictive maintenance, bearing fault detection</td></tr>
+        <tr><td><span class="spec-val">Sensirion SEN55</span></td><td>PM1/2.5/4/10 + NOx + VOC + Temp/RH</td><td>I2C</td><td>All-in-one outdoor air quality monitor พร้อม IP รองรับ</td></tr>
+        <tr><td><span class="spec-val">ams AS7343</span></td><td>14-channel spectral sensor (380–1000 nm)</td><td>I2C</td><td>Plant health (NDVI-like), food freshness, color QC</td></tr>
+        <tr><td><span class="spec-val">Melexis MLX90640</span></td><td>Thermal IR camera 32x24 pixel</td><td>I2C</td><td>Presence detection, overheating alert, body temp screening</td></tr>
+        <tr><td><span class="spec-val">DFRobot Gravity SEN0257</span></td><td>Dissolved Oxygen (DO) 0–20 mg/L</td><td>Analog / UART</td><td>Fish pond DO monitor, aquaculture automation</td></tr>
+        <tr><td><span class="spec-val">ICM-42688-P (TDK)</span></td><td>6-DoF IMU ±16g / ±2000 dps, ultra-low noise</td><td>SPI / I2C</td><td>Gesture ML, drone stabilization, wearable motion</td></tr>
+      </tbody>
+    </table>
+    <div class="cards" style="margin-top:24px;">
+      <div class="card card-accent-teal">
+        <span class="card-icon">👃</span>
+        <h3>BME688 + AI "Electronic Nose"</h3>
+        <p>Bosch BME688 มี AI nose feature ที่ใช้ Bosch BSEC library train model เพื่อแยกแยะกลิ่นได้ ตัวอย่าง: ตรวจกลิ่น gas รั่ว, วัดความสดของอาหาร, ตรวจควันไฟ ESP32 รัน BSEC library ได้โดยตรง ไม่ต้องใช้ model cloud</p>
+        <div class="card-tags">
+          <span class="tag tag-teal">BME688</span>
+          <span class="tag">E-Nose</span>
+          <span class="tag">BSEC</span>
+          <span class="tag">Gas Detection</span>
+        </div>
+      </div>
+      <div class="card card-accent-orange">
+        <span class="card-icon">🌈</span>
+        <h3>AS7343 Spectral Sensor — วิเคราะห์สีและแสง 14 ช่อง</h3>
+        <p>AS7343 จาก ams-OSRAM วัดแสง 14 ช่องความถี่ (380–1000 nm) เชื่อมต่อ ESP32 ผ่าน I2C ประยุกต์ใช้วัดสุขภาพพืช (คล้าย NDVI แต่ราคาถูกกว่า), ตรวจสอบความสดของผัก/ผลไม้, วัดค่าสีสำหรับ QC งานพิมพ์ ราคาโมดูลต่ำกว่า spectrometer แบบเดิมมาก</p>
+        <div class="card-tags">
+          <span class="tag tag-orange">AS7343</span>
+          <span class="tag">Spectral</span>
+          <span class="tag">NDVI</span>
+          <span class="tag">Food Quality</span>
+        </div>
+      </div>
+      <div class="card card-accent-pink">
+        <span class="card-icon">🔥</span>
+        <h3>MLX90640 Thermal Camera — ตรวจความร้อนผิดปกติ</h3>
+        <p>Thermal IR array 32x24 pixel เชื่อม ESP32 ผ่าน I2C ใช้ตรวจหา hotspot ในตู้ไฟ, เซอร์กิตบอร์ด, motor overheating หรือตรวจสอบว่ามีคนอยู่ในห้องแบบ privacy-friendly (ไม่เก็บภาพใบหน้า) ราคาโมดูลประมาณ 300–400 บาท</p>
+        <div class="card-tags">
+          <span class="tag tag-pink">MLX90640</span>
+          <span class="tag">Thermal</span>
+          <span class="tag">Presence Detection</span>
+          <span class="tag">Fire Safety</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon" style="background:linear-gradient(135deg,#1e40af,#0ea5e9);">📚</div>
+      <div>
+        <div class="section-title">แหล่งข้อมูลและลิงก์ที่เป็นประโยชน์</div>
+        <div class="section-subtitle">Tutorial · Library · GitHub · Community</div>
+      </div>
+    </div>
+    <div class="resource-list">
+      <div class="resource-item">
+        <div class="resource-emoji">🧠</div>
+        <div class="resource-content">
+          <h4>Zbotic — ESP32 Edge AI: Run TensorFlow Lite Micro on MCU</h4>
+          <p>Guide ครบสำหรับการรัน TFLM บน ESP32 ตั้งแต่ compile model, optimize quantization, จนถึง deployment พร้อมตัวอย่าง gesture recognition</p>
+          <a class="resource-link" href="https://zbotic.in/esp32-edge-ai-run-tensorflow-lite-micro-on-microcontroller/" target="_blank">↗ zbotic.in/esp32-edge-ai-run-tensorflow-lite-micro-on-microcontroller/</a>
+        </div>
+      </div>
+      <div class="resource-item">
+        <div class="resource-emoji">🌿</div>
+        <div class="resource-content">
+          <h4>NCBI — Smart Hydroponics Monitoring with ESP32 and IoT</h4>
+          <p>งานวิจัย peer-reviewed เรื่องระบบ hydroponic monitoring ด้วย ESP32 ครอบคลุม TDS, pH, อุณหภูมิ พร้อม architecture และผลทดสอบจริง</p>
+          <a class="resource-link" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10561115/" target="_blank">↗ ncbi.nlm.nih.gov/pmc/articles/PMC10561115/</a>
+        </div>
+      </div>
+      <div class="resource-item">
+        <div class="resource-emoji">🔧</div>
+        <div class="resource-content">
+          <h4>Espressif Developer Blog — ESP-VISION & ESP-IDF AI Tools</h4>
+          <p>Blog ทางการของ Espressif อัพเดตเรื่อง framework ใหม่ ๆ สำหรับ ESP32-P4 และ ESP32-S3 รวมถึง ESP-VISION, ESP-DL library สำหรับ Neural Network inference</p>
+          <a class="resource-link" href="https://developer.espressif.com" target="_blank">↗ developer.espressif.com</a>
+        </div>
+      </div>
+      <div class="resource-item">
+        <div class="resource-emoji">📊</div>
+        <div class="resource-content">
+          <h4>WizzDev — ESP32-S3 vs C6 vs P4: 2026 IoT Selection Guide</h4>
+          <p>เปรียบเทียบ SoC ตระกูล ESP32 ทั้งหมดอย่างละเอียด ช่วยตัดสินใจว่าโปรเจกต์ไหนควรใช้ chip ตัวไหน พร้อมตาราง spec และ use case</p>
+          <a class="resource-link" href="https://wizzdev.com/blog/espressif-soc-esp32/" target="_blank">↗ wizzdev.com/blog/espressif-soc-esp32/</a>
+        </div>
+      </div>
+      <div class="resource-item">
+        <div class="resource-emoji">🐟</div>
+        <div class="resource-content">
+          <h4>DFRobot Blog — ESP32 Aquaculture & Water Quality Projects</h4>
+          <p>บทความและ tutorial เรื่องการวัดคุณภาพน้ำด้วย ESP32 รวมถึง module TDS, pH, DO, turbidity ที่ DFRobot จำหน่าย พร้อม library และตัวอย่าง code</p>
+          <a class="resource-link" href="https://www.dfrobot.com/blog-13902.html" target="_blank">↗ dfrobot.com/blog-13902.html</a>
+        </div>
+      </div>
+      <div class="resource-item">
+        <div class="resource-emoji">📖</div>
+        <div class="resource-content">
+          <h4>หนังสือ "Embedded Intelligence: TinyML on the ESP32" (2026)</h4>
+          <p>หนังสือใหม่มกราคม 2026 ครอบคลุมตั้งแต่ทฤษฎี TinyML, การเก็บ dataset, train ด้วย Edge Impulse, แปลง model เป็น C array, จน deploy บน ESP32 เหมาะสำหรับ maker และ engineer ที่ต้องการเริ่มต้น on-device AI</p>
+          <a class="resource-link" href="https://www.betterread.com.au/book/embedded-intelligence-implementing-on-device-tinyml-on-the-esp32.do" target="_blank">↗ betterread.com.au/book/embedded-intelligence-...</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p><strong>ESP32 & Sensor Innovations Daily</strong> — ฉบับวันที่ 4 ตุลาคม 2026</p>
+  <p style="margin-top:8px;">หัวข้อวันนี้: TinyML / Edge AI บน ESP32 · Smart Agriculture IoT · Sensor Fusion · เซนเซอร์ใหม่น่าสนใจ</p>
+  <p style="margin-top:8px;color:#475569;">แหล่งข้อมูล: Espressif Developer Blog · Zbotic · WizzDev · NCBI · DFRobot · Atlas Scientific · ams-OSRAM · Bosch Sensortec</p>
+  <p style="margin-top:6px;font-size:12px;color:#334155;">สร้างโดย AI Research Bot · ข้อมูลอัพเดตจากแหล่งข้อมูล IoT นานาชาติ · ไม่ซ้ำกับฉบับก่อนหน้า</p>
+</footer>
+
+</body>
+</html>
