@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 5 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263248;
+    --accent-blue: #38bdf8;
+    --accent-purple: #a78bfa;
+    --accent-green: #34d399;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --accent-yellow: #facc15;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.35);
+    border-radius: 999px;
+    padding: 0.35rem 1rem;
+    font-size: 0.8rem;
+    color: var(--accent-purple);
+    margin-bottom: 1rem;
+    letter-spacing: 0.04em;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.4rem 1.1rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+  .stat-pill span { color: var(--accent-blue); font-weight: 600; }
+
+  /* ─── NAV ─── */
+  nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav ul {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    list-style: none;
+    padding: 0.6rem 1rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  nav a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    padding: 0.3rem 0.85rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  nav a:hover { color: var(--accent-blue); border-color: var(--accent-blue); background: rgba(56,189,248,0.07); }
+
+  /* ─── MAIN ─── */
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2.5rem 1rem 4rem;
+  }
+
+  /* ─── SECTION ─── */
+  section { margin-bottom: 3.5rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 2.2rem; height: 2.2rem;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-blue   { background: rgba(56,189,248,0.15); }
+  .icon-purple { background: rgba(167,139,250,0.15); }
+  .icon-green  { background: rgba(52,211,153,0.15); }
+  .icon-orange { background: rgba(251,146,60,0.15); }
+
+  .section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-header .section-count {
+    margin-left: auto;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.2rem 0.75rem;
+  }
+
+  /* ─── CARDS ─── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.4rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(56,189,248,0.4);
+    box-shadow: var(--shadow);
+    background: var(--bg-card-hover);
+  }
+  .card-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    margin-bottom: 0.7rem;
+  }
+  .tag-blue   { background: rgba(56,189,248,0.15); color: var(--accent-blue); }
+  .tag-purple { background: rgba(167,139,250,0.15); color: var(--accent-purple); }
+  .tag-green  { background: rgba(52,211,153,0.15); color: var(--accent-green); }
+  .tag-orange { background: rgba(251,146,60,0.15); color: var(--accent-orange); }
+  .tag-pink   { background: rgba(244,114,182,0.15); color: var(--accent-pink); }
+  .tag-yellow { background: rgba(250,204,21,0.15); color: var(--accent-yellow); }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+  }
+  .card p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 0.75rem; }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* SPEC TABLE inside card */
+  .spec-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 0.75rem; }
+  .spec-table td { padding: 0.3rem 0; border-bottom: 1px solid rgba(51,65,85,0.6); vertical-align: top; }
+  .spec-table td:first-child { color: var(--text-muted); width: 42%; padding-right: 0.5rem; }
+  .spec-table td:last-child { color: var(--text-primary); font-weight: 500; }
+  .spec-table tr:last-child td { border-bottom: none; }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #c9d1d9;
+    overflow-x: auto;
+    margin-top: 0.75rem;
+    line-height: 1.6;
+    white-space: pre;
+  }
+  .code-keyword { color: #ff7b72; }
+  .code-string  { color: #a5d6ff; }
+  .code-comment { color: #8b949e; }
+  .code-number  { color: #79c0ff; }
+  .code-func    { color: #d2a8ff; }
+
+  /* CHIP LIST */
+  .chip-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+  .chip {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+
+  /* HIGHLIGHT BOX */
+  .highlight-box {
+    background: rgba(56,189,248,0.06);
+    border-left: 3px solid var(--accent-blue);
+    border-radius: 0 8px 8px 0;
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+  .highlight-box.green  { background: rgba(52,211,153,0.06); border-color: var(--accent-green); }
+  .highlight-box.purple { background: rgba(167,139,250,0.06); border-color: var(--accent-purple); }
+  .highlight-box.orange { background: rgba(251,146,60,0.06);  border-color: var(--accent-orange); }
+
+  /* WIDE CARD */
+  .card-wide { grid-column: 1 / -1; }
+
+  /* STEP LIST */
+  .step-list { list-style: none; counter-reset: step; }
+  .step-list li {
+    counter-increment: step;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    margin-bottom: 0.6rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+  .step-list li::before {
+    content: counter(step);
+    background: rgba(56,189,248,0.15);
+    color: var(--accent-blue);
+    font-weight: 700;
+    font-size: 0.75rem;
+    width: 1.6rem; height: 1.6rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+
+  /* RESOURCES */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem;
+    transition: border-color 0.2s;
+    text-decoration: none;
+    display: block;
+  }
+  .resource-card:hover { border-color: rgba(167,139,250,0.5); }
+  .resource-card .res-type {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent-purple);
+    margin-bottom: 0.4rem;
+  }
+  .resource-card h4 { font-size: 0.9rem; color: var(--text-primary); font-weight: 600; margin-bottom: 0.35rem; }
+  .resource-card p  { font-size: 0.82rem; color: var(--text-secondary); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1rem;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  footer .footer-title { font-size: 1rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.5rem; }
+  footer a { color: var(--accent-blue); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 600px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .resource-grid { grid-template-columns: 1fr 1fr; }
+    header h1 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header>
+  <div class="header-badge">⚡ ESP32 & IoT Daily Digest</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">5 ตุลาคม 2026 · อัปเดตรายวัน สำหรับ Maker และ IoT Developer</p>
+  <div class="stat-row">
+    <div class="stat-pill"><span>4</span> นวัตกรรมใหม่</div>
+    <div class="stat-pill"><span>6</span> ไอเดียโปรเจกต์</div>
+    <div class="stat-pill"><span>4</span> Sensors แนะนำ</div>
+    <div class="stat-pill"><span>8</span> แหล่งข้อมูล</div>
+  </div>
+</header>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav aria-label="หมวดหมู่">
+  <ul>
+    <li><a href="#innovations">🔬 นวัตกรรม</a></li>
+    <li><a href="#projects">🛠️ โปรเจกต์</a></li>
+    <li><a href="#sensors">📡 Sensors</a></li>
+    <li><a href="#resources">🔗 แหล่งข้อมูล</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<main>
+
+  <!-- ── SECTION 1: นวัตกรรม ── -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔬</div>
+      <h2>นวัตกรรมและเทคโนโลยีใหม่</h2>
+      <span class="section-count">4 รายการ</span>
+    </div>
+    <div class="card-grid">
+
+      <!-- Card 1: ESP32-H2 Zigbee/Thread -->
+      <div class="card">
+        <div class="card-tag tag-blue">ESP32-H2</div>
+        <h3>ESP32-H2 — Zigbee 3.0 + Thread 1.3 + BLE 5 บนชิปเดียว</h3>
+        <p>ESP32-H2 คือ RISC-V SoC ตัวแรกของ Espressif ที่บูรณาการวิทยุ IEEE 802.15.4 ไว้ในตัว รองรับ Zigbee 3.0 และ Thread 1.3 พร้อมกัน โดยไม่ต้องใช้ชิปแยก ทำให้สามารถสร้าง Smart Home Gateway ราคาประหยัดได้บนบอร์ดเดียว</p>
+        <table class="spec-table">
+          <tr><td>Core</td><td>RISC-V 32-bit · 96 MHz</td></tr>
+          <tr><td>Flash</td><td>4 MB Internal</td></tr>
+          <tr><td>SRAM</td><td>320 KB</td></tr>
+          <tr><td>Wireless</td><td>IEEE 802.15.4 + BLE 5.0</td></tr>
+          <tr><td>Deep Sleep</td><td>8 µA</td></tr>
+          <tr><td>Protocols</td><td>Zigbee 3.0 · Thread 1.3 · Matter</td></tr>
+        </table>
+        <div class="highlight-box">
+          จุดเด่น: รองรับ Matter over Thread โดยตรง — เชื่อมต่ออุปกรณ์ Zigbee เดิมเข้ากับ ecosystem ใหม่ได้โดยไม่ต้องเปลี่ยนฮาร์ดแวร์
+        </div>
+      </div>
+
+      <!-- Card 2: Digital Twin -->
+      <div class="card">
+        <div class="card-tag tag-purple">Architecture</div>
+        <h3>Hybrid Edge Architecture — ESP32 + RPi5 Digital Twin</h3>
+        <p>แนวทาง Production-Grade IoT ปี 2026 คือ Hybrid Architecture ที่ใช้ ESP32 เป็น Edge Node ประมวลผลแบบ Deterministic และ Raspberry Pi 5 เป็น Local AI Gateway สร้าง Digital Twin ของระบบ ลด Cloud Latency และ BOM Cost</p>
+        <div class="highlight-box purple">
+          <strong>ข้อดี:</strong> รองรับ Graceful Degradation — ถ้า Internet ขาด อุปกรณ์ยังทำงานได้ตาม Logic ที่กำหนดไว้ล่วงหน้า
+        </div>
+        <div class="chip-list">
+          <span class="chip">MQTT</span>
+          <span class="chip">Node-RED</span>
+          <span class="chip">InfluxDB</span>
+          <span class="chip">Grafana</span>
+          <span class="chip">ESP-IDF</span>
+        </div>
+      </div>
+
+      <!-- Card 3: ESP32-H2 Matter over Thread -->
+      <div class="card">
+        <div class="card-tag tag-green">Matter / Thread</div>
+        <h3>ESP32-H2 ในฐานะ Thread End Device สำหรับ Smart Home</h3>
+        <p>ESP32-H2 ที่รัน Thread End Device สามารถส่งข้อมูล Sensor ผ่าน Thread Mesh ไปยัง Border Router (ESP32-C6) และเชื่อมกับ Matter Controller เช่น Apple Home, Google Home, Amazon Alexa ได้โดยตรง</p>
+        <ul class="step-list">
+          <li>ติดตั้ง ESP-IDF 5.4+ พร้อม Thread Stack</li>
+          <li>สร้าง Thread Network ด้วย ESP32-C6 Border Router</li>
+          <li>Flash esp-matter firmware บน ESP32-H2</li>
+          <li>Commission ผ่าน QR Code ใน Apple Home / Google Home</li>
+          <li>รับข้อมูล Sensor แบบ Real-time บน Controller</li>
+        </ul>
+      </div>
+
+      <!-- Card 4: OPC-UA Industrial -->
+      <div class="card">
+        <div class="card-tag tag-orange">Industrial IoT</div>
+        <h3>ESP32 + open62541 — OPC-UA Server น้ำหนักเบาสำหรับโรงงาน</h3>
+        <p>ไลบรารี open62541 เวอร์ชัน Embedded สามารถรันบน ESP32-S3 ได้ ทำให้ ESP32 กลายเป็น OPC-UA Server ที่ SCADA/MES ระดับอุตสาหกรรมเชื่อมต่อได้โดยตรง ไม่ต้องผ่าน Gateway แยก</p>
+        <div class="highlight-box orange">
+          <strong>Use Case:</strong> ติดตั้งที่เครื่องจักรเก่าที่มีเพียง Sensor แบบ Analog และ Digital I/O แล้วส่งข้อมูลเข้า SCADA ด้วย Protocol มาตรฐาน IEC 62541
+        </div>
+        <div class="chip-list">
+          <span class="chip">ESP32-S3</span>
+          <span class="chip">OPC-UA</span>
+          <span class="chip">open62541</span>
+          <span class="chip">FreeRTOS</span>
+        </div>
+      </div>
+
+    </div><!-- /card-grid -->
+  </section>
+
+  <!-- ── SECTION 2: โปรเจกต์ ── -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">🛠️</div>
+      <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+      <span class="section-count">6 รายการ</span>
+    </div>
+    <div class="card-grid">
+
+      <!-- Project 1: TWAI OBD2 -->
+      <div class="card">
+        <div class="card-tag tag-orange">Automotive</div>
+        <h3>ESP32 TWAI + OBD2 — วินิจฉัยรถยนต์ DIY แบบ Real-Time</h3>
+        <p>ESP32 มี TWAI (Two-Wire Automotive Interface) บิวท์อินรองรับ ISO 11898-2 ทำให้สามารถสร้างเครื่องสแกน OBD2 ราคาต่ำกว่า 200 บาทได้ แสดงข้อมูล RPM, Speed, Coolant Temp, Fuel Trim แบบ Real-time ผ่าน Web Interface</p>
+        <div class="code-block"><span class="code-comment">// TWAI init config (ISO 11898-2)</span>
+<span class="code-keyword">twai_general_config_t</span> g_config =
+  TWAI_GENERAL_CONFIG_DEFAULT(
+    GPIO_NUM_21, GPIO_NUM_22,
+    TWAI_MODE_NORMAL);
+<span class="code-keyword">twai_timing_config_t</span> t_config =
+  TWAI_TIMING_CONFIG_500KBITS();
+<span class="code-func">twai_driver_install</span>(&amp;g_config,
+  &amp;t_config, &amp;f_config);</div>
+        <div class="highlight-box orange">
+          ทดสอบบน Toyota C-HR Hybrid ผ่านแล้ว — SN65HVD230 CAN Transceiver + ESP32 = DIY Scanner ราคาประหยัด
+        </div>
+      </div>
+
+      <!-- Project 2: micro-ROS -->
+      <div class="card">
+        <div class="card-tag tag-blue">Robotics</div>
+        <h3>micro-ROS บน ESP32-S3 — หุ่นยนต์ควบคุมด้วย ROS2</h3>
+        <p>micro-ROS ช่วยให้ ESP32-S3 กลายเป็น Node ใน ROS2 Network ได้โดยตรง รัน FreeRTOS + micro-ROS Agent ส่ง Topic และรับ Command จาก ROS2 Host บน PC หรือ Jetson Nano เพื่อควบคุม Servo, Motor, IMU</p>
+        <table class="spec-table">
+          <tr><td>บอร์ด</td><td>ESP32-S3 DevKit-C (Dual Core)</td></tr>
+          <tr><td>RTOS</td><td>FreeRTOS + micro-ROS</td></tr>
+          <tr><td>Transport</td><td>UDP over Wi-Fi</td></tr>
+          <tr><td>Servo Driver</td><td>PCA9685 (16-channel PWM)</td></tr>
+          <tr><td>IMU</td><td>MPU-6050 / ICM-42688</td></tr>
+          <tr><td>ROS2</td><td>Jazzy Jalisco (2026)</td></tr>
+        </table>
+        <div class="chip-list">
+          <span class="chip">micro-ROS</span>
+          <span class="chip">ROS2</span>
+          <span class="chip">FreeRTOS</span>
+          <span class="chip">PCA9685</span>
+        </div>
+      </div>
+
+      <!-- Project 3: Piezo Energy Harvesting -->
+      <div class="card">
+        <div class="card-tag tag-green">Energy Harvesting</div>
+        <h3>Self-Powered Sensor Node — Piezo + TEG + ESP32-H2</h3>
+        <p>สร้าง Sensor Node ที่ชาร์จพลังงานจากความสั่นสะเทือน (Piezoelectric) และ Gradient ความร้อน (Thermoelectric Generator) รวมกัน ผ่าน Power Management IC เก็บลง Supercapacitor ทำให้ Node ทำงานได้โดยไม่ต้องเปลี่ยนถ่าน</p>
+        <div class="highlight-box green">
+          <strong>ข้อมูลวิจัย:</strong> ที่แสงสว่าง 200 lux + ΔT 13°C ระบบ Hybrid PV+TEG ให้พลังงาน 2.13W ชาร์จ Supercapacitor ได้ภายใน 20 วินาที
+        </div>
+        <ul class="step-list">
+          <li>Piezo Bender + TEG Module เป็นแหล่งพลังงาน</li>
+          <li>LTC3588 หรือ BQ25570 เป็น Energy Harvesting IC</li>
+          <li>Supercapacitor 10F เก็บพลังงานสำรอง</li>
+          <li>ESP32-H2 Deep Sleep ส่งข้อมูลทุก 5 นาที</li>
+        </ul>
+      </div>
+
+      <!-- Project 4: DIY Air Quality Wearable -->
+      <div class="card">
+        <div class="card-tag tag-pink">Wearable</div>
+        <h3>Wearable Air Quality + SpO2 Monitor — ESP32-S3 + BME680 + MAX30102</h3>
+        <p>อุปกรณ์ wearable ขนาดเล็กสำหรับวัดคุณภาพอากาศรอบตัว (VOC, CO2, PM2.5) และ SpO2 + Heart Rate พร้อมกัน ใช้ ESP32-S3 ขนาด Compact แสดงผลบน TFT จิ๋ว 0.96 นิ้ว และส่งข้อมูลไป Smartphone ผ่าน BLE</p>
+        <div class="chip-list">
+          <span class="chip">BME688</span>
+          <span class="chip">MAX30102</span>
+          <span class="chip">PMS5003</span>
+          <span class="chip">SGP30</span>
+          <span class="chip">BLE 5.0</span>
+          <span class="chip">LiPo 500mAh</span>
+        </div>
+        <div class="highlight-box">
+          BME688 + AI เรียนรู้ "นิสัย" ของ Sensor เพื่อแยกแยะ VOC ที่เป็นอันตราย จาก Background Gas ได้แม่นยำขึ้น
+        </div>
+      </div>
+
+      <!-- Project 5: Smart Zigbee Sensor Hub -->
+      <div class="card">
+        <div class="card-tag tag-blue">Smart Home</div>
+        <h3>DIY Zigbee Sensor Hub — ESP32-H2 Coordinator + Multiple End Devices</h3>
+        <p>ใช้ ESP32-H2 หนึ่งตัวเป็น Zigbee Coordinator เชื่อมกับ End Device สูงสุด 200 โหนด แต่ละโหนดอาจเป็น Temperature/Humidity, Door/Window, PIR, หรือ Water Leak Sensor ราคา Node ละต่ำกว่า 80 บาท</p>
+        <table class="spec-table">
+          <tr><td>Coordinator</td><td>ESP32-H2 + UART → Raspberry Pi</td></tr>
+          <tr><td>Max Nodes</td><td>200 Zigbee End Devices</td></tr>
+          <tr><td>Protocol</td><td>Zigbee 3.0 (2.4 GHz)</td></tr>
+          <tr><td>Range</td><td>~100m LOS, Mesh ขยายได้</td></tr>
+          <tr><td>Integration</td><td>Home Assistant via ZHA/Z2M</td></tr>
+        </table>
+      </div>
+
+      <!-- Project 6: CAN Bus Fleet Monitor -->
+      <div class="card">
+        <div class="card-tag tag-orange">Fleet IoT</div>
+        <h3>ESP32 Fleet Monitor — OBD2 + GPS + LTE ติดตามยานพาหนะ</h3>
+        <p>ระบบ Fleet Management DIY ใช้ ESP32 อ่านข้อมูลจาก CAN Bus ผ่าน TWAI, GPS ผ่าน NEO-M8N, และส่งข้อมูลผ่าน LTE (SIM7600) ไป Cloud Dashboard ติดตามตำแหน่ง, สุขภาพเครื่องยนต์, การขับขี่ ได้แบบ Real-time</p>
+        <div class="highlight-box orange">
+          <strong>ต้นทุน:</strong> ESP32 + SIM7600 LTE + GPS + PCB ราคาประมาณ 800–1,200 บาท เทียบกับ Commercial Fleet Tracker ราคา 3,000–8,000 บาท
+        </div>
+        <div class="chip-list">
+          <span class="chip">TWAI/CAN</span>
+          <span class="chip">NEO-M8N</span>
+          <span class="chip">SIM7600</span>
+          <span class="chip">MQTT</span>
+        </div>
+      </div>
+
+    </div><!-- /card-grid -->
+  </section>
+
+  <!-- ── SECTION 3: SENSORS ── -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">📡</div>
+      <h2>Sensors น่าสนใจสำหรับโปรเจกต์ใหม่</h2>
+      <span class="section-count">4 รายการ</span>
+    </div>
+    <div class="card-grid">
+
+      <!-- Sensor 1: SN65HVD230 -->
+      <div class="card">
+        <div class="card-tag tag-orange">CAN Transceiver</div>
+        <h3>SN65HVD230 — CAN Bus Transceiver สำหรับงาน Automotive</h3>
+        <p>ไอซีแปลงสัญญาณดิจิทัลจาก ESP32 ให้เป็น Differential CAN Signal มาตรฐาน ISO 11898-2 ทนทานต่อ ESD และ Transient Voltage จาก Vehicle Electrical System ทำงานที่แรงดัน 3.3V ซึ่งเข้ากันได้กับ ESP32 โดยตรง</p>
+        <table class="spec-table">
+          <tr><td>Speed</td><td>สูงสุด 1 Mbps</td></tr>
+          <tr><td>Supply</td><td>3.3V (Compatible ESP32)</td></tr>
+          <tr><td>Standard</td><td>ISO 11898-2</td></tr>
+          <tr><td>ESD Protection</td><td>±8 kV HBM</td></tr>
+          <tr><td>ราคา</td><td>~25–40 บาท</td></tr>
+        </table>
+      </div>
+
+      <!-- Sensor 2: MAX30102 -->
+      <div class="card">
+        <div class="card-tag tag-pink">Biometric</div>
+        <h3>MAX30102 — Pulse Oximeter & Heart Rate Sensor</h3>
+        <p>Sensor PPG (Photoplethysmography) แบบ Integrated ที่มี LED ทั้ง Red และ IR อยู่ในตัว วัด SpO2 และ Heart Rate ผ่าน I2C เพียง 2 สาย เหมาะสำหรับ Wearable เพราะกินไฟน้อยและ Package เล็กมาก</p>
+        <table class="spec-table">
+          <tr><td>Interface</td><td>I2C (400 kHz)</td></tr>
+          <tr><td>Supply</td><td>1.8V / 3.3V</td></tr>
+          <tr><td>LEDs</td><td>Red 660nm + IR 880nm</td></tr>
+          <tr><td>Current</td><td>0.7 µA Shutdown Mode</td></tr>
+          <tr><td>Package</td><td>5.6mm × 3.3mm OLGA</td></tr>
+          <tr><td>ราคา</td><td>~60–120 บาท</td></tr>
+        </table>
+      </div>
+
+      <!-- Sensor 3: SGP30 -->
+      <div class="card">
+        <div class="card-tag tag-blue">Air Quality</div>
+        <h3>SGP30 — TVOC + eCO2 Sensor สำหรับ Indoor Air Quality</h3>
+        <p>Sensirion SGP30 เป็น Metal-Oxide Sensor วัด Total Volatile Organic Compounds (TVOC) และ equivalent CO2 (eCO2) ผ่าน I2C โดยมี On-chip Calibration Algorithm ทำให้ไม่ต้อง Calibrate บ่อย เหมาะสำหรับ Indoor Air Quality Monitor</p>
+        <div class="highlight-box">
+          เมื่อใช้คู่กับ BME688 จะให้ข้อมูล Air Quality ที่ครบถ้วนมากขึ้น — SGP30 ระบุ TVOC/eCO2 แบบ Numeric ในขณะที่ BME688 ให้ Gas Resistance + AI Index
+        </div>
+        <div class="chip-list">
+          <span class="chip">TVOC 0–60,000 ppb</span>
+          <span class="chip">eCO2 400–60,000 ppm</span>
+          <span class="chip">I2C</span>
+          <span class="chip">3.3V</span>
+        </div>
+      </div>
+
+      <!-- Sensor 4: ICM-42688 -->
+      <div class="card">
+        <div class="card-tag tag-purple">IMU</div>
+        <h3>ICM-42688-P — 6-Axis IMU ความแม่นยำสูงสำหรับ Robotics</h3>
+        <p>TDK InvenSense ICM-42688-P เป็น 6-axis IMU (3-axis Gyroscope + 3-axis Accelerometer) คุณภาพสูงที่ใช้ใน Consumer Electronics รุ่นใหม่ มี Noise ต่ำกว่า MPU-6050 เดิมอย่างมาก เหมาะสำหรับงาน Robotics, Drone Stabilization และ Gesture Recognition</p>
+        <table class="spec-table">
+          <tr><td>Gyro Noise</td><td>2.8 mdps/√Hz</td></tr>
+          <tr><td>Accel Noise</td><td>70 µg/√Hz</td></tr>
+          <tr><td>Interface</td><td>SPI / I2C</td></tr>
+          <tr><td>ODR</td><td>สูงสุด 32 kHz (Gyro)</td></tr>
+          <tr><td>Supply</td><td>1.71–3.6V</td></tr>
+          <tr><td>ราคา</td><td>~80–150 บาท</td></tr>
+        </table>
+      </div>
+
+    </div><!-- /card-grid -->
+  </section>
+
+  <!-- ── SECTION 4: RESOURCES ── -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔗</div>
+      <h2>แหล่งข้อมูลและเครื่องมือที่แนะนำ</h2>
+      <span class="section-count">8 รายการ</span>
+    </div>
+    <div class="resource-grid">
+
+      <div class="resource-card">
+        <div class="res-type">📖 Official Docs</div>
+        <h4>ESP-IDF Programming Guide</h4>
+        <p>TWAI Driver API, Thread Stack, Zigbee SDK documentation อย่างเป็นทางการ</p>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-type">🐙 GitHub</div>
+        <h4>esp-idf-lib</h4>
+        <p>รวม Driver สำหรับ Sensor ยอดนิยมกว่า 90 ตัว พร้อมตัวอย่างใช้งาน</p>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-type">📡 Protocol</div>
+        <h4>ESP Zigbee SDK</h4>
+        <p>SDK อย่างเป็นทางการสำหรับพัฒนา Zigbee End Device / Router / Coordinator บน ESP32-H2</p>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-type">🤖 Robotics</div>
+        <h4>micro-ROS for ESP32</h4>
+        <p>Official micro-ROS component สำหรับ ESP-IDF รองรับ ROS2 Jazzy</p>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-type">🏭 Industrial</div>
+        <h4>open62541 OPC-UA Library</h4>
+        <p>OPC-UA Stack แบบ Open Source รองรับ Embedded ขนาด RAM น้อย ใช้งานบน ESP32-S3 ได้</p>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-type">🚗 Automotive</div>
+        <h4>ESP32 TWAI Driver</h4>
+        <p>Driver บิวท์อินใน ESP-IDF รองรับ ISO 11898-2 ความเร็ว 25 kbps ถึง 1 Mbps</p>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-type">🏠 Community</div>
+        <h4>Zbotic ESP32-H2 Guide</h4>
+        <p>บทความ ESP32-H2 Zigbee & Thread Native Support แบบ Step-by-Step</p>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-type">🌐 Platform</div>
+        <h4>Espressif Developer Zone</h4>
+        <p>Forum อย่างเป็นทางการ อัปเดต SDK ใหม่ Bug Report และ Feature Request</p>
+      </div>
+
+    </div><!-- /resource-grid -->
+  </section>
+
+</main>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer>
+  <p class="footer-title">ESP32 & Sensor Innovations Daily</p>
+  <p>สร้างโดย AI Researcher อัตโนมัติ · <strong>5 ตุลาคม 2026</strong></p>
+  <p style="margin-top:0.5rem;">
+    แหล่งอ้างอิง:
+    <a href="https://zbotic.in/esp32-h2-zigbee-and-thread-native-support-guide/" target="_blank">Zbotic ESP32-H2 Guide</a> ·
+    <a href="https://zbotic.in/esp32-can-bus-interface-automotive-diagnostics-projects/" target="_blank">ESP32 CAN Bus Projects</a> ·
+    <a href="https://community.home-assistant.io/t/wican-esp32-based-open-source-obd2-obd-ii-vehicle-car-or-truck-can-bus-diagnostics-to-wifi-ble-usb-adapter-for-home-assistant-integration/456098/" target="_blank">WiCAN Home Assistant</a> ·
+    <a href="https://www.hackatronic.com/tag/air-quality-monitoring-system-project/amp/" target="_blank">Air Quality ESP32</a>
+  </p>
+  <p style="margin-top:0.75rem; font-size:0.75rem; color: #475569;">
+    หัวข้อวันนี้: ESP32-H2 Zigbee/Thread · Digital Twin Architecture · TWAI/CAN Automotive · micro-ROS Robotics · Energy Harvesting · Wearable Air Quality
+  </p>
+</footer>
+
+</body>
+</html>
