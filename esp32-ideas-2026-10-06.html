@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 6 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263248;
+    --accent-blue: #38bdf8;
+    --accent-purple: #a78bfa;
+    --accent-green: #34d399;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --accent-yellow: #facc15;
+    --accent-teal: #2dd4bf;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #042f2e 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(45,212,191,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(45,212,191,0.15);
+    border: 1px solid rgba(45,212,191,0.3);
+    color: var(--accent-teal);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+  }
+  header h1 span {
+    background: linear-gradient(90deg, var(--accent-teal), var(--accent-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-sub {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 0.35rem 1.1rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+  .stat-pill strong { color: var(--text-primary); }
+
+  /* ─── LAYOUT ─── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  /* ─── SECTION HEADER ─── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .section-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-teal  { background: rgba(45,212,191,0.15); }
+  .icon-blue  { background: rgba(56,189,248,0.15); }
+  .icon-purple{ background: rgba(167,139,250,0.15); }
+  .icon-green { background: rgba(52,211,153,0.15); }
+  .icon-orange{ background: rgba(251,146,60,0.15); }
+
+  .section-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-header p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+  }
+
+  /* ─── CARDS ─── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+  .card-teal::before   { background: linear-gradient(90deg, var(--accent-teal), var(--accent-blue)); }
+  .card-blue::before   { background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); }
+  .card-purple::before { background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink)); }
+  .card-green::before  { background: linear-gradient(90deg, var(--accent-green), var(--accent-teal)); }
+  .card-orange::before { background: linear-gradient(90deg, var(--accent-orange), var(--accent-yellow)); }
+
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(45,212,191,0.35);
+    box-shadow: var(--shadow);
+  }
+  .card-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.7rem;
+    border-radius: 99px;
+    margin-bottom: 0.7rem;
+  }
+  .tag-teal   { background: rgba(45,212,191,0.12); color: var(--accent-teal); }
+  .tag-blue   { background: rgba(56,189,248,0.12); color: var(--accent-blue); }
+  .tag-purple { background: rgba(167,139,250,0.12); color: var(--accent-purple); }
+  .tag-green  { background: rgba(52,211,153,0.12); color: var(--accent-green); }
+  .tag-orange { background: rgba(251,146,60,0.12); color: var(--accent-orange); }
+  .tag-pink   { background: rgba(244,114,182,0.12); color: var(--accent-pink); }
+  .tag-yellow { background: rgba(250,204,21,0.12); color: var(--accent-yellow); }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  /* highlight box inside card */
+  .highlight-box {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .highlight-box strong { color: var(--text-secondary); }
+
+  /* code snippet */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    margin-top: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: #a5d6ff;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .kw { color: #ff7b72; }
+  .code-block .fn { color: #d2a8ff; }
+  .code-block .cm { color: #8b949e; }
+  .code-block .st { color: #a5d6ff; }
+
+  /* spec list */
+  .spec-list {
+    list-style: none;
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .spec-list li {
+    display: flex;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .spec-list li::before {
+    content: '›';
+    color: var(--accent-teal);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ─── RESOURCE TABLE ─── */
+  .resource-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .resource-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    transition: border-color 0.2s;
+  }
+  .resource-item:hover { border-color: rgba(45,212,191,0.3); }
+  .res-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .resource-item h4 { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+  .resource-item p  { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.2rem; }
+  .res-link {
+    display: inline-block;
+    margin-top: 0.35rem;
+    font-size: 0.78rem;
+    color: var(--accent-teal);
+    text-decoration: none;
+    word-break: break-all;
+  }
+  .res-link:hover { text-decoration: underline; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+  footer strong { color: var(--text-secondary); }
+
+  @media (max-width: 600px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    header { padding: 2rem 1rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily Research · 6 ตุลาคม 2026</div>
+  <h1>ESP32 &amp; <span>IoT Innovations</span></h1>
+  <p class="header-sub">LoRaWAN Long-Range · Rust Embedded · LVGL HMI · ESPHome 2026</p>
+  <div class="stats-row">
+    <div class="stat-pill">📡 <strong>LoRaWAN</strong> Satellite-backed</div>
+    <div class="stat-pill">🦀 <strong>Rust</strong> esp-hal 1.1.x</div>
+    <div class="stat-pill">🖥️ <strong>LVGL v9</strong> PPA Acceleration</div>
+    <div class="stat-pill">🔄 <strong>ESPHome</strong> 2026.4.0</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══════════════════════════════════
+       SECTION 1: นวัตกรรมและอัปเดตสำคัญ
+  ══════════════════════════════════ -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-teal">🚀</div>
+      <div>
+        <h2>นวัตกรรมและอัปเดตสำคัญ</h2>
+        <p>ข่าวใหม่จากวงการ ESP32 และ IoT ที่น่าติดตาม</p>
+      </div>
+    </div>
+    <div class="cards-grid">
+
+      <!-- Card 1 -->
+      <div class="card card-teal">
+        <span class="card-tag tag-teal">ESP32-P4 v3.x</span>
+        <h3>ESP32-P4 อัปเกรดเป็น 400 MHz — ISP และ Display ดีขึ้นมาก</h3>
+        <p>Espressif ปล่อย ESP32-P4 chip revision v3.x ในเดือนพฤษภาคม 2026 เพิ่ม clock สูงสุดจาก 360 → <strong>400 MHz</strong> พร้อม Zb bit-manipulation extensions และ PIE acceleration ที่เร็วขึ้น สำหรับงาน AI/DSP</p>
+        <div class="highlight-box">
+          <strong>ISP ใหม่ใน P4 v3.x:</strong> Black Level Correction (BLC), Dead Pixel Correction (DPC), White Balance Gain (WBG) และ Cropping (CROP) — รับรองภาพคมชัดในทุกสภาพแสง
+        </div>
+        <ul class="spec-list">
+          <li>MIPI-CSI/DSI + H.264 hardware encode/decode (1080p@30fps)</li>
+          <li>USB 2.0 OTG + 32 MB embedded PSRAM</li>
+          <li>แก้ bug MSPI power-on wake-up และ secure boot failures</li>
+        </ul>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="card card-blue">
+        <span class="card-tag tag-blue">ESPHome 2026.4.0</span>
+        <h3>ESPHome 2026.4.0 — ESP32 เร็วขึ้น 33% และ Signed OTA</h3>
+        <p>ESPHome เวอร์ชันใหม่นี้ตั้งค่า ESP32 ให้รันที่ <strong>CPU frequency สูงสุดโดยอัตโนมัติ</strong> เพิ่มความเร็ว API operation ถึง 33% โดยไม่ต้องแก้ config ใดๆ เพิ่ม Signed OTA ป้องกัน firmware ปลอม</p>
+        <div class="highlight-box">
+          <strong>Breaking Change:</strong> ค่าเริ่มต้น CPU freq เปลี่ยนแล้ว — ถ้าโปรเจกต์เก่าต้องการ freq ต่ำกว่า ต้องกำหนดค่าใหม่ใน YAML config
+        </div>
+        <ul class="spec-list">
+          <li>เหมาะกับ Home Assistant integration ที่ต้องการ latency ต่ำ</li>
+          <li>ESP32-C3/C6/S3/P4 ทุกรุ่นได้ประโยชน์จากการอัปเดตนี้</li>
+        </ul>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="card card-purple">
+        <span class="card-tag tag-purple">Rust Embedded</span>
+        <h3>Rust บน ESP32-C6 — esp-hal 1.1.x พร้อมแล้วสำหรับ Production</h3>
+        <p>Espressif ประกาศ <strong>esp-hal 1.1.x</strong> พร้อม API เสถียรสำหรับ ESP32-C6, C3, S3 รองรับทั้ง <em>Blocking</em> และ <em>Async</em> APIs ครบทุก peripheral ผ่าน <code>embedded-hal</code> และ <code>embedded-hal-async</code> traits</p>
+        <div class="code-block"><span class="cm">// Cargo.toml</span>
+[dependencies]
+<span class="st">esp-hal</span> = { version = <span class="st">"1.1"</span>, features = [<span class="st">"esp32c6"</span>] }
+<span class="st">esp-backtrace</span> = { version = <span class="st">"0.14"</span> }
+
+<span class="cm">// main.rs (no_std)</span>
+<span class="kw">#![no_std]</span>
+<span class="kw">#![no_main]</span></div>
+        <ul class="spec-list">
+          <li>ใช้ <code>esp-generate</code> สร้าง project skeleton อัตโนมัติ</li>
+          <li>รองรับ Wi-Fi 6, BLE 5, Thread, Zigbee บน C6</li>
+          <li>Grove Sensors + Rust on XIAO ESP32-C6 (Hackster, Sep 2026)</li>
+        </ul>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="card card-green">
+        <span class="card-tag tag-green">LVGL v9</span>
+        <h3>LVGL v9 + ESP32-P4 — Hardware Rotation ด้วย PPA ไม่กิน CPU</h3>
+        <p>LVGL v9 เพิ่ม <strong>native display rotation</strong> บน ESP32-P4 โดยใช้ PPA (Pixel Processing Accelerator) หมุนจอ 90°/180°/270° โดย <strong>CPU ไม่ต้องทำงานเลย</strong> เหมาะมากสำหรับ HMI panel ในเครื่องจักรหรืออุปกรณ์ที่ติดตั้งในแนวตั้ง</p>
+        <div class="highlight-box">
+          <strong>Waveshare ESP32-S3 + ST7262 7"</strong>: Library ใหม่ <code>Waveshare_ST7262_LVGL</code> สำหรับ Arduino IDE พร้อม GT911 touchscreen ทำ GUI ได้ทันทีโดยไม่ต้องตั้งค่าเพิ่ม
+        </div>
+        <ul class="spec-list">
+          <li>LVGL v9.3 รองรับ Widget ใหม่: lv_scale, lv_imagebutton แบบ vector</li>
+          <li>CrowPanel ESP32 2.8" / 7" / 10.1" รองรับ LVGL 8.3+ และ 9.x</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════
+       SECTION 2: ไอเดียโปรเจกต์
+  ══════════════════════════════════ -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-blue">💡</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+        <p>โปรเจกต์สร้างได้จริง มีอ้างอิงจากชุมชน IoT ทั่วโลก</p>
+      </div>
+    </div>
+    <div class="cards-grid">
+
+      <!-- Project 1 -->
+      <div class="card card-teal">
+        <span class="card-tag tag-teal">LoRaWAN</span>
+        <h3>ESP32 + LoRa — Smart Farm ครบวงจร ส่งข้อมูลได้ 15 กม.</h3>
+        <p>ใช้ ESP32 + SX1276 LoRa module ร่วมกับ TTN (The Things Network) สร้างเครือข่าย sensor node สำหรับไร่/สวน ครอบคลุมพื้นที่กว้าง 15 km² บนคลื่น 433/915 MHz ใช้พลังงานต่ำมาก (<em>sleep current &lt;10 µA</em>)</p>
+        <div class="highlight-box">
+          <strong>Case study จริง (2026):</strong> MIE Agro Farm มาเลเซีย ติดตั้ง sensor node บนต้นทุเรียน 6,000 ต้น ใน 80 เฮกตาร์ ผ่าน Seeed RAK LoRaWAN gateway
+        </div>
+        <ul class="spec-list">
+          <li>Sensor: SHT40 + SCD41 + BME688 วัด temp/humidity/CO₂/VOC</li>
+          <li>ส่งข้อมูลทุก 15 นาที แบต 18650 อยู่ได้ &gt;1 ปี</li>
+          <li>Dashboard ผ่าน TagoIO หรือ Grafana + InfluxDB</li>
+          <li>รองรับ Satellite-backed LoRaWAN (Banalytics/MooField 2026)</li>
+        </ul>
+      </div>
+
+      <!-- Project 2 -->
+      <div class="card card-blue">
+        <span class="card-tag tag-blue">Display HMI</span>
+        <h3>SensorStation3 — แดชบอร์ด LVGL บน CYD ESP32 แบบ All-in-One</h3>
+        <p>โปรเจกต์ open-source บน Hackaday.io สร้าง environmental monitoring station บน <strong>Cheap Yellow Display (CYD)</strong> ESP32 หน้าจอ 2.8" บิวท์อิน แสดง temp, humidity, dew point, pressure และ CO₂-equivalent บน LVGL dashboard แตะหน้าจอเพื่อเปลี่ยนโหมดได้</p>
+        <ul class="spec-list">
+          <li>BME280 + ENS160 sensor combo (รวมถึง BME688 ได้)</li>
+          <li>LVGL gauge, chart, label widget ทั้งหมดใน 4 MB flash</li>
+          <li>OTA update ผ่าน ESPAsyncWebServer</li>
+          <li>PCB แบบ open-source พร้อม Gerber ให้สั่งพิมพ์เองได้</li>
+        </ul>
+      </div>
+
+      <!-- Project 3 -->
+      <div class="card card-purple">
+        <span class="card-tag tag-purple">Rust IoT</span>
+        <h3>Grove Sensors + Rust บน XIAO ESP32-C6 — 9 ตัวอย่าง no_std</h3>
+        <p>โปรเจกต์ Hackster.io (กันยายน 2026) เขียน <strong>9 ตัวอย่าง Rust no_std</strong> เชื่อม Grove sensors, display และ actuators กับ Seeed XIAO ESP32-C6 ผ่าน <code>esp-hal</code> สาธิตวิธีเขียน embedded Rust ที่ปลอดภัยและ memory-safe</p>
+        <div class="code-block"><span class="cm">// อ่าน DHT11 ด้วย Rust + esp-hal</span>
+<span class="kw">use</span> <span class="fn">esp_hal</span>::{gpio::Io, delay::Delay};
+<span class="kw">let</span> delay = <span class="fn">Delay</span>::new();
+<span class="kw">let</span> io = <span class="fn">Io</span>::new(peripherals.GPIO, ...);
+<span class="cm">// type-safe peripheral access</span></div>
+        <ul class="spec-list">
+          <li>Grove DHT11, Grove Ultrasonic, Grove OLED 128x64</li>
+          <li>Async I2C/SPI พร้อม error handling แบบ Rust idiom</li>
+          <li>เหมาะสำหรับโปรเจกต์ที่ต้องการความน่าเชื่อถือสูง</li>
+        </ul>
+      </div>
+
+      <!-- Project 4 -->
+      <div class="card card-green">
+        <span class="card-tag tag-green">Air Quality</span>
+        <h3>ESP32-P4 Weather Station + SEN66 — Air Quality 10" Display</h3>
+        <p>โปรเจกต์จาก Hackster.io (กันยายน 2026) ใช้ ESP32-P4 + จอ 10 นิ้ว + Sensirion <strong>SEN66 sensor</strong> วัดคุณภาพอากาศครบถ้วน แสดงผล real-time พร้อมส่งข้อมูลไร้สายผ่าน LoRa/ESP-NOW ไปยัง battery-powered sensor node</p>
+        <div class="highlight-box">
+          <strong>SEN66 วัดได้ใน module เดียว:</strong> PM1.0 / PM2.5 / PM4.0 / PM10, VOC Index, NOx Index, อุณหภูมิ, ความชื้น — I2C interface ใช้งานง่าย
+        </div>
+        <ul class="spec-list">
+          <li>Code + BOM พร้อมบน GitHub (open-source MIT license)</li>
+          <li>ESP-NOW ส่งข้อมูลจาก node กลับมาที่ P4 hub</li>
+          <li>LVGL v9 HMI แสดง chart แบบ real-time อัปเดตทุก 1 วินาที</li>
+        </ul>
+      </div>
+
+      <!-- Project 5 -->
+      <div class="card card-orange">
+        <span class="card-tag tag-orange">Smart City</span>
+        <h3>LoRaWAN Smart City Node — Parking + Waste + Air Quality</h3>
+        <p>แนวคิด <strong>multi-function LoRaWAN node</strong> สำหรับเมืองอัจฉริยะ: ใช้ ESP32 + LoRa ติดตั้งทั่วเมือง ตรวจจอดรถ (ultrasonic), ระดับขยะในถัง (ToF VL53L4CD), คุณภาพอากาศ (SEN66) ในกล่องเดียว ส่งข้อมูลผ่าน TTN เข้า platform เมือง</p>
+        <ul class="spec-list">
+          <li>LoRa 868 MHz Class A, ส่ง uplink ทุก 5 นาที</li>
+          <li>Solar 5 W + supercapacitor backup ไม่ต้องเดินสาย</li>
+          <li>Payload ใน Cayenne LPP format compat กับทุก LoRaWAN server</li>
+          <li>Deploy ง่าย: ติดป้ายจราจร หรือเสาไฟถนนได้เลย</li>
+        </ul>
+      </div>
+
+      <!-- Project 6 -->
+      <div class="card card-teal">
+        <span class="card-tag tag-teal">Aura Open Source</span>
+        <h3>Project Aura v1.1 — ESP32 Air Quality Monitor แบบมืออาชีพ</h3>
+        <p>โปรเจกต์ open-source จาก Hackster.io สร้าง AQ monitor คุณภาพระดับ industrial ใช้ ESPHome + Home Assistant ไม่ต้องบัดกรี (solderless assembly) เวอร์ชัน 1.1 เพิ่ม <strong>CO sensor, 0–10 V ventilation control</strong> และ sensor compatibility ที่กว้างขึ้น</p>
+        <ul class="spec-list">
+          <li>Sensor: SEN55 + SCD41 + MQ-7 CO</li>
+          <li>Output 0–10 V ควบคุม HVAC/พัดลม ventilation อัตโนมัติ</li>
+          <li>Firmware: ESPHome YAML ทั้งหมด แก้ไขง่าย ไม่ต้องเขียน code</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════
+       SECTION 3: Sensors น่าสนใจ
+  ══════════════════════════════════ -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-purple">🔬</div>
+      <div>
+        <h2>Sensors น่าสนใจสำหรับโปรเจกต์ใหม่</h2>
+        <p>Hardware ที่คุ้มค่าและขยายความสามารถ ESP32 ได้ทันที</p>
+      </div>
+    </div>
+    <div class="cards-grid">
+
+      <div class="card card-purple">
+        <span class="card-tag tag-purple">Air Quality</span>
+        <h3>Sensirion SEN66 — Multi-Parameter AQ Sensor ครบที่สุด</h3>
+        <p>Sensor ตัวเดียวที่รวม <strong>6 พารามิเตอร์</strong>: PM1.0/2.5/4.0/10, VOC Index, NOx Index, Temperature, Humidity ใน module เดียว ใช้ I2C ง่ายมาก เปิดตัวอย่างเป็นทางการปี 2025-2026 เหมาะแทน SEN54/55</p>
+        <ul class="spec-list">
+          <li>I2C address 0x6B, 5 V power supply</li>
+          <li>Auto cleaning fan ทุก 168 ชั่วโมง ยืดอายุการใช้งาน</li>
+          <li>Library: <code>sensirion/arduino-sps</code> และ <code>sensirion-arduino-core</code></li>
+        </ul>
+      </div>
+
+      <div class="card card-blue">
+        <span class="card-tag tag-blue">Time of Flight</span>
+        <h3>ST VL53L4CD — ToF Ranging สำหรับ Proximity &amp; Level Detection</h3>
+        <p>ToF sensor รุ่นใหม่จาก ST Microelectronics วัดระยะ <strong>1 mm – 1300 mm</strong> ความแม่นยำ ±3 mm ทำงานในแสงสูงสุด 200 klux รองรับ ranging ในงาน smart bin, door detection, liquid level ผ่าน I2C 400 kHz</p>
+        <ul class="spec-list">
+          <li>ขนาดเล็กมาก: 4.9 × 2.5 × 1.56 mm</li>
+          <li>Ultra-low power: 6.5 µA standby, 13 mA active</li>
+          <li>Arduino library: <code>stm32duino/VL53L4CD</code> (MIT)</li>
+        </ul>
+      </div>
+
+      <div class="card card-green">
+        <span class="card-tag tag-green">Magnetic Angle</span>
+        <h3>AS5600 — Magnetic Rotary Position Sensor ราคาถูกแต่แม่น</h3>
+        <p>IC วัดมุมหมุนแบบ contactless ความละเอียด <strong>12-bit (0.0878°)</strong> ใช้แม่เหล็กขนาดเล็กติดที่ shaft ไม่มีชิ้นส่วนเสียดสี อายุยาวนาน เหมาะสำหรับ knob, motor feedback, gimbal, robotic joint</p>
+        <ul class="spec-list">
+          <li>I2C address 0x36 (fixed), ทำงาน 3.3–5 V</li>
+          <li>Output mode: I2C, Analog (0–VDD), PWM</li>
+          <li>ราคา: ~30–50 บาท ถูกกว่า encoder แบบ optical มาก</li>
+          <li>ใช้ใน 3D printer (E-step), CNC และ Robotics</li>
+        </ul>
+      </div>
+
+      <div class="card card-orange">
+        <span class="card-tag tag-orange">Barometric</span>
+        <h3>MS5611 — High-Precision Barometer สำหรับ Altitude &amp; UAV</h3>
+        <p>Barometric pressure sensor ความละเอียด <strong>10 cm altitude resolution</strong> ที่ทำงานที่ SPI/I2C 20 MHz เหมาะสำหรับ drone altimeter, indoor positioning, weather station ความแม่นยำสูง</p>
+        <ul class="spec-list">
+          <li>Range: 10–1200 mbar, Resolution: 0.012 mbar</li>
+          <li>SPI (mode 0 หรือ 3) หรือ I2C 400 kHz</li>
+          <li>ใช้ใน ArduPilot, PX4 flight controller อย่างแพร่หลาย</li>
+          <li>Library: <code>pilotak/MS5611</code> Arduino (MIT)</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════
+       SECTION 4: แหล่งข้อมูล
+  ══════════════════════════════════ -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">📚</div>
+      <div>
+        <h2>แหล่งข้อมูลและเครื่องมือที่แนะนำ</h2>
+        <p>Links อ้างอิงคุณภาพสูงสำหรับ ESP32, LoRaWAN และ Embedded Rust</p>
+      </div>
+    </div>
+    <div class="resource-list">
+
+      <div class="resource-item">
+        <span class="res-icon">📡</span>
+        <div>
+          <h4>LoRaWAN Smart Agriculture with Satellite Connectivity — IoT Business News</h4>
+          <p>รายงานสถานการณ์ LoRaWAN ที่รุกเข้าสู่ Smart Agriculture ปี 2026 รวม case studies จาก Banalytics (Ghana/Brazil), MooField (Australia), MIE Agro Farm (Malaysia)</p>
+          <a href="https://iotbusinessnews.com/2026/07/08/lorawan-pushes-deeper-into-smart-agriculture-with-satellite-backed-connectivity/" class="res-link" target="_blank" rel="noopener">iotbusinessnews.com — LoRaWAN Pushes Deeper Into Smart Agriculture</a>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <span class="res-icon">🦀</span>
+        <div>
+          <h4>Grove Sensors with Rust on ESP32-C6 — Hackster.io (กันยายน 2026)</h4>
+          <p>โปรเจกต์สาธิต 9 ตัวอย่าง Rust no_std บน XIAO ESP32-C6 เชื่อม Grove sensors ผ่าน esp-hal ทำความเข้าใจ embedded Rust ด้วยตัวอย่างจริง</p>
+          <a href="https://www.hackster.io/melastmohican/grove-sensors-with-rust-on-esp32-c6-9f7d62" class="res-link" target="_blank" rel="noopener">hackster.io — Grove Sensors with Rust on ESP32-C6</a>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <span class="res-icon">🖥️</span>
+        <div>
+          <h4>ESP32-P4 Weather Station &amp; Air Quality Monitor — Hackster.io (กันยายน 2026)</h4>
+          <p>โปรเจกต์ open-source ใช้ ESP32-P4 + SEN66 + จอ 10 นิ้ว + LoRa/ESP-NOW Code และ BOM ครบบน GitHub</p>
+          <a href="https://www.hackster.io/harald7/esp32-p4-weather-station-air-quality-monitor-5be856" class="res-link" target="_blank" rel="noopener">hackster.io — ESP32-P4 Weather Station &amp; Air Quality Monitor</a>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <span class="res-icon">⚡</span>
+        <div>
+          <h4>ESPHome 2026.4.0 Release Notes — ESPHome.io</h4>
+          <p>เอกสารอัปเดตอย่างเป็นทางการ รวม breaking changes, signed OTA และการตั้งค่า CPU frequency ใหม่บน ESP32</p>
+          <a href="https://esphome.io/blog/2026/04/15/esphome-2026-4/" class="res-link" target="_blank" rel="noopener">esphome.io — ESPHome 2026.4.0 Release</a>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <span class="res-icon">📖</span>
+        <div>
+          <h4>ESP32-P4 Chip v3.x Upgrade — Espressif Official</h4>
+          <p>เอกสารทางการของ Espressif ที่อธิบาย feature ใหม่ใน ESP32-P4 revision 3.x รวม ISP improvements, clock speed, และ bug fixes</p>
+          <a href="https://www.espressif.com/en/news/ESP32_P4_v3.x_Upgrade" class="res-link" target="_blank" rel="noopener">espressif.com — ESP32-P4 v3.x Upgrade</a>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <span class="res-icon">🦀</span>
+        <div>
+          <h4>esp-hal 1.1.x Documentation — Espressif Rust</h4>
+          <p>เอกสาร API อย่างเป็นทางการสำหรับ esp-hal บน ESP32-C6, S3, C3 พร้อม async support และ embedded-hal traits</p>
+          <a href="https://docs.espressif.com/projects/rust/esp-hal/1.1.1/esp32c6/esp_hal/index.html" class="res-link" target="_blank" rel="noopener">docs.espressif.com — esp-hal 1.1.1 API Reference</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p><strong>ESP32 &amp; IoT Daily Research</strong> · สร้างเมื่อ 6 ตุลาคม 2026</p>
+  <p style="margin-top:0.5rem;">หัวข้อวันนี้: LoRaWAN Long-Range · Rust Embedded (esp-hal 1.1.x) · LVGL v9 HMI · ESPHome 2026.4.0 · SEN66 · VL53L4CD · AS5600 · MS5611</p>
+  <p style="margin-top:0.5rem; color: #475569;">แหล่งอ้างอิง: Espressif Systems, Hackster.io, IoT Business News, ESPHome.io, docs.espressif.com</p>
+</footer>
+
+</body>
+</html>
