@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 9 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.8; }
+
+  header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 60%, #1a2744 100%);
+    border-bottom: 1px solid #2d4a7a;
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.15) 0%, transparent 70%);
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    color: #93c5fd;
+    position: relative;
+    letter-spacing: -0.5px;
+  }
+  header h1 span { color: #60a5fa; }
+  header .meta {
+    margin-top: 0.6rem;
+    color: #94a3b8;
+    font-size: 0.95rem;
+    position: relative;
+  }
+  header .badge-row {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .badge {
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.35);
+    color: #93c5fd;
+    padding: 0.25rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  main { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
+
+  section { margin-bottom: 3rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #1e3a5f;
+  }
+  .section-icon {
+    width: 2.2rem; height: 2.2rem;
+    border-radius: 0.5rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: rgba(59,130,246,0.2); }
+  .icon-green { background: rgba(16,185,129,0.2); }
+  .icon-purple { background: rgba(139,92,246,0.2); }
+  .icon-orange { background: rgba(245,158,11,0.2); }
+
+  .section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #e2e8f0;
+  }
+  .section-header .sub { font-size: 0.82rem; color: #64748b; font-weight: 400; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(390px, 1fr)); gap: 1.25rem; }
+  @media (max-width: 500px) { .card-grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: #1e293b;
+    border: 1px solid #2d3748;
+    border-radius: 0.875rem;
+    padding: 1.35rem 1.4rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: #3b82f6; transform: translateY(-2px); }
+
+  .card-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    margin-bottom: 0.65rem;
+  }
+  .tag-new { background: rgba(16,185,129,0.18); color: #34d399; border: 1px solid rgba(16,185,129,0.35); }
+  .tag-project { background: rgba(139,92,246,0.18); color: #a78bfa; border: 1px solid rgba(139,92,246,0.35); }
+  .tag-sensor { background: rgba(245,158,11,0.18); color: #fbbf24; border: 1px solid rgba(245,158,11,0.35); }
+  .tag-sdk { background: rgba(59,130,246,0.18); color: #60a5fa; border: 1px solid rgba(59,130,246,0.35); }
+  .tag-solar { background: rgba(251,191,36,0.18); color: #fcd34d; border: 1px solid rgba(251,191,36,0.35); }
+  .tag-health { background: rgba(239,68,68,0.18); color: #f87171; border: 1px solid rgba(239,68,68,0.35); }
+  .tag-agri { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card p {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    line-height: 1.75;
+  }
+  .card p strong { color: #cbd5e1; }
+
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(59,130,246,0.06));
+    border: 1px solid rgba(16,185,129,0.25);
+    border-radius: 0.75rem;
+    padding: 1rem 1.2rem;
+    margin-top: 0.9rem;
+  }
+  .highlight-box p { font-size: 0.85rem; color: #86efac; }
+  .highlight-box p strong { color: #4ade80; }
+
+  .spec-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+  .spec-chip {
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.4rem;
+    font-size: 0.78rem;
+    font-family: 'Courier New', monospace;
+  }
+
+  .sensor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.25rem; }
+  @media (max-width: 500px) { .sensor-grid { grid-template-columns: 1fr; } }
+
+  .sensor-card {
+    background: #1e293b;
+    border: 1px solid #2d3748;
+    border-radius: 0.875rem;
+    padding: 1.2rem 1.3rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+  .sensor-card:hover { border-color: #f59e0b; }
+  .sensor-icon {
+    width: 2.8rem; height: 2.8rem;
+    border-radius: 0.6rem;
+    background: rgba(245,158,11,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .sensor-body h3 { font-size: 0.97rem; font-weight: 700; color: #fcd34d; margin-bottom: 0.3rem; }
+  .sensor-body p { font-size: 0.85rem; color: #94a3b8; line-height: 1.65; }
+  .sensor-body .use-case { font-size: 0.8rem; color: #6ee7b7; margin-top: 0.4rem; font-weight: 600; }
+
+  .resources-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; }
+  @media (max-width: 500px) { .resources-grid { grid-template-columns: 1fr; } }
+
+  .resource-card {
+    background: #1e293b;
+    border: 1px solid #2d3748;
+    border-radius: 0.75rem;
+    padding: 1rem 1.2rem;
+    display: flex;
+    gap: 0.9rem;
+    align-items: center;
+    transition: border-color 0.2s;
+  }
+  .resource-card:hover { border-color: #6366f1; }
+  .resource-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .resource-body h4 { font-size: 0.92rem; font-weight: 700; color: #c7d2fe; margin-bottom: 0.2rem; }
+  .resource-body p { font-size: 0.82rem; color: #64748b; }
+
+  footer {
+    background: #0a1020;
+    border-top: 1px solid #1e293b;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: #475569;
+    font-size: 0.85rem;
+  }
+  footer strong { color: #64748b; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚡ ESP32 &amp; <span>Sensor Innovations</span></h1>
+  <div class="meta">📅 9 ตุลาคม 2026 &nbsp;|&nbsp; AI Research Daily &nbsp;|&nbsp; 🔬 5 นวัตกรรม · 6 ไอเดียโปรเจกต์ · 5 Sensors</div>
+  <div class="badge-row">
+    <span class="badge">Zigbee 3.0</span>
+    <span class="badge">Thread 1.3</span>
+    <span class="badge">LoRaWAN TTN</span>
+    <span class="badge">Solar IoT</span>
+    <span class="badge">Health Sensor</span>
+    <span class="badge">Smart Agriculture</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- SECTION 1: นวัตกรรมใหม่ -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🚀</div>
+      <div>
+        <h2>นวัตกรรมและอัปเดตสำคัญ</h2>
+        <div class="sub">Platform Updates · SDK Releases · New Capabilities</div>
+      </div>
+    </div>
+    <div class="card-grid">
+
+      <div class="card">
+        <span class="card-tag tag-new">NEW</span>
+        <h3>ESP32-H2 Zigbee 3.0 + Thread 1.3 — ครบจบในชิปเดียว</h3>
+        <p>ESP32-H2 เป็น RISC-V SoC ตัวแรกของ Espressif ที่มี <strong>IEEE 802.15.4</strong> ในระดับ hardware พร้อม Zigbee-Compliant Platform certified และ Thread-Certified 1.3.0 Component ครบในตัวเดียว มี RAM 320 KB และ BLE 5.2 รองรับทั้ง Mesh Network และ Smart Home ecosystem</p>
+        <div class="spec-row">
+          <span class="spec-chip">RISC-V Single Core</span>
+          <span class="spec-chip">320 KB SRAM</span>
+          <span class="spec-chip">IEEE 802.15.4</span>
+          <span class="spec-chip">BLE 5.2</span>
+          <span class="spec-chip">Zigbee 3.0 + Thread 1.3</span>
+        </div>
+        <div class="highlight-box">
+          <p>ใช้คู่กับ ESP32-S3 (Wi-Fi) → สร้าง <strong>Matter-Zigbee Bridge</strong> หรือ <strong>Thread Border Router</strong> ได้ทันที โดยไม่ต้องพึ่งฮาร์ดแวร์ third-party</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-sdk">SDK</span>
+        <h3>ESP-Matter SDK v1.5 — รองรับ ESP32-C5 + Matter-Zigbee Bridge</h3>
+        <p>ESP-Matter SDK เวอร์ชันล่าสุดรองรับ <strong>ESP32-C5</strong> อย่างเป็นทางการ พร้อม example ใหม่สำหรับ <strong>Matter-Zigbee Light Bridge</strong> ที่ใช้ชิปเดียวรัน dual stack ได้ (สลับโหมดระหว่าง Zigbee และ Matter) เหมาะสำหรับการอัปเกรด Smart Home รุ่นเก่าเข้า Matter ecosystem โดยไม่ต้องเปลี่ยนอุปกรณ์ทั้งหมด</p>
+        <div class="spec-row">
+          <span class="spec-chip">Matter 1.4+</span>
+          <span class="spec-chip">Thread 1.3</span>
+          <span class="spec-chip">ESP32-C5 support</span>
+          <span class="spec-chip">Dual-Stack</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-sdk">HARDWARE</span>
+        <h3>ESP Thread BR + Zigbee GW Board — Gateway สำเร็จรูปจาก Espressif</h3>
+        <p>บอร์ดสำเร็จรูปจาก Espressif ที่รวม <strong>ESP32-S3</strong> (จัดการ Wi-Fi + System) กับ <strong>ESP32-H2</strong> (ทำหน้าที่ Thread + Zigbee radio) บนบอร์ดเดียว ทำให้ได้ Thread Border Router และ Zigbee Gateway ในกล่องเดียว ไม่ต้องต่อวงจรเอง เหมาะสำหรับนักพัฒนาที่ต้องการ Proof-of-Concept ด้าน Smart Home อย่างรวดเร็ว</p>
+        <div class="spec-row">
+          <span class="spec-chip">ESP32-S3 + ESP32-H2</span>
+          <span class="spec-chip">Thread BR</span>
+          <span class="spec-chip">Zigbee GW</span>
+          <span class="spec-chip">Wi-Fi Bridge</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-solar">SOLAR</span>
+        <h3>ESP32-C6 Solar Sensor Node — Ultra-Low Power พร้อม Matter</h3>
+        <p>บอร์ดใหม่สร้างจาก <strong>ESP32-C6 Mini</strong> + แผงโซลาร์เล็ก + แบต LiPo หนึ่งก้อน ออกแบบมาเพื่อ Deploy นอกอาคารโดยไม่มีไฟฟ้า ด้วย Deep Sleep ที่ดึงกระแสเพียง <strong>2.5 µA</strong> ในโหมด Hibernation ทำให้ใช้พลังงานต่ำมาก รองรับ Wi-Fi 6, BLE 5, Zigbee, Thread, Matter ในชิปเดียว</p>
+        <div class="spec-row">
+          <span class="spec-chip">2.5 µA Hibernate</span>
+          <span class="spec-chip">Wi-Fi 6</span>
+          <span class="spec-chip">Solar Charge</span>
+          <span class="spec-chip">Matter Ready</span>
+        </div>
+        <div class="highlight-box">
+          <p>กระแสเมื่อ Wi-Fi active: <strong>160–260 mA</strong> แต่ใน Hibernation: เหลือแค่ <strong>2.5 µA</strong> — Duty Cycle 1 นาที/ชั่วโมง ใช้แบตน้อยมาก!</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-new">PROTOCOL</span>
+        <h3>LoRaWAN Single-Channel Gateway ด้วย XIAO ESP32S3 + Wio-SX1262</h3>
+        <p>Seeed Studio ออก <strong>Wio-SX1262</strong> module ที่เสียบกับ XIAO ESP32-S3 ได้โดยตรง ทำให้สร้าง Single-Channel LoRaWAN Hub ที่เชื่อมกับ TTN (The Things Network) ได้ทันทีผ่านตัวอย่างใน Wiki อย่างเป็นทางการ รองรับ sensor node อย่าง SenseCAP S210x ส่งข้อมูลขึ้น Cloud ด้วย Packet Forwarder บน ESP32</p>
+        <div class="spec-row">
+          <span class="spec-chip">SX1262 LoRa</span>
+          <span class="spec-chip">XIAO ESP32-S3</span>
+          <span class="spec-chip">TTN v3</span>
+          <span class="spec-chip">Single Channel GW</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 2: ไอเดียโปรเจกต์ -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">💡</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+        <div class="sub">Project Ideas · DIY Builds · Prototype Concepts</div>
+      </div>
+    </div>
+    <div class="card-grid">
+
+      <div class="card">
+        <span class="card-tag tag-project">โปรเจกต์</span>
+        <h3>Zigbee Smart Home Hub — ESP32-S3 + ESP32-H2 Bridge</h3>
+        <p>สร้าง <strong>Matter-Zigbee Bridge</strong> ส่วนตัว ด้วย ESP32-S3 (Wi-Fi + System) จับคู่กับ ESP32-H2 (Zigbee radio) ให้อุปกรณ์ Zigbee เก่าๆ เช่น หลอดไฟ Philips Hue, เซ็นเซอร์ Aqara เชื่อมต่อกับ <strong>Apple Home, Google Home, Amazon Alexa</strong> ผ่าน Matter ได้ทันที ไม่ต้องซื้อ hub แพงๆ</p>
+        <div class="spec-row">
+          <span class="spec-chip">ESP32-S3 + H2</span>
+          <span class="spec-chip">Matter Bridge</span>
+          <span class="spec-chip">Zigbee 3.0</span>
+          <span class="spec-chip">ESP-IDF + ESP-Matter</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-project">โปรเจกต์</span>
+        <h3>Portable Health Monitor — ESP32 + MAX30102 + TFLite Micro</h3>
+        <p>อ้างอิงงานวิจัย IIETA ปี 2026 ที่ใช้ <strong>MAX30102 PPG sensor</strong> กับ ESP32 แสดงผลผ่าน TFT display ประมวลผลด้วย TensorFlow Lite Micro จำแนก SpO₂ ด้วย MAPE เพียง <strong>1.8%</strong> และ Heart Rate 2.3% เทียบกับเครื่องมาตรฐาน FDA ทำงานได้ 6 ชั่วโมงต่อชาร์จ พร้อมส่งข้อมูลขึ้น Cloud ผ่าน Wi-Fi</p>
+        <div class="spec-row">
+          <span class="spec-chip">MAX30102</span>
+          <span class="spec-chip">TFLite Micro</span>
+          <span class="spec-chip">SpO₂ + HR</span>
+          <span class="spec-chip">TFT Display</span>
+          <span class="spec-chip">Cloud Upload</span>
+        </div>
+        <div class="highlight-box">
+          <p>เพิ่ม <strong>AD8232 ECG module</strong> เพื่อครบ 3-in-1: PPG + SpO₂ + ECG ในข้อมือเดียวกัน!</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-agri">เกษตรกรรม</span>
+        <h3>Smart Vineyard Monitor — ESP32 + LoRa + Soil Sensors</h3>
+        <p>ออกแบบตาม Proof-of-Concept จากสเปนที่ monitor ไร่องุ่น ด้วย ESP32 nodes กระจายทั่วสวน แต่ละ node วัด <strong>อุณหภูมิ, ความชื้นอากาศ, อุณหภูมิดิน, ความชื้นดิน, และ Soil Matric Potential</strong> ส่งข้อมูลผ่าน LoRa ไปยัง gateway ที่อัปโหลดขึ้น Cloud ผ่าน Wi-Fi (4G fallback) พร้อมเก็บ backup บน SD card</p>
+        <div class="spec-row">
+          <span class="spec-chip">LoRa Mesh</span>
+          <span class="spec-chip">DS18B20</span>
+          <span class="spec-chip">Capacitive Moisture</span>
+          <span class="spec-chip">SD Card Backup</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-solar">Solar</span>
+        <h3>Solar-Powered Irrigation Controller — ESP32 + Auto Watering</h3>
+        <p>ระบบชลประทานอัตโนมัติพลังงานแสงอาทิตย์สำหรับพื้นที่ห่างไกล รับข้อมูลจาก <strong>ความชื้นดิน, อุณหภูมิ, ความชื้นอากาศ, ฝนตก, และระดับน้ำ</strong> ตัดสินใจเปิด-ปิดวาล์วน้ำอัตโนมัติเพื่อไม่ให้รดน้ำซ้ำซ้อนระหว่างฝนตก ทำงานโดยไม่ต้องต่อไฟฟ้า เหมาะกับไร่นาหรือสวนในชนบท</p>
+        <div class="spec-row">
+          <span class="spec-chip">Solar + LiPo</span>
+          <span class="spec-chip">Soil Moisture</span>
+          <span class="spec-chip">Rain Sensor</span>
+          <span class="spec-chip">Solenoid Valve</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-project">โปรเจกต์</span>
+        <h3>Greenhouse Nutrient Monitor — ESP32 + pH + TDS + CO₂</h3>
+        <p>ระบบ monitor โรงเรือนปลูกพืชแบบครบวงจร วัด <strong>pH ของน้ำหล่อเลี้ยง, TDS (Total Dissolved Solids), อุณหภูมิน้ำ, ความชื้นอากาศ, และ CO₂</strong> แสดงผลบน LCD I2C และส่งข้อมูลขึ้น <strong>Firebase Realtime Database</strong> เพื่อ monitor จากมือถือ รองรับการแจ้งเตือนเมื่อค่าผิดปกติ</p>
+        <div class="spec-row">
+          <span class="spec-chip">pH Probe</span>
+          <span class="spec-chip">TDS Sensor</span>
+          <span class="spec-chip">DS18B20</span>
+          <span class="spec-chip">Firebase</span>
+          <span class="spec-chip">I2C LCD</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-project">โปรเจกต์</span>
+        <h3>OpenOx DIY Pulse Oximeter — Open Hardware ESP32</h3>
+        <p>ต่อยอดจาก ProtoCentral <strong>OpenOx</strong> ที่เป็น Open Hardware ใช้ ESP32 WROOM32 คู่กับ <strong>AFE4490</strong> Analog Front-End สำหรับ PPG แม่นยำสูง ออกแบบ wearable ที่แสดงคลื่น PPG waveform แบบ Real-Time, Heart Rate, และ SpO₂ ส่งข้อมูลผ่าน BLE ไปยัง smartphone สามารถ 3D print case ปิดทับได้</p>
+        <div class="spec-row">
+          <span class="spec-chip">AFE4490</span>
+          <span class="spec-chip">ESP32 WROOM32</span>
+          <span class="spec-chip">PPG Waveform</span>
+          <span class="spec-chip">BLE Data</span>
+          <span class="spec-chip">CERN-OHL-P 2.0</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 3: Sensors น่าสนใจ -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔬</div>
+      <div>
+        <h2>Sensors น่าสนใจสำหรับโปรเจกต์ใหม่</h2>
+        <div class="sub">Featured Sensors & ICs · Specifications & Use Cases</div>
+      </div>
+    </div>
+    <div class="sensor-grid">
+
+      <div class="sensor-card">
+        <div class="sensor-icon">❤️</div>
+        <div class="sensor-body">
+          <h3>MAX30102 — PPG Heart Rate & SpO₂</h3>
+          <p>Photoplethysmography sensor พร้อม IR + Red LED ในตัว วัด Heart Rate และ Oxygen Saturation ได้แม่น ใช้ไฟ 3.3V เชื่อมต่อ I2C ขนาดเล็กมาก เหมาะ Wearable</p>
+          <div class="use-case">✅ Wearable health monitor, SpO₂ meter, Pulse logger</div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">💧</div>
+        <div class="sensor-body">
+          <h3>Capacitive Soil Moisture Sensor — ทนทาน ไม่กัดกร่อน</h3>
+          <p>ใช้ Dielectric Property วัดความชื้นดิน ไม่มีขั้ว metal โลหะสัมผัสดินโดยตรง ทำให้ทนทานกว่า resistive แบบเก่ามาก ราคาถูก ใช้ ADC บน ESP32 อ่านค่าโดยตรง</p>
+          <div class="use-case">✅ Smart garden, precision agriculture, greenhouse monitoring</div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">📡</div>
+        <div class="sensor-body">
+          <h3>Semtech SX1262 — LoRa Transceiver รุ่นใหม่</h3>
+          <p>LoRa transceiver ที่ใช้พลังงานต่ำ ส่งได้ไกลถึง 15 กม. ใน LoRaWAN mode เป็น chip ใน Wio-SX1262 ของ Seeed ใช้ SPI เชื่อมต่อ ESP32 รองรับ 868 MHz (EU) และ 915 MHz (US)</p>
+          <div class="use-case">✅ LoRaWAN TTN node, long-range sensor, rural monitoring</div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">🌡️</div>
+        <div class="sensor-body">
+          <h3>DS18B20 — Waterproof Digital Thermometer</h3>
+          <p>Sensor อุณหภูมิ 1-Wire ที่ฝังในปลอกโลหะกันน้ำ แม่นยำ ±0.5°C วัดได้ -55°C ถึง +125°C เหมาะกับน้ำ ดิน และสภาพแวดล้อมชื้น เชื่อมต่อ Single GPIO ต่อได้หลายตัวบนสาย Bus เดียว</p>
+          <div class="use-case">✅ Soil temperature, water temperature, hydroponics, aquaculture</div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">🧪</div>
+        <div class="sensor-body">
+          <h3>TDS Probe — Total Dissolved Solids for Water Quality</h3>
+          <p>วัดความเข้มข้นของสารละลายในน้ำ (ppm) เพื่อตรวจสอบคุณภาพน้ำหรือปุ๋ยในระบบ Hydroponics ค่า TDS สูง = น้ำมีแร่ธาตุมาก วัดด้วย ADC ของ ESP32 ผ่าน module conditioning</p>
+          <div class="use-case">✅ Hydroponics nutrient control, water purification, aquarium monitoring</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 4: แหล่งข้อมูลและลิงก์ -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-green">🔗</div>
+      <div>
+        <h2>แหล่งข้อมูลและเครื่องมือที่แนะนำ</h2>
+        <div class="sub">Documentation · Tutorials · Open Source Projects</div>
+      </div>
+    </div>
+    <div class="resources-grid">
+
+      <div class="resource-card">
+        <div class="resource-icon">📘</div>
+        <div class="resource-body">
+          <h4>ESP-Matter SDK Documentation</h4>
+          <p>เอกสารทางการสำหรับ ESP-Matter — Matter-Zigbee Bridge, Thread Border Router, ตัวอย่างโค้ดครบ</p>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🐙</div>
+        <div class="resource-body">
+          <h4>esp-zigbee-sdk GitHub</h4>
+          <p>Repository อย่างเป็นทางการจาก Espressif สำหรับ Zigbee SDK พร้อม release notes และ examples</p>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🌱</div>
+        <div class="resource-body">
+          <h4>Seeed Wiki — XIAO ESP32-S3 + Wio-SX1262 TTN</h4>
+          <p>Step-by-step guide การสร้าง Single-Channel LoRaWAN Gateway เชื่อม TTN ด้วย XIAO ESP32-S3</p>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🏥</div>
+        <div class="resource-body">
+          <h4>ProtoCentral OpenOx — Open Hardware Pulse Oximeter</h4>
+          <p>Design files, schematic, และ firmware ของ ESP32-based pulse oximeter ใช้ license CERN-OHL-P 2.0</p>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🔬</div>
+        <div class="resource-body">
+          <h4>Zbotic ESP32 Solar-Powered IoT Guide 2026</h4>
+          <p>คู่มือภาษาไทยฉบับสมบูรณ์ในการสร้าง Solar-Powered ESP32 Node พร้อม Deep Sleep optimization</p>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🌾</div>
+        <div class="resource-body">
+          <h4>Arduino Forum — Smart Agriculture LoRa 2026</h4>
+          <p>Thread ชุมชนนักพัฒนาแชร์ประสบการณ์สร้าง Smart Farm ESP32 + LoRa พร้อม code ตัวอย่าง</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <strong>ESP32 &amp; Sensor Innovations Daily</strong> — สร้างโดย AI Research Agent<br>
+  วันที่สร้าง: 9 ตุลาคม 2026 &nbsp;|&nbsp; ข้อมูลอ้างอิงจาก: Espressif Docs, Seeed Studio Wiki, Zbotic.in, Hackster.io, IIETA Journal 2026, NCBInlm.nih.gov, PCBWay
+</footer>
+
+</body>
+</html>
