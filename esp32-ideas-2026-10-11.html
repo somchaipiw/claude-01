@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 11 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1a2744;
+    --accent-blue: #38bdf8;
+    --accent-green: #4ade80;
+    --accent-purple: #a78bfa;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --text-primary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --border: rgba(56, 189, 248, 0.15);
+    --glow-blue: rgba(56, 189, 248, 0.2);
+    --glow-green: rgba(74, 222, 128, 0.15);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, rgba(56,189,248,0.2), rgba(167,139,250,0.2));
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 100px;
+    padding: 0.3rem 1.2rem;
+    font-size: 0.85rem;
+    color: var(--accent-blue);
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+  }
+  header h1 {
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #38bdf8, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header .subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 300;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* Layout */
+  main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  /* Section */
+  section {
+    margin-bottom: 3rem;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .section-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: linear-gradient(135deg, #0ea5e9, #2563eb); }
+  .icon-green { background: linear-gradient(135deg, #16a34a, #15803d); }
+  .icon-purple { background: linear-gradient(135deg, #7c3aed, #9333ea); }
+  .icon-orange { background: linear-gradient(135deg, #ea580c, #dc2626); }
+
+  .section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); gap: 1.25rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem; }
+  .grid-4 { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
+
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .card-blue::before { background: linear-gradient(90deg, #38bdf8, #6366f1); }
+  .card-green::before { background: linear-gradient(90deg, #4ade80, #06b6d4); }
+  .card-purple::before { background: linear-gradient(90deg, #a78bfa, #ec4899); }
+  .card-orange::before { background: linear-gradient(90deg, #fb923c, #f59e0b); }
+
+  .card-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 100px;
+    margin-bottom: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .badge-new { background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); }
+  .badge-hot { background: rgba(251,146,60,0.15); color: #fb923c; border: 1px solid rgba(251,146,60,0.3); }
+  .badge-diy { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+  .badge-ai { background: rgba(167,139,250,0.15); color: #a78bfa; border: 1px solid rgba(167,139,250,0.3); }
+  .badge-sensor { background: rgba(244,114,182,0.15); color: #f472b6; border: 1px solid rgba(244,114,182,0.3); }
+  .badge-industrial { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card-body {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* Spec list */
+  .spec-list {
+    margin-top: 0.8rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .spec-tag {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.78rem;
+    color: #94a3b8;
+  }
+
+  /* Step list */
+  .step-list {
+    margin-top: 0.8rem;
+    counter-reset: steps;
+    list-style: none;
+  }
+  .step-list li {
+    counter-increment: steps;
+    display: flex;
+    gap: 0.7rem;
+    font-size: 0.87rem;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+    align-items: flex-start;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    background: rgba(56,189,248,0.2);
+    color: #38bdf8;
+    font-weight: 700;
+    font-size: 0.7rem;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* Highlight card */
+  .card-highlight {
+    background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(167,139,250,0.08));
+    border-color: rgba(56,189,248,0.25);
+  }
+
+  /* Resource card */
+  .resource-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.2rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.2s;
+  }
+  .resource-card:hover {
+    border-color: rgba(56,189,248,0.4);
+    background: rgba(56,189,248,0.05);
+  }
+  .resource-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #1e40af, #7c3aed);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .resource-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .resource-desc {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+  }
+  .resource-link {
+    font-size: 0.78rem;
+    color: var(--accent-blue);
+    text-decoration: none;
+    opacity: 0.8;
+  }
+  .resource-link:hover { opacity: 1; text-decoration: underline; }
+
+  /* Sensor card special */
+  .sensor-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+  }
+  .sensor-row {
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.78rem;
+  }
+  .sensor-key { color: var(--text-muted); }
+  .sensor-val { color: var(--text-primary); font-weight: 600; }
+
+  /* Footer */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  footer .footer-grid {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .footer-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+  }
+  .source-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+  .source-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  .footer-copy {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    opacity: 0.6;
+  }
+
+  @media (max-width: 640px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .sensor-info { grid-template-columns: 1fr; }
+    .stats-row { gap: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-badge">ESP32 &amp; IoT Daily Digest</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">11 ตุลาคม 2026 · คัดสรรข้อมูลใหม่ล่าสุดสำหรับนักพัฒนา IoT</p>
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-num">4</div>
+      <div class="stat-label">นวัตกรรม</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">6</div>
+      <div class="stat-label">ไอเดียโปรเจกต์</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">5</div>
+      <div class="stat-label">Sensors</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">6</div>
+      <div class="stat-label">แหล่งข้อมูล</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: นวัตกรรมใหม่ ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">⚡</div>
+      <div>
+        <div class="section-title">นวัตกรรมและอัปเดตสำคัญ</div>
+        <div class="section-desc">ชิปรุ่นใหม่, firmware, และ framework อัปเดตล่าสุด</div>
+      </div>
+    </div>
+    <div class="grid-2">
+
+      <div class="card card-blue card-highlight">
+        <span class="card-badge badge-new">ใหม่มาก</span>
+        <div class="card-title">ESP32-S31 — RISC-V 320 MHz + Wi-Fi 6 + Display ในราคา $4</div>
+        <div class="card-body">
+          ชิปตัวใหม่ล่าสุดจาก Espressif ที่เพิ่งเปิดตัว devkit พร้อมหน้าจอ IPS 0.96 นิ้ว ในราคาเพียง $4 โดดเด่นด้วยสถาปัตยกรรม RISC-V ความเร็ว 320 MHz และรองรับ Wi-Fi 6 (802.11ax) รวมถึงมี gigabit Ethernet ผ่าน ESPHome 2026.7.0 ซึ่งรองรับชิปตัวนี้โดยตรง เหมาะสำหรับโปรเจกต์ที่ต้องการแสดงผลข้อมูล real-time พร้อมการเชื่อมต่อ Wi-Fi รวดเร็ว
+        </div>
+        <div class="spec-list">
+          <span class="spec-tag">RISC-V 320 MHz</span>
+          <span class="spec-tag">Wi-Fi 6 (802.11ax)</span>
+          <span class="spec-tag">IPS Display</span>
+          <span class="spec-tag">Gigabit Ethernet</span>
+          <span class="spec-tag">~$4 USD</span>
+        </div>
+      </div>
+
+      <div class="card card-purple">
+        <span class="card-badge badge-new">อัปเดต</span>
+        <div class="card-title">ESP32-P4 Rev 3.x — I2S 160 MHz Clock + Dedicated RNG Module</div>
+        <div class="card-body">
+          Espressif ประกาศ chip revision 3.x ของ ESP32-P4 (พ.ค. 2026) โดยเพิ่ม clock source ขนาด 160 MHz สำหรับ I2S ซึ่งสำคัญมากสำหรับงาน audio processing ความละเอียดสูง นอกจากนี้ยังเพิ่ม dedicated RNG module ใหม่ รองรับ ECC P-384 และ AES ที่ป้องกัน Differential Power Analysis ได้ดีขึ้น ผู้พัฒนาควรอัปเกรด firmware ทันที — โปรดระวัง ROM-770 bug กับ Secure Download Mode บน board revision v3.1
+        </div>
+        <div class="spec-list">
+          <span class="spec-tag">I2S 160 MHz Clock</span>
+          <span class="spec-tag">Dedicated RNG</span>
+          <span class="spec-tag">ECC P-384</span>
+          <span class="spec-tag">AES Anti-DPA</span>
+          <span class="spec-tag">400 MHz Stable</span>
+        </div>
+      </div>
+
+      <div class="card card-green">
+        <span class="card-badge badge-hot">ร้อนแรง</span>
+        <div class="card-title">ESPHome 2026.7.0 — Native ESP-IDF Toolchain + NVS Encryption</div>
+        <div class="card-body">
+          ESPHome เวอร์ชันล่าสุดที่น่าสนใจ: ย้ายไปใช้ native ESP-IDF toolchain เป็น default แทน PlatformIO (build เร็วขึ้นมาก) และเพิ่มฟีเจอร์ความปลอดภัยสำคัญคือ NVS Encryption (เข้ารหัสข้อมูลบน Flash) และ OTA Downgrade Protection ป้องกันการลด firmware เวอร์ชัน นอกจากนี้ยังรองรับ ESP32-S31 ใหม่ รวมถึง Gigabit Ethernet สำหรับ wired smart home devices
+        </div>
+        <div class="spec-list">
+          <span class="spec-tag">Native ESP-IDF Default</span>
+          <span class="spec-tag">NVS Encryption</span>
+          <span class="spec-tag">OTA Downgrade Protection</span>
+          <span class="spec-tag">ESP32-S31 Support</span>
+        </div>
+      </div>
+
+      <div class="card card-orange">
+        <span class="card-badge badge-diy">Open Source</span>
+        <div class="card-title">ESPHome Native Zigbee End-Device — ไม่ต้องมี Hub แยก</div>
+        <div class="card-body">
+          ESPHome 2026.5.x เพิ่ม native Zigbee End-Device support สำหรับ ESP32-C6 และ ESP32-H2 โดยตรง ทำให้สามารถเขียน YAML ง่ายๆ เพื่อสร้าง Zigbee sensor หรือ actuator ได้โดยไม่ต้องใช้ code เพิ่มเติม ประกอบกับการมี ESP32-P4 + ESP32-H2 ทำงานเป็น Zigbee/Thread Gateway บอร์ดเดียว ทำให้การสร้าง smart home ecosystem แบบ local ทำได้ง่ายมากขึ้น
+        </div>
+        <div class="spec-list">
+          <span class="spec-tag">ESP32-C6 + ESP32-H2</span>
+          <span class="spec-tag">YAML Config</span>
+          <span class="spec-tag">Zigbee End-Device</span>
+          <span class="spec-tag">Local Processing</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: ไอเดียโปรเจกต์ ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-green">🔧</div>
+      <div>
+        <div class="section-title">ไอเดียโปรเจกต์ที่น่าสร้าง</div>
+        <div class="section-desc">โปรเจกต์จริงจาก community + ไอเดียต่อยอดสำหรับนักพัฒนา</div>
+      </div>
+    </div>
+    <div class="grid-3">
+
+      <div class="card card-blue">
+        <span class="card-badge badge-diy">Home Automation</span>
+        <div class="card-title">Apple HomeKit Controller ด้วย ESP32 (ไม่มี Hub)</div>
+        <div class="card-body">
+          สร้าง ESP32 device ที่เชื่อมต่อกับ Apple Home โดยตรงผ่าน HomeKit Accessory Protocol (HAP) ไม่ต้องใช้ Hub หรือ Cloud ตัวกลาง เหมาะสำหรับสร้าง smart switch, sensor, หรือ accessory ที่ควบคุมด้วย Siri/iPhone ได้ทันที
+        </div>
+        <ol class="step-list">
+          <li>ใช้ library arduino-homekit-esp32 หรือ esp-idf-homekit</li>
+          <li>กำหนด accessory type (switch, sensor, light ฯลฯ)</li>
+          <li>เชื่อมต่อ Apple Home แบบ manual pairing code</li>
+          <li>Deploy OTA update ผ่าน Wi-Fi</li>
+        </ol>
+        <div class="spec-list">
+          <span class="spec-tag">ESP32-C6 แนะนำ</span>
+          <span class="spec-tag">Wi-Fi 6</span>
+          <span class="spec-tag">Local Only</span>
+        </div>
+      </div>
+
+      <div class="card card-purple">
+        <span class="card-badge badge-ai">Edge AI</span>
+        <div class="card-title">Object Detection Camera ตอบสนอง &lt; 200ms บน ESP32-S3</div>
+        <div class="card-body">
+          ESP32-S3 + กล้อง OV2640 ประมวลผล CNN สำหรับตรวจจับวัตถุบน device โดยตรงโดยไม่ต้องส่งภาพไป Cloud ใช้ Edge Impulse หรือ TensorFlow Lite Micro แปลง model เล็กๆ ให้ทำงานได้ใน latency ต่ำกว่า 200ms เหมาะสำหรับ: ระบบนับคน, ตรวจจับสัตว์, หรือ quality control ในโรงงาน
+        </div>
+        <ol class="step-list">
+          <li>Train model ด้วย Edge Impulse (FOMO หรือ MobileNet)</li>
+          <li>Export เป็น Arduino Library</li>
+          <li>รวมกับ ESP32-S3 Camera Kit</li>
+          <li>ส่ง result ผ่าน MQTT หรือ WebSocket</li>
+        </ol>
+        <div class="spec-list">
+          <span class="spec-tag">TFLite Micro</span>
+          <span class="spec-tag">Edge Impulse</span>
+          <span class="spec-tag">&lt;200ms Latency</span>
+        </div>
+      </div>
+
+      <div class="card card-orange">
+        <span class="card-badge badge-industrial">Industrial</span>
+        <div class="card-title">Predictive Maintenance สำหรับมอเตอร์/คอมเพรสเซอร์</div>
+        <div class="card-body">
+          ใช้ ESP32 + Vibration sensor + Current sensor + Temperature sensor วิเคราะห์สัญญาณ FFT เพื่อทำนายความผิดปกติของมอเตอร์ก่อนที่มันจะพังจริง ระบบนี้มีงานวิจัยรองรับแล้วและมีราคาถูกกว่า Commercial PdM solution มาก
+        </div>
+        <ol class="step-list">
+          <li>ติด vibration + current + temperature sensors</li>
+          <li>ทำ FFT analysis ด้วย arduinoFFT library</li>
+          <li>ส่งข้อมูลขึ้น Firebase / ThingSpeak</li>
+          <li>ตั้ง alert เมื่อ frequency signature ผิดปกติ</li>
+        </ol>
+        <div class="spec-list">
+          <span class="spec-tag">FFT Analysis</span>
+          <span class="spec-tag">Firebase</span>
+          <span class="spec-tag">SVM / LSTM Model</span>
+        </div>
+      </div>
+
+      <div class="card card-green">
+        <span class="card-badge badge-diy">Offline AI</span>
+        <div class="card-title">Offline Voice Control ด้วย ESP32 — ไม่ต้องอินเทอร์เน็ต</div>
+        <div class="card-body">
+          สร้าง voice command system ที่ทำงาน 100% บน device โดยใช้ ESP32-S3 + microphone INMP441 + wake word detection engine เช่น ESP-SR หรือ WakeNet จาก Espressif รู้จำคำสั่งไทย/อังกฤษ เปิด/ปิดไฟ, ควบคุมอุปกรณ์ได้แบบ local ไม่ต้องพึ่ง Cloud เหมาะสำหรับพื้นที่ที่ไม่มีอินเทอร์เน็ต
+        </div>
+        <ol class="step-list">
+          <li>ใช้ ESP32-S3 + INMP441 I2S Microphone</li>
+          <li>ติดตั้ง ESP-SR / WakeNet library</li>
+          <li>กำหนด custom wake word และ commands</li>
+          <li>เชื่อม GPIO หรือ MQTT สำหรับ actuators</li>
+        </ol>
+        <div class="spec-list">
+          <span class="spec-tag">ESP-SR</span>
+          <span class="spec-tag">WakeNet</span>
+          <span class="spec-tag">INMP441</span>
+          <span class="spec-tag">100% Local</span>
+        </div>
+      </div>
+
+      <div class="card card-blue">
+        <span class="card-badge badge-diy">Network Tool</span>
+        <div class="card-title">Wi-Fi Dead Zone Finder ด้วย ESP32 + OLED Display</div>
+        <div class="card-body">
+          พกพาอุปกรณ์เล็กๆ เดินสำรวจสัญญาณ Wi-Fi ในบ้านหรืออาคาร แสดง RSSI แบบ real-time บนหน้าจอ OLED บันทึก heatmap ลง SD card และระบุ dead zone ได้ทันที ต้นทุนต่ำกว่า commercial Wi-Fi analyzer มาก โปรเจกต์นี้ยังสามารถต่อยอดเป็น site survey tool สำหรับมืออาชีพได้
+        </div>
+        <ol class="step-list">
+          <li>ESP32 + SSD1306 OLED + micro SD card</li>
+          <li>สแกน SSID พร้อม RSSI ด้วย WiFi.scanNetworks()</li>
+          <li>บันทึก GPS coordinate (ถ้ามี) + RSSI ลง CSV</li>
+          <li>Plot heatmap บน PC ด้วย Python</li>
+        </ol>
+        <div class="spec-list">
+          <span class="spec-tag">SSD1306</span>
+          <span class="spec-tag">SD Card</span>
+          <span class="spec-tag">CSV Export</span>
+          <span class="spec-tag">Python Heatmap</span>
+        </div>
+      </div>
+
+      <div class="card card-purple">
+        <span class="card-badge badge-sensor">Health IoT</span>
+        <div class="card-title">Air Quality Monitor แบบ Advanced ด้วย BME680 + MQ135</div>
+        <div class="card-body">
+          สร้างระบบตรวจสอบคุณภาพอากาศในบ้าน/ออฟฟิศ รวม CO₂, VOCs, ความชื้น, อุณหภูมิ, ฝุ่น และ gas หลายชนิดพร้อมกัน ส่งข้อมูลขึ้น Dashboard แบบ real-time มีประโยชน์มากในช่วงที่คุณภาพอากาศเป็นปัญหาสาธารณสุข
+        </div>
+        <ol class="step-list">
+          <li>BME680 (VOC + temp + humidity) + MQ135 (CO/CO₂)</li>
+          <li>เพิ่ม PM2.5 sensor (SDS011 หรือ PMS5003)</li>
+          <li>ส่งข้อมูลผ่าน MQTT ไปยัง Grafana/Home Assistant</li>
+          <li>ตั้ง alert เมื่อค่าเกินมาตรฐาน WHO</li>
+        </ol>
+        <div class="spec-list">
+          <span class="spec-tag">BME680</span>
+          <span class="spec-tag">MQ135</span>
+          <span class="spec-tag">MQTT + Grafana</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: Sensors ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-purple">📡</div>
+      <div>
+        <div class="section-title">Sensors น่าสนใจสำหรับโปรเจกต์ใหม่</div>
+        <div class="section-desc">Sensor รุ่นที่คุ้มค่าและใช้ร่วมกับ ESP32 ได้ดี</div>
+      </div>
+    </div>
+    <div class="grid-3">
+
+      <div class="card card-purple">
+        <span class="card-badge badge-sensor">Environmental</span>
+        <div class="card-title">Bosch BME680 — Temperature + Humidity + Pressure + VOC</div>
+        <div class="card-body">
+          Sensor 4-in-1 ที่วัดทั้ง อุณหภูมิ, ความชื้น, ความดันอากาศ และ Volatile Organic Compounds (VOC) ในชิปเดียว ใช้ I2C/SPI ราคาประหยัด เหมาะสำหรับ air quality monitoring แบบ comprehensive
+        </div>
+        <div class="sensor-info">
+          <div class="sensor-row"><div class="sensor-key">Interface</div><div class="sensor-val">I2C / SPI</div></div>
+          <div class="sensor-row"><div class="sensor-key">Voltage</div><div class="sensor-val">1.8 – 3.6V</div></div>
+          <div class="sensor-row"><div class="sensor-key">VOC Range</div><div class="sensor-val">0 – 500 IAQ</div></div>
+          <div class="sensor-row"><div class="sensor-key">ราคา</div><div class="sensor-val">~120 บาท</div></div>
+        </div>
+        <div class="spec-list">
+          <span class="spec-tag">Temp ±1°C</span>
+          <span class="spec-tag">Humidity ±3%</span>
+          <span class="spec-tag">BSEC Library</span>
+        </div>
+      </div>
+
+      <div class="card card-orange">
+        <span class="card-badge badge-industrial">Vibration</span>
+        <div class="card-title">ADXL345 — Digital Accelerometer 3-Axis สำหรับ FFT</div>
+        <div class="card-body">
+          Accelerometer ที่นิยมใช้ใน predictive maintenance เพราะรองรับการอ่านข้อมูลด้วยความเร็วสูง (3200 Hz) เหมาะสำหรับการวิเคราะห์ FFT เพื่อตรวจจับการสั่นของมอเตอร์/เครื่องจักร Interface SPI ความเร็วสูงหรือ I2C ราคาถูก ใช้งานง่ายกับ ESP32
+        </div>
+        <div class="sensor-info">
+          <div class="sensor-row"><div class="sensor-key">Range</div><div class="sensor-val">±2g to ±16g</div></div>
+          <div class="sensor-row"><div class="sensor-key">Sample Rate</div><div class="sensor-val">3200 Hz max</div></div>
+          <div class="sensor-row"><div class="sensor-key">Interface</div><div class="sensor-val">I2C / SPI</div></div>
+          <div class="sensor-row"><div class="sensor-key">ราคา</div><div class="sensor-val">~50 บาท</div></div>
+        </div>
+        <div class="spec-list">
+          <span class="spec-tag">16-bit ADC</span>
+          <span class="spec-tag">FIFO Buffer</span>
+          <span class="spec-tag">Interrupt Output</span>
+        </div>
+      </div>
+
+      <div class="card card-green">
+        <span class="card-badge badge-ai">Microphone</span>
+        <div class="card-title">INMP441 — I2S Digital MEMS Microphone สำหรับ AI Audio</div>
+        <div class="card-body">
+          Microphone ดิจิตอล MEMS ราคาถูกที่ใช้ I2S protocol เชื่อมต่อ ESP32-S3 ได้โดยตรง รองรับ sample rate สูงถึง 44.1 kHz เหมาะสำหรับงาน wake word detection, speech recognition, noise level monitoring และ audio edge AI บน ESP32
+        </div>
+        <div class="sensor-info">
+          <div class="sensor-row"><div class="sensor-key">Interface</div><div class="sensor-val">I2S Digital</div></div>
+          <div class="sensor-row"><div class="sensor-key">Sample Rate</div><div class="sensor-val">ถึง 44.1 kHz</div></div>
+          <div class="sensor-row"><div class="sensor-key">SNR</div><div class="sensor-val">61 dB</div></div>
+          <div class="sensor-row"><div class="sensor-key">ราคา</div><div class="sensor-val">~35 บาท</div></div>
+        </div>
+        <div class="spec-list">
+          <span class="spec-tag">MEMS</span>
+          <span class="spec-tag">Omnidirectional</span>
+          <span class="spec-tag">ESP-SR Compatible</span>
+        </div>
+      </div>
+
+      <div class="card card-blue">
+        <span class="card-badge badge-sensor">Air Quality</span>
+        <div class="card-title">MQ135 — Multi-Gas Sensor (NH₃, NOx, Alcohol, CO₂)</div>
+        <div class="card-body">
+          Sensor วัดก๊าซหลายชนิดพร้อมกัน ราคาถูกมาก เหมาะสำหรับ air quality monitoring เบื้องต้น ต้องผ่านการ calibrate ก่อนใช้งาน และต้องระวังผล false positive จากความชื้นและอุณหภูมิ ใช้คู่กับ BME680 เพื่อ compensate สภาพแวดล้อม
+        </div>
+        <div class="sensor-info">
+          <div class="sensor-row"><div class="sensor-key">Output</div><div class="sensor-val">Analog + Digital</div></div>
+          <div class="sensor-row"><div class="sensor-key">Voltage</div><div class="sensor-val">5V (3.3V ได้)</div></div>
+          <div class="sensor-row"><div class="sensor-key">Warm-up</div><div class="sensor-val">24 ชั่วโมง</div></div>
+          <div class="sensor-row"><div class="sensor-key">ราคา</div><div class="sensor-val">~25 บาท</div></div>
+        </div>
+        <div class="spec-list">
+          <span class="spec-tag">NH₃ / NOx</span>
+          <span class="spec-tag">CO₂ Proxy</span>
+          <span class="spec-tag">Requires Calibration</span>
+        </div>
+      </div>
+
+      <div class="card card-purple">
+        <span class="card-badge badge-diy">Camera</span>
+        <div class="card-title">OV2640 + ESP32-S3 — 2MP Camera Module สำหรับ Edge Vision</div>
+        <div class="card-body">
+          Camera sensor ราคาถูกที่ผสานกับ ESP32-S3 ได้สมบูรณ์แบบ รองรับ JPEG compression บน hardware ทำให้ส่งภาพได้เร็วโดยไม่กิน CPU มาก รองรับ PSRAM เพิ่มเติมสำหรับ buffer ภาพขนาดใหญ่ เหมาะสำหรับ face detection, object detection และ visual monitoring project
+        </div>
+        <div class="sensor-info">
+          <div class="sensor-row"><div class="sensor-key">Resolution</div><div class="sensor-val">2 Megapixel</div></div>
+          <div class="sensor-row"><div class="sensor-key">Interface</div><div class="sensor-val">DVP / MIPI</div></div>
+          <div class="sensor-row"><div class="sensor-key">FPS</div><div class="sensor-val">ถึง 30 FPS</div></div>
+          <div class="sensor-row"><div class="sensor-key">ราคา</div><div class="sensor-val">~80 บาท</div></div>
+        </div>
+        <div class="spec-list">
+          <span class="spec-tag">JPEG HW Encode</span>
+          <span class="spec-tag">ESP-WHO Compatible</span>
+          <span class="spec-tag">PSRAM Required</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: แหล่งข้อมูล ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔗</div>
+      <div>
+        <div class="section-title">แหล่งข้อมูลและลิงก์ที่แนะนำ</div>
+        <div class="section-desc">เว็บไซต์และชุมชนที่ช่วยให้คุณไม่พลาดอัปเดต ESP32</div>
+      </div>
+    </div>
+    <div class="grid-3">
+
+      <div class="resource-card">
+        <div class="resource-icon">🏠</div>
+        <div>
+          <div class="resource-title">ESPHome Official Blog</div>
+          <div class="resource-desc">Release notes ล่าสุด ESPHome 2026.7.0 + Native Zigbee + NVS Encryption</div>
+          <a class="resource-link" href="https://esphome.io/blog/tags/releases/" target="_blank">esphome.io/blog</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">📊</div>
+        <div>
+          <div class="resource-title">Espressif Official News</div>
+          <div class="resource-desc">ข่าวอัปเดต ESP32-P4 Rev 3.x, ESP32-C61 และชิปใหม่จาก Espressif</div>
+          <a class="resource-link" href="https://www.espressif.com/en/news/espressif_news" target="_blank">espressif.com/news</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🎓</div>
+        <div>
+          <div class="resource-title">Zbotic IIoT Tutorials</div>
+          <div class="resource-desc">Guide เขียน FFT vibration monitoring + Predictive maintenance บน ESP32</div>
+          <a class="resource-link" href="https://zbotic.in/tag/iiot/" target="_blank">zbotic.in/tag/iiot</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">⚙️</div>
+        <div>
+          <div class="resource-title">CircuitDigest — ESP32 Projects</div>
+          <div class="resource-desc">โปรเจกต์ ESP32 แบบ step-by-step อัปเดตถึง ก.ย. 2026 รวม doorbell, fall detection</div>
+          <a class="resource-link" href="https://circuitdigest.com/esp32-projects" target="_blank">circuitdigest.com/esp32-projects</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🔬</div>
+        <div>
+          <div class="resource-title">Hackatronic — Sensor Projects</div>
+          <div class="resource-desc">Tutorial Air Quality Monitor ด้วย BME680 พร้อม code สมบูรณ์</div>
+          <a class="resource-link" href="https://hackatronic.com/tag/bme680" target="_blank">hackatronic.com</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">📱</div>
+        <div>
+          <div class="resource-title">Geeky Gadgets — ESP32 Roundup 2026</div>
+          <div class="resource-desc">5 โปรเจกต์ ESP32 ที่น่าทำในปี 2026: HomeKit, Voice Control, Wi-Fi Scanner</div>
+          <a class="resource-link" href="https://www.geeky-gadgets.com/esp32-projects-worth-building-2026/" target="_blank">geeky-gadgets.com</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-title">แหล่งอ้างอิงข้อมูล</div>
+    <div class="source-list">
+      <span class="source-chip">esphome.io</span>
+      <span class="source-chip">espressif.com</span>
+      <span class="source-chip">zbotic.in</span>
+      <span class="source-chip">circuitdigest.com</span>
+      <span class="source-chip">hackatronic.com</span>
+      <span class="source-chip">geeky-gadgets.com</span>
+      <span class="source-chip">letsdatascience.com</span>
+      <span class="source-chip">zenodo.org</span>
+    </div>
+    <div class="footer-copy">
+      สร้างโดย AI Researcher อัตโนมัติ · 11 ตุลาคม 2026 · ข้อมูลทั้งหมดอ้างอิงจากแหล่งข่าวสาธารณะ
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
