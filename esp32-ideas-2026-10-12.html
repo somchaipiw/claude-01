@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 12 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #263045;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent1: #38bdf8;
+    --accent2: #818cf8;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --tag-bg: #1e3a5f;
+    --tag-text: #7dd3fc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    font-size: 16px;
+  }
+  a { color: var(--accent1); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1a2744 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(56,189,248,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 50%, rgba(129,140,248,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2));
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent1), var(--accent2), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header p.subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 1.2rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  .stat-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .stat-chip strong { color: var(--accent1); }
+
+  /* Layout */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  /* Section title */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .section-icon {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .icon-blue  { background: rgba(56,189,248,0.15); }
+  .icon-purple{ background: rgba(129,140,248,0.15); }
+  .icon-green { background: rgba(52,211,153,0.15); }
+  .icon-orange{ background: rgba(251,146,60,0.15); }
+  .section-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .section-header h2 span { color: var(--accent1); }
+
+  /* Card grid */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.4rem 1.5rem;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    border-color: var(--accent1);
+    transform: translateY(-2px);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 1rem 1rem 0 0;
+  }
+  .card.blue::before   { background: linear-gradient(90deg, var(--accent1), var(--accent2)); }
+  .card.green::before  { background: linear-gradient(90deg, var(--accent3), var(--accent1)); }
+  .card.purple::before { background: linear-gradient(90deg, var(--accent2), var(--accent5)); }
+  .card.orange::before { background: linear-gradient(90deg, var(--accent4), var(--accent5)); }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+    line-height: 1.7;
+  }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: auto; }
+  .tag {
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    letter-spacing: 0.03em;
+  }
+  .tag.green { background: rgba(52,211,153,0.12); color: var(--accent3); }
+  .tag.purple { background: rgba(129,140,248,0.12); color: var(--accent2); }
+  .tag.orange { background: rgba(251,146,60,0.12); color: var(--accent4); }
+  .tag.pink { background: rgba(244,114,182,0.12); color: var(--accent5); }
+
+  /* Highlight box */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(56,189,248,0.06), rgba(129,140,248,0.06));
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .highlight-box h3 {
+    color: var(--accent1);
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .highlight-box p { color: var(--text-muted); font-size: 0.92rem; }
+  .highlight-box ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 0.75rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.4rem;
+  }
+  .highlight-box ul li {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    padding-left: 1rem;
+    position: relative;
+  }
+  .highlight-box ul li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--accent1);
+  }
+
+  /* Resources */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .resource-card .r-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent4);
+  }
+  .resource-card h3 { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+  .resource-card p { font-size: 0.83rem; color: var(--text-muted); }
+  .resource-card a {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent1);
+    margin-top: 0.2rem;
+  }
+
+  /* Footer */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 2;
+  }
+  footer strong { color: var(--text); }
+
+  @media (max-width: 600px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .resource-grid { grid-template-columns: 1fr; }
+    .stats-row { gap: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily ESP32 Research</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">12 ตุลาคม 2026 &nbsp;|&nbsp; รวบรวมข้อมูลล่าสุดโดย AI Research Agent</p>
+  <div class="stats-row">
+    <div class="stat-chip"><strong>4</strong> นวัตกรรมใหม่</div>
+    <div class="stat-chip"><strong>5</strong> ไอเดียโปรเจกต์</div>
+    <div class="stat-chip"><strong>5</strong> Sensor แนะนำ</div>
+    <div class="stat-chip"><strong>6</strong> แหล่งอ้างอิง</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- SECTION 1: นวัตกรรม -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">⚡</div>
+      <h2><span>นวัตกรรมและอัปเดต</span>สำคัญ</h2>
+    </div>
+
+    <div class="highlight-box">
+      <h3>ESP32-E22 — ชิปใหม่ Wi-Fi 6E ตัวแรกจาก Espressif (CES 2026)</h3>
+      <p>
+        Espressif เปิดตัว <strong>ESP32-E22</strong> ที่งาน CES 2026 ในฐานะ Wi-Fi 6E Connectivity Co-Processor ตัวแรก
+        รองรับสามย่านความถี่ 2.4 / 5 / 6 GHz พร้อม Bluetooth 5.4/6.0 ผ่าน PCIe 2.0 หรือ SDIO
+        และเพิ่งผ่านการรับรอง <strong>Wi-Fi CERTIFIED 6E</strong> (มิถุนายน 2026) พร้อม Linux Driver แบบ Open-Source
+      </p>
+      <ul>
+        <li>Dual-core RISC-V สูงสุด 500 MHz</li>
+        <li>ทดสอบ iperf ได้ถึง 2.1 Gbps</li>
+        <li>RAM 1 MB ในตัว + 41 GPIO</li>
+        <li>รองรับ PCIe 2.0 และ SDIO interface</li>
+        <li>Linux drivers ปล่อย GitHub แล้ว (มิ.ย. 2026)</li>
+        <li>Engineering samples พร้อมจัดส่ง</li>
+      </ul>
+    </div>
+
+    <div class="card-grid">
+      <div class="card blue">
+        <h3>ESP32-P4 + ESP32-C5 — บอร์ดแรกรองรับ Raspberry Pi MIPI</h3>
+        <p>
+          บอร์ดใหม่ที่วางขายตั้งแต่พฤษภาคม 2026 รวม ESP32-P4 (มีพลัง multimedia) กับ ESP32-C5 (Wi-Fi 6 dual-band)
+          ไว้ด้วยกัน รองรับขั้วต่อ MIPI CSI/DSI แบบ Raspberry Pi ใช้กล้องและหน้าจอของ RPi ได้เลย
+          ทำให้ต้นทุน HMI ลดลงมาก
+        </p>
+        <div class="tag-row">
+          <span class="tag">ESP32-P4</span>
+          <span class="tag">ESP32-C5</span>
+          <span class="tag green">MIPI CSI/DSI</span>
+          <span class="tag purple">Wi-Fi 6</span>
+        </div>
+      </div>
+
+      <div class="card purple">
+        <h3>ESP-IDF v6.x + BMI270 IMU Component รองรับแล้ว</h3>
+        <p>
+          Espressif ออก component <strong>bmi270_sensor</strong> เวอร์ชัน 0.1.2 (กรกฎาคม 2026)
+          รองรับ ESP-IDF v6.0 ถึง v6.2 และ ESP32-S3 รุ่นใหม่ พร้อมเปลี่ยนไปใช้ New I2C Driver API
+          ซึ่งเป็น breaking change จาก legacy — ต้องอัปเกรดโปรเจกต์เก่าด้วย
+        </p>
+        <div class="tag-row">
+          <span class="tag">BMI270</span>
+          <span class="tag purple">ESP-IDF v6</span>
+          <span class="tag">IMU 6-axis</span>
+          <span class="tag green">New I2C API</span>
+        </div>
+      </div>
+
+      <div class="card green">
+        <h3>Matter Camera บน ESP32-P4 — รองรับ Matter 1.5 (มกราคม 2026)</h3>
+        <p>
+          Espressif เผยแพร่ตัวอย่าง Matter Camera ที่รันบน ESP32-P4 พร้อมรองรับ Matter 1.5
+          สามารถสตรีมวิดีโอไปยัง Matter Controller และ Smart Home Hub ต่าง ๆ ได้โดยตรง
+          นับเป็นก้าวแรกของกล้องรักษาความปลอดภัยแบบ Open Standard
+        </p>
+        <div class="tag-row">
+          <span class="tag">ESP32-P4</span>
+          <span class="tag green">Matter 1.5</span>
+          <span class="tag">Camera</span>
+          <span class="tag purple">Smart Home</span>
+        </div>
+      </div>
+
+      <div class="card orange">
+        <h3>DHT22 Clone Library — RMT Peripheral แก้ปัญหาเซ็นเซอร์ปลอม</h3>
+        <p>
+          Library ใหม่ (กุมภาพันธ์ 2026) จัดการ DHT22 ปลอมที่รายงานอุณหภูมิลบผิดปกติ
+          ใช้ <strong>RMT peripheral</strong> ของ ESP32 อ่านค่าแบบ hardware-based ทนต่อ interrupt จาก Wi-Fi/BLE
+          รองรับ ESP32, S2, S3 และ C3
+        </p>
+        <div class="tag-row">
+          <span class="tag">DHT22</span>
+          <span class="tag orange">RMT Peripheral</span>
+          <span class="tag">Temperature</span>
+          <span class="tag green">Interrupt-safe</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: ไอเดียโปรเจกต์ -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">💡</div>
+      <h2><span>ไอเดียโปรเจกต์</span>ที่น่าสร้าง</h2>
+    </div>
+
+    <div class="card-grid">
+      <div class="card blue">
+        <h3>Light Pollution Meter — วัดมลพิษแสงด้วย ESP32 + MQTT</h3>
+        <p>
+          วัดค่าความสว่างท้องฟ้า (Sky Brightness) ด้วยเซ็นเซอร์แสง พร้อมวัดอุณหภูมิ-ความชื้น
+          ส่งข้อมูลผ่าน MQTT ไปเก็บ database ระยะไกล เหมาะสำหรับโปรเจกต์วิจัยคืนดาวหรือ
+          พื้นที่อนุรักษ์ธรรมชาติ ข้อมูล long-term วิเคราะห์แนวโน้มมลพิษแสงได้
+        </p>
+        <div class="tag-row">
+          <span class="tag">TSL2591</span>
+          <span class="tag">BME280</span>
+          <span class="tag green">MQTT</span>
+          <span class="tag purple">Data Logger</span>
+        </div>
+      </div>
+
+      <div class="card orange">
+        <h3>3D Printer Enclosure Monitor — ตรวจ VOC + ฝุ่นอัตโนมัติ</h3>
+        <p>
+          ติดตั้ง ESP32 ในตู้ครอบเครื่องพิมพ์ 3 มิติ วัดระดับ VOC (ก๊าซพิษจาก filament) และ
+          ฝุ่น PM2.5 เมื่อเกินค่าขีดจำกัดจะสั่งเปิดพัดลมระบายอากาศพร้อมฟิลเตอร์อัตโนมัติ
+          แสดงผลแบบ real-time บน dashboard และแจ้งเตือนผ่าน Home Assistant
+        </p>
+        <div class="tag-row">
+          <span class="tag orange">SGP30 VOC</span>
+          <span class="tag">PMS5003</span>
+          <span class="tag purple">Home Assistant</span>
+          <span class="tag green">Automation</span>
+        </div>
+      </div>
+
+      <div class="card green">
+        <h3>Dual-Axis Solar Tracker — MicroPython + 4 LDR Sensors</h3>
+        <p>
+          ใช้เซ็นเซอร์แสง 4 ตัวในตำแหน่ง N/S/E/W เปรียบเทียบค่าเพื่อหาทิศที่สว่างที่สุด
+          ควบคุม servo 2 แกนด้วย MicroPython มี Sensitivity Threshold ปรับได้เพื่อป้องกัน
+          การขยับโดยไม่จำเป็น ช่วยเพิ่มประสิทธิภาพแผงโซลาร์ได้ถึง 30%
+        </p>
+        <div class="tag-row">
+          <span class="tag green">MicroPython</span>
+          <span class="tag">LDR x4</span>
+          <span class="tag">Servo Motor</span>
+          <span class="tag orange">Solar Energy</span>
+        </div>
+      </div>
+
+      <div class="card purple">
+        <h3>Smart Mailbox Notifier — ESP-NOW + Solar Repeater Node</h3>
+        <p>
+          วาง ESP32 ในกล่องไปรษณีย์ที่อยู่ไกลจากบ้าน ส่งสัญญาณผ่าน ESP-NOW โดยมี
+          โหนด solar-powered repeater ช่วยขยายระยะ เหมาะสำหรับบ้านในชนบทที่ Wi-Fi ไม่ถึง
+          แจ้งเตือนทันทีเมื่อมีจดหมายหรือพัสดุมาส่ง
+        </p>
+        <div class="tag-row">
+          <span class="tag purple">ESP-NOW</span>
+          <span class="tag orange">Solar Powered</span>
+          <span class="tag green">Deep Sleep</span>
+          <span class="tag">Reed Switch</span>
+        </div>
+      </div>
+
+      <div class="card blue">
+        <h3>AI HVAC Fault Diagnosis — ESP32-C6 + เสียง + Thermal Imaging</h3>
+        <p>
+          วิเคราะห์เสียงผิดปกติจากเครื่องปรับอากาศด้วย microphone + ESP32-C6 และผนวกกับ
+          ภาพ thermal camera (MLX90640) ตรวจหาความร้อนผิดปกติ รันโมเดล TinyML จำแนก
+          ความผิดปกติได้ก่อนพัง ลดค่าซ่อมบำรุงในโรงงานและอาคาร
+        </p>
+        <div class="tag-row">
+          <span class="tag">ESP32-C6</span>
+          <span class="tag purple">TinyML</span>
+          <span class="tag orange">MLX90640</span>
+          <span class="tag green">Predictive Maintenance</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: Sensors -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">🔬</div>
+      <h2><span>Sensors</span> น่าสนใจสำหรับโปรเจกต์ใหม่</h2>
+    </div>
+
+    <div class="card-grid">
+      <div class="card green">
+        <h3>TSL2591 — High Dynamic Range Light Sensor</h3>
+        <p>
+          เซ็นเซอร์วัดความสว่างช่วงกว้างมาก (600,000,000:1 dynamic range) แยก Full Spectrum
+          และ Infrared ออกจากกัน เหมาะสำหรับ light pollution meter และระบบ auto-brightness
+          ใช้งานผ่าน I2C ง่าย มี library Arduino พร้อม
+        </p>
+        <div class="tag-row">
+          <span class="tag green">I2C</span>
+          <span class="tag">Lux Sensor</span>
+          <span class="tag">Low Power</span>
+          <span class="tag purple">Adafruit</span>
+        </div>
+      </div>
+
+      <div class="card orange">
+        <h3>SGP30 — VOC &amp; eCO₂ Gas Sensor</h3>
+        <p>
+          เซ็นเซอร์ตรวจวัด Volatile Organic Compounds (VOC) และ equivalent CO₂ ในอากาศ
+          เหมาะสำหรับ indoor air quality monitor และตรวจสารพิษในตู้ 3D Printer
+          มี baseline compensation algorithm ในตัว ทำงานผ่าน I2C
+        </p>
+        <div class="tag-row">
+          <span class="tag orange">VOC</span>
+          <span class="tag">eCO₂</span>
+          <span class="tag green">I2C</span>
+          <span class="tag purple">Air Quality</span>
+        </div>
+      </div>
+
+      <div class="card purple">
+        <h3>BMI270 — 6-Axis IMU สำหรับ Wearable</h3>
+        <p>
+          IMU 6 แกน (Accelerometer + Gyroscope) ประหยัดพลังงานสูง จาก Bosch
+          ออกแบบมาสำหรับ wearable device มี built-in gesture recognition และ step counter
+          Espressif ออก ESP-IDF component รองรับแล้วตั้งแต่ IDF v6.0 (กรกฎาคม 2026)
+        </p>
+        <div class="tag-row">
+          <span class="tag purple">Accel + Gyro</span>
+          <span class="tag green">ESP-IDF v6</span>
+          <span class="tag">Wearable</span>
+          <span class="tag orange">SPI/I2C</span>
+        </div>
+      </div>
+
+      <div class="card blue">
+        <h3>PMS5003 — Laser Particle Sensor PM1/PM2.5/PM10</h3>
+        <p>
+          เซ็นเซอร์ฝุ่นแบบ laser scattering วัด PM1.0, PM2.5 และ PM10 แบบ real-time
+          ใช้งานผ่าน UART, มี library สำหรับ ESP32 โดยตรง เหมาะกับ indoor air quality
+          monitor, 3D printer enclosure และสถานีตรวจวัดอากาศกลางแจ้ง
+        </p>
+        <div class="tag-row">
+          <span class="tag">PM2.5</span>
+          <span class="tag green">UART</span>
+          <span class="tag blue">Laser</span>
+          <span class="tag purple">Air Quality</span>
+        </div>
+      </div>
+
+      <div class="card orange">
+        <h3>MLX90640 — Thermal Camera Array 32×24</h3>
+        <p>
+          กล้อง thermal แบบ array 32×24 pixel ผ่าน I2C อัปเดต frame rate สูงสุด 64 Hz
+          เหมาะสำหรับ HVAC monitoring, การตรวจจับการเคลื่อนไหว และ predictive maintenance
+          บน ESP32-S3 หรือ ESP32-P4 ประมวลผล heatmap ได้แบบ real-time
+        </p>
+        <div class="tag-row">
+          <span class="tag orange">Thermal</span>
+          <span class="tag purple">I2C</span>
+          <span class="tag green">32×24px</span>
+          <span class="tag">Melexis</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: Resources -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">📚</div>
+      <h2><span>แหล่งข้อมูล</span>และลิงก์แนะนำ</h2>
+    </div>
+
+    <div class="resource-grid">
+      <div class="resource-card">
+        <span class="r-label">Official</span>
+        <h3>Espressif Developer Portal — ESP32-E22</h3>
+        <p>ข้อมูล spec และข่าวเปิดตัว Wi-Fi 6E co-processor ตัวแรก</p>
+        <a href="https://www.espressif.com/en/products/socs/esp32-e22" target="_blank">espressif.com →</a>
+      </div>
+      <div class="resource-card">
+        <span class="r-label">News</span>
+        <h3>CNX Software — ESP32-E22 Wi-Fi CERTIFIED 6E</h3>
+        <p>รายงานการรับรอง Wi-Fi CERTIFIED 6E และ open-source Linux driver (มิ.ย. 2026)</p>
+        <a href="https://www.cnx-software.com" target="_blank">cnx-software.com →</a>
+      </div>
+      <div class="resource-card">
+        <span class="r-label">News</span>
+        <h3>Circuit Digest — ESP32-E22 Introduction</h3>
+        <p>บทความรายละเอียด spec ทั้งหมดของ ESP32-E22 connectivity co-processor</p>
+        <a href="https://circuitdigest.com/news/espressif-introduces-esp32-e22-its-first-wi-fi-6e-connectivity-co-processor" target="_blank">circuitdigest.com →</a>
+      </div>
+      <div class="resource-card">
+        <span class="r-label">Component</span>
+        <h3>Espressif Components — bmi270_sensor v0.1.2</h3>
+        <p>ESP-IDF component สำหรับ BMI270 IMU รองรับ IDF v6.0–v6.2</p>
+        <a href="https://components.espressif.com/components/espressif/bmi270_sensor" target="_blank">components.espressif.com →</a>
+      </div>
+      <div class="resource-card">
+        <span class="r-label">Tutorial</span>
+        <h3>DFRobot — ESP32-C6 Matter Smart Light</h3>
+        <p>คู่มือสร้าง Matter smart bulb บน FireBeetle ESP32-C6 ตั้งแต่ต้นจนจบ</p>
+        <a href="https://community.dfrobot.com/makelog-313735.html" target="_blank">community.dfrobot.com →</a>
+      </div>
+      <div class="resource-card">
+        <span class="r-label">Library</span>
+        <h3>Arduino Library — DHT22 Clone ESP32</h3>
+        <p>Library แก้ปัญหา DHT22 ปลอมด้วย RMT peripheral ทนต่อ Wi-Fi interrupt</p>
+        <a href="https://www.arduinolibraries.info/libraries/dht22_clone_esp32" target="_blank">arduinolibraries.info →</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>
+    <strong>ESP32 &amp; Sensor Innovations</strong> &nbsp;|&nbsp; สร้างโดย AI Research Agent อัตโนมัติ
+  </p>
+  <p>วันที่สร้าง: 12 ตุลาคม 2026 &nbsp;|&nbsp; แหล่งอ้างอิง: Espressif, CNX Software, Circuit Digest, DFRobot, Arduino Libraries Info</p>
+  <p>ข้อมูลนี้รวบรวมจากแหล่งข่าวสาธารณะ — ตรวจสอบ datasheet และ official docs ก่อนนำไปใช้งานจริงเสมอ</p>
+</footer>
+
+</body>
+</html>
