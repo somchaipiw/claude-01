@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 14 ตุลาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.8; }
+
+  header {
+    background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 40%, #10b981 100%);
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; top: -40%; left: -20%;
+    width: 60%; height: 200%;
+    background: rgba(255,255,255,0.06);
+    transform: rotate(-20deg);
+  }
+  header::after {
+    content: '';
+    position: absolute; bottom: -30%; right: -10%;
+    width: 40%; height: 200%;
+    background: rgba(255,255,255,0.04);
+    transform: rotate(15deg);
+  }
+  header h1 { font-size: 2rem; font-weight: 700; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.3); position: relative; z-index: 1; }
+  header .subtitle { font-size: 1rem; color: rgba(255,255,255,0.85); margin-top: 0.5rem; position: relative; z-index: 1; }
+  .badge-row { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.2rem; position: relative; z-index: 1; }
+  .badge { background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 0.3rem 1rem; border-radius: 999px; font-size: 0.82rem; font-weight: 600; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+  .section-title {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-size: 1.35rem; font-weight: 700; color: #38bdf8;
+    border-left: 4px solid #0ea5e9;
+    padding-left: 1rem; margin: 2.5rem 0 1.5rem;
+  }
+  .section-title .icon { font-size: 1.5rem; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: #0ea5e9; transform: translateY(-3px); }
+
+  .card-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+  .card-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; flex-shrink: 0;
+  }
+  .blue   { background: linear-gradient(135deg,#0ea5e9,#06b6d4); }
+  .green  { background: linear-gradient(135deg,#10b981,#059669); }
+  .purple { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
+  .orange { background: linear-gradient(135deg,#f59e0b,#d97706); }
+  .pink   { background: linear-gradient(135deg,#ec4899,#be185d); }
+  .teal   { background: linear-gradient(135deg,#14b8a6,#0d9488); }
+
+  .card-title { font-size: 1rem; font-weight: 700; color: #f1f5f9; line-height: 1.4; }
+  .card-sub   { font-size: 0.78rem; color: #94a3b8; margin-top: 0.2rem; }
+  .card-body  { font-size: 0.88rem; color: #cbd5e1; line-height: 1.75; }
+
+  .tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.9rem; }
+  .tag { background: #0f172a; border: 1px solid #334155; color: #94a3b8; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.72rem; font-weight: 600; }
+  .tag.accent { border-color: #0ea5e9; color: #38bdf8; }
+
+  .spec-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; margin-top: 0.75rem; }
+  .spec-table tr:not(:last-child) { border-bottom: 1px solid #1e293b; }
+  .spec-table td { padding: 0.4rem 0.5rem; }
+  .spec-table td:first-child { color: #94a3b8; width: 45%; font-weight: 600; }
+  .spec-table td:last-child { color: #e2e8f0; }
+
+  .highlight-box {
+    background: linear-gradient(135deg, #0c2230, #0d2b1e);
+    border: 1px solid #0ea5e9;
+    border-radius: 0.75rem; padding: 1.2rem 1.4rem; margin-top: 1rem;
+  }
+  .highlight-box .label { font-size: 0.72rem; font-weight: 700; color: #0ea5e9; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .highlight-box p { font-size: 0.86rem; color: #94a3b8; }
+
+  .step-list { list-style: none; padding: 0; margin-top: 0.75rem; }
+  .step-list li { display: flex; gap: 0.75rem; margin-bottom: 0.6rem; align-items: flex-start; font-size: 0.86rem; color: #cbd5e1; }
+  .step-num { background: #0ea5e9; color: #fff; width: 22px; height: 22px; border-radius: 50%; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 0.15rem; }
+
+  .code-block {
+    background: #0f172a; border: 1px solid #334155;
+    border-radius: 0.5rem; padding: 0.85rem 1rem;
+    font-family: 'Courier New', monospace; font-size: 0.78rem;
+    color: #a5f3fc; overflow-x: auto; margin-top: 0.75rem;
+    white-space: pre;
+  }
+
+  .divider { border: none; border-top: 1px solid #1e293b; margin: 2rem 0; }
+
+  .info-pill { display: inline-block; background: #1e3a5f; color: #93c5fd; border: 1px solid #2563eb; border-radius: 999px; padding: 0.15rem 0.75rem; font-size: 0.72rem; font-weight: 600; }
+  .warn-pill { display: inline-block; background: #3b2000; color: #fcd34d; border: 1px solid #d97706; border-radius: 999px; padding: 0.15rem 0.75rem; font-size: 0.72rem; font-weight: 600; }
+  .new-pill  { display: inline-block; background: #052e16; color: #6ee7b7; border: 1px solid #059669; border-radius: 999px; padding: 0.15rem 0.75rem; font-size: 0.72rem; font-weight: 600; }
+
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 1rem; }
+  .resource-item {
+    background: #1e293b; border: 1px solid #334155; border-radius: 0.75rem;
+    padding: 1rem 1.2rem; display: flex; gap: 0.9rem; align-items: center;
+    text-decoration: none; color: inherit; transition: border-color 0.2s;
+  }
+  .resource-item:hover { border-color: #38bdf8; }
+  .resource-item .r-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .resource-item .r-title { font-size: 0.9rem; font-weight: 700; color: #f1f5f9; }
+  .resource-item .r-desc  { font-size: 0.78rem; color: #94a3b8; margin-top: 0.15rem; }
+
+  footer {
+    background: #0a0f1e; border-top: 1px solid #1e293b;
+    padding: 2rem; text-align: center; font-size: 0.82rem; color: #64748b;
+  }
+  footer strong { color: #94a3b8; }
+
+  @media (max-width: 640px) {
+    header h1 { font-size: 1.4rem; }
+    .card-grid { grid-template-columns: 1fr; }
+    main { padding: 1.5rem 1rem 3rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">ระบบตรวจวัดคุณภาพน้ำ · ESP32-C61 · Energy Harvesting · Smart Agriculture</p>
+  <div class="badge-row">
+    <span class="badge">14 ตุลาคม 2569</span>
+    <span class="badge">4 หัวข้อหลัก</span>
+    <span class="badge">6 Sensors</span>
+    <span class="badge">4 โปรเจกต์</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- SECTION 1: ESP32-C61 -->
+  <h2 class="section-title"><span class="icon">🔵</span> นวัตกรรม ESP32 ใหม่: ESP32-C61</h2>
+  <div class="card-grid">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon blue">⚡</div>
+        <div>
+          <div class="card-title">ESP32-C61 — RISC-V + Wi-Fi 6 + BLE 5 ราคาประหยัด</div>
+          <div class="card-sub"><span class="new-pill">Mass Production 2025 | จัดจำหน่าย 2026</span></div>
+        </div>
+      </div>
+      <div class="card-body">
+        Espressif เปิดตัว ESP32-C61 ให้เป็นซีรีส์ SoC รุ่นประหยัดสำหรับ IoT ที่ต้องการ <strong>Wi-Fi 6</strong> และ <strong>Bluetooth 5 LE</strong> พร้อมกัน บน RISC-V Core 32-bit ทำงานที่ 160 MHz รองรับฟีเจอร์ Wi-Fi 6 ครบ เช่น OFDMA, MU-MIMO, Target Wake Time (TWT) สำหรับการประหยัดพลังงานสูงสุด<br><br>
+        จุดเด่นสำคัญ: รองรับ <strong>External PSRAM</strong>, Bluetooth Mesh 1.1, Extended Advertising และ Coded PHY — เหมาะกับ Matter, Zigbee-friendly mesh และ BLE IoT ระดับ production
+      </div>
+      <table class="spec-table">
+        <tr><td>Core</td><td>RISC-V 32-bit @ 160 MHz</td></tr>
+        <tr><td>Wi-Fi</td><td>Wi-Fi 6 (802.11ax) 2.4 GHz</td></tr>
+        <tr><td>Bluetooth</td><td>BLE 5.0 (LE), Mesh 1.1</td></tr>
+        <tr><td>PSRAM</td><td>External PSRAM supported</td></tr>
+        <tr><td>Flash</td><td>External SPI Flash</td></tr>
+        <tr><td>Wi-Fi 6 Features</td><td>OFDMA, MU-MIMO, TWT</td></tr>
+        <tr><td>สถานะ</td><td>จัดจำหน่ายผ่าน Mouser ก.พ. 2026</td></tr>
+      </table>
+      <div class="tag-row">
+        <span class="tag accent">RISC-V</span>
+        <span class="tag accent">Wi-Fi 6</span>
+        <span class="tag accent">BLE 5</span>
+        <span class="tag">Matter Ready</span>
+        <span class="tag">Low Power</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon teal">🔋</div>
+        <div>
+          <div class="card-title">Target Wake Time (TWT) — ประหยัดพลังงานใน Wi-Fi 6</div>
+          <div class="card-sub">ฟีเจอร์ที่เปลี่ยนเกม IoT ใช้ถ่านได้นานขึ้น</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <strong>TWT (Target Wake Time)</strong> คือฟีเจอร์สำคัญใน Wi-Fi 6 ที่ให้ AP กำหนดเวลาที่ชัดเจนว่า device ควร "ตื่น" เพื่อส่งรับข้อมูล แล้วกลับไป deep sleep ในเวลาที่เหลือ ผลลัพธ์คือ ESP32-C61 ใช้พลังงานน้อยกว่า Wi-Fi 4 มาก เหมาะกับ:<br>
+        <ul class="step-list" style="margin-top:0.5rem">
+          <li><span class="step-num">1</span>เซ็นเซอร์ IoT ที่ส่งข้อมูลทุก 5–60 นาที</li>
+          <li><span class="step-num">2</span>Smart meter ที่ต้องการอายุแบตเตอรี่ 3–5 ปี</li>
+          <li><span class="step-num">3</span>Asset tracker ในโรงงานหรือโกดัง</li>
+          <li><span class="step-num">4</span>อุปกรณ์ Matter ที่ประหยัดพลังงาน</li>
+        </ul>
+      </div>
+      <div class="highlight-box">
+        <div class="label">ทำไมถึงสำคัญกว่า ESP32-C6</div>
+        <p>ESP32-C61 ถูกออกแบบมาให้ BOM ราคาต่ำกว่า C6 เหมาะสำหรับ mass production ในปริมาณมาก ขณะที่ยังคงสเปก Wi-Fi 6 ครบถ้วน</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SECTION 2: Water Quality Sensors -->
+  <h2 class="section-title"><span class="icon">💧</span> Sensors วัดคุณภาพน้ำ</h2>
+  <div class="card-grid">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon blue">🧪</div>
+        <div>
+          <div class="card-title">Atlas Scientific EZO-pH — pH Circuit มืออาชีพ</div>
+          <div class="card-sub">UART/I2C · ความแม่นยำ ±0.002 pH · อุตสาหกรรม</div>
+        </div>
+      </div>
+      <div class="card-body">
+        Atlas Scientific EZO-pH เป็น module วัดค่า pH ระดับมืออาชีพที่ใช้กันอย่างแพร่หลายในห้องปฏิบัติการ อุตสาหกรรมอาหาร และระบบ aquaculture มีทั้งโหมด UART และ I2C ทำให้ต่อกับ ESP32 ได้ง่าย อ่านค่า pH ได้ในช่วง 0–14 ด้วยความแม่นยำสูง
+      </div>
+      <table class="spec-table">
+        <tr><td>ย่าน pH</td><td>0.001 – 14.000</td></tr>
+        <tr><td>ความแม่นยำ</td><td>±0.002 pH</td></tr>
+        <tr><td>Interface</td><td>UART / I2C (สลับได้)</td></tr>
+        <tr><td>Calibration</td><td>1, 2 หรือ 3 จุด (pH 4/7/10)</td></tr>
+        <tr><td>แรงดัน</td><td>3.3V – 5V</td></tr>
+        <tr><td>อุณหภูมิ</td><td>1°C – 99°C</td></tr>
+      </table>
+      <div class="tag-row">
+        <span class="tag accent">pH</span>
+        <span class="tag accent">I2C</span>
+        <span class="tag">Aquaculture</span>
+        <span class="tag">Lab Grade</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon green">🌊</div>
+        <div>
+          <div class="card-title">DFRobot SEN0189 — Turbidity Sensor</div>
+          <div class="card-sub">Analog/Digital · ตรวจความขุ่นของน้ำ</div>
+        </div>
+      </div>
+      <div class="card-body">
+        SEN0189 ใช้หลักการวัดแสงผ่านน้ำ (optical transmittance) เพื่อประเมินความขุ่น-ใส ของน้ำ ยิ่งมีอนุภาคแขวนลอยมาก แสงก็ผ่านได้น้อยลง ค่าที่ได้ออกมาเป็น Analog voltage หรือ Digital signal เหมาะกับระบบตรวจสอบน้ำดื่ม, น้ำเสีย หรือบ่อเลี้ยงสัตว์น้ำ
+      </div>
+      <table class="spec-table">
+        <tr><td>Output</td><td>Analog (0–4.5V) / Digital</td></tr>
+        <tr><td>แรงดัน</td><td>5V DC</td></tr>
+        <tr><td>Turbidity Range</td><td>0 – 3000 NTU</td></tr>
+        <tr><td>Response Time</td><td>&lt; 500 ms</td></tr>
+        <tr><td>Waterproof</td><td>หัว probe กันน้ำ IP68</td></tr>
+      </table>
+      <div class="tag-row">
+        <span class="tag accent">Turbidity</span>
+        <span class="tag accent">Analog</span>
+        <span class="tag">NTU</span>
+        <span class="tag">IP68</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon purple">⚗️</div>
+        <div>
+          <div class="card-title">DFRobot SEN0244 — Gravity TDS Sensor</div>
+          <div class="card-sub">Total Dissolved Solids · ตรวจคุณภาพน้ำดื่ม</div>
+        </div>
+      </div>
+      <div class="card-body">
+        TDS (Total Dissolved Solids) วัดปริมาณของแข็งที่ละลายอยู่ในน้ำทั้งหมด ค่า TDS ต่ำหมายถึงน้ำสะอาด ค่าสูงหมายถึงมีแร่ธาตุหรือสารปนเปื้อนมาก SEN0244 ออกแบบให้ต่อกับ ESP32 ง่ายผ่าน Analog pin พร้อม compensation อุณหภูมิ
+      </div>
+      <table class="spec-table">
+        <tr><td>ย่านวัด</td><td>0 – 1000 ppm</td></tr>
+        <tr><td>ความแม่นยำ</td><td>±10% F.S.</td></tr>
+        <tr><td>Temp Compensation</td><td>1–50°C</td></tr>
+        <tr><td>Interface</td><td>Analog (ADC)</td></tr>
+        <tr><td>แรงดัน</td><td>3.3 – 5.5V</td></tr>
+      </table>
+      <div class="tag-row">
+        <span class="tag accent">TDS</span>
+        <span class="tag accent">PPM</span>
+        <span class="tag">Drinking Water</span>
+        <span class="tag">Analog</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon orange">🌡️</div>
+        <div>
+          <div class="card-title">ADS1115 — 16-bit ADC ความแม่นยำสูง</div>
+          <div class="card-sub">I2C · 4 Channel · เหมาะกับเซ็นเซอร์น้ำทุกประเภท</div>
+        </div>
+      </div>
+      <div class="card-body">
+        ESP32 มี ADC 12-bit ในตัว แต่มีปัญหาเรื่อง non-linearity โดยเฉพาะช่วง 3.1–3.3V การใช้ <strong>ADS1115</strong> เป็น external ADC 16-bit ผ่าน I2C ช่วยเพิ่มความแม่นยำในการอ่านค่าเซ็นเซอร์น้ำ (pH, TDS, Turbidity) ได้อย่างมาก รองรับ 4 ช่องวัดพร้อมกัน
+      </div>
+      <table class="spec-table">
+        <tr><td>Resolution</td><td>16-bit (15-bit + sign)</td></tr>
+        <tr><td>Interface</td><td>I2C (up to 3.4 MHz)</td></tr>
+        <tr><td>Channels</td><td>4 Single-ended / 2 Differential</td></tr>
+        <tr><td>PGA Range</td><td>±256 mV – ±6.144V</td></tr>
+        <tr><td>Sample Rate</td><td>8 – 860 SPS</td></tr>
+        <tr><td>แรงดัน</td><td>2.0 – 5.5V</td></tr>
+      </table>
+      <div class="tag-row">
+        <span class="tag accent">ADC</span>
+        <span class="tag accent">16-bit</span>
+        <span class="tag">I2C</span>
+        <span class="tag">High Precision</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon pink">💡</div>
+        <div>
+          <div class="card-title">INA226 — Power/Current Monitor</div>
+          <div class="card-sub">I2C · ตรวจสอบกระแสและพลังงานในระบบ IoT</div>
+        </div>
+      </div>
+      <div class="card-body">
+        INA226 เป็น High-Side / Low-Side Current Monitor 16-bit ที่วัดทั้งกระแส, แรงดัน และกำลังไฟฟ้าในตัวเดียว เหมาะสำหรับ monitor พลังงานในระบบ solar-powered ESP32, วัดการใช้กระแสของปั๊มน้ำในระบบ water quality หรือ track พลังงานแบตเตอรี่แบบ real-time
+      </div>
+      <table class="spec-table">
+        <tr><td>Voltage Range</td><td>0 – 36V (bus voltage)</td></tr>
+        <tr><td>Current Sense</td><td>±81.92 mV max differential</td></tr>
+        <tr><td>Resolution</td><td>16-bit ADC</td></tr>
+        <tr><td>Interface</td><td>I2C (16 addresses)</td></tr>
+        <tr><td>Power Output</td><td>คำนวณ Watt อัตโนมัติ</td></tr>
+      </table>
+      <div class="tag-row">
+        <span class="tag accent">Power Monitor</span>
+        <span class="tag accent">I2C</span>
+        <span class="tag">Solar</span>
+        <span class="tag">Battery</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon teal">🌱</div>
+        <div>
+          <div class="card-title">Capacitive Soil Moisture V2.0 — เซ็นเซอร์ความชื้นดิน</div>
+          <div class="card-sub">Capacitive · ไม่เกิด Corrosion · ทนทาน</div>
+        </div>
+      </div>
+      <div class="card-body">
+        ตัวเซ็นเซอร์ความชื้นดินรุ่น Capacitive (ไม่ใช่ Resistive) ไม่ปล่อยกระแสไฟผ่านดิน จึงไม่เกิดการกัดกร่อนที่ probe เหมาะสำหรับใช้งานยาวนานในสวน เกษตรกรรม หรือการทดสอบ greenhouse อ่านค่าเป็น Analog voltage แล้ว map เป็น % ความชื้น
+      </div>
+      <table class="spec-table">
+        <tr><td>Sensor Type</td><td>Capacitive (ไม่เป็นสนิม)</td></tr>
+        <tr><td>Output</td><td>Analog 0–3.3V</td></tr>
+        <tr><td>แรงดัน</td><td>3.3 – 5.5V</td></tr>
+        <tr><td>ความยาว probe</td><td>~98 mm</td></tr>
+        <tr><td>อายุการใช้งาน</td><td>นานกว่า Resistive มาก</td></tr>
+      </table>
+      <div class="tag-row">
+        <span class="tag accent">Soil Moisture</span>
+        <span class="tag accent">Capacitive</span>
+        <span class="tag">Agriculture</span>
+        <span class="tag">No Corrosion</span>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 3: Projects -->
+  <h2 class="section-title"><span class="icon">🛠️</span> ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+  <div class="card-grid">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon blue">🏞️</div>
+        <div>
+          <div class="card-title">Smart River Water Quality Station</div>
+          <div class="card-sub">ESP32 + pH + Turbidity + TDS + Temp + MQTT Dashboard</div>
+        </div>
+      </div>
+      <div class="card-body">
+        สร้างสถานีตรวจสอบคุณภาพน้ำในแม่น้ำหรืออ่างเก็บน้ำแบบ real-time ส่งข้อมูลทุก 10 นาทีผ่าน Wi-Fi ไปยัง Grafana dashboard แจ้งเตือนทาง LINE Notify เมื่อค่าเกินมาตรฐาน
+      </div>
+      <ul class="step-list">
+        <li><span class="step-num">1</span>ESP32 + ADS1115 อ่านค่า pH, TDS, Turbidity พร้อมกัน</li>
+        <li><span class="step-num">2</span>DS18B20 วัดอุณหภูมิน้ำสำหรับ temperature compensation</li>
+        <li><span class="step-num">3</span>ส่งข้อมูลผ่าน MQTT ไปยัง InfluxDB + Grafana</li>
+        <li><span class="step-num">4</span>Solar panel + 18650 battery + INA226 monitor พลังงาน</li>
+        <li><span class="step-num">5</span>เคส waterproof IP67 ติดตั้งริมน้ำ</li>
+      </ul>
+      <div class="highlight-box">
+        <div class="label">Use Case จริง</div>
+        <p>เหมาะกับชุมชนใกล้โรงงานอุตสาหกรรม สวนเกษตร บ่อเลี้ยงปลา หรือโครงการวิจัยสิ่งแวดล้อม</p>
+      </div>
+      <div class="tag-row">
+        <span class="tag accent">Water Quality</span>
+        <span class="tag accent">MQTT</span>
+        <span class="tag">Grafana</span>
+        <span class="tag">Solar</span>
+        <span class="tag">LINE Notify</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon green">☀️</div>
+        <div>
+          <div class="card-title">Solar-Powered ESP32-C61 Ambient IoT Tag</div>
+          <div class="card-sub">Energy Harvesting · Batteryless · Wi-Fi 6 TWT</div>
+        </div>
+      </div>
+      <div class="card-body">
+        ใช้ ESP32-C61 พร้อมฟีเจอร์ TWT ของ Wi-Fi 6 สร้าง asset tag ที่ไม่ต้องชาร์จแบตเตอรี่ ใช้แผง solar ขนาดเล็ก + supercapacitor แทนแบตเตอรี่ ตัว device จะ "ตื่น" ส่งข้อมูล แล้วกลับไป sleep ตามตารางที่กำหนดกับ Wi-Fi 6 AP
+      </div>
+      <ul class="step-list">
+        <li><span class="step-num">1</span>แผง Solar 5V 100mA + CN3791 Solar Charging PMIC</li>
+        <li><span class="step-num">2</span>Supercapacitor 10F สำหรับ buffer พลังงาน</li>
+        <li><span class="step-num">3</span>ESP32-C61 ใช้ TWT wake ทุก 15 นาที</li>
+        <li><span class="step-num">4</span>อ่านค่าเซ็นเซอร์ (อุณหภูมิ, ความชื้น) แล้วส่ง MQTT</li>
+        <li><span class="step-num">5</span>INA226 monitor พลังงาน solar + consumption</li>
+      </ul>
+      <div class="highlight-box">
+        <div class="label">เป้าหมาย</div>
+        <p>อายุการใช้งาน "ไม่จำกัด" ด้วย solar เหมาะกับ indoor ที่มีแสงน้อย เช่น โกดัง หรือ greenhouse</p>
+      </div>
+      <div class="tag-row">
+        <span class="tag accent">ESP32-C61</span>
+        <span class="tag accent">TWT</span>
+        <span class="tag">Solar</span>
+        <span class="tag">Supercapacitor</span>
+        <span class="tag">Batteryless</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon purple">🌾</div>
+        <div>
+          <div class="card-title">Precision Farm Node — ESP-NOW Mesh + Solar</div>
+          <div class="card-sub">ESP32 + Soil Sensors + LoRa Gateway + Irrigation Control</div>
+        </div>
+      </div>
+      <div class="card-body">
+        ระบบ node ตรวจสอบแปลงเกษตรแบบ mesh network โดยใช้ ESP-NOW สำหรับการสื่อสาร latency ต่ำระหว่าง node ในพื้นที่ใกล้ และ LoRa สำหรับส่งข้อมูลรวมออกนอกฟาร์ม งานวิจัยจากมหาวิทยาลัยในตูนีเซียพิสูจน์ว่า packet delivery ratio เกิน 95% ที่ระยะ 2 km
+      </div>
+      <ul class="step-list">
+        <li><span class="step-num">1</span>Sensor Node: ESP32 + Capacitive Soil Moisture + DHT22 + LDR</li>
+        <li><span class="step-num">2</span>ESP-NOW mesh ระหว่าง node ในฟาร์ม (ระยะ 200m)</li>
+        <li><span class="step-num">3</span>Gateway: ESP32 + LoRa SX1276 ส่งข้อมูลออกไปยัง server</li>
+        <li><span class="step-num">4</span>Relay module ควบคุม solenoid valve สำหรับ drip irrigation</li>
+        <li><span class="step-num">5</span>แต่ละ node ใช้ solar 5W + 18650 2 ก้อน</li>
+      </ul>
+      <div class="tag-row">
+        <span class="tag accent">ESP-NOW</span>
+        <span class="tag accent">LoRa</span>
+        <span class="tag">Irrigation</span>
+        <span class="tag">Mesh</span>
+        <span class="tag">Smart Farm</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon orange">🚰</div>
+        <div>
+          <div class="card-title">Home Water Purifier Monitor</div>
+          <div class="card-sub">ESP32 + TDS + Flow Meter + Filter Life Tracking</div>
+        </div>
+      </div>
+      <div class="card-body">
+        ติดตาม performance ของเครื่องกรองน้ำที่บ้านแบบ real-time วัดค่า TDS ทั้งก่อนและหลังกรอง คำนวณประสิทธิภาพ filter นับปริมาณน้ำผ่าน flow meter และแจ้งเตือนผ่าน Home Assistant เมื่อถึงเวลาเปลี่ยน filter
+      </div>
+      <ul class="step-list">
+        <li><span class="step-num">1</span>SEN0244 TDS sensor สองจุด (ก่อน–หลัง filter)</li>
+        <li><span class="step-num">2</span>YF-S201 Hall Effect Flow Meter นับ liter ที่ผ่าน</li>
+        <li><span class="step-num">3</span>ESP32 คำนวณ filter efficiency % แบบ real-time</li>
+        <li><span class="step-num">4</span>OLED แสดงผล + MQTT ส่งไปยัง Home Assistant</li>
+        <li><span class="step-num">5</span>Automation: แจ้งเตือนเมื่อ TDS สูงเกิน threshold หรือ filter ใช้ครบ 500L</li>
+      </ul>
+      <div class="highlight-box">
+        <div class="label">ค่าใช้จ่ายโดยประมาณ</div>
+        <p>ESP32 (~180฿) + TDS x2 (~400฿) + Flow Meter (~120฿) + OLED (~80฿) รวมประมาณ 800–900 บาท</p>
+      </div>
+      <div class="tag-row">
+        <span class="tag accent">TDS</span>
+        <span class="tag accent">Flow Meter</span>
+        <span class="tag">Home Assistant</span>
+        <span class="tag">OLED</span>
+        <span class="tag">Filter Monitor</span>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 4: Code Example -->
+  <h2 class="section-title"><span class="icon">💻</span> ตัวอย่าง Code — อ่าน TDS + Turbidity ด้วย ADS1115</h2>
+  <div class="card">
+    <div class="card-body">
+      ตัวอย่างนี้ใช้ ADS1115 อ่านค่าเซ็นเซอร์ TDS และ Turbidity พร้อมกัน พร้อม temperature compensation จาก DS18B20 (ที่ channel 3)
+    </div>
+    <div class="code-block">#include &lt;Wire.h&gt;
+#include &lt;Adafruit_ADS1X15.h&gt;
+#include &lt;OneWire.h&gt;
+#include &lt;DallasTemperature.h&gt;
+
+Adafruit_ADS1115 ads;
+OneWire oneWire(4);
+DallasTemperature tempSensor(&oneWire);
+
+void setup() {
+  Serial.begin(115200);
+  ads.begin();  // I2C address 0x48 (ADDR pin to GND)
+  ads.setGain(GAIN_ONE);  // ±4.096V range
+  tempSensor.begin();
+}
+
+float readTDS(float voltage, float temperature) {
+  float compensationCoeff = 1.0 + 0.02 * (temperature - 25.0);
+  float compVoltage = voltage / compensationCoeff;
+  return (133.42 * pow(compVoltage, 3)
+        - 255.86 * pow(compVoltage, 2)
+        + 857.39 * compVoltage) * 0.5;
+}
+
+float readTurbidity(float voltage) {
+  if (voltage &lt; 2.5) return 3000.0;  // Max NTU
+  return -1120.4 * sq(voltage) + 5742.3 * voltage - 4353.8;
+}
+
+void loop() {
+  tempSensor.requestTemperatures();
+  float temp = tempSensor.getTempCByIndex(0);
+
+  float tdsV     = ads.readADC_SingleEnded(0) * 0.1875 / 1000.0;
+  float turbidV  = ads.readADC_SingleEnded(1) * 0.1875 / 1000.0;
+
+  float tds      = readTDS(tdsV, temp);
+  float turbidity = readTurbidity(turbidV);
+
+  Serial.printf("Temp: %.1f°C | TDS: %.0f ppm | Turbidity: %.0f NTU\n",
+                temp, tds, turbidity);
+  delay(5000);
+}</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 5: Resources -->
+  <h2 class="section-title"><span class="icon">🔗</span> แหล่งข้อมูลและเครื่องมือที่แนะนำ</h2>
+  <div class="resource-grid">
+    <a class="resource-item" href="https://www.espressif.com/en/news/ESP32-C61_SoC" target="_blank" rel="noopener">
+      <span class="r-icon">📡</span>
+      <div>
+        <div class="r-title">ESP32-C61 Official Announcement</div>
+        <div class="r-desc">Espressif.com — ข้อมูลทางการ ESP32-C61 SoC</div>
+      </div>
+    </a>
+    <a class="resource-item" href="https://www.espressif.com/en/news/C61_Mass_Production" target="_blank" rel="noopener">
+      <span class="r-icon">🏭</span>
+      <div>
+        <div class="r-title">ESP32-C61 Mass Production</div>
+        <div class="r-desc">ประกาศเริ่มผลิตจำนวนมาก — Espressif</div>
+      </div>
+    </a>
+    <a class="resource-item" href="https://www.elecrow.com/sharepj/build-a-water-quality-analyzer-from-esp32-1429.html" target="_blank" rel="noopener">
+      <span class="r-icon">💧</span>
+      <div>
+        <div class="r-title">ESP32 Water Quality Analyzer</div>
+        <div class="r-desc">Elecrow Tutorial — pH + Conductivity + Turbidity</div>
+      </div>
+    </a>
+    <a class="resource-item" href="https://docs.cirkitdesigner.com/project/published/e021fa4d-0934-4172-ab33-b1a2a6e4ff4f/esp32-based-water-quality-monitoring-system-with-ph-tds-and-turbidity-sensors" target="_blank" rel="noopener">
+      <span class="r-icon">🔧</span>
+      <div>
+        <div class="r-title">ESP32 Water Monitoring Circuit</div>
+        <div class="r-desc">Cirkit Designer — pH + TDS + Turbidity Wiring</div>
+      </div>
+    </a>
+    <a class="resource-item" href="https://www.abiresearch.com/press/emerging-ecosystem-of-energy-harvesting-drives-1.1-billion-ambient-iot-device-shipments-in-2030" target="_blank" rel="noopener">
+      <span class="r-icon">☀️</span>
+      <div>
+        <div class="r-title">Ambient IoT Energy Harvesting 2030</div>
+        <div class="r-desc">ABI Research — 1.1 พันล้านอุปกรณ์ภายในปี 2030</div>
+      </div>
+    </a>
+    <a class="resource-item" href="https://pure.jbnu.ac.kr/en/publications/field-validated-hybrid-esp-now-and-long-range-iot-monitoring-syst" target="_blank" rel="noopener">
+      <span class="r-icon">🌾</span>
+      <div>
+        <div class="r-title">ESP-NOW + LoRa Precision Agriculture</div>
+        <div class="r-desc">วิจัย Field-Validated Hybrid IoT สำหรับฟาร์ม</div>
+      </div>
+    </a>
+    <a class="resource-item" href="https://zbotic.in/smart-agriculture-project-for-engineering-students-india/" target="_blank" rel="noopener">
+      <span class="r-icon">📚</span>
+      <div>
+        <div class="r-title">Smart Agriculture with ESP32</div>
+        <div class="r-desc">Zbotic — คู่มือ ESP32 Smart Farm 2026</div>
+      </div>
+    </a>
+    <a class="resource-item" href="https://www.etechnophiles.com/new-esp32-projects-you-must-try/" target="_blank" rel="noopener">
+      <span class="r-icon">💡</span>
+      <div>
+        <div class="r-title">50 New ESP32 Projects 2026</div>
+        <div class="r-desc">eTechnophiles — โปรเจกต์ ESP32 ที่น่าลองในปี 2026</div>
+      </div>
+    </a>
+  </div>
+
+</main>
+
+<footer>
+  <strong>ESP32 &amp; Sensor Innovations Daily</strong><br>
+  สร้างโดย AI Researcher อัตโนมัติ · 14 ตุลาคม 2569<br>
+  หัวข้อ: ESP32-C61 · Water Quality Sensors · Energy Harvesting · Smart Agriculture<br>
+  <br>
+  แหล่งอ้างอิง: Espressif Official, Mouser Electronics, DFRobot, Atlas Scientific, ABI Research, Elecrow, Cirkit Designer, Zbotic, eTechnophiles
+</footer>
+
+</body>
+</html>
