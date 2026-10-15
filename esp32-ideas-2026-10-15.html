@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 &amp; Sensor Innovations - 15 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.8;
+  }
+
+  header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 50%, #1a2e4a 100%);
+    border-bottom: 2px solid #334155;
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #60a5fa, #a78bfa, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .header-meta {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+  .header-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(59,130,246,0.2);
+    border: 1px solid rgba(59,130,246,0.4);
+    color: #93c5fd;
+    border-radius: 9999px;
+    padding: 0.15rem 0.75rem;
+    font-size: 0.78rem;
+    margin: 0.2rem;
+  }
+
+  main { max-width: 960px; margin: 0 auto; padding: 2rem 1.25rem 3rem; }
+
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin: 2.5rem 0 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #1e293b;
+  }
+  .section-title .icon { font-size: 1.4rem; }
+
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.4rem 1.5rem;
+    margin-bottom: 1.2rem;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: #475569; }
+
+  .card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #60a5fa;
+    margin-bottom: 0.6rem;
+  }
+  .card p { color: #cbd5e1; font-size: 0.95rem; margin-bottom: 0.6rem; }
+  .card p:last-child { margin-bottom: 0; }
+
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(139,92,246,0.08));
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 10px;
+    padding: 1.2rem 1.4rem;
+    margin: 0.8rem 0;
+  }
+  .highlight-box .label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #7dd3fc;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.88rem; }
+  th {
+    background: #0f172a;
+    color: #7dd3fc;
+    text-align: left;
+    padding: 0.5rem 0.8rem;
+    font-weight: 600;
+    border-bottom: 1px solid #334155;
+  }
+  td { padding: 0.45rem 0.8rem; border-bottom: 1px solid #1e293b; color: #cbd5e1; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  pre {
+    background: #020617;
+    border: 1px solid #1e293b;
+    border-left: 3px solid #3b82f6;
+    border-radius: 8px;
+    padding: 1.1rem 1.2rem;
+    overflow-x: auto;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.8rem;
+    color: #a5f3fc;
+    margin: 0.8rem 0;
+    line-height: 1.6;
+  }
+  code { font-family: 'Courier New', Courier, monospace; font-size: 0.85em; color: #7dd3fc; }
+
+  .tag {
+    display: inline-block;
+    background: rgba(52,211,153,0.1);
+    border: 1px solid rgba(52,211,153,0.3);
+    color: #6ee7b7;
+    border-radius: 6px;
+    padding: 0.1rem 0.55rem;
+    font-size: 0.78rem;
+    margin: 0.15rem;
+  }
+  .tag.purple {
+    background: rgba(139,92,246,0.1);
+    border-color: rgba(139,92,246,0.3);
+    color: #c4b5fd;
+  }
+  .tag.amber {
+    background: rgba(245,158,11,0.1);
+    border-color: rgba(245,158,11,0.3);
+    color: #fcd34d;
+  }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+
+  .stat-row {
+    display: flex;
+    gap: 1rem;
+    margin: 0.8rem 0;
+    flex-wrap: wrap;
+  }
+  .stat-box {
+    flex: 1;
+    min-width: 130px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    text-align: center;
+  }
+  .stat-box .val {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #60a5fa;
+    line-height: 1.2;
+  }
+  .stat-box .lbl { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
+
+  .link-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 0.9rem 1.2rem;
+    margin-bottom: 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .link-card a { color: #60a5fa; text-decoration: none; font-weight: 600; }
+  .link-card a:hover { text-decoration: underline; }
+  .link-card .desc { font-size: 0.88rem; color: #94a3b8; margin-top: 0.2rem; }
+
+  footer {
+    background: #0c1120;
+    border-top: 1px solid #1e293b;
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 0.82rem;
+    color: #475569;
+  }
+  footer strong { color: #64748b; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚡ ESP32 &amp; Sensor Innovations</h1>
+  <div class="header-meta">
+    <span>📅 15 ตุลาคม 2026</span>
+    <span>🔖 ฉบับที่ 112</span>
+    <span>🧠 4 หัวข้อหลัก</span>
+  </div>
+  <div style="margin-top:1rem;">
+    <span class="badge">ESP32-P4 v3.x</span>
+    <span class="badge">TinyML / Edge AI</span>
+    <span class="badge">Biometric Sensors</span>
+    <span class="badge">Thread / Zigbee</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: ESP32-P4 v3.x ===== -->
+  <h2 class="section-title"><span class="icon">🚀</span> นวัตกรรม ESP32-P4 v3.x — อัปเกรดครั้งใหญ่</h2>
+
+  <div class="card">
+    <div class="card-title">ESP32-P4 ซิลิกอน v3.x: 400 MHz + H.264 + PSRAM 32 MB</div>
+    <p>
+      Espressif ออก chip revision ใหม่สำหรับ ESP32-P4 โดยเพิ่ม clock speed สูงสุดเป็น <strong>400 MHz</strong>
+      (เดิม 360 MHz) พร้อมปรับปรุงระบบ image processing, power management และ security
+      ทำให้เหมาะสมกับงาน Edge AI และ HMI มากขึ้นกว่าเดิม
+    </p>
+    <div class="stat-row">
+      <div class="stat-box"><div class="val">400</div><div class="lbl">MHz Max Clock</div></div>
+      <div class="stat-box"><div class="val">32MB</div><div class="lbl">Embedded PSRAM</div></div>
+      <div class="stat-box"><div class="val">1080p</div><div class="lbl">H.264 @30fps</div></div>
+      <div class="stat-box"><div class="val">2×</div><div class="lbl">RISC-V Cores + AI Ext</div></div>
+    </div>
+    <p>
+      จุดเด่นคือ <strong>H.264 hardware encoder</strong> รองรับสูงสุด 1080p@30fps โดยไม่ต้องใช้ CPU
+      ประกอบกับ MIPI CSI/DSI สำหรับต่อกล้องและจอแบบ high-speed และ USB 2.0 OTG ครบชุด
+    </p>
+
+    <div class="highlight-box">
+      <div class="label">ข้อควรรู้</div>
+      ESP32-P4 <strong>ไม่มี Wi-Fi / Bluetooth ในตัว</strong> ต้องใช้ companion chip เช่น ESP32-C6
+      ผ่าน SDIO interface เพื่อเพิ่ม connectivity — board จาก Waveshare ใช้สูตรนี้แล้วผ่าน PoE ด้วย
+    </div>
+    <div style="margin-top:0.8rem;">
+      <span class="tag">HMI &amp; Display</span>
+      <span class="tag">Edge Vision</span>
+      <span class="tag purple">ESP-IDF แนะนำ</span>
+      <span class="tag amber">ยังไม่รองรับ Arduino ครบ</span>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Use Case: Smart Doorbell กับ Local AI</div>
+      <p>
+        ใช้ ESP32-P4 + กล้อง MIPI สร้าง doorbell ที่ประมวลผล face detection
+        หรืออ่านทะเบียนรถแบบ on-device ไม่ส่งวิดีโอขึ้น cloud ลดค่า bandwidth
+        และรักษา privacy ของผู้ใช้
+      </p>
+      <p>
+        H.264 encoder ช่วยบันทึกวิดีโอลง SD card ขนาดเล็กได้นานกว่า MJPEG หลายเท่า
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-title">Use Case: ระบบตรวจสอบ CNC / สายการผลิต</div>
+      <p>
+        ติดกล้องความละเอียดสูงบนสายการผลิต ให้ ESP32-P4 ตรวจจับชิ้นส่วนบกพร่อง
+        (defect detection) ด้วย neural network ที่รันบน chip โดยตรง
+      </p>
+      <p>
+        ประมวลผลแบบ real-time ไม่มี latency จาก network ส่งแจ้งเตือนผ่าน ESP32-C6 companion
+      </p>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 2: TinyML / Edge AI ===== -->
+  <h2 class="section-title"><span class="icon">🧠</span> TinyML &amp; Edge AI บน ESP32 — ปัญญาประดิษฐ์ในฝ่ามือ</h2>
+
+  <div class="card">
+    <div class="card-title">TensorFlow Lite Micro (TFLM) บน ESP32-S3: เร็วแค่ไหน?</div>
+    <p>
+      ผลทดสอบจาก Zbotic (มีนาคม 2026) รายงานว่า ESP32-S3 ประมวลผล TFLM model
+      บน <strong>audio window 1 วินาที</strong> ใช้เวลาเพียง <strong>30–100 ms</strong>
+      ทำให้ทำ keyword spotting หรือ anomaly detection แบบ real-time ได้สบาย
+    </p>
+
+    <table>
+      <tr><th>งาน TinyML</th><th>Chip แนะนำ</th><th>Framework</th></tr>
+      <tr><td>Keyword Spotting</td><td>ESP32-S3</td><td>TensorFlow Lite Micro</td></tr>
+      <tr><td>Image Classification</td><td>ESP32-S3 / P4</td><td>ESP-DL / TFLite</td></tr>
+      <tr><td>Anomaly Detection (เสียง)</td><td>ESP32-S3</td><td>Edge Impulse</td></tr>
+      <tr><td>Gesture Recognition</td><td>ESP32-S3</td><td>ESP-DL (Espressif)</td></tr>
+      <tr><td>Meter Reading (OCR)</td><td>ESP32-CAM / S3</td><td>AI-on-the-Edge</td></tr>
+    </table>
+
+    <div class="highlight-box">
+      <div class="label">โปรเจกต์ Open-Source ที่น่าสนใจ</div>
+      <strong>AI on the Edge Device</strong> — ใช้ ESP32-CAM ถ่ายภาพมิเตอร์น้ำ/ไฟฟ้า/แก๊ส
+      แล้วอ่านตัวเลขด้วย TFLite บน device โดยตรง ไม่ต้องใช้ cloud
+      เชื่อมกับ Home Assistant หรือ MQTT ได้ทันที
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">โค้ดตัวอย่าง: TFLM Inference บน ESP32-S3</div>
+    <pre>
+#include "tensorflow/lite/micro/micro_interpreter.h"
+#include "tensorflow/lite/micro/all_ops_resolver.h"
+#include "model_data.h"  // .tflite model แปลงเป็น C array
+
+// จัดสรร tensor arena ใน PSRAM ถ้ามี
+constexpr int kTensorArenaSize = 64 * 1024;
+uint8_t tensor_arena[kTensorArenaSize] __attribute__((aligned(16)));
+
+tflite::AllOpsResolver resolver;
+const tflite::Model* model = tflite::GetModel(model_data);
+tflite::MicroInterpreter interpreter(
+  model, resolver, tensor_arena, kTensorArenaSize);
+
+void setup() {
+  interpreter.AllocateTensors();
+}
+
+void loop() {
+  // ใส่ข้อมูล sensor เข้า input tensor
+  TfLiteTensor* input = interpreter.input(0);
+  input->data.f[0] = readSensor();  // ค่า normalized
+
+  interpreter.Invoke();  // รัน inference
+
+  TfLiteTensor* output = interpreter.output(0);
+  float result = output->data.f[0];  // ผลลัพธ์
+  Serial.println(result);
+  delay(100);
+}</pre>
+    <p>ใช้ <code>idf.py menuconfig</code> เพิ่ม PSRAM support และตั้ง tensor arena ใน external RAM เพื่อรองรับ model ขนาดใหญ่ขึ้น</p>
+  </div>
+
+  <!-- ===== SECTION 3: Biometric Sensors ===== -->
+  <h2 class="section-title"><span class="icon">💓</span> Biometric &amp; Health Sensors — วัดสัญญาณชีพด้วย ESP32</h2>
+
+  <div class="card">
+    <div class="card-title">MAX30102: Heart Rate + SpO2 ใน IC เดียว</div>
+    <p>
+      MAX30102 เป็น sensor ยอดนิยมสำหรับงาน health monitoring บน ESP32
+      ใช้แสง LED สีแดงและ infrared แบบ <strong>PPG (Photoplethysmography)</strong>
+      วัดอัตราการเต้นหัวใจ (Heart Rate) และ ออกซิเจนในเลือด (SpO2) ผ่าน I2C
+    </p>
+    <table>
+      <tr><th>พารามิเตอร์</th><th>ค่า</th></tr>
+      <tr><td>อินเทอร์เฟส</td><td>I2C (address: 0x57)</td></tr>
+      <tr><td>แรงดัน</td><td>1.8V (I/O) / 3.3V (LED)</td></tr>
+      <tr><td>LED</td><td>Red (660nm) + IR (880nm)</td></tr>
+      <tr><td>ADC Resolution</td><td>18-bit</td></tr>
+      <tr><td>Sample Rate</td><td>50–3200 samples/sec</td></tr>
+      <tr><td>ขนาด Package</td><td>5.6mm × 3.3mm</td></tr>
+    </table>
+    <div style="margin-top:0.8rem;">
+      <span class="tag">Heart Rate</span>
+      <span class="tag">SpO2</span>
+      <span class="tag">PPG Signal</span>
+      <span class="tag purple">Arduino Library: SparkFun MAX3010x</span>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">โปรเจกต์: Smart Ward Patient Monitor</div>
+      <p>
+        งานวิจัยปี 2026 จาก CircuitDigest ใช้ ESP32 + MAX30102 สร้าง
+        <strong>wearable tag</strong> สำหรับผู้ป่วย ส่งค่า HR/SpO2 ผ่าน Wi-Fi ไปยัง
+        nurse station dashboard แบบ real-time พร้อมส่ง alert เมื่อค่าผิดปกติ
+      </p>
+      <p>
+        รันบน LiPo battery อายุ 12–24 ชั่วโมง โดยใช้ deep sleep mode ระหว่างรอ
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-title">Bioimpedance Sensor: วัดองค์ประกอบร่างกาย</div>
+      <p>
+        ESP32 + AD5933 (impedance analyzer) สร้างอุปกรณ์วัด
+        <strong>BIA (Body Impedance Analysis)</strong> แบบ handheld ประเมินมวลกล้ามเนื้อ
+        และเปอร์เซ็นต์ไขมัน ส่งข้อมูลขึ้น cloud
+      </p>
+      <p>
+        งานวิจัย 2025–2026 แสดงความเป็นไปได้ของ low-cost clinical device
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">โค้ดตัวอย่าง: อ่าน MAX30102 ด้วย ESP32</div>
+    <pre>
+#include &lt;Wire.h&gt;
+#include "MAX30105.h"           // SparkFun MAX3010x library
+#include "heartRate.h"
+
+MAX30105 particleSensor;
+
+const byte RATE_SIZE = 4;
+byte rates[RATE_SIZE];
+byte rateSpot = 0;
+long lastBeat = 0;
+float beatsPerMinute;
+int beatAvg;
+
+void setup() {
+  Serial.begin(115200);
+  particleSensor.begin(Wire, I2C_SPEED_FAST);
+  particleSensor.setup();
+  particleSensor.setPulseAmplitudeRed(0x0A);
+  particleSensor.setPulseAmplitudeIR(0x0A);
+}
+
+void loop() {
+  long irValue = particleSensor.getIR();
+
+  if (checkForBeat(irValue)) {
+    long delta = millis() - lastBeat;
+    lastBeat = millis();
+    beatsPerMinute = 60 / (delta / 1000.0);
+
+    if (beatsPerMinute > 20 && beatsPerMinute < 255) {
+      rates[rateSpot++ % RATE_SIZE] = (byte)beatsPerMinute;
+      beatAvg = 0;
+      for (byte x = 0; x &lt; RATE_SIZE; x++) beatAvg += rates[x];
+      beatAvg /= RATE_SIZE;
+    }
+  }
+
+  Serial.print("IR="); Serial.print(irValue);
+  Serial.print(", BPM="); Serial.print(beatsPerMinute, 1);
+  Serial.print(", Avg BPM="); Serial.println(beatAvg);
+}</pre>
+  </div>
+
+  <!-- ===== SECTION 4: Thread / Zigbee / ESP32-H2 ===== -->
+  <h2 class="section-title"><span class="icon">🕸️</span> Thread &amp; Zigbee Mesh ด้วย ESP32-H2 &amp; ESP32-H21</h2>
+
+  <div class="card">
+    <div class="card-title">ESP32-H2 vs ESP32-H21: Mesh Networking สำหรับ Battery Devices</div>
+    <p>
+      ESP32-H2 เป็น chip ที่ออกแบบมาสำหรับ <strong>IEEE 802.15.4</strong> โดยเฉพาะ
+      รองรับทั้ง Thread และ Zigbee สำหรับงาน mesh network ที่ต้องการพลังงานต่ำมาก
+      ส่วน ESP32-H21 เป็นรุ่นต่อยอดที่มีประสิทธิภาพพลังงานดีขึ้นอีก
+    </p>
+    <table>
+      <tr><th>รุ่น</th><th>Protocol</th><th>Battery Life</th><th>Use Case</th></tr>
+      <tr><td>ESP32-H2</td><td>Thread / Zigbee / BLE</td><td>เดือน–ปี</td><td>Smart home sensors, mesh end device</td></tr>
+      <tr><td>ESP32-H21</td><td>Thread / Zigbee / BLE</td><td>ยาวกว่า H2</td><td>Ultra-low-power end device</td></tr>
+      <tr><td>ESP32-C6 + H2</td><td>Thread Border Router</td><td>ต่อไฟ</td><td>Gateway: Wi-Fi ↔ Thread mesh</td></tr>
+    </table>
+    <div class="highlight-box">
+      <div class="label">Thread Border Router</div>
+      การสร้าง Thread network ที่บ้านต้องมี <strong>Border Router</strong> ที่เชื่อม Thread กับ IP network
+      ESP32-S3 + ESP32-H2 ทำงานร่วมกันเป็น border router ได้ โดย H2 ทำ IEEE 802.15.4
+      และ S3 จัดการ Wi-Fi และ routing
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">ไอเดีย: Zigbee Smart Switch ที่ไม่ต้องมีแบตเตอรี่</div>
+      <p>
+        ใช้ ESP32-H2 + <strong>Energy Harvesting</strong> จาก kinetic switch
+        (แรงกดแปลงเป็นไฟฟ้า) สร้างสวิตช์ไร้สายที่ไม่ต้องเดินสาย ไม่ต้องเปลี่ยนถ่าน
+        เหมาะกับการ retrofit บ้านเก่าโดยไม่ทุบผนัง
+      </p>
+    </div>
+    <div class="card">
+      <div class="card-title">ไอเดีย: ระบบตรวจสอบโรงงานด้วย Mesh 50 โหนด</div>
+      <p>
+        ติดตั้ง ESP32-H2 node ที่เครื่องจักรแต่ละตัว วัดอุณหภูมิ การสั่นสะเทือน และเสียง
+        ส่งผ่าน Thread mesh ไปยัง Border Router แล้วขึ้น Dashboard ตรวจจับ
+        predictive maintenance แบบ low-cost
+      </p>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 5: Resources ===== -->
+  <h2 class="section-title"><span class="icon">🔗</span> แหล่งข้อมูลและลิงก์แนะนำ</h2>
+
+  <div class="link-card">
+    <div>
+      <a href="https://www.espressif.com/en/news/ESP32_P4_v3.x_Upgrade" target="_blank">Espressif — ESP32-P4 v3.x Upgrade</a>
+      <div class="desc">ประกาศอย่างเป็นทางการเรื่อง chip revision ใหม่ พร้อม migration guide</div>
+    </div>
+    <span class="tag">Official</span>
+  </div>
+
+  <div class="link-card">
+    <div>
+      <a href="https://github.com/jomjol/AI-on-the-edge-device" target="_blank">GitHub: AI on the Edge Device</a>
+      <div class="desc">ESP32-CAM อ่านมิเตอร์น้ำ/ไฟ/แก๊ส ด้วย TFLite — open-source, active community</div>
+    </div>
+    <span class="tag">GitHub</span>
+  </div>
+
+  <div class="link-card">
+    <div>
+      <a href="https://randomnerdtutorials.com/esp32-matter-on-off-light/" target="_blank">Random Nerd Tutorials — ESP32 Matter (Arduino)</a>
+      <div class="desc">Tutorial Matter on/off light รองรับ Alexa, Apple Home, Google Home, Home Assistant</div>
+    </div>
+    <span class="tag">Tutorial</span>
+  </div>
+
+  <div class="link-card">
+    <div>
+      <a href="https://dronebotworkshop.com/esp32-2026/" target="_blank">DroneBot Workshop — ESP32 Selection Guide 2026</a>
+      <div class="desc">เปรียบเทียบ ESP32 ทุกรุ่น ช่วยเลือก SoC ให้เหมาะกับงานที่ต้องการ</div>
+    </div>
+    <span class="tag">Guide</span>
+  </div>
+
+  <div class="link-card">
+    <div>
+      <a href="https://developer.espressif.com" target="_blank">Espressif Developer Portal</a>
+      <div class="desc">บทความใหม่เรื่อง gesture recognition, ESP-DL, และ ESP32-P4 robotic arm</div>
+    </div>
+    <span class="tag">Official</span>
+  </div>
+
+  <div class="link-card">
+    <div>
+      <a href="https://wiki.seeedstudio.com/getting_started_with_matter/" target="_blank">Seeed Studio — XIAO ESP32 Matter Guide</a>
+      <div class="desc">เริ่มต้นใช้ Matter บน XIAO ESP32C6 พร้อม commissioning step-by-step</div>
+    </div>
+    <span class="tag">Tutorial</span>
+  </div>
+
+</main>
+
+<footer>
+  <strong>ESP32 &amp; Sensor Innovations Daily</strong><br>
+  หัวข้อ: ESP32-P4 v3.x · TinyML / Edge AI · Biometric Sensors (MAX30102) · Thread/Zigbee Mesh<br>
+  สร้างอัตโนมัติวันที่ 15 ตุลาคม 2026 | แหล่งข้อมูล: Espressif, CNX-Software, CircuitDigest, Random Nerd Tutorials
+</footer>
+
+</body>
+</html>
