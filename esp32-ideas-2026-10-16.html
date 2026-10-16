@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 &amp; Sensor Innovations - 16 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-base:    #0f172a;
+    --bg-card:    #1e293b;
+    --bg-card2:   #263348;
+    --accent1:    #38bdf8;
+    --accent2:    #818cf8;
+    --accent3:    #34d399;
+    --accent4:    #fb923c;
+    --accent5:    #f472b6;
+    --text:       #e2e8f0;
+    --text-muted: #94a3b8;
+    --border:     rgba(148,163,184,0.12);
+    --tag-bg:     rgba(56,189,248,0.12);
+    --tag-text:   #38bdf8;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-base);
+    color: var(--text);
+    line-height: 1.8;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1a2744 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 80% at 50% 0%, rgba(56,189,248,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-chip {
+    display: inline-block;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 0.25rem 0.9rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(1.7rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header .subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-weight: 300;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent1);
+  }
+  .stat-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ===== LAYOUT ===== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  /* ===== SECTION ===== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .section-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+  .section-header h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .section-header .count-badge {
+    margin-left: auto;
+    background: var(--bg-card2);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    border-radius: 999px;
+    padding: 0.15rem 0.65rem;
+    border: 1px solid var(--border);
+  }
+
+  /* ===== CARD GRID ===== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card-grid.wide {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-accent, linear-gradient(90deg, #38bdf8, #818cf8));
+    border-radius: 12px 12px 0 0;
+  }
+
+  .card-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+  }
+  .badge-new    { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+  .badge-update { background: rgba(56,189,248,0.12); color: #38bdf8; border: 1px solid rgba(56,189,248,0.25); }
+  .badge-hot    { background: rgba(251,146,60,0.12);  color: #fb923c; border: 1px solid rgba(251,146,60,0.25); }
+  .badge-lab    { background: rgba(244,114,182,0.12); color: #f472b6; border: 1px solid rgba(244,114,182,0.25); }
+  .badge-tip    { background: rgba(129,140,248,0.12); color: #818cf8; border: 1px solid rgba(129,140,248,0.25); }
+
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+  }
+  .card p {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    line-height: 1.75;
+  }
+  .card .spec-list {
+    list-style: none;
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .card .spec-list li {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  .card .spec-list li::before {
+    content: '▸';
+    color: var(--accent3);
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .card .highlight {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  /* ===== SENSOR TABLE ===== */
+  .sensor-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  .sensor-table th {
+    text-align: left;
+    padding: 0.65rem 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card2);
+  }
+  .sensor-table th:first-child { border-radius: 8px 0 0 0; }
+  .sensor-table th:last-child  { border-radius: 0 8px 0 0; }
+  .sensor-table td {
+    padding: 0.7rem 0.85rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+    vertical-align: top;
+  }
+  .sensor-table td:first-child { color: var(--text); font-weight: 600; }
+  .sensor-table tr:last-child td { border-bottom: none; }
+  .sensor-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ===== CODE BLOCK ===== */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.1rem 1.25rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin-top: 0.75rem;
+    color: #c9d1d9;
+  }
+  .code-block .kw  { color: #ff7b72; }
+  .code-block .fn  { color: #d2a8ff; }
+  .code-block .str { color: #a5d6ff; }
+  .code-block .cmt { color: #8b949e; }
+  .code-block .num { color: #79c0ff; }
+
+  /* ===== PROJECT CARD (tall) ===== */
+  .project-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-accent, linear-gradient(90deg, #34d399, #38bdf8));
+    border-radius: 12px 12px 0 0;
+  }
+  .project-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .project-card .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+  .meta-tag {
+    font-size: 0.72rem;
+    background: var(--bg-card2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.15rem 0.5rem;
+  }
+  .project-card p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.75;
+  }
+  .step-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+  }
+  .step-list li {
+    display: flex;
+    gap: 0.6rem;
+    font-size: 0.87rem;
+    color: var(--text-muted);
+    align-items: flex-start;
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.15rem;
+  }
+
+  /* ===== RESOURCE GRID ===== */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.9rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    transition: border-color 0.2s;
+  }
+  .resource-card:hover { border-color: rgba(56,189,248,0.4); }
+  .resource-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .resource-card h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+  }
+  .resource-card p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .resource-card a {
+    color: var(--accent1);
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+  .resource-card a:hover { text-decoration: underline; }
+
+  /* ===== DIVIDER ===== */
+  .section-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    line-height: 2;
+  }
+  footer strong { color: var(--text); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 640px) {
+    .card-grid, .resource-grid { grid-template-columns: 1fr; }
+    .sensor-table { font-size: 0.8rem; }
+    .sensor-table th, .sensor-table td { padding: 0.5rem 0.6rem; }
+    .stat-row { gap: 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-chip">Daily ESP32 Research Report</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">วันศุกร์ที่ 16 ตุลาคม 2026 &nbsp;|&nbsp; รายงานอัปเดตรายวันโดย AI Researcher</p>
+  <div class="stat-row">
+    <div class="stat-item">
+      <div class="stat-num">4</div>
+      <div class="stat-label">นวัตกรรมใหม่</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">3</div>
+      <div class="stat-label">ไอเดียโปรเจกต์</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">4</div>
+      <div class="stat-label">Sensors/อุปกรณ์</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">6</div>
+      <div class="stat-label">แหล่งข้อมูล</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: นวัตกรรม ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <span class="section-icon">🚀</span>
+      <h2>นวัตกรรมและอัปเดตสำคัญ</h2>
+      <span class="count-badge">4 รายการ</span>
+    </div>
+
+    <div class="card-grid wide">
+
+      <!-- ESP32-S31 -->
+      <div class="card" style="--card-accent: linear-gradient(90deg,#34d399,#38bdf8);">
+        <span class="card-badge badge-new">ใหม่ — ผลิตจริงแล้ว</span>
+        <h3>ESP32-S31 — Dual-Core RISC-V พร้อม Gigabit Ethernet &amp; Wi-Fi 6</h3>
+        <p>ชิปรุ่นใหม่ล่าสุดจาก Espressif ที่เข้าสู่การผลิตจริง (Mass Production) ในเดือนกรกฎาคม 2026 นับเป็นก้าวกระโดดครั้งใหญ่ด้านประสิทธิภาพเครือข่าย โดยเพิ่ม Gigabit Ethernet MAC และ Wi-Fi 6 บน RISC-V core รุ่นใหม่</p>
+        <ul class="spec-list">
+          <li><span class="highlight">CPU:</span> Dual-core RISC-V สูงสุด <span class="highlight">320 MHz</span> พร้อม 128-bit SIMD data path</li>
+          <li><span class="highlight">RAM:</span> 512 KB SRAM on-chip + DDR PSRAM 250 MHz รองรับ</li>
+          <li><span class="highlight">Wireless:</span> Wi-Fi 6 (802.11ax, 2.4 GHz) + Bluetooth 5.4 + 802.15.4 (Zigbee/Thread)</li>
+          <li><span class="highlight">Wired:</span> Gigabit Ethernet MAC (1000 Mbps) — อัปเกรดจาก 10/100 Mbps ของรุ่นเก่า</li>
+          <li><span class="highlight">GPIO:</span> 60 พอร์ต, แพ็คเกจ QFN80 (8×8 mm)</li>
+          <li><span class="highlight">Dev Board:</span> Function CoreBoard-1 พร้อม RJ45 10/100/1000 auto-negotiate</li>
+        </ul>
+        <p style="margin-top:0.75rem; font-size:0.82rem; color:#34d399;">
+          ✅ เหมาะสำหรับ: Edge gateway, Industrial IoT, NAS ราคาประหยัด, Smart NVR
+        </p>
+      </div>
+
+      <!-- ESP-SDR -->
+      <div class="card" style="--card-accent: linear-gradient(90deg,#818cf8,#f472b6);">
+        <span class="card-badge badge-hot">Hot — ตุลาคม 2026</span>
+        <h3>ESP-SDR — เปลี่ยน ESP32 เป็น Software-Defined Radio 2.4/5 GHz</h3>
+        <p>Firmware จากโปรเจกต์ ESPARGOS ที่ bypass โมเด็ม Wi-Fi/Bluetooth แล้วอ่าน raw I/Q samples ส่งไปยัง PC ผ่าน USB — สามารถรับสัญญาณวิทยุในย่าน 2.4 GHz และ 5 GHz ด้วย ESP32 ธรรมดา</p>
+        <ul class="spec-list">
+          <li><span class="highlight">ชิปที่รองรับ:</span> ESP32, C3, C5, C6, C61, S2, S3, S31 (preview)</li>
+          <li><span class="highlight">Sample rate:</span> สูงสุด 80 MSa/s</li>
+          <li><span class="highlight">UI:</span> ESP-WebSDR — แสดง spectrum + waterfall บน browser</li>
+          <li><span class="highlight">Transmit (esp32-sdr-trx):</span> ESP32-S3 ส่ง Narrowband FM/SSB บนย่าน 13cm (2320–2450 MHz) สำหรับสมัครเล่นวิทยุ</li>
+          <li><span class="highlight">หลักการ:</span> Polar modulation — ปรับความถี่และแอมพลิจูด 40,000 ครั้ง/วินาที</li>
+        </ul>
+        <p style="margin-top:0.75rem; font-size:0.82rem; color:#fb923c;">
+          ⚠️ การส่งสัญญาณต้องมีใบอนุญาตสมัครเล่นวิทยุ (Amateur Radio License)
+        </p>
+      </div>
+
+      <!-- ESP-IDF v6.2 Beta -->
+      <div class="card" style="--card-accent: linear-gradient(90deg,#38bdf8,#34d399);">
+        <span class="card-badge badge-update">อัปเดต — ESP-IDF Roadmap</span>
+        <h3>ESP-IDF v6.2 Beta — พฤศจิกายน 2026 รองรับ ESP32-H21 &amp; H4</h3>
+        <p>ตาม Roadmap บน GitHub ของ Espressif ESP-IDF v6.2 Beta มีกำหนดเปิดตัว 11 พฤศจิกายน 2026 โดยเพิ่มรองรับชิปรุ่นใหม่และปรับปรุงระบบ networking stack</p>
+        <ul class="spec-list">
+          <li><span class="highlight">ชิปใหม่:</span> รองรับ ESP32-H21 (BLE + Zigbee/Thread ประหยัดพลังงาน) และ ESP32-H4</li>
+          <li><span class="highlight">ESP-IDF v6.1:</span> เปิดตัวแล้ว (กรกฎาคม 2026) — เป็น stable release ปัจจุบัน</li>
+          <li><span class="highlight">ESPHome 2026.4.0:</span> เปลี่ยน default clock เป็น 240 MHz (จาก 160 MHz) สำหรับ ESP32/S2/S3/C5</li>
+          <li><span class="highlight">Breaking change:</span> อุปกรณ์ battery-powered ที่ใช้ ESPHome ต้องตรวจสอบการตั้งค่า clock ใหม่</li>
+        </ul>
+      </div>
+
+      <!-- ESP32 TWAI/CAN Bus -->
+      <div class="card" style="--card-accent: linear-gradient(90deg,#fb923c,#f472b6);">
+        <span class="card-badge badge-tip">Industrial</span>
+        <h3>ESP32 TWAI — CAN Bus Controller ในตัวสำหรับระบบอุตสาหกรรม</h3>
+        <p>TWAI (Two-Wire Automotive Interface) คือ CAN 2.0B controller ที่ฝังอยู่ใน ESP32 ทุกรุ่น ไม่ต้องใช้ IC controller ภายนอก เหมาะสำหรับงาน industrial automation, automotive, และ J1939/NMEA 2000</p>
+        <ul class="spec-list">
+          <li><span class="highlight">Protocol:</span> CAN 2.0B — รองรับทั้ง 11-bit standard และ 29-bit extended frame ID</li>
+          <li><span class="highlight">ต้องการ:</span> External transceiver IC เช่น SN65HVD230 หรือ MCP2551 สำหรับ differential bus</li>
+          <li><span class="highlight">Board สำเร็จรูป:</span> LILYGO T-CAN485 — รวม CAN + RS-485 บนบอร์ดเดียว</li>
+          <li><span class="highlight">Use case:</span> OBD-II vehicle monitor, Modbus+CAN gateway, Building automation (BACnet)</li>
+          <li><span class="highlight">หมายเหตุ:</span> RTC ใน deep sleep มีความเบี่ยงเบนสูงสุด ~5% ควรใช้ external 32KHz crystal</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== SECTION 2: PROJECT IDEAS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <span class="section-icon">🛠️</span>
+      <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+      <span class="count-badge">3 ไอเดีย</span>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- LoRaWAN Smart Farm -->
+      <div class="project-card" style="--card-accent: linear-gradient(90deg,#34d399,#38bdf8);">
+        <h3>🌾 LoRaWAN Smart Farm Monitor — ระบบตรวจสอบฟาร์มระยะไกล</h3>
+        <div class="meta-row">
+          <span class="meta-tag">ESP32 + LoRa</span>
+          <span class="meta-tag">Deep Sleep</span>
+          <span class="meta-tag">Solar Power</span>
+          <span class="meta-tag">Node-RED</span>
+          <span class="meta-tag">Agriculture</span>
+        </div>
+        <p>ระบบตรวจสอบฟาร์มด้วย ESP32 + LoRa module ที่ครอบคลุมพื้นที่ได้ถึง 5–15 กม. ในที่โล่ง Gateway 1 ตัวรองรับ Node ได้ถึง 100 จุด เหมาะสำหรับฟาร์มขนาด 20–50 ไร่ ด้วย node ประมาณ 5–10 จุด</p>
+        <ul class="step-list">
+          <li><span class="step-num">1</span>ติดตั้ง ESP32 node แต่ละจุด — ต่อ Capacitive Soil Moisture + BME280 (อุณหภูมิ/ความชื้น/ความดัน)</li>
+          <li><span class="step-num">2</span>ใช้ Deep Sleep + Solar charging — ESP32 ตื่นทุก 15 นาที อ่านค่า ส่งข้อมูล แล้วนอนต่อ</li>
+          <li><span class="step-num">3</span>ส่งข้อมูลผ่าน LoRa (SF12 สำหรับระยะไกลสุด) ไปยัง LoRaWAN Gateway</li>
+          <li><span class="step-num">4</span>Gateway ส่งต่อไป Network Server (ChirpStack) → Node-RED → Dashboard Grafana</li>
+          <li><span class="step-num">5</span>ตั้ง Alert เมื่อดินแห้งเกินกำหนด สั่งปั๊มน้ำอัตโนมัติผ่าน Relay node</li>
+        </ul>
+        <div class="code-block">
+<span class="cmt">// Deep sleep + LoRa pattern</span>
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  readSensors();      <span class="cmt">// อ่านค่า Soil + BME280</span>
+  sendLoRaPacket();   <span class="cmt">// ส่งผ่าน LoRa (SF12)</span>
+  esp_deep_sleep(<span class="num">900e6</span>); <span class="cmt">// นอน 15 นาที</span>
+}
+        </div>
+      </div>
+
+      <!-- SDR Spectrum Analyzer -->
+      <div class="project-card" style="--card-accent: linear-gradient(90deg,#818cf8,#f472b6);">
+        <h3>📡 ESP32-S3 Spectrum Analyzer — วิเคราะห์ RF Interference</h3>
+        <div class="meta-row">
+          <span class="meta-tag">ESP32-S3</span>
+          <span class="meta-tag">ESP-SDR</span>
+          <span class="meta-tag">WebSocket</span>
+          <span class="meta-tag">2.4 GHz</span>
+          <span class="meta-tag">DIY Radio</span>
+        </div>
+        <p>ใช้ ESP-SDR firmware บน ESP32-S3 สร้างเครื่องตรวจสอบ RF interference บนย่าน 2.4 GHz เพื่อวิเคราะห์ปัญหาสัญญาณรบกวนใน Smart Home หรือสำนักงาน โดยส่ง I/Q stream ผ่าน USB ไปแสดงผลใน ESP-WebSDR บน browser</p>
+        <ul class="step-list">
+          <li><span class="step-num">1</span>Flash ESP-SDR firmware บน ESP32-S3 Development Board</li>
+          <li><span class="step-num">2</span>เชื่อมต่อ USB กับ PC เปิด ESP-WebSDR บน Chrome</li>
+          <li><span class="step-num">3</span>ตรวจสอบ spectrum 2.4 GHz — ดู channel overlap ของ Wi-Fi, Bluetooth, Zigbee</li>
+          <li><span class="step-num">4</span>บันทึก I/Q data ไฟล์ .wav วิเคราะห์ลึกด้วย GNU Radio หรือ SDR++</li>
+          <li><span class="step-num">5</span>เพิ่ม antenna ภายนอก (SMA connector) เพื่อ sensitivity ที่ดีขึ้น</li>
+        </ul>
+      </div>
+
+      <!-- CAN Bus Vehicle Monitor -->
+      <div class="project-card" style="--card-accent: linear-gradient(90deg,#fb923c,#f59e0b);">
+        <h3>🚗 ESP32-S31 Vehicle OBD-II &amp; Gigabit Data Logger</h3>
+        <div class="meta-row">
+          <span class="meta-tag">ESP32-S31</span>
+          <span class="meta-tag">TWAI/CAN</span>
+          <span class="meta-tag">OBD-II</span>
+          <span class="meta-tag">Gigabit Ethernet</span>
+          <span class="meta-tag">Fleet Management</span>
+        </div>
+        <p>ใช้ ESP32-S31 ที่มี TWAI (CAN 2.0B) + Gigabit Ethernet สร้าง OBD-II Data Logger ความเร็วสูงสำหรับยานพาหนะ — อ่านข้อมูลยานยนต์ผ่าน CAN Bus แล้วส่งขึ้น Cloud Server ผ่าน Gigabit LAN พร้อมบันทึกลง Flash Storage</p>
+        <ul class="step-list">
+          <li><span class="step-num">1</span>ต่อ SN65HVD230 (CAN transceiver) กับ TWAI TX/RX ของ ESP32-S31</li>
+          <li><span class="step-num">2</span>เชื่อม OBD-II port ของรถ — อ่าน PID: RPM, Speed, Coolant Temp, Fuel Level</li>
+          <li><span class="step-num">3</span>ส่งข้อมูลผ่าน Gigabit Ethernet (RJ45) ไปยัง Server (latency ต่ำกว่า Wi-Fi)</li>
+          <li><span class="step-num">4</span>แปลงข้อมูลเป็น MQTT → InfluxDB → Grafana dashboard fleet tracking</li>
+          <li><span class="step-num">5</span>เพิ่ม GPS module (UART) บันทึก route และคำนวณ fuel efficiency</li>
+        </ul>
+        <div class="code-block">
+<span class="cmt">// TWAI CAN Bus config (ESP-IDF)</span>
+twai_general_config_t g = TWAI_GENERAL_CONFIG_DEFAULT(
+    GPIO_NUM_21, GPIO_NUM_22, TWAI_MODE_NORMAL);
+twai_timing_config_t t = TWAI_TIMING_CONFIG_500KBITS();
+twai_filter_config_t f = TWAI_FILTER_CONFIG_ACCEPT_ALL();
+<span class="fn">twai_driver_install</span>(&amp;g, &amp;t, &amp;f);
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <span class="section-icon">🔬</span>
+      <h2>Sensors &amp; อุปกรณ์น่าสนใจ</h2>
+      <span class="count-badge">4 รายการ</span>
+    </div>
+
+    <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden;">
+      <table class="sensor-table">
+        <thead>
+          <tr>
+            <th>ชื่อ / รุ่น</th>
+            <th>ประเภท</th>
+            <th>คุณสมบัติเด่น</th>
+            <th>Interface</th>
+            <th>Use Case</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>SN65HVD230</td>
+            <td>CAN Bus Transceiver</td>
+            <td>Industrial-grade, รองรับ 3.3V logic โดยตรง (ไม่ต้องมี level shifter), ESD protection ±16 kV, ทนทานต่อสัญญาณรบกวน</td>
+            <td>CAN (TWAI) Differential Bus</td>
+            <td>ESP32 + TWAI controller, OBD-II, J1939, BACnet, industrial automation</td>
+          </tr>
+          <tr>
+            <td>Capacitive Soil Moisture v2.0</td>
+            <td>Soil Moisture</td>
+            <td>ไม่เป็นสนิมเหมือน Resistive type, อ่านค่าความชื้นดินแบบ analog (0–3.3V), ราคาถูก, ทนทานยาวนานกว่า</td>
+            <td>Analog (ADC)</td>
+            <td>Smart farm, garden automation, LoRaWAN sensor node</td>
+          </tr>
+          <tr>
+            <td>SX1276 / LLCC68 (LoRa Module)</td>
+            <td>LoRa RF Transceiver</td>
+            <td>LoRa 868/915 MHz, ระยะส่ง 5–15 km (open area), รองรับ SF7–SF12, ใช้พลังงานต่ำมาก, ฝน/ฝุ่นผ่านได้</td>
+            <td>SPI</td>
+            <td>LoRaWAN smart farm node, remote weather station, emergency beacon</td>
+          </tr>
+          <tr>
+            <td>MAX3232 / SP3232</td>
+            <td>RS-232 Transceiver</td>
+            <td>แปลง UART 3.3V ↔ RS-232 ±12V, dual channel, ต้องการ external capacitor 4 ตัว, ราคาถูก, ทำงานได้จาก power supply 3V</td>
+            <td>UART / RS-232</td>
+            <td>เชื่อม legacy serial device (PLC, barcode scanner, industrial meter) กับ ESP32</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Bonus: Sensor comparison cards -->
+    <div class="card-grid" style="margin-top:1.25rem;">
+      <div class="card" style="--card-accent: linear-gradient(90deg,#fb923c,#f59e0b);">
+        <span class="card-badge badge-tip">เปรียบเทียบ</span>
+        <h3>Resistive vs Capacitive Soil Moisture</h3>
+        <p>เซ็นเซอร์วัดความชื้นดินแบบ Resistive (มี probe สองอัน) จะผุกร่อนเร็วเมื่อใช้ในดินชื้น อายุใช้งาน 1–3 เดือน ส่วนแบบ <span class="highlight">Capacitive</span> ไม่มีการสัมผัสโดยตรงกับดิน — วัดความจุ (Capacitance) ที่เปลี่ยนตามความชื้น อายุใช้งาน 1–2 ปี เหมาะสำหรับโปรเจกต์ระยะยาวมากกว่า</p>
+      </div>
+      <div class="card" style="--card-accent: linear-gradient(90deg,#34d399,#38bdf8);">
+        <span class="card-badge badge-new">เทคนิค</span>
+        <h3>LoRa SF7 vs SF12 — เลือกใช้เมื่อไหร่?</h3>
+        <p><span class="highlight">SF7:</span> ส่งข้อมูลเร็ว (250 bps), แบตฯ อยู่นาน, ระยะสั้น ~2 km &nbsp;|&nbsp; <span class="highlight">SF12:</span> ส่งข้อมูลช้า (293 bps), แบตฯ หมดเร็วขึ้น, แต่ระยะไกลสุด ~15 km สำหรับ sensor node ฟาร์มที่ส่งข้อมูลทุก 15 นาที SF12 คุ้มค่ากว่าเสมอ เพราะเพิ่มระยะครอบคลุมได้มากโดยไม่ต้องเพิ่ม gateway</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ===== SECTION 4: RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <span class="section-icon">🔗</span>
+      <h2>แหล่งข้อมูลและลิงก์แนะนำ</h2>
+      <span class="count-badge">6 แหล่ง</span>
+    </div>
+
+    <div class="resource-grid">
+
+      <div class="resource-card">
+        <span class="resource-icon">📄</span>
+        <div>
+          <h4>ESP32-S31 Series Datasheet</h4>
+          <p>Datasheet ฉบับ preliminary v0.5 จาก Espressif — spec ครบ: CPU, RF, Ethernet, GPIO</p>
+          <a href="https://documentation.espressif.com/esp32-s31_datasheet_en.html" target="_blank">documentation.espressif.com ↗</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <span class="resource-icon">📰</span>
+        <div>
+          <h4>ESP32-S31 — CNX Software Deep Dive</h4>
+          <p>บทความ March 2026 วิเคราะห์ spec ESP32-S31 ฉบับสมบูรณ์ พร้อมรูป block diagram</p>
+          <a href="https://www.cnx-software.com/2026/03/24/esp32-s31-dual-core-risc-v-mcu-offers-gigabit-ethernet-wifi-bluetooth-and-802-15-4-connectivity/" target="_blank">cnx-software.com ↗</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <span class="resource-icon">📡</span>
+        <div>
+          <h4>ESP-SDR Firmware — CNX Software</h4>
+          <p>บทความ October 2026 อธิบาย ESP-SDR firmware ที่เปลี่ยน ESP32 เป็น 2.4/5 GHz SDR</p>
+          <a href="https://www.cnx-software.com/2026/10/04/esp-sdr-firmware-turns-esp32-into-a-2-4-5-ghz-software-defined-radio-sdr/" target="_blank">cnx-software.com ↗</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <span class="resource-icon">🌾</span>
+        <div>
+          <h4>LoRaWAN Smart Farming Architecture</h4>
+          <p>คู่มือ field-to-server architecture สำหรับ smart farming ด้วย LoRaWAN จาก Industrial Shields</p>
+          <a href="https://www.industrialshields.com/blog/arduino-raspberry-pi-industrial-news-industry-4-0-iot-11/lorawan-for-smart-farming-a-field-to-server-architecture-with-industrial-shields-500" target="_blank">industrialshields.com ↗</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <span class="resource-icon">🚗</span>
+        <div>
+          <h4>ESP32 CAN Bus Tutorial — Last Minute Engineers</h4>
+          <p>Tutorial สร้าง CAN Bus ด้วย ESP32 TWAI controller + SN65HVD230 transceiver พร้อม code</p>
+          <a href="https://lastminuteengineers.com/esp32-can-bus-tutorial" target="_blank">lastminuteengineers.com ↗</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <span class="resource-icon">🗺️</span>
+        <div>
+          <h4>ESP-IDF Roadmap บน GitHub</h4>
+          <p>ตารางกำหนดการ release ESP-IDF v6.1 (July 2026) และ v6.2 Beta (November 2026)</p>
+          <a href="https://github.com/espressif/esp-idf/blob/master/ROADMAP.md" target="_blank">github.com/espressif/esp-idf ↗</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p><strong>ESP32 &amp; Sensor Innovations Daily Report</strong></p>
+  <p>สร้างโดย AI Researcher อัตโนมัติ &nbsp;|&nbsp; วันที่สร้าง: 16 ตุลาคม 2026</p>
+  <p style="margin-top:0.5rem; font-size:0.75rem;">
+    แหล่งอ้างอิง: Espressif Documentation, CNX Software, Hackaday, Adafruit Blog,
+    Industrial Shields, Last Minute Engineers, GitHub esp-idf ROADMAP.md
+  </p>
+  <p style="margin-top:0.4rem; font-size:0.75rem; color:#475569;">
+    ข้อมูลนี้รวบรวมจากแหล่งสาธารณะเพื่อการศึกษาและวิจัย | ตรวจสอบกับแหล่งต้นฉบับก่อนนำไปใช้งานจริง
+  </p>
+</footer>
+
+</body>
+</html>
