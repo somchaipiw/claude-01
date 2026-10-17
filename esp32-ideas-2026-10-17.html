@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 17 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263449;
+    --accent-blue: #38bdf8;
+    --accent-purple: #a78bfa;
+    --accent-green: #34d399;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --tag-bg: #1e3a5f;
+    --tag-text: #7dd3fc;
+  }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+  a { color: var(--accent-blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(167,139,250,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 5vw, 2.8rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #a78bfa, #38bdf8, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .header-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+  }
+  .header-meta {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .header-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .header-meta .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    display: inline-block;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  /* ===== NAV ===== */
+  nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+    overflow-x: auto;
+    white-space: nowrap;
+    text-align: center;
+  }
+  nav a {
+    display: inline-block;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+    margin: 0 0.15rem;
+  }
+  nav a:hover, nav a.active {
+    background: rgba(56,189,248,0.1);
+    color: var(--accent-blue);
+    text-decoration: none;
+  }
+
+  /* ===== LAYOUT ===== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem 3rem;
+  }
+  section {
+    margin-bottom: 3rem;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .icon-purple { background: rgba(167,139,250,0.15); }
+  .icon-blue   { background: rgba(56,189,248,0.15); }
+  .icon-green  { background: rgba(52,211,153,0.15); }
+  .icon-orange { background: rgba(251,146,60,0.15); }
+  .section-header h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-header p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+  }
+
+  /* ===== GRID ===== */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem; }
+
+  /* ===== CARD ===== */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.4rem;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(56,189,248,0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  }
+  .card-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.85rem;
+  }
+  .tag {
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+  }
+  .tag.green  { background: rgba(52,211,153,0.12); color: #6ee7b7; }
+  .tag.purple { background: rgba(167,139,250,0.12); color: #c4b5fd; }
+  .tag.orange { background: rgba(251,146,60,0.12);  color: #fdba74; }
+  .tag.pink   { background: rgba(244,114,182,0.12); color: #f9a8d4; }
+
+  /* ===== HIGHLIGHT CARD ===== */
+  .card-highlight {
+    border-color: rgba(167,139,250,0.4);
+    background: linear-gradient(135deg, #1e293b, #1e1b4b88);
+  }
+  .card-highlight:hover { border-color: rgba(167,139,250,0.7); }
+
+  /* ===== INFO BLOCK ===== */
+  .info-block {
+    background: rgba(56,189,248,0.07);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin-top: 0.85rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .info-block strong { color: var(--accent-blue); }
+
+  /* ===== CODE BLOCK ===== */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    margin-top: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #c9d1d9;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+  .code-block .kw  { color: #ff7b72; }
+  .code-block .fn  { color: #d2a8ff; }
+  .code-block .str { color: #a5d6ff; }
+  .code-block .cmt { color: #6e7681; font-style: italic; }
+  .code-block .num { color: #f2cc60; }
+
+  /* ===== BENCHMARK TABLE ===== */
+  .bench-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.75rem;
+    font-size: 0.82rem;
+  }
+  .bench-table th {
+    background: #1a2540;
+    color: var(--accent-blue);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .bench-table td {
+    padding: 0.45rem 0.75rem;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    color: var(--text-secondary);
+  }
+  .bench-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .win  { color: var(--accent-green); font-weight: 600; }
+  .slow { color: var(--accent-orange); }
+
+  /* ===== STEP LIST ===== */
+  .step-list { list-style: none; padding: 0; margin-top: 0.75rem; }
+  .step-list li {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.45rem 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    border-bottom: 1px dashed rgba(51,65,85,0.5);
+  }
+  .step-list li:last-child { border-bottom: none; }
+  .step-num {
+    width: 22px;
+    height: 22px;
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  /* ===== RESOURCE CARD ===== */
+  .resource-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    transition: all 0.2s;
+  }
+  .resource-card:hover {
+    border-color: rgba(52,211,153,0.4);
+    background: var(--bg-card-hover);
+  }
+  .resource-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    background: rgba(52,211,153,0.1);
+    flex-shrink: 0;
+  }
+  .resource-card h4 { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); }
+  .resource-card p  { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem; }
+  .resource-card a  { font-size: 0.78rem; color: var(--accent-green); margin-top: 0.3rem; display: block; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 1.5rem 1rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  footer strong { color: var(--text-secondary); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 600px) {
+    header { padding: 1.8rem 1rem; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily IoT Research</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="header-subtitle">17 ตุลาคม 2026 — Wi-Fi 6E · Matter/Thread · Edge AI Vision · Voice &amp; Gesture</p>
+  <div class="header-meta">
+    <span><span class="dot"></span> อัปเดตล่าสุด</span>
+    <span>📡 4 หมวดหลัก</span>
+    <span>💡 12+ ไอเดีย</span>
+    <span>🔧 3 Code Snippet</span>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations" class="active">🚀 นวัตกรรม</a>
+  <a href="#projects">🛠️ โปรเจกต์</a>
+  <a href="#sensors">📡 Sensors</a>
+  <a href="#resources">📚 แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-purple">🚀</div>
+      <div>
+        <h2>นวัตกรรม ESP32 ล่าสุด</h2>
+        <p>Wi-Fi 6E Co-Processor, Matter/Thread Certification, MCP over MQTT</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+
+      <div class="card card-highlight">
+        <div class="card-accent" style="background: linear-gradient(90deg,#a78bfa,#38bdf8);"></div>
+        <h3>ESP32-E22 — Wi-Fi 6E Tri-Band Radio Co-Processor</h3>
+        <p>
+          เปิดตัวที่ CES 2026 โดย Espressif นับเป็น <strong style="color:#a78bfa;">ESP32 ตัวแรกที่รองรับ Wi-Fi 6E</strong>
+          (2.4 / 5 / 6 GHz) พร้อม Bluetooth dual-mode ออกแบบมาเป็น <em>Radio Co-Processor</em>
+          ที่ offload งาน networking stack ออกจาก host MCU ทำให้ host ประมวลผล application ได้เต็มที่
+        </p>
+        <div class="info-block">
+          <strong>จุดเด่น:</strong> Wi-Fi 6E ลด interference จาก 2.4/5 GHz ที่แออัด — เหมาะสำหรับ
+          Smart Home ที่มีอุปกรณ์หนาแน่น, Industrial Gateway, AR/VR accessories ที่ต้องการ latency ต่ำ
+        </div>
+        <div class="card-tags">
+          <span class="tag">Wi-Fi 6E</span>
+          <span class="tag">6 GHz</span>
+          <span class="tag purple">Co-Processor</span>
+          <span class="tag">CES 2026</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background: linear-gradient(90deg,#34d399,#38bdf8);"></div>
+        <h3>ESP32-H2 + Thread 1.3.0 — รองรับ Matter Certification</h3>
+        <p>
+          ESP32-H2 ได้รับ <strong style="color:#34d399;">Thread 1.3.0 Certification</strong> ซึ่งเป็นข้อกำหนดเบื้องต้น
+          สำหรับ Matter-over-Thread device certification ทำให้ผลิตภัณฑ์ IoT ที่ใช้ ESP32-H2
+          สามารถผ่านมาตรฐาน CSA (Connectivity Standards Alliance) ได้โดยตรง
+        </p>
+        <div class="info-block">
+          <strong>Border Router แบบ DIY:</strong> ใช้ ESP32 Wi-Fi chip + ESP32-H2 เป็น RCP (Radio Co-Processor)
+          ไม่ต้องใช้ Linux host — รัน OpenThread stack ได้บน ESP-IDF โดยตรง ค่าใช้จ่ายต่ำกว่า commercial router มาก
+        </div>
+        <div class="card-tags">
+          <span class="tag green">Matter</span>
+          <span class="tag green">Thread 1.3</span>
+          <span class="tag">ESP32-H2</span>
+          <span class="tag">OpenThread</span>
+        </span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background: linear-gradient(90deg,#fb923c,#f472b6);"></div>
+        <h3>ESP32 + MCP over MQTT — AI Agent ควบคุม IoT</h3>
+        <p>
+          แนวคิดใหม่ที่ emqx นำเสนอในปี 2026: เชื่อม ESP32 เข้ากับ <strong style="color:#fb923c;">Model Context Protocol (MCP)</strong>
+          ผ่าน MQTT Broker ทำให้ AI Agent (เช่น Claude, GPT) สามารถ query สถานะ sensor,
+          สั่ง actuator และ subscribe real-time data จากอุปกรณ์ IoT ได้โดยตรง
+        </p>
+        <div class="code-block">
+<span class="cmt">// ESP32 publish sensor data ผ่าน MQTT</span>
+<span class="kw">#include</span> <span class="str">&lt;PubSubClient.h&gt;</span>
+<span class="fn">client.publish</span>(<span class="str">"esp32/sensor/temp"</span>, <span class="fn">String</span>(temp).<span class="fn">c_str</span>());
+<span class="fn">client.publish</span>(<span class="str">"esp32/mcp/tools"</span>,
+  <span class="str">"{\"name\":\"read_temp\",\"value\":"</span> + <span class="fn">String</span>(temp) + <span class="str">"}"</span>);
+        </div>
+        <div class="card-tags">
+          <span class="tag orange">MCP</span>
+          <span class="tag orange">MQTT</span>
+          <span class="tag">AI Agent</span>
+          <span class="tag">IoT Integration</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background: linear-gradient(90deg,#38bdf8,#34d399);"></div>
+        <h3>ESPHome + OpenThread บน ESP32-C6</h3>
+        <p>
+          ESPHome 2025.6+ เพิ่มการรองรับ OpenThread เบื้องต้นสำหรับ ESP32-C6 และ ESP32-H2
+          ทำให้ผู้ใช้ Home Assistant สามารถสร้าง Thread node ได้โดยไม่ต้องเขียน firmware เอง
+        </p>
+        <div class="info-block">
+          <strong>ข้อจำกัดปัจจุบัน:</strong> ยังไม่รองรับ "Sleepy End Device" mode —
+          ไม่เหมาะสำหรับ sensor ที่ส่งข้อมูลบ่อย เหมาะสำหรับ smart plug, relay control
+          ที่ต้องการ low-latency แต่ไม่ได้ประหยัดพลังงานสูงสุด
+        </div>
+        <div class="card-tags">
+          <span class="tag green">ESPHome</span>
+          <span class="tag">ESP32-C6</span>
+          <span class="tag green">Thread</span>
+          <span class="tag">Home Assistant</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🛠️</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์ที่น่าสนใจ</h2>
+        <p>Edge AI Vision, Voice LLM, Gesture Control, Matter Border Router DIY</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+
+      <div class="card card-highlight">
+        <div class="card-accent" style="background: linear-gradient(90deg,#f472b6,#a78bfa);"></div>
+        <h3>🎤 Xiaozhi ESP32 — LLM Voice Interaction บน Edge</h3>
+        <p>
+          Framework open-source ชื่อ <strong style="color:#f472b6;">xiaozhi-esp32</strong> (2026) ช่วยให้ ESP32
+          กลายเป็น voice assistant ที่คุยกับ cloud LLM ได้แบบ real-time โดย:
+          audio capture และ VAD ทำงานบน ESP32 โดยตรง, ส่ง speech ขึ้น cloud ASR,
+          ผล response ส่งกลับเป็น TTS และรองรับ MCP เพื่อ maintain context ข้ามการสนทนา
+        </p>
+        <ul class="step-list">
+          <li><span class="step-num">1</span>ESP32 + INMP441 microphone capture audio + VAD (Voice Activity Detection)</li>
+          <li><span class="step-num">2</span>ส่ง audio stream ผ่าน WebSocket ไปยัง cloud ASR API</li>
+          <li><span class="step-num">3</span>Cloud LLM (Claude / GPT) ประมวลผล intent + MCP context</li>
+          <li><span class="step-num">4</span>TTS response ส่งกลับ ลำโพง MAX98357A เล่นเสียงตอบ</li>
+        </ul>
+        <div class="card-tags">
+          <span class="tag pink">Voice AI</span>
+          <span class="tag pink">LLM</span>
+          <span class="tag">INMP441</span>
+          <span class="tag">MCP</span>
+          <span class="tag">Open Source</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background: linear-gradient(90deg,#38bdf8,#a78bfa);"></div>
+        <h3>👁️ ESP32-S3 YOLO Object Detection — Benchmark 2026</h3>
+        <p>
+          Espressif เปิดเผยผล benchmark เปรียบเทียบ inference time สำหรับ YOLO11n บน ESP32-S3
+          และ ESP32-S31 ผ่าน ESP-DL framework
+        </p>
+        <table class="bench-table">
+          <thead>
+            <tr>
+              <th>รุ่น</th>
+              <th>Model</th>
+              <th>Resolution</th>
+              <th>Inference Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>ESP32-S3</td>
+              <td>YOLO11n</td>
+              <td>640×640</td>
+              <td class="slow">~26,057 ms</td>
+            </tr>
+            <tr>
+              <td>ESP32-S31</td>
+              <td>YOLO11n</td>
+              <td>640×640</td>
+              <td class="win">~8,701 ms ✓</td>
+            </tr>
+            <tr>
+              <td>ESP32-S3</td>
+              <td>Cat detect</td>
+              <td>96×96</td>
+              <td class="slow">~105 ms</td>
+            </tr>
+            <tr>
+              <td>ESP32-S31</td>
+              <td>Cat detect</td>
+              <td>96×96</td>
+              <td class="win">~75 ms ✓</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="info-block" style="margin-top:0.75rem;">
+          <strong>ข้อสังเกต:</strong> YOLO11n ที่ 26 วินาที/frame ไม่ real-time — ใช้ได้สำหรับ
+          triggered detection (ถ่ายเมื่อ motion sensor trigger) ไม่ใช่ video streaming
+        </div>
+        <div class="card-tags">
+          <span class="tag">ESP32-S3</span>
+          <span class="tag purple">ESP32-S31</span>
+          <span class="tag">YOLO11n</span>
+          <span class="tag purple">ESP-DL</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background: linear-gradient(90deg,#34d399,#38bdf8);"></div>
+        <h3>🎙️ Offline Voice Command ด้วย Edge Impulse + ESP32</h3>
+        <p>
+          สร้างระบบสั่งงานด้วยเสียงแบบ <strong style="color:#34d399;">ไม่ต้องเชื่อมอินเทอร์เน็ต</strong>
+          ทำงานได้บน ESP32 ธรรมดา รู้จำคำสั่งได้ใน 200–500 ms
+        </p>
+        <div class="code-block">
+<span class="cmt">// Keywords ที่รู้จำได้ offline</span>
+<span class="str">"เปิด"</span> → GPIO HIGH (<span class="num">LED</span> / relay ON)
+<span class="str">"ปิด"</span>  → GPIO LOW  (<span class="num">LED</span> / relay OFF)
+<span class="str">"สถานะ"</span> → <span class="fn">Serial.println</span>(<span class="str">"Temp: "</span> + sensor_val)
+<span class="cmt">// Wake word custom ผ่าน Edge Impulse Studio</span>
+<span class="kw">if</span> (result.classification[ix].value > <span class="num">0.8</span>)
+  <span class="fn">handleCommand</span>(result.classification[ix].label);
+        </div>
+        <div class="card-tags">
+          <span class="tag green">Edge Impulse</span>
+          <span class="tag">Offline AI</span>
+          <span class="tag">INMP441</span>
+          <span class="tag green">TinyML</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background: linear-gradient(90deg,#fb923c,#34d399);"></div>
+        <h3>🏠 DIY Matter Thread Border Router ราคาประหยัด</h3>
+        <p>
+          ใช้ ESP32 Wi-Fi chip หลัก + ESP32-H2 เป็น 802.15.4 RCP สร้าง Thread Border Router
+          ที่ได้ certificate-grade compatibility โดยไม่ต้องซื้ออุปกรณ์ราคาแพง
+        </p>
+        <ul class="step-list">
+          <li><span class="step-num">1</span>ESP32-S3 Dev Board (Wi-Fi) + ESP32-H2 Mini (802.15.4 RCP)</li>
+          <li><span class="step-num">2</span>Flash ESP32-H2 ด้วย OpenThread RCP firmware จาก ESP-IDF</li>
+          <li><span class="step-num">3</span>ESP32-S3 รัน Espressif Thread Border Router stack</li>
+          <li><span class="step-num">4</span>เชื่อมต่อ Home Assistant ผ่าน OTBR (OpenThread Border Router) API</li>
+        </ul>
+        <div class="info-block">
+          <strong>ต้นทุนประมาณ:</strong> ESP32-S3 (~฿250) + ESP32-H2 (~฿180) = ~฿430
+          เทียบกับ commercial Thread Border Router ~฿2,000+
+        </div>
+        <div class="card-tags">
+          <span class="tag orange">Matter</span>
+          <span class="tag orange">Thread</span>
+          <span class="tag">OTBR</span>
+          <span class="tag">ESP32-H2</span>
+          <span class="tag green">DIY</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">📡</div>
+      <div>
+        <h2>Sensors น่าสนใจ</h2>
+        <p>Smart IMU สำหรับ Gesture, Energy Harvesting สำหรับ Battery-Free IoT</p>
+      </div>
+    </div>
+
+    <div class="grid-3">
+
+      <div class="card">
+        <div class="card-accent" style="background: linear-gradient(90deg,#a78bfa,#f472b6);"></div>
+        <h3>Bosch BHI360 — Smart IMU พร้อม On-Sensor AI</h3>
+        <p>
+          Programmable Smart IMU ที่ประมวลผล <strong style="color:#a78bfa;">gesture recognition บนตัว sensor เอง</strong>
+          ไม่ต้องให้ MCU ทำงาน ลด power consumption อย่างมีนัยสำคัญ รองรับ wrist tilt,
+          arm up/down, flick gestures พร้อม customizable algorithm
+        </p>
+        <div class="info-block">
+          <strong>ข้อดี vs ESP32-S3 + MPU6050:</strong> BHI360 ตื่นขึ้นมาปลุก ESP32
+          เฉพาะเมื่อ detect gesture ได้ → ESP32 ประหยัดพลังงานสูงถึง 99% ในช่วงรอ
+        </div>
+        <div class="card-tags">
+          <span class="tag purple">Smart IMU</span>
+          <span class="tag purple">On-Sensor AI</span>
+          <span class="tag">Wearable</span>
+          <span class="tag">Ultra Low Power</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background: linear-gradient(90deg,#38bdf8,#34d399);"></div>
+        <h3>Bosch BMI270 — IMU สำหรับ Smartwatch &amp; Fitness</h3>
+        <p>
+          16-bit 6-axis IMU (accel + gyro) ที่ได้รับความนิยมในวงการ wearable มี built-in
+          step counter, activity recognition และ gesture mode รองรับ I²C / SPI interface
+        </p>
+        <div class="code-block">
+<span class="cmt">// อ่านค่า acceleration + gyro จาก BMI270</span>
+<span class="fn">bmi270.readAcceleration</span>(ax, ay, az);
+<span class="fn">bmi270.readGyroscope</span>(gx, gy, gz);
+<span class="cmt">// คำนวณ pitch/roll สำหรับ gesture</span>
+<span class="kw">float</span> pitch = <span class="fn">atan2</span>(ay, <span class="fn">sqrt</span>(ax*ax + az*az)) * <span class="num">57.3</span>;
+<span class="kw">float</span> roll  = <span class="fn">atan2</span>(-ax, az) * <span class="num">57.3</span>;
+        </div>
+        <div class="card-tags">
+          <span class="tag">BMI270</span>
+          <span class="tag">6-axis</span>
+          <span class="tag green">Fitness</span>
+          <span class="tag">Step Counter</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background: linear-gradient(90deg,#fb923c,#f472b6);"></div>
+        <h3>Piezoelectric Energy Harvesting — IoT ไม่ต้องใช้แบตเตอรี่</h3>
+        <p>
+          เทคโนโลยี Energy Harvesting จาก vibration/movement ผ่าน piezoelectric element
+          ร่วมกับ Power Management IC เช่น <strong style="color:#fb923c;">e-peas AEM13920</strong>
+          เก็บพลังงานเข้า supercapacitor และจ่ายให้ ESP32-C6/H2 ที่ประหยัดพลังงาน
+        </p>
+        <div class="info-block">
+          <strong>Use Case:</strong> ติด sensor บน เครื่องจักรโรงงาน ที่สั่นสะเทือนตลอดเวลา
+          → harvest energy จากการสั่นสะเทือน ส่งข้อมูล predictive maintenance
+          โดยไม่ต้องเปลี่ยนแบตเตอรีหรือเดินสายไฟ
+        </div>
+        <div class="card-tags">
+          <span class="tag orange">Energy Harvesting</span>
+          <span class="tag orange">Piezoelectric</span>
+          <span class="tag">Battery-Free</span>
+          <span class="tag">Industrial IoT</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background: linear-gradient(90deg,#34d399,#38bdf8);"></div>
+        <h3>RF Energy Harvesting — พลังงานจากคลื่นวิทยุ</h3>
+        <p>
+          ดัก RF energy จากคลื่น Wi-Fi, 4G/5G รอบข้าง ผ่าน <strong style="color:#34d399;">Rectenna</strong>
+          (Rectifier Antenna) ที่ย่านความถี่ 900 MHz หรือ 2.4 GHz
+          เหมาะสำหรับ sensor node ที่ต้องการ zero-maintenance ในพื้นที่มีสัญญาณดี
+        </p>
+        <div class="info-block">
+          <strong>ข้อจำกัด:</strong> พลังงานที่ได้มักน้อย (µW–mW) เพียงพอสำหรับ sensor
+          ที่ส่งข้อมูลเป็นระยะๆ ร่วมกับ ultra-low-power MCU เช่น ESP32-H2 ใน Deep Sleep
+        </div>
+        <div class="card-tags">
+          <span class="tag green">RF Harvesting</span>
+          <span class="tag">Rectenna</span>
+          <span class="tag">2.4 GHz</span>
+          <span class="tag green">Zero Maintenance</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background: linear-gradient(90deg,#a78bfa,#38bdf8);"></div>
+        <h3>ICM-42688-P — 6-axis IMU ความแม่นยำสูงจาก TDK InvenSense</h3>
+        <p>
+          IMU ระดับ Industrial/Drone ที่ใช้ใน Quadcopter และ Robotics อย่างแพร่หลาย
+          noise density ต่ำเป็นพิเศษ (0.07 °/s/√Hz gyro) รองรับ SPI 24 MHz
+          เหมาะสำหรับโปรเจกต์ที่ต้องการ attitude estimation แม่นยำ
+        </p>
+        <div class="card-tags">
+          <span class="tag purple">ICM-42688-P</span>
+          <span class="tag">Drone</span>
+          <span class="tag">Robotics</span>
+          <span class="tag purple">High Precision</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background: linear-gradient(90deg,#f472b6,#fb923c);"></div>
+        <h3>Gesture Recognition ด้วย IMU + TinyML — 96% Accuracy</h3>
+        <p>
+          งานวิจัย (GestureKeeper) แสดงให้เห็นว่า 6-DOF IMU (accel+gyro+mag) + ML model
+          สามารถจำแนก 12 gesture ได้ด้วย accuracy ~96% บน MCU ขนาดเล็ก
+          โดยใช้ sliding window segmentation + Random Forest / 1D-CNN
+        </p>
+        <div class="info-block">
+          <strong>ประยุกต์ใช้กับ ESP32:</strong> ฝึก model บน Edge Impulse Studio
+          → export เป็น Arduino library → deploy บน ESP32 + BHI360/BMI270
+        </div>
+        <div class="card-tags">
+          <span class="tag pink">Gesture ML</span>
+          <span class="tag">96% Accuracy</span>
+          <span class="tag">12 Gestures</span>
+          <span class="tag pink">1D-CNN</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">📚</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์</h2>
+        <p>Workshop, Library, Documentation สำหรับ ESP32 Edge AI และ Matter/Thread</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+
+      <div class="resource-card">
+        <div class="resource-icon">🎓</div>
+        <div>
+          <h4>Espressif Edge AI Workshop — ESP32-S3</h4>
+          <p>Workshop อย่างเป็นทางการจาก Espressif ครอบคลุม ESP-WHO, ESP-DL,
+             face detection, gesture recognition, YOLO11 บน ESP32-S3-EYE</p>
+          <a href="https://developer.espressif.com/workshops/edge-ai-with-esp32-s3/" target="_blank" rel="noopener">
+            developer.espressif.com/workshops/edge-ai-with-esp32-s3/
+          </a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🧠</div>
+        <div>
+          <h4>Edge Impulse Platform — TinyML สำหรับ ESP32</h4>
+          <p>Platform สำหรับฝึก deploy ML model บน microcontroller รองรับ voice,
+             gesture, anomaly detection พร้อม Arduino library export</p>
+          <a href="https://www.electromaker.io/project/view/offline-esp32-voice-recognition-with-edge-impulse" target="_blank" rel="noopener">
+            ตัวอย่าง: Offline Voice Recognition บน ESP32
+          </a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🧵</div>
+        <div>
+          <h4>OpenThread.io — Espressif Vendor Page</h4>
+          <p>เอกสาร OpenThread สำหรับ ESP32-H2 และ ESP32-C6 รวมถึง
+             RCP firmware, Border Router setup guides อย่างเป็นทางการ</p>
+          <a href="https://openthread.io/vendors/espressif" target="_blank" rel="noopener">
+            openthread.io/vendors/espressif
+          </a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🏠</div>
+        <div>
+          <h4>Espressif ESP32-E22 Official Announcement</h4>
+          <p>ประกาศทางการของ Espressif เกี่ยวกับ ESP32-E22 Wi-Fi 6E Radio Co-Processor
+             ข้อมูล spec, use case, และ availability</p>
+          <a href="https://www.espressif.com/en/news/ESP32_E22_Announcement" target="_blank" rel="noopener">
+            espressif.com/en/news/ESP32_E22_Announcement
+          </a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🤖</div>
+        <div>
+          <h4>Xiaozhi ESP32 — Open Source LLM Voice Framework</h4>
+          <p>Framework open-source สำหรับสร้าง LLM voice assistant บน ESP32
+             รองรับ MCP, multiple cloud ASR/TTS providers</p>
+          <a href="https://aiindigo.com/blog/reviewing-xiaozhi-esp32-bringing-llm-voice-interaction-to-the-edge-in-2026" target="_blank" rel="noopener">
+            Review: Xiaozhi ESP32 LLM Voice 2026
+          </a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">📊</div>
+        <div>
+          <h4>ESP32-S31 Edge AI Vision — Benchmark Official</h4>
+          <p>ผล benchmark อย่างเป็นทางการจาก Espressif เปรียบเทียบ inference time
+             ระหว่าง ESP32-S3 และ ESP32-S31 สำหรับ YOLO11 models</p>
+          <a href="https://esp32-s31.espressif.com/en/official-projects/6" target="_blank" rel="noopener">
+            esp32-s31.espressif.com/en/official-projects/6
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Summary box -->
+    <div style="margin-top:2rem; background: linear-gradient(135deg,#1e293b,#1e1b4b66); border:1px solid rgba(167,139,250,0.3); border-radius:12px; padding:1.5rem;">
+      <h3 style="color:#a78bfa; margin-bottom:0.75rem; font-size:1rem;">📋 สรุปประเด็นสำคัญวันนี้</h3>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:0.75rem;">
+        <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:0.75rem; font-size:0.82rem; color:var(--text-secondary);">
+          <strong style="color:#38bdf8;">Wi-Fi 6E:</strong> ESP32-E22 เป็น Co-Processor แรกของ Espressif ที่รองรับ 6 GHz band ช่วยลด interference ใน Smart Home ที่หนาแน่น
+        </div>
+        <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:0.75rem; font-size:0.82rem; color:var(--text-secondary);">
+          <strong style="color:#34d399;">Matter/Thread:</strong> ESP32-H2 ได้ Thread 1.3.0 cert แล้ว — ทำ DIY border router ราคา ~฿430 แทน commercial ~฿2,000+
+        </div>
+        <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:0.75rem; font-size:0.82rem; color:var(--text-secondary);">
+          <strong style="color:#f472b6;">Voice AI:</strong> Xiaozhi ESP32 + MCP เปิด ecosystem ใหม่สำหรับ LLM-powered voice devices บน edge
+        </div>
+        <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:0.75rem; font-size:0.82rem; color:var(--text-secondary);">
+          <strong style="color:#fb923c;">Energy:</strong> Piezo + RF harvesting เปิดโอกาสสำหรับ industrial sensor ที่ไม่ต้องเปลี่ยนแบต
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย <strong>AI Researcher</strong> | วันที่ 17 ตุลาคม 2026</p>
+  <p style="margin-top:0.4rem;">แหล่งอ้างอิง: Espressif Systems · ESPHome · Edge Impulse · OpenThread.io · aiindigo.com · cnx-software.com · hackster.io</p>
+</footer>
+
+</body>
+</html>
