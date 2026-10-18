@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 18 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-deep: #080f1e;
+    --bg-card: #0d1b2a;
+    --bg-card2: #111827;
+    --accent-orange: #f97316;
+    --accent-teal: #14b8a6;
+    --accent-violet: #8b5cf6;
+    --accent-sky: #38bdf8;
+    --accent-green: #22c55e;
+    --accent-pink: #ec4899;
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --border: rgba(255,255,255,0.07);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-main);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ─── Header ─── */
+  header {
+    background: linear-gradient(135deg, #0d1b2a 0%, #1a0533 50%, #0d2b1a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 1rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(139,92,246,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 50%, rgba(20,184,166,0.10) 0%, transparent 60%);
+  }
+  .header-content { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; }
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, var(--accent-violet), var(--accent-teal));
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.7rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #c4b5fd, #5eead4, #86efac);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .header-date {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 1.2rem;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .stat-chip strong { color: var(--text-main); }
+
+  /* ─── Layout ─── */
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+
+  /* ─── Section ─── */
+  section { margin-bottom: 3rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-orange { background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.25); }
+  .icon-teal   { background: rgba(20,184,166,0.15); border: 1px solid rgba(20,184,166,0.25); }
+  .icon-violet { background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.25); }
+  .icon-green  { background: rgba(34,197,94,0.15);  border: 1px solid rgba(34,197,94,0.25); }
+  .icon-sky    { background: rgba(56,189,248,0.15);  border: 1px solid rgba(56,189,248,0.25); }
+
+  .section-header h2 { font-size: 1.25rem; font-weight: 700; }
+  .section-header p  { font-size: 0.82rem; color: var(--text-muted); }
+
+  /* ─── Card Grid ─── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+  .card-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.65rem;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 0.75rem;
+  }
+  .label-orange { background: rgba(249,115,22,0.15); color: #fb923c; border: 1px solid rgba(249,115,22,0.2); }
+  .label-teal   { background: rgba(20,184,166,0.15);  color: #2dd4bf; border: 1px solid rgba(20,184,166,0.2); }
+  .label-violet { background: rgba(139,92,246,0.15);  color: #a78bfa; border: 1px solid rgba(139,92,246,0.2); }
+  .label-green  { background: rgba(34,197,94,0.15);   color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
+  .label-sky    { background: rgba(56,189,248,0.15);  color: #7dd3fc; border: 1px solid rgba(56,189,248,0.2); }
+  .label-pink   { background: rgba(236,72,153,0.15);  color: #f472b6; border: 1px solid rgba(236,72,153,0.2); }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    color: #f1f5f9;
+  }
+  .card p { font-size: 0.88rem; color: var(--text-muted); line-height: 1.7; }
+
+  /* ─── Info Box ─── */
+  .info-box {
+    background: rgba(20,184,166,0.06);
+    border: 1px solid rgba(20,184,166,0.2);
+    border-left: 3px solid var(--accent-teal);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    margin-top: 0.9rem;
+    font-size: 0.83rem;
+    color: #99f6e4;
+  }
+  .warn-box {
+    background: rgba(249,115,22,0.06);
+    border: 1px solid rgba(249,115,22,0.2);
+    border-left: 3px solid var(--accent-orange);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    margin-top: 0.9rem;
+    font-size: 0.83rem;
+    color: #fed7aa;
+  }
+
+  /* ─── Spec Table ─── */
+  .spec-table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.82rem; }
+  .spec-table th {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-muted);
+    font-weight: 600;
+    padding: 0.45rem 0.7rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .spec-table td {
+    padding: 0.45rem 0.7rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text-muted);
+  }
+  .spec-table td:first-child { color: #e2e8f0; font-weight: 600; }
+  .spec-table tr:last-child td { border-bottom: none; }
+
+  /* ─── Tag List ─── */
+  .tag-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.8rem; }
+  .tag {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  /* ─── Power Card ─── */
+  .power-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.8rem;
+  }
+  .power-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.7rem;
+    text-align: center;
+  }
+  .power-value { font-size: 1.25rem; font-weight: 700; color: #4ade80; }
+  .power-label { font-size: 0.72rem; color: var(--text-dim); margin-top: 0.2rem; }
+
+  /* ─── Resource Links ─── */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+  }
+  .resource-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .resource-card h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .resource-card p  { font-size: 0.78rem; color: var(--text-muted); }
+  .resource-card a  { color: var(--accent-teal); text-decoration: none; font-size: 0.78rem; }
+  .resource-card a:hover { text-decoration: underline; }
+
+  /* ─── Full-width Card ─── */
+  .card-wide {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .card-wide h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .card-wide p  { font-size: 0.88rem; color: var(--text-muted); }
+
+  /* ─── Footer ─── */
+  footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+  }
+  footer strong { color: var(--text-muted); }
+  .footer-refs { margin-top: 1rem; font-size: 0.75rem; line-height: 2; }
+  .footer-refs a { color: var(--accent-teal); text-decoration: none; }
+  .footer-refs a:hover { text-decoration: underline; }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 640px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .resource-grid { grid-template-columns: 1fr; }
+    .power-grid { grid-template-columns: repeat(2, 1fr); }
+    header { padding: 2rem 1rem 1.5rem; }
+    header h1 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-content">
+    <div class="header-badge">Daily Research Report</div>
+    <h1>ESP32 &amp; Sensor Innovations</h1>
+    <p class="header-date">วันอาทิตย์ที่ 18 ตุลาคม 2026 &nbsp;|&nbsp; รวบรวมโดย AI Researcher</p>
+    <div class="header-stats">
+      <div class="stat-chip"><strong>4</strong> หัวข้อหลัก</div>
+      <div class="stat-chip"><strong>12</strong> ไอเดีย &amp; โปรเจกต์</div>
+      <div class="stat-chip"><strong>ESPHome 2026.9</strong> รีลีสใหม่</div>
+      <div class="stat-chip"><strong>Solar + Deep Sleep</strong> โฟกัสวันนี้</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ════════════════════════════════════════
+       SECTION 1: INNOVATIONS
+  ════════════════════════════════════════ -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🚀</div>
+      <div>
+        <h2>ESPHome 2026.9 &amp; อัปเดตสำคัญ</h2>
+        <p>รีลีสล่าสุดจาก ESPHome และการเปลี่ยนแปลงที่ควรรู้</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <span class="card-label label-orange">ESPHome 2026.9.0</span>
+        <h3>Faster Builds &amp; Encrypted OTA — รีลีสกันยายน 2026</h3>
+        <p>
+          ESPHome 2026.9.0 ออกมาเมื่อ 16 กันยายน 2026 ประกอบด้วย <strong>6 component ใหม่</strong>
+          และการปรับปรุงกว่า 20 รายการ โดยจุดเด่นหลักคือการ <strong>compress OTA upload</strong> บน ESP32,
+          RP2040, LibreTiny และ Host — ลดขนาด firmware ที่ส่งผ่านอากาศได้อย่างมีนัยสำคัญ
+        </p>
+        <div class="info-box">
+          <strong>ฟีเจอร์ใหม่ที่น่าสนใจ:</strong> รองรับ Fahrenheit สำหรับ mitsubishi_cn105,
+          ตัวเลือก <code>continuous</code> สำหรับ modbus_client, และ <code>tcp_send_buffer</code>
+          ใน network component — ปรับ buffer ขนาดการส่งข้อมูล TCP ได้เอง
+        </div>
+        <div class="tag-list">
+          <span class="tag">OTA</span>
+          <span class="tag">Compress</span>
+          <span class="tag">Modbus</span>
+          <span class="tag">ESP32</span>
+          <span class="tag">ESP8266</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-teal">ESPHome Beta</span>
+        <h3>ESPHome 2026.10 Beta — BLE Tracking &amp; ESP8266 Toolchain</h3>
+        <p>
+          ESPHome 2026.10 beta 3 (12 ต.ค.) แก้ไขบั๊กสำคัญ:
+          <strong>ESP32 BLE connection tracking</strong> ที่ฆ่าการเชื่อมต่อ BLE ผิดพลาด
+          และลด RAM ใช้งานบน ESP8266 ให้น้อยลง
+        </p>
+        <p style="margin-top:0.5rem;">
+          เวอร์ชัน 2026.9 ยังนำ scaffolding สำหรับ <strong>ESP8266 native toolchain</strong> มาด้วย
+          — เตรียมพร้อมสำหรับการเปลี่ยน build system ในอนาคต
+        </p>
+        <div class="warn-box">
+          <strong>Breaking Change ESPHome 2026.4:</strong> เปลี่ยน default เป็น RISC-V compiler
+          สำหรับ ESP32 ซึ่งเร็วกว่า แต่อาจทำให้ binary เก่าไม่เข้ากัน — compile ใหม่ทั้งหมด!
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-violet">ESP32-S31</span>
+        <h3>ESP32-S31 Touchscreen Development Board — Wi-Fi 6 ครบสูตร</h3>
+        <p>
+          บอร์ดใหม่บน ESP32-S31 chip มาพร้อม <strong>จอ IPS 4.3" 800×480</strong>
+          รองรับ Wi-Fi 6, BLE 5.4, Zigbee, Thread ในชิปตัวเดียว ราคาประมาณ <strong>$39</strong>
+          — เหมาะสำหรับ HMI และ dashboard display สำหรับ smart home
+        </p>
+        <div class="info-box">
+          <strong>จุดน่าสนใจ:</strong> มาพร้อม ESP-IDF, LVGL และตัวอย่างโปรเจกต์ 18 โปรเจกต์สำเร็จรูป
+          รองรับ Arduino IDE กำลังพัฒนา — อาจเป็นตัวแทน M5Stack ราคาประหยัด
+        </div>
+        <div class="tag-list">
+          <span class="tag">Wi-Fi 6</span>
+          <span class="tag">LVGL</span>
+          <span class="tag">Matter</span>
+          <span class="tag">HMI</span>
+          <span class="tag">Thread</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-green">ESP32-C6</span>
+        <h3>ESP32-C6 เป็น Zigbee Coordinator ด้วย Chip เดียว</h3>
+        <p>
+          ESP32-C6 มี radio 802.15.4 ในตัว — รัน <strong>Zigbee, Thread</strong> พร้อมกัน Wi-Fi 6 บนชิปเดียว
+          ทำให้สามารถสร้าง Zigbee Coordinator สำหรับ Home Assistant โดยไม่ต้องใช้ dongle USB แยก
+        </p>
+        <p style="margin-top:0.5rem;">
+          ข้อสังเกต: output เริ่มต้นเพียง <strong>+3 dBm</strong> — ควรใช้ external antenna
+          สำหรับบ้านที่มีผนังหลายชั้น หรือพิจารณา ESP32-H2 สำหรับ Zigbee เฉพาะทาง
+        </p>
+        <div class="tag-list">
+          <span class="tag">Zigbee</span>
+          <span class="tag">Home Assistant</span>
+          <span class="tag">ZHA</span>
+          <span class="tag">SEEED XIAO</span>
+          <span class="tag">Coordinator</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       SECTION 2: PROJECTS
+  ════════════════════════════════════════ -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-teal">🔋</div>
+      <div>
+        <h2>Solar &amp; Battery — IoT พลังงานอิสระ</h2>
+        <p>โปรเจกต์ ESP32 ที่ทำงานโดยไม่ต้องเสียบปลั๊ก</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <span class="card-label label-teal">Solar + MPPT</span>
+        <h3>ESP32-C6 Solar Node Board — BQ25186 MPPT Charger</h3>
+        <p>
+          Circuitrocks ออกแบบบอร์ด solar node บน <strong>ESP32-C6 Mini</strong> พร้อม
+          <strong>TI BQ25186</strong> single-cell linear charger — มี reverse-voltage protection
+          และ QWIIC I2C connector สำหรับเชื่อม sensor ภายนอก
+        </p>
+        <p style="margin-top:0.5rem;">
+          แนวทาง firmware: ตั้งค่า <strong>deep sleep ระหว่างการอ่านค่า</strong>
+          ตื่นทุก 15–30 นาที ส่งข้อมูล แล้วกลับไปนอน
+        </p>
+        <div class="power-grid">
+          <div class="power-item">
+            <div class="power-value">&lt;1 mA</div>
+            <div class="power-label">Deep Sleep</div>
+          </div>
+          <div class="power-item">
+            <div class="power-value">~120 mA</div>
+            <div class="power-label">Active Wi-Fi</div>
+          </div>
+          <div class="power-item">
+            <div class="power-value">10 GPIO</div>
+            <div class="power-label">Pinout</div>
+          </div>
+          <div class="power-item">
+            <div class="power-value">1 เซลล์</div>
+            <div class="power-label">Li-Ion</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-green">Off-Grid Weather</span>
+        <h3>ESP32 + BME280 — สถานีอุตุนิยมวิทยาไม่ต้องพึ่งไฟบ้าน</h3>
+        <p>
+          บทความ June 2026 จาก ShillehTek สร้าง weather station แบบ off-grid สมบูรณ์:
+          วัด <strong>อุณหภูมิ, ความชื้น, ความดันอากาศ</strong> ด้วย BME280
+          ส่งข้อมูลผ่าน Wi-Fi ขึ้น dashboard ฟรี
+        </p>
+        <p style="margin-top:0.5rem;">
+          ครอบคลุมการคำนวณ solar panel sizing, MPPT charging, battery protection circuit
+          และการตั้งค่า deep sleep ให้ทนทานตลอดฤดูหนาว
+        </p>
+        <div class="info-box">
+          <strong>Battery Life Estimate:</strong> ด้วย 2,000 mAh + deep sleep ส่งข้อมูลทุก 10 นาที
+          คาดว่าอยู่ได้ <strong>มากกว่า 1 ปี</strong> โดยไม่ต้องมีแผงโซลาร์เสริม
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-violet">LoRa Farm</span>
+        <h3>Solar-Powered LoRa Farm Sensor Node — ฟาร์มระยะไกล</h3>
+        <p>
+          Zbotic เผยแพร่ design สำหรับ smart farm sensor ที่ไม่ต้องวิ่งสายไฟ:
+          ESP32 ตื่นทุก <strong>15–30 นาที</strong> อ่านค่า sensor แล้วส่งผ่าน <strong>LoRa</strong>
+          กลับไปนอนต่อ — ลด average current จาก 120 mA เหลือ <strong>ใต้ 1 mA</strong>
+        </p>
+        <p style="margin-top:0.5rem;">
+          เหมาะสำหรับฟาร์มที่ไม่มีสัญญาณ Wi-Fi — LoRa ส่งได้ไกล 2–10 กม. ในพื้นที่โล่ง
+          ด้วยแผงโซลาร์ขนาดเล็กเพียง 1–2W
+        </p>
+        <div class="tag-list">
+          <span class="tag">LoRa</span>
+          <span class="tag">Agriculture</span>
+          <span class="tag">Solar</span>
+          <span class="tag">Deep Sleep</span>
+          <span class="tag">RTC Memory</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-sky">Deep Sleep Tips</span>
+        <h3>Deep Sleep Best Practices — ออกแบบให้ประหยัดสุด</h3>
+        <p>
+          ข้อมูลจาก Espressif forum และ DFRobot: ใน deep sleep mode ระบบปิด <strong>CPU, Wi-Fi,
+          Bluetooth และ Main RAM</strong> ทั้งหมด — ใช้แค่ RTC module, ULP co-processor
+          และ RTC memory
+        </p>
+        <table class="spec-table">
+          <tr><th>Wake Source</th><th>ใช้งาน</th></tr>
+          <tr><td>Timer</td><td>ตั้งเวลาตื่น เช่น ทุก 10 นาที</td></tr>
+          <tr><td>GPIO Pin</td><td>ตื่นเมื่อมีสัญญาณ เช่น ปุ่มกด</td></tr>
+          <tr><td>ULP Co-Processor</td><td>รัน script เล็กๆ ตรวจ sensor แล้วปลุก CPU</td></tr>
+        </table>
+        <div class="warn-box">
+          <strong>ข้อควรระวัง:</strong> RTC clock drift สูงสุด ~5% ในโหมด deep sleep
+          — เพิ่ม external 32 kHz crystal เพื่อความแม่นยำ หากต้องการ timestamp ที่เที่ยงตรง
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       SECTION 3: SENSORS & TOOLS
+  ════════════════════════════════════════ -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-violet">🌬️</div>
+      <div>
+        <h2>Air Quality &amp; Environmental Sensors</h2>
+        <p>ตัวเลือก sensor วัดคุณภาพอากาศสำหรับ ESP32</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <span class="card-label label-violet">Particle Sensor</span>
+        <h3>PMS5003 / PMS7003 — วัด PM2.5 แม่นยำสูง</h3>
+        <p>
+          Laser particle sensor จาก Plantower ที่นิยมที่สุด วัด <strong>PM1.0, PM2.5, PM10</strong>
+          ด้วยหลักการ laser scattering — เชื่อมต่อ ESP32 ผ่าน UART ง่ายมาก
+        </p>
+        <p style="margin-top:0.5rem;">
+          โปรเจกต์ portable monitor ใช้ PMS7003 + ESP32 แปลงค่าดิบเป็น <strong>AQI</strong>
+          ตามสูตร NAAQS แสดงบน OLED 0.96" และอัปโหลด ThingSpeak
+        </p>
+        <table class="spec-table">
+          <tr><th>Spec</th><th>ค่า</th></tr>
+          <tr><td>Range</td><td>0.3–10 µm</td></tr>
+          <tr><td>Interface</td><td>UART 9600 bps</td></tr>
+          <tr><td>Voltage</td><td>5V</td></tr>
+          <tr><td>Current</td><td>~100 mA (active)</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-orange">Gas Sensor</span>
+        <h3>SDS011 + MQ135 + DHT22 — ชุด PM2.5 + Gas ครบ</h3>
+        <p>
+          งานวิจัย 2026 ใช้ชุด sensor สามตัวร่วมกับ ESP32:
+          <strong>SDS011</strong> (PM2.5/PM10 laser), <strong>MQ135</strong> (CO, CO₂, VOC),
+          <strong>DHT22</strong> (อุณหภูมิ/ความชื้น) — รายงานความแม่นยำหลัง calibration
+          ที่ <strong>85%+</strong> เทียบกับเครื่องมาตรฐาน
+        </p>
+        <div class="warn-box">
+          <strong>คำเตือน MQ-series:</strong> sensor ประเภทนี้มี cross-sensitivity สูง — อุณหภูมิ
+          และความชื้นส่งผลต่อการอ่านค่า ควร calibrate ในสภาพแวดล้อมจริงก่อนใช้งาน
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-sky">Weather Station</span>
+        <h3>ESP32 + BME280/680 — Multi-Sensor Environmental Station</h3>
+        <p>
+          งานวิจัย TELKOMNIKA ออกแบบ ESP32 weather station วัด <strong>6 ค่า</strong>:
+          wind speed, wind direction, humidity, temperature, pressure, rainfall และ UV index
+          — ส่งผ่าน GSM/MQTT ขึ้น dashboard
+        </p>
+        <p style="margin-top:0.5rem;">
+          BME680 (รุ่นอัพเกรดจาก BME280) เพิ่ม <strong>VOC gas sensor</strong> ในชิปเดียว
+          คำนวณ IAQ (Indoor Air Quality) ได้โดยตรงผ่าน Bosch BSEC library
+        </p>
+        <div class="tag-list">
+          <span class="tag">BME280</span>
+          <span class="tag">BME680</span>
+          <span class="tag">UV Index</span>
+          <span class="tag">MQTT</span>
+          <span class="tag">BSEC</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-green">Tools</span>
+        <h3>ESPConnect &amp; ESPWebApps — จัดการ ESP32 ผ่านเบราว์เซอร์</h3>
+        <p>
+          <strong>ESPConnect</strong> (GitHub trending 2026): Zero-install web app ที่ช่วย
+          explore, backup และ manage ESP32 ผ่าน browser โดยตรง — ไม่ต้องลง IDE
+        </p>
+        <p style="margin-top:0.5rem;">
+          <strong>ESPWebApps</strong>: community-driven firmware hub รองรับ
+          <strong>WebSerial flashing</strong> ผ่าน browser — นักพัฒนา contribute app
+          ได้โดยตรง มี workflow มาตรฐาน
+        </p>
+        <div class="info-box">
+          <strong>Use Case:</strong> เหมาะสำหรับ maker ที่ต้องการ flash firmware
+          ให้ผู้อื่นโดยไม่ต้องติดตั้ง driver หรือ IDE — แค่มี Chrome/Edge ก็พอ
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       SECTION 4: GITHUB TRENDING PROJECTS
+  ════════════════════════════════════════ -->
+  <section id="github-trending">
+    <div class="section-header">
+      <div class="section-icon icon-green">📈</div>
+      <div>
+        <h2>GitHub Trending — โปรเจกต์ ESP32 ที่กำลังมาแรง</h2>
+        <p>Repository ที่ติด GitHub Trending ในปี 2026</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="card">
+        <span class="card-label label-pink">Trending #1</span>
+        <h3>xinnan-tech/xiaozhi-esp32-server — AI Voice บน Edge</h3>
+        <p>
+          ติด <strong>GitHub Trending อันดับ 1</strong> เมื่อ 21 เมษายน 2026 —
+          server-side สำหรับโปรเจกต์ Xiaozhi ที่ทำให้ ESP32 สามารถโต้ตอบด้วยเสียง
+          ผ่าน LLM ได้แบบ real-time
+        </p>
+        <div class="tag-list">
+          <span class="tag">LLM Voice</span>
+          <span class="tag">Edge AI</span>
+          <span class="tag">Server</span>
+          <span class="tag">Python</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-orange">Security Tool</span>
+        <h3>geo-tp/ESP32-Bit-Pirate — Multi-Protocol Analyzer</h3>
+        <p>
+          ติด GitHub Trending อันดับ 1 เมื่อ <strong>13 กุมภาพันธ์ 2026</strong> —
+          เปลี่ยน ESP32 เป็น multi-protocol hardware analyzer สำหรับ security research
+          และ debugging
+        </p>
+        <div class="tag-list">
+          <span class="tag">Security</span>
+          <span class="tag">Protocol Analyzer</span>
+          <span class="tag">Hardware Hacking</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-sky">Beginner Friendly</span>
+        <h3>eug/esp32-starter-kit-guide — Smart Room Hub สำหรับมือใหม่</h3>
+        <p>
+          คู่มือแบบ step-by-step เปลี่ยน ESP32 starter kit ราคา <strong>€13</strong>
+          เป็น smart room hub ครบวงจร — 6 phases ครอบคลุมทุก component
+          ในชุด พร้อม wiring diagram รายละเอียดทุก hole
+        </p>
+        <div class="info-box">
+          <strong>เหมาะสำหรับ:</strong> ผู้เริ่มต้น IoT ที่ซื้อ starter kit มาแล้วไม่รู้จะทำอะไร
+          — ทำตามได้ทีละขั้นตอนจนสร้าง smart home node ได้จริง
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-label label-teal">Fun Project</span>
+        <h3>OktaneZA/ESP32Departures — ป้ายรถไฟ DIY ด้วย ESP32</h3>
+        <p>
+          Rebuild จาก PiDepartures (เดิมรัน Raspberry Pi) มารันบน <strong>ESP32 + LCD 1.9"</strong>
+          ราคาถูกกว่ามาก — แสดง departure time รถไฟ/รถเมล์แบบ real-time
+          ดึงข้อมูลจาก public transit API
+        </p>
+        <p style="margin-top:0.5rem;">
+          ไอเดียน่าประยุกต์ใช้ในไทย: ป้ายรถไฟฟ้า BTS/MRT แบบ DIY ติดที่บ้าน
+          หรือดัดแปลงเป็นป้ายข้อมูลทั่วไป
+        </p>
+        <div class="tag-list">
+          <span class="tag">LCD 1.9"</span>
+          <span class="tag">Transit API</span>
+          <span class="tag">Display</span>
+          <span class="tag">Fun</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       SECTION 5: RESOURCES
+  ════════════════════════════════════════ -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-sky">🔗</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์แนะนำ</h2>
+        <p>เอกสาร, บทความ และ repository ที่น่าติดตาม</p>
+      </div>
+    </div>
+
+    <div class="resource-grid">
+      <div class="resource-card">
+        <div class="resource-icon">📋</div>
+        <div>
+          <h4>ESPHome Changelog 2026.9</h4>
+          <p>รายละเอียด feature ทั้งหมดในรีลีสล่าสุด September 2026</p>
+          <a href="https://esphome.io/changelog/2026.9.0.html" target="_blank">esphome.io/changelog/2026.9.0.html ↗</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🌱</div>
+        <div>
+          <h4>Solar-Powered ESP32-C6 Board</h4>
+          <p>บอร์ด solar node + BQ25186 MPPT จาก Circuitrocks</p>
+          <a href="https://blog.circuit.rocks/build-a-solar-powered-iot-node-with-this-esp32-c6-board" target="_blank">blog.circuit.rocks ↗</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🌤️</div>
+        <div>
+          <h4>Off-Grid Weather Station Guide</h4>
+          <p>ESP32 + BME280 ไม่ต้องพึ่งไฟบ้าน พร้อม solar sizing</p>
+          <a href="https://shillehtek.com/blogs/news/esp32-bme280-off-grid-weather-station" target="_blank">shillehtek.com ↗</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">💤</div>
+        <div>
+          <h4>ESP32 Deep Sleep Tutorial</h4>
+          <p>DFRobot: wake sources, RTC memory, power modes</p>
+          <a href="https://community.dfrobot.com/makelog-314135.html" target="_blank">community.dfrobot.com ↗</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🌐</div>
+        <div>
+          <h4>ESP32 Power Optimisation Guide</h4>
+          <p>ตาราง current draw ทุก mode และเทคนิคประหยัดพลังงาน</p>
+          <a href="https://www.espboards.dev/blog/esp32-power-optimisation/" target="_blank">espboards.dev ↗</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🏠</div>
+        <div>
+          <h4>ESP32-C6 Zigbee + Home Assistant Tutorial</h4>
+          <p>คู่มือสร้าง Zigbee Coordinator ด้วย ESP32-C6</p>
+          <a href="https://blog.usro.net/it/2025/05/esp32-with-zigbee-home-assistant-detailed-tutorial/" target="_blank">blog.usro.net ↗</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🌿</div>
+        <div>
+          <h4>LoRa Farm Sensor Node Design</h4>
+          <p>Zbotic: solar + LoRa + deep sleep สำหรับ smart farm</p>
+          <a href="https://zbotic.in/solar-powered-farm-sensor-node-off-grid-iot-design/" target="_blank">zbotic.in ↗</a>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">📊</div>
+        <div>
+          <h4>GitHub Trending ESP32 Repos</h4>
+          <p>ติดตาม repository ที่กำลัง trending บน Trendshift</p>
+          <a href="https://trendshift.io/repositories/18822" target="_blank">trendshift.io ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย <strong>AI Researcher</strong> &nbsp;|&nbsp; วันที่ 18 ตุลาคม 2026</p>
+  <p style="margin-top:0.4rem;">ESP32 &amp; Sensor Innovations Daily Report — ข้อมูลรวบรวมจากแหล่งสาธารณะเพื่อการศึกษา</p>
+  <div class="footer-refs">
+    <strong>แหล่งอ้างอิงหลัก:</strong><br>
+    <a href="https://esphome.io/changelog/2026.9.0.html">ESPHome 2026.9.0 Changelog</a> &nbsp;·&nbsp;
+    <a href="https://esp32.co.uk/esphome-2026-10-beta3-esp32-ble-esp8266-memory/">ESPHome 2026.10 Beta 3</a> &nbsp;·&nbsp;
+    <a href="https://blog.adafruit.com/2026/04/07/espressif-unveils-the-esp32-s31-a-dual-core-risc-v-soc-with-wi-fi-6-bluetooth-5-4/">Adafruit: ESP32-S31</a> &nbsp;·&nbsp;
+    <a href="https://blog.circuit.rocks/build-a-solar-powered-iot-node-with-this-esp32-c6-board">Circuitrocks Solar Node</a> &nbsp;·&nbsp;
+    <a href="https://shillehtek.com/blogs/news/esp32-bme280-off-grid-weather-station">ShillehTek Weather Station</a>
+  </div>
+</footer>
+
+</body>
+</html>
