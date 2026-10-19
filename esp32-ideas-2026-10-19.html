@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 19 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.8; }
+
+  header {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1a1045 100%);
+    border-bottom: 1px solid #334155;
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    left: -10%;
+    width: 120%;
+    height: 200%;
+    background: radial-gradient(ellipse, rgba(99,102,241,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #818cf8, #a78bfa, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+  }
+  header p.subtitle {
+    color: #94a3b8;
+    font-size: 1rem;
+    margin-top: 0.4rem;
+    position: relative;
+  }
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    position: relative;
+  }
+  .badge {
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.35);
+    color: #a5b4fc;
+    padding: 0.2rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+  }
+
+  section { margin-bottom: 3rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #1e293b;
+  }
+  .section-icon {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-purple { background: rgba(139,92,246,0.2); }
+  .icon-teal   { background: rgba(20,184,166,0.2); }
+  .icon-pink   { background: rgba(236,72,153,0.2); }
+  .icon-amber  { background: rgba(245,158,11,0.2); }
+
+  .section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 1rem;
+    padding: 1.4rem;
+    transition: transform .18s, border-color .18s, box-shadow .18s;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: #6366f1;
+    box-shadow: 0 8px 24px rgba(99,102,241,0.15);
+  }
+  .card-tag {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-bottom: 0.7rem;
+  }
+  .tag-new     { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+  .tag-chip    { background: rgba(99,102,241,0.15);  color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+  .tag-project { background: rgba(245,158,11,0.15);  color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .tag-sensor  { background: rgba(236,72,153,0.15);  color: #f472b6; border: 1px solid rgba(236,72,153,0.3); }
+  .tag-tip     { background: rgba(14,165,233,0.15);  color: #38bdf8; border: 1px solid rgba(14,165,233,0.3); }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+  }
+  .card p {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    line-height: 1.7;
+  }
+  .card ul {
+    list-style: none;
+    margin-top: 0.6rem;
+  }
+  .card ul li {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    padding: 0.15rem 0;
+    padding-left: 1.1rem;
+    position: relative;
+  }
+  .card ul li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: #6366f1;
+  }
+  .card .highlight {
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    margin-top: 0.75rem;
+    font-size: 0.82rem;
+    color: #a5b4fc;
+  }
+  .card code {
+    background: #0f172a;
+    border-radius: 0.3rem;
+    padding: 0.1rem 0.4rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    color: #7dd3fc;
+  }
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.75rem;
+    font-size: 0.84rem;
+  }
+  .spec-table th {
+    text-align: left;
+    padding: 0.35rem 0.6rem;
+    background: rgba(99,102,241,0.12);
+    color: #818cf8;
+    font-weight: 600;
+  }
+  .spec-table td {
+    padding: 0.3rem 0.6rem;
+    color: #cbd5e1;
+    border-top: 1px solid #1e293b;
+  }
+  .spec-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+  /* Project section cards */
+  .project-card {
+    background: linear-gradient(135deg, #1e293b, #1a1e30);
+    border: 1px solid #334155;
+    border-radius: 1rem;
+    padding: 1.4rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    gap: 1.2rem;
+    align-items: flex-start;
+    transition: border-color .18s, box-shadow .18s;
+  }
+  .project-card:hover {
+    border-color: #0ea5e9;
+    box-shadow: 0 6px 20px rgba(14,165,233,0.12);
+  }
+  .project-emoji {
+    font-size: 2rem;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 0.1rem;
+  }
+  .project-body h3 { font-size: 1rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.4rem; }
+  .project-body p  { font-size: 0.88rem; color: #94a3b8; line-height: 1.6; }
+  .project-parts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+  }
+  .part-tag {
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: #7dd3fc;
+    padding: 0.1rem 0.55rem;
+    border-radius: 0.35rem;
+    font-size: 0.77rem;
+    font-family: 'Courier New', monospace;
+  }
+
+  /* Resources */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 0.75rem;
+    padding: 1.1rem 1.2rem;
+    transition: border-color .18s;
+  }
+  .resource-card:hover { border-color: #a78bfa; }
+  .resource-card a {
+    color: #a78bfa;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.92rem;
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+  .resource-card a:hover { color: #c084fc; }
+  .resource-card p { font-size: 0.82rem; color: #64748b; }
+
+  footer {
+    background: #1e293b;
+    border-top: 1px solid #334155;
+    text-align: center;
+    padding: 1.5rem 1rem;
+    font-size: 0.82rem;
+    color: #475569;
+  }
+  footer strong { color: #64748b; }
+
+  @media (max-width: 600px) {
+    .project-card { flex-direction: column; gap: 0.75rem; }
+    .card-grid, .resource-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">19 ตุลาคม 2026 · ประจำวัน · รวบรวมโดย AI Researcher</p>
+  <div class="badge-row">
+    <span class="badge">ESP32-P4 HMI</span>
+    <span class="badge">Wearable Health</span>
+    <span class="badge">Water Quality</span>
+    <span class="badge">TinyML 2026</span>
+    <span class="badge">Matter / Thread</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- SECTION 1: INNOVATIONS -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-purple">🔬</div>
+      <h2>นวัตกรรมและอัปเดตสำคัญ</h2>
+    </div>
+    <div class="card-grid">
+
+      <div class="card">
+        <span class="card-tag tag-chip">ESP32-P4</span>
+        <h3>ESP32-P4 Rev 3.0/3.1 — อัปเดต Hardware Design สำคัญ</h3>
+        <p>Espressif แนะนำให้ใช้ Rev 3.0 หรือ 3.1 สำหรับ design ใหม่ทั้งหมด เนื่องจากมีการเปลี่ยนแปลง pin จาก "Not Connected" เป็น power rail ทำให้บอร์ดเวอร์ชันเก่า (1.0, 1.1, 1.3) ไม่แนะนำสำหรับโปรเจกต์ใหม่</p>
+        <ul>
+          <li>Dual-core RISC-V สูงสุด 400 MHz</li>
+          <li>55 GPIO pins — มากที่สุดในตระกูล ESP32</li>
+          <li>MIPI DSI/CSI interface สำหรับ display &amp; camera</li>
+          <li>ไม่มี Wi-Fi/BT ในตัว — ต้องใช้ co-processor</li>
+        </ul>
+        <div class="highlight">⚠️ ตรวจสอบ revision ก่อนสั่งซื้อ: Rev 3.0+ เท่านั้นสำหรับ design ใหม่</div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-new">Ecosystem</span>
+        <h3>ESP32-P4 HMI Board Ecosystem — Waveshare &amp; Elecrow 2026</h3>
+        <p>ตลาดบอร์ด HMI ที่ใช้ ESP32-P4 เติบโตอย่างรวดเร็ว ทั้ง Waveshare, Elecrow, 4D Systems และ M5Stack ต่างออกบอร์ดมารองรับ Use Case ด้าน Smart HMI, Industrial Panel และ Edge AI Display</p>
+        <table class="spec-table">
+          <tr><th>บอร์ด</th><th>หน้าจอ</th><th>Wi-Fi</th></tr>
+          <tr><td>Waveshare ESP32-P4</td><td>7/8/10.1"</td><td>C6-MINI (Wi-Fi 6)</td></tr>
+          <tr><td>Elecrow CrowPanel Adv.</td><td>7" Touch</td><td>C6-MINI (Wi-Fi 6)</td></tr>
+          <tr><td>4D Systems P4 Series</td><td>7–10.1"</td><td>ตามรุ่น</td></tr>
+          <tr><td>M5Stack Unit PoE-P4</td><td>MIPI DSI</td><td>PoE + Ethernet</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-chip">TinyML</span>
+        <h3>TinyML 2026 — Keyword Spotting บน ESP32-S3 ที่ 30–100ms</h3>
+        <p>งานวิจัยและ tutorial ปี 2026 ยืนยันว่า ESP32-S3 เป็นแพลตฟอร์มหลักสำหรับ TinyML บน Microcontroller โดย Keyword Spotting ให้ latency อยู่ที่ 30–100ms ต่อ 1-second window ซึ่งเพียงพอสำหรับ real-time voice command</p>
+        <ul>
+          <li>SRAM 512 KB + PSRAM สูงสุด 8 MB</li>
+          <li>TensorFlow Lite for Microcontrollers + Edge Impulse</li>
+          <li>รองรับ Keyword Spotting, Image Classification</li>
+          <li>โมเดลขนาดเล็กเท่านั้น — ไม่ใช่ LLM ขนาดใหญ่</li>
+        </ul>
+        <div class="highlight">💡 Quantized INT8 model + PSRAM คือสูตรสำเร็จสำหรับ Edge AI บน S3</div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-new">Smart Health</span>
+        <h3>ESP32 สำหรับ Smart Healthcare — ระบบ Monitor คนไข้ราคาประหยัด</h3>
+        <p>โปรเจกต์ Smart Ward Assistant (Circuit Digest, มกราคม 2026) นำ ESP32 มาสร้างระบบ monitor คนไข้สำหรับคลินิกในชนบท ประหยัดกว่าอุปกรณ์แพทย์มาตรฐานหลายสิบเท่า ใช้ sensor ที่หาซื้อได้ง่ายและ open-source software</p>
+        <ul>
+          <li>MAXREFDES117 — วัด Heart Rate &amp; SpO2 ผ่าน I²C</li>
+          <li>LiPo Battery + TP4056 Charger — ใช้งานระยะไกล</li>
+          <li>ส่ง Alert ไปยัง central hub แบบ real-time</li>
+          <li>รองรับ Telegram/Line notification</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-chip">Protocol</span>
+        <h3>เลือก ESP32 สำหรับ Matter/Thread/Zigbee อย่างไร?</h3>
+        <p>คำแนะนำจาก community ปี 2026 สรุปว่า ESP32-C6 เหมาะสำหรับโปรเจกต์แรก ส่วน ESP32-H2 ดีสำหรับอุปกรณ์ที่ใช้แบตเตอรี่ และ ESP32-H21 คือรุ่นอัปเกรดที่มี DC-DC converter ในตัว</p>
+        <table class="spec-table">
+          <tr><th>Chip</th><th>จุดเด่น</th><th>เหมาะกับ</th></tr>
+          <tr><td>C6</td><td>Wi-Fi 6 + 802.15.4</td><td>โปรเจกต์แรก</td></tr>
+          <tr><td>H2</td><td>802.15.4 เท่านั้น</td><td>Sensor ใช้แบต</td></tr>
+          <tr><td>H21</td><td>H2 + DC-DC ในตัว</td><td>Ultra-low power</td></tr>
+          <tr><td>C5</td><td>5 GHz Wi-Fi + Thread 1.4</td><td>Dual-band AP</td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-new">Edge AI</span>
+        <h3>ECG/PPG + ML = Stress Detection บน ESP32</h3>
+        <p>งานวิจัยจาก ElectronicWings (มิถุนายน 2026) นำเสนอระบบ real-time stress monitor ที่ใช้ ESP32 เก็บข้อมูล ECG &amp; PPG ส่งผ่าน Wi-Fi ไปยัง Flask backend และใช้ ML model ทำนายระดับความเครียด แสดงผลบน React Dashboard</p>
+        <ul>
+          <li>ECG + PPG สองช่องสัญญาณพร้อมกัน</li>
+          <li>ส่งข้อมูลเป็น batch ผ่าน Wi-Fi → Flask API</li>
+          <li>ML model ทำนาย: Stress / No Stress</li>
+          <li>Dashboard แบบ real-time บน React</li>
+        </ul>
+        <div class="highlight">🔬 เหมาะเป็น final project หรืองานวิจัยระดับปริญญา</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 2: PROJECTS -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-teal">🛠️</div>
+      <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+    </div>
+
+    <div class="project-card">
+      <div class="project-emoji">🌊</div>
+      <div class="project-body">
+        <h3>ESP32 Water Quality Station — DO + Turbidity + Conductivity + pH</h3>
+        <p>สถานีตรวจสอบคุณภาพน้ำแบบครบวงจร วัดค่า Dissolved Oxygen (DO), ความขุ่น (Turbidity), ค่าการนำไฟฟ้า (TDS/EC), และ pH พร้อมส่งข้อมูลขึ้น dashboard แบบ real-time ผ่าน MQTT หรือ Blynk เหมาะสำหรับตรวจวัดคุณภาพน้ำในบ่อเลี้ยงปลา แม่น้ำ หรือโรงงานอุตสาหกรรม</p>
+        <div class="project-parts">
+          <span class="part-tag">ESP32-S3</span>
+          <span class="part-tag">DFRobot Gravity DO</span>
+          <span class="part-tag">TDS Sensor</span>
+          <span class="part-tag">Turbidity (Analog)</span>
+          <span class="part-tag">pH Probe</span>
+          <span class="part-tag">DS18B20</span>
+          <span class="part-tag">MQTT/ThingsBoard</span>
+        </div>
+        <p style="margin-top:0.7rem; font-size:0.83rem; color:#64748b;">⚠️ ใช้ External ADC แทน ADC ภายในของ ESP32 เพื่อความแม่นยำในการวัด</p>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-emoji">⌚</div>
+      <div class="project-body">
+        <h3>DIY Wearable Health Monitor — Heart Rate + SpO2 + Temp + Motion</h3>
+        <p>นาฬิกาวัดสัญญาณชีพ DIY ที่ใช้ ESP32 เป็น core ประกอบกับ MAX30102 สำหรับ PPG (Heart Rate &amp; SpO2), TMP117 สำหรับอุณหภูมิความแม่นยำสูง ±0.1°C และ MPU6050 สำหรับ motion tracking ส่งข้อมูลผ่าน Bluetooth ไปยัง mobile app มีเคส 3D-printed และ OLED display</p>
+        <div class="project-parts">
+          <span class="part-tag">ESP32-C6</span>
+          <span class="part-tag">MAX30102</span>
+          <span class="part-tag">TMP117</span>
+          <span class="part-tag">MPU6050</span>
+          <span class="part-tag">OLED 0.96"</span>
+          <span class="part-tag">LiPo + TP4056</span>
+          <span class="part-tag">BLE App</span>
+        </div>
+        <p style="margin-top:0.7rem; font-size:0.83rem; color:#64748b;">📱 เพิ่ม Telegram Alert สำหรับ heart rate สูงหรือ SpO2 ต่ำกว่า threshold</p>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-emoji">🖥️</div>
+      <div class="project-body">
+        <h3>ESP32-P4 Smart HMI Control Panel — LVGL + 7" Touch + Camera</h3>
+        <p>Control panel สำหรับ Smart Home หรือโรงงานขนาดเล็ก ใช้ ESP32-P4 ขับ display 7 นิ้ว MIPI DSI พร้อม touch, กล้อง 2–5MP ผ่าน MIPI CSI และ ESP32-C6 เป็น Wi-Fi 6 co-processor แสดงผลด้วย LVGL UI framework รวม dashboard, camera preview และควบคุมอุปกรณ์ผ่าน Matter protocol</p>
+        <div class="project-parts">
+          <span class="part-tag">ESP32-P4 Rev3.1</span>
+          <span class="part-tag">MIPI DSI 7"</span>
+          <span class="part-tag">5MP MIPI CSI</span>
+          <span class="part-tag">ESP32-C6 (Wi-Fi 6)</span>
+          <span class="part-tag">LVGL v9</span>
+          <span class="part-tag">Matter/Thread</span>
+        </div>
+        <p style="margin-top:0.7rem; font-size:0.83rem; color:#64748b;">🚀 ใช้บอร์ดสำเร็จรูป Waveshare ESP32-P4-Touch-LCD หรือ Elecrow CrowPanel Advanced เป็นจุดเริ่มต้น</p>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-emoji">🧠</div>
+      <div class="project-body">
+        <h3>ESP32-S3 TinyML Keyword Spotter — "Hey ESP" Wake Word</h3>
+        <p>ระบบ Wake Word แบบ offline บน ESP32-S3 โดยใช้ Edge Impulse ฝึกโมเดลจากเสียงพูด, export เป็น TensorFlow Lite, deploy ลง chip โดยตรง เมื่อได้ยิน keyword ระบบจะทริกเกอร์ action ได้ทันทีโดยไม่ต้องส่งข้อมูลไป cloud latency เพียง 30–100ms</p>
+        <div class="project-parts">
+          <span class="part-tag">ESP32-S3</span>
+          <span class="part-tag">INMP441 (I2S Mic)</span>
+          <span class="part-tag">Edge Impulse</span>
+          <span class="part-tag">TFLite INT8</span>
+          <span class="part-tag">PSRAM 8MB</span>
+          <span class="part-tag">Offline AI</span>
+        </div>
+        <p style="margin-top:0.7rem; font-size:0.83rem; color:#64748b;">🎙️ สามารถรวม Wake Word → Voice Command → Action ไว้ใน ESP32-S3 ตัวเดียวได้</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- SECTION 3: SENSORS -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-pink">📡</div>
+      <h2>Sensors &amp; อุปกรณ์น่าสนใจ</h2>
+    </div>
+    <div class="card-grid">
+
+      <div class="card">
+        <span class="card-tag tag-sensor">Biometric</span>
+        <h3>MAX30102 — PPG Sensor สำหรับ Heart Rate &amp; SpO2</h3>
+        <p>Optical pulse oximetry sensor จาก Maxim ใช้ LED 660nm + 880nm ที่มีอยู่ในตัว วัด Heart Rate และ Blood Oxygen Saturation ผ่าน I²C interface เหมาะสำหรับ wearable และ health monitor DIY</p>
+        <ul>
+          <li>Interface: I²C (400 kHz)</li>
+          <li>Supply: 1.8V I/O, 3.3V LED driver</li>
+          <li>มี FIFO 32 sample สำหรับ burst read</li>
+          <li>ขนาดเล็ก: 5.6 mm × 3.3 mm</li>
+        </ul>
+        <div class="highlight">MAX30101 = รุ่นอัปเกรด มี LED เพิ่มเติม — แต่ MAX30102 หาง่ายกว่า</div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-sensor">Temperature</span>
+        <h3>TMP117 — Digital Thermometer ±0.1°C (No Calibration)</h3>
+        <p>เซ็นเซอร์อุณหภูมิ digital จาก Texas Instruments ความแม่นยำสูงมากถึง ±0.1°C ในช่วง −20°C ถึง +50°C ไม่ต้อง calibrate เหมาะสำหรับ medical device, lab equipment และ wearable ที่ต้องการความแม่นยำสูง</p>
+        <ul>
+          <li>Interface: I²C (3.4 MHz High-speed)</li>
+          <li>Range: −55°C ถึง +150°C</li>
+          <li>ความแม่นยำ: ±0.1°C (−20 ถึง +50°C)</li>
+          <li>มี Alert pin สำหรับ threshold alarm</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-sensor">Water</span>
+        <h3>DFRobot Gravity DO Sensor — Dissolved Oxygen ในน้ำ</h3>
+        <p>เซ็นเซอร์วัดออกซิเจนละลายน้ำ (Dissolved Oxygen) จาก DFRobot ใช้ในบ่อเลี้ยงปลา ระบบ hydroponics และการตรวจสอบคุณภาพน้ำ เชื่อมต่อผ่าน Analog output, ต้องใช้ร่วมกับ DS18B20 สำหรับ temperature compensation</p>
+        <ul>
+          <li>ช่วงวัด: 0–20 mg/L</li>
+          <li>ความแม่นยำ: ±0.3 mg/L</li>
+          <li>ต้องการ temperature correction</li>
+          <li>แนะนำให้ใช้ External ADC กับ ESP32</li>
+        </ul>
+        <div class="highlight">⚗️ ต้อง calibrate ทุก 30 วัน ด้วย Zero-DO solution</div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-sensor">Water</span>
+        <h3>TDS/EC Probe — Total Dissolved Solids &amp; Conductivity</h3>
+        <p>Probe วัดค่า TDS (Total Dissolved Solids) และค่าการนำไฟฟ้า (EC) ในน้ำ ราคาประหยัด ใช้ Analog output เชื่อมต่อกับ ESP32 ผ่าน ADC มีความถูกต้องระดับ "consumer grade" เพียงพอสำหรับ hobby projects และ basic monitoring</p>
+        <ul>
+          <li>ช่วงวัด TDS: 0–1000 ppm</li>
+          <li>Calibration solution: 1413 µS/cm</li>
+          <li>Output: Analog 0–2.3V (5V supply)</li>
+          <li>ไม่ใช่ precision lab grade</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-tip">Tip</span>
+        <h3>Turbidity Sensor (Analog) — วัดความขุ่นใสของน้ำ</h3>
+        <p>Sensor ราคาถูกใช้ตรวจวัดความขุ่นใส (Turbidity) ของน้ำ ทำงานโดยวัด intensity ของแสงที่ผ่านหรือกระจายในน้ำ เหมาะสำหรับ hobby project แต่มีข้อจำกัดด้าน precision เมื่อเทียบกับ NTU-calibrated sensor ระดับ industrial</p>
+        <ul>
+          <li>Output: Analog (สัมพันธ์กับความขุ่น)</li>
+          <li>อุณหภูมิมีผลกับค่าที่อ่านได้ — ต้อง compensate</li>
+          <li>ใช้กับ External ADC (MCP3208) เพื่อความแม่นยำ</li>
+          <li>เปรียบเทียบกับ NTU reference solution ก่อนใช้งานจริง</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-tip">Best Practice</span>
+        <h3>ESP32 ADC ปัญหาที่นักพัฒนาทุกคนต้องรู้</h3>
+        <p>ADC ภายในของ ESP32 มีลักษณะ nonlinear และ noisy ซึ่งส่งผลโดยตรงต่อ sensor ที่ใช้ Analog output เช่น pH, TDS, Turbidity, DO</p>
+        <ul>
+          <li>ใช้ <code>analogSetAttenuation(ADC_11db)</code> สำหรับ 0–3.3V range</li>
+          <li>เฉลี่ยค่า 64 sample ต่อ 1 reading</li>
+          <li>พิจารณา MCP3208 (12-bit SPI ADC) สำหรับงานที่ต้องแม่นยำ</li>
+          <li>ADS1115 (16-bit I²C ADC) ดีที่สุดสำหรับ biomedical</li>
+        </ul>
+        <div class="highlight">📌 ESP32-S3 ADC ดีกว่า ESP32 รุ่นแรกเล็กน้อย แต่ก็ยังแนะนำ External ADC</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 4: RESOURCES -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-amber">🔗</div>
+      <h2>แหล่งข้อมูลและลิงก์แนะนำ</h2>
+    </div>
+    <div class="resource-grid">
+      <div class="resource-card">
+        <a href="https://www.espressif.com/en/solutions/hmi/esp-hmi" target="_blank" rel="noopener">Espressif ESP-HMI Solutions</a>
+        <p>ข้อมูลอย่างเป็นทางการเกี่ยวกับ HMI solutions บน ESP32-P4</p>
+      </div>
+      <div class="resource-card">
+        <a href="https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32p4/esp32-p4-function-ev-board/user_guide.html" target="_blank" rel="noopener">ESP32-P4 Function EV Board Docs</a>
+        <p>คู่มือ official dev board สำหรับ LVGL + MIPI display</p>
+      </div>
+      <div class="resource-card">
+        <a href="https://edgeimpulse.com" target="_blank" rel="noopener">Edge Impulse Platform</a>
+        <p>สร้างและ deploy TinyML model ลง ESP32-S3 ได้ทันที</p>
+      </div>
+      <div class="resource-card">
+        <a href="https://www.cnx-software.com/news/esp32/" target="_blank" rel="noopener">CNX Software — ESP32 News</a>
+        <p>ข่าวสารบอร์ดและ module ESP32 ทุกรุ่นล่าสุด</p>
+      </div>
+      <div class="resource-card">
+        <a href="https://esp32.co.uk/best-esp32-matter-thread-zigbee-c6-h2-h21-h4-c5/" target="_blank" rel="noopener">Best ESP32 for Matter/Thread 2026</a>
+        <p>เปรียบเทียบ C6, H2, H21, H4, C5 สำหรับ IoT protocol</p>
+      </div>
+      <div class="resource-card">
+        <a href="https://www.electronicwings.com/users/KathanMajithia/projects/6602/a-real-time-smart-physiological-stress-monitoring-system" target="_blank" rel="noopener">ESP32 Stress Monitor Project</a>
+        <p>โปรเจกต์ real-time stress detection ด้วย ECG + PPG + ML</p>
+      </div>
+      <div class="resource-card">
+        <a href="https://circuitdigest.com/microcontroller-projects/smart-ward-assistant-low-cost-patient-monitoring-system" target="_blank" rel="noopener">Smart Ward Assistant (Circuit Digest)</a>
+        <p>ระบบ monitor คนไข้ราคาประหยัดสำหรับชนบท</p>
+      </div>
+      <div class="resource-card">
+        <a href="https://www.elecrow.com/sharepj/build-a-water-quality-analyzer-from-esp32-1429.html" target="_blank" rel="noopener">ESP32 Water Quality Analyzer</a>
+        <p>Tutorial สร้าง water quality analyzer ด้วย ESP32</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p><strong>ESP32 &amp; Sensor Innovations</strong> · สร้างเมื่อวันที่ 19 ตุลาคม 2026</p>
+  <p style="margin-top:0.35rem;">หัวข้อวันนี้: ESP32-P4 HMI Ecosystem · Wearable Health Monitor · Water Quality Sensors · TinyML Keyword Spotting · Matter/Thread Protocol Guide</p>
+  <p style="margin-top:0.35rem; font-size:0.78rem;">ข้อมูลรวบรวมจาก Espressif Official, CNX Software, Circuit Digest, ElectronicWings, Edge Impulse, DFRobot</p>
+</footer>
+
+</body>
+</html>
