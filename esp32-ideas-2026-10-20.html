@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 20 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1a2744;
+    --bg-card-hover: #1e3055;
+    --accent-blue: #3b82f6;
+    --accent-teal: #14b8a6;
+    --accent-purple: #a855f7;
+    --accent-pink: #ec4899;
+    --accent-amber: #f59e0b;
+    --accent-green: #22c55e;
+    --accent-orange: #f97316;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border-subtle: rgba(255,255,255,0.07);
+    --glow-blue: rgba(59,130,246,0.15);
+    --glow-teal: rgba(20,184,166,0.15);
+    --glow-purple: rgba(168,85,247,0.15);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #162040 40%, #1a1040 100%);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 3rem 1rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 700px; height: 300px;
+    background: radial-gradient(ellipse, rgba(99,102,241,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #93c5fd, #c084fc, #f9a8d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.6rem;
+  }
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .stat-chip strong { color: var(--text-primary); }
+
+  /* ===== MAIN LAYOUT ===== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  section { margin-bottom: 3.5rem; }
+
+  /* ===== SECTION HEADER ===== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .section-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .icon-blue   { background: linear-gradient(135deg, #1d4ed8, #3b82f6); box-shadow: 0 0 16px var(--glow-blue); }
+  .icon-teal   { background: linear-gradient(135deg, #0f766e, #14b8a6); box-shadow: 0 0 16px var(--glow-teal); }
+  .icon-purple { background: linear-gradient(135deg, #7e22ce, #a855f7); box-shadow: 0 0 16px var(--glow-purple); }
+  .icon-pink   { background: linear-gradient(135deg, #9d174d, #ec4899); box-shadow: 0 0 16px rgba(236,72,153,0.2); }
+  .icon-amber  { background: linear-gradient(135deg, #b45309, #f59e0b); box-shadow: 0 0 16px rgba(245,158,11,0.2); }
+  .icon-green  { background: linear-gradient(135deg, #15803d, #22c55e); box-shadow: 0 0 16px rgba(34,197,94,0.2); }
+  .section-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  /* ===== GRID ===== */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.2rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.2rem; }
+
+  /* ===== CARD ===== */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    background: var(--bg-card-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  /* ===== TAG ===== */
+  .tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.8rem; }
+  .tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+  }
+  .tag-blue   { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.25); }
+  .tag-teal   { background: rgba(20,184,166,0.15); color: #5eead4; border: 1px solid rgba(20,184,166,0.25); }
+  .tag-purple { background: rgba(168,85,247,0.15); color: #d8b4fe; border: 1px solid rgba(168,85,247,0.25); }
+  .tag-pink   { background: rgba(236,72,153,0.15); color: #f9a8d4; border: 1px solid rgba(236,72,153,0.25); }
+  .tag-amber  { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid rgba(245,158,11,0.25); }
+  .tag-green  { background: rgba(34,197,94,0.15);  color: #86efac; border: 1px solid rgba(34,197,94,0.25); }
+  .tag-orange { background: rgba(249,115,22,0.15); color: #fdba74; border: 1px solid rgba(249,115,22,0.25); }
+
+  /* ===== HIGHLIGHT CARD (full-width) ===== */
+  .card-highlight {
+    background: linear-gradient(135deg, #1a2744 0%, #1f1040 100%);
+    border: 1px solid rgba(168,85,247,0.2);
+    border-radius: 14px;
+    padding: 1.6rem;
+    margin-bottom: 1.2rem;
+  }
+  .card-highlight h3 { font-size: 1.1rem; font-weight: 700; color: #c084fc; margin-bottom: 0.5rem; }
+  .card-highlight p  { font-size: 0.92rem; color: var(--text-secondary); }
+
+  /* ===== FEATURE LIST ===== */
+  .feature-list { list-style: none; margin-top: 0.7rem; }
+  .feature-list li {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    padding: 0.3rem 0;
+    padding-left: 1.2rem;
+    position: relative;
+  }
+  .feature-list li::before {
+    content: '›';
+    position: absolute; left: 0;
+    color: var(--accent-teal);
+    font-weight: 700;
+  }
+
+  /* ===== CODE BLOCK ===== */
+  .code-block {
+    background: #0d1929;
+    border: 1px solid rgba(59,130,246,0.15);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin-top: 0.8rem;
+    overflow-x: auto;
+  }
+  .code-block pre {
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #93c5fd;
+    line-height: 1.7;
+  }
+  .code-block .comment { color: #475569; }
+  .code-block .keyword { color: #c084fc; }
+  .code-block .string  { color: #86efac; }
+
+  /* ===== COMPARISON TABLE ===== */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.8rem;
+    font-size: 0.85rem;
+  }
+  .compare-table th {
+    background: rgba(255,255,255,0.06);
+    padding: 0.7rem 0.9rem;
+    text-align: left;
+    color: var(--text-secondary);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .compare-table td {
+    padding: 0.65rem 0.9rem;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .compare-table .sensor-name { color: var(--text-primary); font-weight: 600; }
+
+  /* ===== CALLOUT ===== */
+  .callout {
+    background: rgba(20,184,166,0.08);
+    border-left: 3px solid var(--accent-teal);
+    border-radius: 0 8px 8px 0;
+    padding: 0.9rem 1.1rem;
+    margin-top: 1rem;
+    font-size: 0.88rem;
+    color: #99f6e4;
+  }
+  .callout.warning {
+    background: rgba(245,158,11,0.08);
+    border-left-color: var(--accent-amber);
+    color: #fcd34d;
+  }
+  .callout.info {
+    background: rgba(59,130,246,0.08);
+    border-left-color: var(--accent-blue);
+    color: #bfdbfe;
+  }
+
+  /* ===== RESOURCES ===== */
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+  }
+  .resource-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .resource-card h4 { font-size: 0.92rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem; }
+  .resource-card p  { font-size: 0.82rem; color: var(--text-secondary); }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-subtle);
+    padding: 1.8rem 1rem;
+    text-align: center;
+  }
+  footer p { font-size: 0.83rem; color: var(--text-muted); line-height: 1.9; }
+  footer strong { color: var(--text-secondary); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 640px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    header { padding: 2rem 1rem 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-badge">Daily ESP32 Research</div>
+  <h1>⚡ ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">20 ตุลาคม 2026 · Energy Harvesting · Industrial IoT · Air Quality · Mesh Network</p>
+  <div class="header-stats">
+    <div class="stat-chip"><strong>5</strong> หัวข้อหลัก</div>
+    <div class="stat-chip"><strong>12+</strong> ไอเดียโปรเจกต์</div>
+    <div class="stat-chip"><strong>4</strong> Sensors ใหม่</div>
+    <div class="stat-chip"><strong>2</strong> Mesh Libraries</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔋</div>
+      <h2>ESP32 Energy Harvesting — IoT ไม่ต้องเปลี่ยนถ่านอีกต่อไป</h2>
+    </div>
+
+    <div class="card-highlight">
+      <h3>🌞 Solar + Deep Sleep: สูตรสำเร็จสำหรับ Sensor Node แบบไม่ต้องใช้ไฟบ้าน</h3>
+      <p>แนวคิดหลักของ ESP32 Energy Harvesting ในปี 2025-2026 คือการจับคู่ <strong>แผง Solar Cell ขนาดเล็ก</strong> เข้ากับ <strong>Deep Sleep Mode</strong> ของ ESP32 เพื่อให้ node รายงานข้อมูลได้ตลอดชีพโดยไม่ต้องเดินสาย ไม่ต้องเปลี่ยนแบตเตอรีเลย แต่ต้องออกแบบวงจรและ firmware ให้ประหยัดพลังงานสูงสุด</p>
+      <div class="tag-row">
+        <span class="tag tag-amber">Solar Cell</span>
+        <span class="tag tag-green">Deep Sleep</span>
+        <span class="tag tag-blue">LiPo Charging</span>
+        <span class="tag tag-teal">Sensor Node</span>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>⚙️ สถาปัตยกรรมวงจร Solar IoT Node</h3>
+        <p>วงจรพื้นฐานที่ใช้ได้จริง:</p>
+        <ul class="feature-list">
+          <li>Solar Panel (6V 1W) → ชาร์จ IC (TP4056 หรือ BQ25504)</li>
+          <li>LiPo/Li-Ion 3.7V เป็น buffer สำรองพลังงาน</li>
+          <li>Step-down หรือ LDO → 3.3V สำหรับ ESP32</li>
+          <li>ESP32 วัดค่า sensor → ส่ง MQTT/HTTP → นอน deep sleep</li>
+          <li>ตื่นทุก 5-15 นาที ใช้ไฟเพียง ~10µA ขณะนอน</li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag tag-amber">TP4056</span>
+          <span class="tag tag-amber">BQ25504</span>
+          <span class="tag tag-blue">3.3V LDO</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>💡 ESP32-S3 PowerFeather Board</h3>
+        <p>บอร์ดที่ออกแบบมาสำหรับ energy harvesting โดยเฉพาะ มี LiPo charger + solar input + battery monitor ในตัว ใช้กับ ESP32-S3 ที่มีประสิทธิภาพ Deep Sleep ดีกว่า ESP32 รุ่นแรก อยู่ที่ราว <strong>7µA</strong> ขณะ sleep</p>
+        <ul class="feature-list">
+          <li>Solar input ในตัว ไม่ต้องต่อวงจรชาร์จเพิ่ม</li>
+          <li>Battery voltage monitoring ผ่าน ADC</li>
+          <li>รองรับ LiPo + Li-Ion หลายขนาด</li>
+          <li>Deep Sleep ลึกถึง ~7µA</li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag tag-green">ESP32-S3</span>
+          <span class="tag tag-amber">PowerFeather</span>
+          <span class="tag tag-teal">7µA Sleep</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📡 Vibration Energy Harvesting (VEH)</h3>
+        <p>งานวิจัย arXiv 2025 ชี้ว่า VEH เหมาะกับสภาพแวดล้อมที่ไม่มีแสงแดด เช่น ในโรงงาน ใต้สะพาน หรือในอุโมงค์ โดยเก็บพลังงานจากการสั่นสะเทือนของเครื่องจักร ข้อจำกัดหลักคือ ambient vibration มักเป็นแบบ intermittent ทำให้ harvest ได้ไม่สม่ำเสมอ ต้องมี buffer capacitor ขนาดใหญ่</p>
+        <div class="callout warning">⚠️ VEH ยังต้องใช้คู่กับ super-capacitor ใหญ่ หรือ LiPo ขนาดเล็กเป็น buffer — ไม่สามารถจ่ายไฟให้ ESP32 โดยตรงได้</div>
+      </div>
+
+      <div class="card">
+        <h3>🔌 RF Energy Harvesting — ยังเป็น Niche</h3>
+        <p>การเก็บพลังงานจากคลื่น RF (WiFi, LTE, LoRa ambient) ยังให้กำลังน้อยมาก ไม่เพียงพอสำหรับ ESP32 โดยตรง ใช้ได้แค่เป็นแหล่งพลังงานเสริมสำหรับ ultra-low-power sensor node ที่ตื่นน้อยมาก หรือสำหรับ passive RFID-like sensor</p>
+        <div class="tag-row">
+          <span class="tag tag-purple">RF Harvesting</span>
+          <span class="tag tag-pink">Passive IoT</span>
+          <span class="tag tag-blue">Ambient Energy</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <pre><span class="comment">// ตัวอย่าง Deep Sleep Loop สำหรับ Solar Sensor Node</span>
+<span class="keyword">#include</span> <span class="string">&lt;esp_sleep.h&gt;</span>
+<span class="keyword">#define</span> SLEEP_MINUTES 10  <span class="comment">// ตื่นทุก 10 นาที</span>
+
+<span class="keyword">void</span> setup() {
+  readSensors();         <span class="comment">// อ่าน sensor</span>
+  sendMQTT();            <span class="comment">// ส่งข้อมูล</span>
+  WiFi.disconnect();     <span class="comment">// ปิด WiFi ก่อนนอน</span>
+  esp_deep_sleep(SLEEP_MINUTES * 60 * 1000000ULL);  <span class="comment">// หน่วยเป็น microseconds</span>
+}
+<span class="keyword">void</span> loop() {}  <span class="comment">// ไม่เคยถูกเรียก เพราะ deep sleep reset ทุกครั้ง</span></pre>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: INDUSTRIAL MODBUS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-orange" style="background:linear-gradient(135deg,#c2410c,#f97316);box-shadow:0 0 16px rgba(249,115,22,0.2);">🏭</div>
+      <h2>ESP32 Industrial Automation — MODBUS RTU/TCP Gateway</h2>
+    </div>
+
+    <div class="card-highlight" style="background:linear-gradient(135deg,#1a2744,#211000);border-color:rgba(249,115,22,0.2);">
+      <h3 style="color:#fdba74;">🔧 ESP32 เป็น Low-Cost Industrial Gateway ได้จริงหรือ?</h3>
+      <p>ในปี 2025-2026 มีโปรเจกต์ชุมชนจำนวนมากที่ใช้ ESP32 เป็น <strong>Modbus RTU → TCP/MQTT Gateway</strong> เชื่อม PLC, inverter, energy meter, VFD รุ่นเก่าเข้ากับระบบ Home Assistant, SCADA หรือ cloud โดยต้นทุนต่ำมากเมื่อเทียบกับ industrial gateway เชิงพาณิชย์</p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>📦 Hardware ที่ต้องใช้</h3>
+        <ul class="feature-list">
+          <li>ESP32 (รุ่นไหนก็ได้ที่มี UART)</li>
+          <li>MAX485 / MAX3485 TTL→RS-485 transceiver</li>
+          <li>Resistor 120Ω (termination) หัวท้ายสาย</li>
+          <li>Shielded twisted pair cable</li>
+          <li>Power supply 5V หรือ 12V สำหรับ industrial device</li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag tag-orange">MAX485</span>
+          <span class="tag tag-blue">RS-485</span>
+          <span class="tag tag-teal">UART</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🗺️ โปรเจกต์จาก Hackster.io</h3>
+        <p>ESP32 + LAN8720A Ethernet PHY เพื่อทำ Modbus RTU → TCP Gateway แบบมีสาย (ไม่ใช้ WiFi) เหมาะกับ environment อุตสาหกรรมที่มีสัญญาณ RF รบกวน stack: RS-485 → Modbus RTU → ESP32 → Ethernet → Modbus TCP → Home Assistant / SCADA → MQTT Broker</p>
+        <div class="tag-row">
+          <span class="tag tag-orange">LAN8720A</span>
+          <span class="tag tag-blue">Modbus TCP</span>
+          <span class="tag tag-teal">Home Assistant</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🏗️ Industrial Shields ESP32 PLC</h3>
+        <p>บอร์ด PLC เชิงพาณิชย์ที่ใช้ ESP32 เป็น core มีครบ: RS-485, Modbus RTU/TCP, WiFi, BLE, Digital I/O, Analog I/O ใน form factor มาตรฐาน DIN-rail ราคาถูกกว่า Siemens S7 หลายเท่า เหมาะสำหรับ SME automation</p>
+        <div class="tag-row">
+          <span class="tag tag-orange">PLC</span>
+          <span class="tag tag-blue">DIN-Rail</span>
+          <span class="tag tag-purple">Industrial Grade</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📷 ESPuno + Seeed Modbus Vision Camera</h3>
+        <p>Seeed Studio เปิดตัว <strong>Modbus Vision RS485 Camera</strong> ที่ใช้ ESP32-C3 เป็น core — กล้องที่ตอบสนองต่อ Modbus command โดยตรง เหมาะสำหรับ factory line inspection, barcode reading, quality control โดยไม่ต้องมี PC</p>
+        <div class="callout info">💡 ESPuno Pi Zero (ESP32-C6) รองรับ input 60V DC + RS-485 ในตัว เหมาะกับ industrial power rail โดยตรง</div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <pre><span class="comment">// Modbus RTU Master บน ESP32 ด้วย library esp32ModbusRTU</span>
+<span class="keyword">#include</span> <span class="string">&lt;esp32ModbusRTU.h&gt;</span>
+
+<span class="keyword">esp32ModbusRTU</span> modbus(&Serial2, <span class="string">4</span>);  <span class="comment">// DE/RE pin = GPIO4</span>
+
+<span class="keyword">void</span> setup() {
+  Serial2.begin(<span class="string">9600</span>, SERIAL_8N1, <span class="string">16</span>, <span class="string">17</span>);  <span class="comment">// RX=16, TX=17</span>
+  modbus.begin();
+  <span class="comment">// อ่าน Holding Register จาก slave ID=1, register 0x0000, 2 registers</span>
+  modbus.readHoldingRegisters(<span class="string">1</span>, <span class="string">0x0000</span>, <span class="string">2</span>);
+}</pre>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: ESP32-C6 ===== -->
+  <section id="esp32c6">
+    <div class="section-header">
+      <div class="section-icon icon-purple">📡</div>
+      <h2>ESP32-C6 — Triple Radio: WiFi 6 + BLE 5 + Zigbee/Thread</h2>
+    </div>
+
+    <div class="card-highlight">
+      <h3>🔮 ชิปเดียว ครอบคลุมทุก Smart Home Protocol</h3>
+      <p>ESP32-C6 คือชิปเดียวที่รองรับ <strong>WiFi 6 (802.11ax)</strong>, <strong>Bluetooth 5.0 LE</strong> และ <strong>802.15.4</strong> (ซึ่งรองรับทั้ง Zigbee 3.0 และ Thread 1.3) ในชิปเดียว ทำให้สามารถสร้างอุปกรณ์ Matter-ready, Zigbee coordinator หรือ Thread border router ได้โดยไม่ต้องใช้ module เสริมใดๆ</p>
+      <div class="tag-row">
+        <span class="tag tag-blue">WiFi 6</span>
+        <span class="tag tag-purple">BLE 5.0</span>
+        <span class="tag tag-teal">Zigbee 3.0</span>
+        <span class="tag tag-green">Thread 1.3</span>
+        <span class="tag tag-pink">Matter</span>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <h3>📶 WiFi 6 (802.11ax) คืออะไร?</h3>
+        <ul class="feature-list">
+          <li>OFDMA: ส่งข้อมูลหลาย device พร้อมกัน</li>
+          <li>MU-MIMO downlink: AP ส่งให้ device หลายตัวพร้อมกัน</li>
+          <li>Target Wake Time (TWT): device ตื่นรับข้อมูลเป็นช่วงเวลาที่กำหนด ประหยัดแบตมาก</li>
+          <li>Dense environment: router เดียวรองรับ device ได้มากขึ้น</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>🏠 Use Case: Zigbee Smart Home</h3>
+        <ul class="feature-list">
+          <li>ใช้เป็น Zigbee Coordinator โดยไม่ต้อง hub แยก</li>
+          <li>Control Zigbee bulb, sensor, switch ผ่าน ESP32-C6</li>
+          <li>Tutorial: ShillehTek "Zigbee Light Switch Network"</li>
+          <li>เชื่อมกับ Home Assistant ผ่าน MQTT</li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag tag-teal">Zigbee Coordinator</span>
+          <span class="tag tag-blue">Home Assistant</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🌐 ESP32-C5: Dual-Band Variant</h3>
+        <ul class="feature-list">
+          <li>รองรับ 2.4 GHz + <strong>5 GHz</strong> WiFi 6</li>
+          <li>Zigbee 3.0 + Thread 1.4 (ใหม่กว่า C6)</li>
+          <li>เหมาะกับ environment ที่ 2.4 GHz แออัด</li>
+          <li>ยังอยู่ในช่วง early adoption ปี 2025-2026</li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag tag-blue">5 GHz</span>
+          <span class="tag tag-purple">Dual-Band</span>
+          <span class="tag tag-teal">Thread 1.4</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🔋 TWT = Battery-Friendly IoT</h3>
+        <p>Target Wake Time ช่วยให้ ESP32-C6 กำหนดตารางเวลาตื่นรับข้อมูลกับ AP ล่วงหน้า ไม่ต้องคอยรับ beacon ตลอดเวลา ลด duty cycle radio ลงได้มาก เหมาะกับ battery-powered sensor ที่ต้องการ latency ต่ำแต่ประหยัดพลังงาน</p>
+        <div class="callout">✅ TWT เป็น feature สำคัญที่ WiFi 5 ไม่มี — เหตุผลหลักที่ควรเลือก ESP32-C6 สำหรับ battery device</div>
+      </div>
+
+      <div class="card">
+        <h3>🔗 Matter Bridge Device</h3>
+        <p>ใช้ ESP32-C6 สร้าง <strong>Matter Bridge</strong> ที่รวม Zigbee + Thread อุปกรณ์เก่าที่ไม่รองรับ Matter เชื่อมเข้า ecosystem Apple HomeKit, Google Home, Amazon Alexa ได้โดยไม่ต้องซื้อใหม่</p>
+        <div class="tag-row">
+          <span class="tag tag-pink">Matter</span>
+          <span class="tag tag-purple">Bridge</span>
+          <span class="tag tag-teal">Legacy Device</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📊 เปรียบ ESP32-C6 vs C3 vs S3</h3>
+        <ul class="feature-list">
+          <li>C3: WiFi 4 + BLE 5, ราคาถูกที่สุด</li>
+          <li>S3: WiFi 4 + BLE 5 + AI accelerator, camera</li>
+          <li>C6: WiFi 6 + BLE 5 + Zigbee/Thread ✓</li>
+          <li>เลือก C6 เมื่อต้องการ Matter/Thread/Zigbee</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: AIR QUALITY SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-teal">🌬️</div>
+      <h2>Air Quality Sensor Stack 2026 — วัดอากาศครบครัน</h2>
+    </div>
+
+    <div class="card-highlight" style="background:linear-gradient(135deg,#0f2040,#0f2820);border-color:rgba(20,184,166,0.2);">
+      <h3 style="color:#5eead4;">🏆 Stack แนะนำ: SCD41 + SGP41 + PMS5003 + SHT45</h3>
+      <p>ชุด sensor ที่ครอบคลุมการวัดคุณภาพอากาศครบที่สุดสำหรับ ESP32 ในปี 2026 ทุก sensor ในชุดนี้ได้รับการรองรับโดย <strong>ESPHome</strong> โดยตรง สามารถเพิ่มเข้า Home Assistant ได้ใน 5 นาที ไม่ต้องเขียน code custom</p>
+    </div>
+
+    <div style="overflow-x:auto; margin-bottom:1.2rem;">
+      <table class="compare-table">
+        <tr>
+          <th>Sensor</th>
+          <th>วัดอะไร</th>
+          <th>Protocol</th>
+          <th>ข้อดีหลัก</th>
+          <th>ข้อควรระวัง</th>
+        </tr>
+        <tr>
+          <td><span class="sensor-name">SCD41</span></td>
+          <td>CO₂ จริง (NDIR) + Temp + Humidity</td>
+          <td>I2C</td>
+          <td>CO₂ แม่นยำ 0-5000 ppm, ไม่ใช่ estimate</td>
+          <td>ราคาสูงกว่า ~$30-40</td>
+        </tr>
+        <tr>
+          <td><span class="sensor-name">SGP41</span></td>
+          <td>VOC Index + NOx Index</td>
+          <td>I2C</td>
+          <td>วัด NOx ได้ (SGP40 ไม่มี)</td>
+          <td>ต้องใช้ SHT สำหรับ humidity compensation</td>
+        </tr>
+        <tr>
+          <td><span class="sensor-name">ENS160</span></td>
+          <td>VOC (TVOC) + eCO₂ estimate</td>
+          <td>I2C / SPI</td>
+          <td>ราคาถูก ~$5-8, ESPHome ready</td>
+          <td>eCO₂ เป็นแค่ estimate ไม่ใช่ค่า NDIR จริง</td>
+        </tr>
+        <tr>
+          <td><span class="sensor-name">PMS5003</span></td>
+          <td>PM1.0, PM2.5, PM10</td>
+          <td>UART 9600</td>
+          <td>ราคาถูก ~$15, ใช้งานง่าย</td>
+          <td>มี fan → มีเสียงรบกวนเล็กน้อย</td>
+        </tr>
+        <tr>
+          <td><span class="sensor-name">PMS7003</span></td>
+          <td>PM1.0, PM2.5, PM10 + 0.3-10µm counts</td>
+          <td>UART 9600</td>
+          <td>ข้อมูลละเอียดกว่า PMS5003</td>
+          <td>ต้องระวัง wiring fan connector</td>
+        </tr>
+        <tr>
+          <td><span class="sensor-name">SHT45</span></td>
+          <td>Temp ±0.1°C + Humidity ±1%</td>
+          <td>I2C</td>
+          <td>แม่นยำสูงสุดในตระกูล SHT, ใช้ compensate gas sensor</td>
+          <td>ราคาสูงกว่า SHT30</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>🔬 ENS160 vs SCD41 — เลือกอะไร?</h3>
+        <ul class="feature-list">
+          <li><strong>ENS160</strong>: ถูก ใช้งานง่าย เหมาะ home automation ทั่วไป</li>
+          <li><strong>SCD41</strong>: แม่นยำกว่า เหมาะ lab, greenhouse, CO₂ monitoring จริงจัง</li>
+          <li>ENS160 eCO₂ เป็นการ estimate จาก VOC ≠ NDIR จริง</li>
+          <li>ถ้าสำคัญ: ใช้ SCD41 ถ้าประหยัด: ENS160</li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag tag-green">ESPHome</span>
+          <span class="tag tag-teal">Home Assistant</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📡 SGP41 — VOC + NOx ในชิปเดียว</h3>
+        <p>Sensirion SGP41 เพิ่ม <strong>NOx index</strong> จาก SGP40 เดิม ทำให้วัดทั้ง Volatile Organic Compounds และ Nitrogen Oxide ได้ในชิปเดียว ใช้ algorithm RHT compensation ต้องอ่านค่า SHT sensor ก่อนส่งให้ SGP41 คำนวณทุกครั้ง</p>
+        <div class="callout">💡 ใช้ SGP41 + SHT45 ด้วยกันเสมอ เพื่อให้ compensation ถูกต้อง</div>
+      </div>
+
+      <div class="card">
+        <h3>🌫️ PMS5003 Wiring ที่ถูกต้อง</h3>
+        <ul class="feature-list">
+          <li>VCC = 5V (ไม่ใช่ 3.3V!), TX → ESP32 RX</li>
+          <li>ต้องใช้ logic level shifter หรือ voltage divider</li>
+          <li>อ่าน UART ที่ 9600 baud, 8N1</li>
+          <li>ข้อมูล 32 bytes: start byte 0x42 0x4D</li>
+          <li>Library: PMS Library, ESPHome pmsx003</li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag tag-orange">5V Power</span>
+          <span class="tag tag-blue">Level Shifter</span>
+          <span class="tag tag-teal">UART</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🏠 Air Quality Dashboard ในบ้าน</h3>
+        <p>ไอเดียโปรเจกต์: สร้าง Air Quality Monitor ด้วย ESP32 + ชุด sensor ข้างต้น แสดงผลบน OLED/TFT display และส่งข้อมูลไป Home Assistant Grafana dashboard เตือนเมื่อ CO₂ สูง, PM2.5 เกินมาตรฐาน WHO</p>
+        <div class="tag-row">
+          <span class="tag tag-purple">Dashboard</span>
+          <span class="tag tag-pink">WHO Standard</span>
+          <span class="tag tag-blue">Alert</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 5: MESH NETWORKING ===== -->
+  <section id="mesh">
+    <div class="section-header">
+      <div class="section-icon icon-green">🕸️</div>
+      <h2>ESP32 Mesh Networking — painlessMesh vs Mesh-NOW</h2>
+    </div>
+
+    <div class="card-highlight" style="background:linear-gradient(135deg,#0f2040,#0a2010);border-color:rgba(34,197,94,0.2);">
+      <h3 style="color:#86efac;">🌐 Mesh Network คืออะไร และทำไมต้องใช้?</h3>
+      <p>ปัญหาหลักของ IoT node ที่อยู่ไกลจาก router คือสัญญาณ WiFi ไม่ถึง Mesh Network แก้ปัญหานี้โดยให้ ESP32 แต่ละตัวทำหน้าที่เป็น <strong>relay node</strong> — ข้อมูลจาก node ที่ไกลที่สุดส่งผ่าน node กลางๆ ก่อนถึง gateway ทำให้ครอบคลุมพื้นที่ขนาดใหญ่ได้โดยใช้ ESP32 ราคาถูก</p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>🔵 painlessMesh (Arduino)</h3>
+        <ul class="feature-list">
+          <li>Library: <code>painlessMesh</code> v1.4.5 ใน Arduino Library Manager</li>
+          <li>รองรับ ESP32 + ESP8266 ในเครือข่ายเดียวกัน</li>
+          <li>Auto node discovery, multi-path routing</li>
+          <li>Node recovery อัตโนมัติเมื่อ node หลุดออก</li>
+          <li>Alteriom fork: เพิ่ม SensorPackage, CommandPackage, StatusPackage + time sync</li>
+          <li>License: GPL 3.0, ชุมชนใหญ่</li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag tag-blue">Arduino</span>
+          <span class="tag tag-green">WiFi Mesh</span>
+          <span class="tag tag-teal">Community</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🟢 Mesh-NOW (ESP-IDF)</h3>
+        <ul class="feature-list">
+          <li>ESP-IDF Component Registry (ใหม่ปี 2025)</li>
+          <li>ใช้ <strong>ESP-NOW</strong> เป็น transport (ไม่ใช่ WiFi)</li>
+          <li>Auto-discovery, multi-hop routing</li>
+          <li>AES-128-GCM encryption ในตัว</li>
+          <li>Message queue ป้องกันข้อมูลหาย</li>
+          <li>รองรับ ESP32, S2, S3, C3, C6 (ESP-IDF v4.4+)</li>
+        </ul>
+        <div class="tag-row">
+          <span class="tag tag-green">ESP-NOW</span>
+          <span class="tag tag-purple">AES-128</span>
+          <span class="tag tag-blue">ESP-IDF</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>⚖️ เลือกใช้ Library ไหน?</h3>
+        <ul class="feature-list">
+          <li>ใช้ Arduino IDE → <strong>painlessMesh</strong> เหมาะกว่า</li>
+          <li>ต้องการ security / encryption → <strong>Mesh-NOW</strong></li>
+          <li>ต้องการ range ไกลกว่า WiFi → <strong>Mesh-NOW</strong> (ESP-NOW range ดีกว่า)</li>
+          <li>ชุมชนใหญ่ / มี tutorial เยอะ → <strong>painlessMesh</strong></li>
+          <li>ESP-IDF codebase → <strong>Mesh-NOW</strong></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>📶 ESP-NOW vs WiFi Mesh</h3>
+        <ul class="feature-list">
+          <li>ESP-NOW: connectionless, latency ต่ำกว่า, range ไกลกว่า</li>
+          <li>ESP-NOW: ไม่ต้องมี router ทำงานได้อิสระ</li>
+          <li>WiFi Mesh: bandwidth สูงกว่า, รองรับ data ขนาดใหญ่</li>
+          <li>ESP-NOW payload: max 250 bytes/packet</li>
+          <li>เหมาะกับ sensor data ขนาดเล็ก เช่น temp, humidity, motion</li>
+        </ul>
+        <div class="callout">✅ สำหรับ IoT sensor network ทั่วไป ESP-NOW Mesh มักดีกว่า WiFi Mesh เพราะ latency ต่ำ range ไกล และประหยัดพลังงานกว่า</div>
+      </div>
+    </div>
+
+    <div class="code-block">
+      <pre><span class="comment">// painlessMesh — Hello World</span>
+<span class="keyword">#include</span> <span class="string">"painlessMesh.h"</span>
+<span class="keyword">painlessMesh</span>  mesh;
+
+<span class="keyword">void</span> receivedCallback(uint32_t from, String &msg) {
+  Serial.printf(<span class="string">"Received from %u: %s\n"</span>, from, msg.c_str());
+}
+<span class="keyword">void</span> setup() {
+  mesh.init(<span class="string">"MESH_SSID"</span>, <span class="string">"MESH_PASS"</span>, <span class="string">5555</span>);
+  mesh.onReceive(&receivedCallback);
+}
+<span class="keyword">void</span> loop() {
+  mesh.update();
+  mesh.sendBroadcast(<span class="string">"Hello from node!"</span>);
+  delay(<span class="string">1000</span>);
+}</pre>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 6: RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-amber">🔗</div>
+      <h2>แหล่งข้อมูลและลิงก์แนะนำ</h2>
+    </div>
+
+    <div class="grid-2">
+      <div class="resource-card">
+        <div class="resource-icon icon-orange" style="background:linear-gradient(135deg,#c2410c,#f97316);">🏭</div>
+        <div>
+          <h4>ShillehTek — ESP32 Modbus Tutorial (Oct 2026)</h4>
+          <p>คู่มือล่าสุดสำหรับการสร้าง Modbus RTU → TCP gateway ด้วย ESP32 เชื่อมกับ Home Assistant ฉบับสมบูรณ์</p>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon icon-teal">🌬️</div>
+        <div>
+          <h4>esp32.co.uk — Air Quality Sensor Stack Guide</h4>
+          <p>คู่มือแนะนำ stack sensor คุณภาพอากาศที่ดีที่สุดสำหรับ ESP32 พร้อม ESPHome configuration</p>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon icon-green">🕸️</div>
+        <div>
+          <h4>painlessMesh GitHub (Alteriom fork)</h4>
+          <p>Fork ที่เพิ่ม SensorPackage, CommandPackage, StatusPackage และ time synchronization สำหรับ mesh sensor network</p>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon icon-blue">⚡</div>
+        <div>
+          <h4>ESP-IDF Component Registry — mesh-now</h4>
+          <p>Component ESP-NOW Mesh ใหม่สำหรับ ESP-IDF พร้อม AES-128-GCM encryption ใช้งานง่ายกว่า ESP-MESH เดิม</p>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon icon-amber">🔋</div>
+        <div>
+          <h4>arXiv 2025 — Vibration Energy Harvesting for IoT</h4>
+          <p>งานวิจัยเปรียบเทียบ VEH, Solar, RF harvesting สำหรับ IoT sensor node ในสภาพแวดล้อมจริง</p>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon icon-purple">📡</div>
+        <div>
+          <h4>Espressif ESP32-C6 Zigbee Examples (GitHub)</h4>
+          <p>ตัวอย่าง official จาก Espressif สำหรับ Zigbee coordinator, router, end device บน ESP32-C6</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p>
+    <strong>ESP32 & Sensor Innovations</strong> · สร้างเมื่อวันที่ 20 ตุลาคม 2026<br>
+    หัวข้อวันนี้: Energy Harvesting · Industrial MODBUS · ESP32-C6 Triple Radio · Air Quality Sensors · Mesh Networking<br>
+    <span style="color:var(--text-muted);font-size:0.78rem;">ข้อมูลอ้างอิงจาก: ShillehTek, Hackster.io, Espressif Docs, esp32.co.uk, painlessMesh GitHub, arXiv 2025, ESPHome Docs</span>
+  </p>
+</footer>
+
+</body>
+</html>
