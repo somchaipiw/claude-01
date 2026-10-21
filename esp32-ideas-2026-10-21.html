@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 21 ตุลาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.8; }
+
+  header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f2847 40%, #162032 100%);
+    border-bottom: 1px solid #1e40af44;
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 70% 30%, #3b82f620 0%, transparent 60%);
+    pointer-events: none;
+  }
+  header .badge-row {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    justify-content: center; margin-bottom: 1rem;
+  }
+  header .badge {
+    background: #1e40af33; border: 1px solid #3b82f655;
+    color: #93c5fd; font-size: 0.75rem; font-weight: 600;
+    padding: 0.2rem 0.75rem; border-radius: 999px; letter-spacing: 0.05em;
+  }
+  header h1 { font-size: clamp(1.5rem, 4vw, 2.4rem); font-weight: 700; color: #f0f9ff; margin-bottom: 0.4rem; }
+  header .subtitle { color: #94a3b8; font-size: 1rem; }
+  header .stats {
+    display: flex; flex-wrap: wrap; gap: 1.5rem;
+    justify-content: center; margin-top: 1.5rem;
+  }
+  header .stat { text-align: center; }
+  header .stat .num { font-size: 1.6rem; font-weight: 700; color: #60a5fa; }
+  header .stat .lbl { font-size: 0.8rem; color: #64748b; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem 3rem; }
+
+  section { margin-bottom: 3rem; }
+  section > h2 {
+    font-size: 1.25rem; font-weight: 700; color: #93c5fd;
+    padding: 0.6rem 1rem; border-left: 4px solid #3b82f6;
+    background: #1e3a5f33; border-radius: 0 8px 8px 0;
+    margin-bottom: 1.5rem; letter-spacing: 0.02em;
+  }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+  .card {
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 12px; padding: 1.4rem; position: relative; overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: #3b82f6; transform: translateY(-2px); }
+  .card .tag {
+    display: inline-block; font-size: 0.7rem; font-weight: 700;
+    padding: 0.15rem 0.6rem; border-radius: 999px; margin-bottom: 0.6rem;
+    letter-spacing: 0.05em;
+  }
+  .tag-lora   { background: #7c3aed22; color: #a78bfa; border: 1px solid #7c3aed44; }
+  .tag-vision { background: #06b6d422; color: #67e8f9; border: 1px solid #06b6d444; }
+  .tag-ble    { background: #10b98122; color: #6ee7b7; border: 1px solid #10b98144; }
+  .tag-hw     { background: #f59e0b22; color: #fcd34d; border: 1px solid #f59e0b44; }
+  .tag-lib    { background: #ef444422; color: #fca5a5; border: 1px solid #ef444444; }
+  .tag-project{ background: #ec489922; color: #f9a8d4; border: 1px solid #ec489944; }
+  .tag-tip    { background: #84cc1622; color: #bef264; border: 1px solid #84cc1644; }
+
+  .card h3 { font-size: 1rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.5rem; line-height: 1.4; }
+  .card p  { font-size: 0.9rem; color: #94a3b8; margin-bottom: 0.6rem; }
+  .card ul { font-size: 0.88rem; color: #94a3b8; padding-left: 1.2rem; }
+  .card ul li { margin-bottom: 0.25rem; }
+  .card .highlight {
+    background: #0f2847; border-left: 3px solid #3b82f6;
+    padding: 0.5rem 0.8rem; border-radius: 0 6px 6px 0;
+    font-size: 0.85rem; color: #93c5fd; margin-top: 0.7rem;
+  }
+  .card .code-pill {
+    display: inline-block; background: #0f172a; border: 1px solid #334155;
+    color: #7dd3fc; font-family: monospace; font-size: 0.78rem;
+    padding: 0.15rem 0.5rem; border-radius: 4px; margin: 0.15rem 0.1rem;
+  }
+
+  .wide-card {
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 12px; padding: 1.5rem; margin-bottom: 1.25rem;
+  }
+  .wide-card h3 { font-size: 1.05rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.8rem; }
+  .wide-card p  { font-size: 0.9rem; color: #94a3b8; margin-bottom: 0.6rem; }
+  .wide-card ul { font-size: 0.88rem; color: #94a3b8; padding-left: 1.4rem; }
+  .wide-card ul li { margin-bottom: 0.3rem; }
+
+  .arch-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem;
+    margin-top: 0.8rem;
+  }
+  .arch-item {
+    background: #0f172a; border: 1px solid #1e3a5f;
+    border-radius: 8px; padding: 0.9rem 1rem;
+  }
+  .arch-item h4 { font-size: 0.9rem; color: #7dd3fc; font-weight: 700; margin-bottom: 0.4rem; }
+  .arch-item p  { font-size: 0.82rem; color: #64748b; }
+
+  .link-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem;
+  }
+  .link-card {
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 10px; padding: 1rem 1.2rem;
+    transition: border-color 0.2s;
+  }
+  .link-card:hover { border-color: #3b82f6; }
+  .link-card h4 { font-size: 0.9rem; font-weight: 700; color: #93c5fd; margin-bottom: 0.3rem; }
+  .link-card p  { font-size: 0.82rem; color: #64748b; }
+  .link-card a  { font-size: 0.8rem; color: #3b82f6; word-break: break-all; }
+
+  .steps {
+    counter-reset: step;
+    display: flex; flex-direction: column; gap: 0.7rem; margin-top: 0.8rem;
+  }
+  .step {
+    counter-increment: step;
+    display: flex; gap: 0.8rem; align-items: flex-start;
+    background: #0f172a; border: 1px solid #1e3a5f;
+    border-radius: 8px; padding: 0.8rem 1rem;
+  }
+  .step::before {
+    content: counter(step);
+    min-width: 1.6rem; height: 1.6rem;
+    background: #1e40af; color: #e0f2fe;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
+  }
+  .step p { font-size: 0.88rem; color: #94a3b8; }
+  .step strong { color: #e2e8f0; }
+
+  footer {
+    background: #0a1120; border-top: 1px solid #1e293b;
+    padding: 1.5rem 1rem; text-align: center;
+    font-size: 0.82rem; color: #475569;
+  }
+  footer strong { color: #64748b; }
+
+  @media (max-width: 600px) {
+    header { padding: 2rem 1rem 1.5rem; }
+    .cards { grid-template-columns: 1fr; }
+    .link-grid { grid-template-columns: 1fr; }
+    .arch-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge-row">
+    <span class="badge">ESP32 Daily Research</span>
+    <span class="badge">21 ตุลาคม 2569</span>
+    <span class="badge">LoRaWAN · Machine Vision · BLE Indoor Tracking</span>
+  </div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">รายงานประจำวัน — นวัตกรรมและไอเดียโปรเจกต์ใหม่ล่าสุด</p>
+  <div class="stats">
+    <div class="stat"><div class="num">3</div><div class="lbl">หัวข้อหลัก</div></div>
+    <div class="stat"><div class="num">12</div><div class="lbl">ไอเดียโปรเจกต์</div></div>
+    <div class="stat"><div class="num">8</div><div class="lbl">Library/เครื่องมือ</div></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: LoRaWAN ===== -->
+  <section id="lorawan">
+    <h2>📡 ESP32 + LoRaWAN — LPWAN อัปเดตปี 2569</h2>
+
+    <div class="cards">
+      <div class="card">
+        <span class="tag tag-lib">Library</span>
+        <h3>RadioLib v6.6.0 — LoRaWAN 1.0 &amp; 1.1 Stack ที่ดีที่สุดในปัจจุบัน</h3>
+        <p>RadioLib เป็น library ครอบคลุมโปรโตคอล RF หลายตัวในหนึ่งเดียว รวมถึง LoRaWAN 1.0 และ 1.1 โดยไม่ต้องพึ่ง LMIC อีกต่อไป เหมาะกับ ESP32 ทุกรุ่น</p>
+        <ul>
+          <li>รองรับชิป: SX1276, SX1262, SX1268, RFM95</li>
+          <li>บอร์ดที่ทดสอบแล้ว: TTGO LoRa32 T3 v1.6.1 (SX1276), Heltec Wireless Stick Lite V3 (SX1262)</li>
+          <li>รองรับ Band: EU868 (ทดสอบเต็ม), US915, AU915 (smoke-test)</li>
+          <li>ติดตั้งผ่าน Espressif Components Registry ได้เลย</li>
+        </ul>
+        <div class="highlight">
+          <span class="code-pill">jgromes/radiolib</span> บน Espressif Component Registry<br>
+          <span class="code-pill">idf_component.yml</span> → version: "6.6.0"
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="tag tag-hw">Hardware</span>
+        <h3>Heltec WiFi LoRa 32 V4.3.1 — ESP32-S3 + SX1262</h3>
+        <p>บอร์ดใหม่จาก Heltec รวม ESP32-S3 กับ SX1262 (LoRa 868/915 MHz) ในบอร์ดเดียว รองรับทั้ง Meshtastic และ LoRaWAN</p>
+        <ul>
+          <li>Chip: ESP32-S3 + SX1262 LoRa transceiver</li>
+          <li>รองรับ: Wi-Fi 802.11 b/g/n, BT 5.0 LE + LoRa</li>
+          <li>มีหน้าจอ OLED 128×64 ในตัว</li>
+          <li>ใช้ได้กับ Meshtastic firmware และ RadioLib LoRaWAN</li>
+        </ul>
+        <div class="highlight">
+          เหมาะสำหรับ: โปรเจกต์ที่ต้องการส่งข้อมูลระยะไกล (1–15 km) ด้วย payload เบา เช่น sensor node ในนา หรือ outdoor tracking
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="tag tag-hw">Hardware</span>
+        <h3>Seeed Wio SX1262 + XIAO ESP32S3 — Sensor Node กะทัดรัด</h3>
+        <p>Seeed Studio ออก Wio SX1262 module ที่จับคู่กับ XIAO ESP32S3 ได้โดยตรง สร้าง LoRa sensor node ขนาดเล็กได้ทันที</p>
+        <ul>
+          <li>XIAO ESP32S3: ขนาด 21×17.5 mm, มี Wi-Fi + BLE + LoRa</li>
+          <li>SX1262: LoRa ช่วง 862–870 MHz (EU868)</li>
+          <li>ใช้งานกับ TTN (The Things Network) ได้โดยตรง</li>
+          <li>รองรับ Arduino + MicroPython</li>
+        </ul>
+        <div class="highlight">
+          เหมาะกับ: การส่งข้อมูล sensor (อุณหภูมิ ความชื้น GPS) ผ่าน LoRaWAN ไปยัง TTN หรือ ChirpStack
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="tag tag-lib">Library</span>
+        <h3>EzLoRaWAN — ทางเลือก Lightweight สำหรับ SX1262/SX1276</h3>
+        <p>Library ทางเลือกที่ใช้ BasicMAC แทน arduino-lmic ซึ่งเบากว่าและ configure ง่ายกว่า สำหรับผู้ที่ต้องการ API แบบเรียบง่าย</p>
+        <ul>
+          <li>GitHub: <code>rgot-org/EzLoRaWAN</code></li>
+          <li>รองรับ: SX1262 และ SX1276 บน EU868</li>
+          <li>ตั้งค่า DevEUI, AppEUI, AppKey ผ่าน config file</li>
+          <li>ง่ายกว่า RadioLib สำหรับโปรเจกต์ที่ใช้แค่ LoRaWAN</li>
+        </ul>
+        <div class="highlight">
+          เลือก RadioLib ถ้าต้องการรองรับหลาย Band และยืดหยุ่น; เลือก EzLoRaWAN ถ้าต้องการ quick start บน EU868
+        </div>
+      </div>
+    </div>
+
+    <div class="wide-card" style="margin-top:1.25rem;">
+      <div class="tag tag-project">ไอเดียโปรเจกต์</div>
+      <h3>🌾 LoRaWAN Smart Farm Node — ส่งข้อมูลดิน+อากาศ ระยะ 5 km โดยไม่มีอินเทอร์เน็ต</h3>
+      <p>โปรเจกต์ระบบเกษตรอัจฉริยะที่ส่งข้อมูลจาก sensor node ในนาไปยัง gateway โดยใช้ LoRaWAN ไม่ต้องพึ่งเครือข่ายมือถือ</p>
+      <div class="arch-grid">
+        <div class="arch-item">
+          <h4>📦 Sensor Node</h4>
+          <p>XIAO ESP32S3 + SX1262, Soil Moisture (capacitive), DHT22, Deep Sleep ระหว่าง burst — อายุถ่าน 6–12 เดือน</p>
+        </div>
+        <div class="arch-item">
+          <h4>📡 Gateway</h4>
+          <p>RAK7268 V2 LoRaWAN Gateway (8-channel), เชื่อมต่อ 4G หรือ Wi-Fi ส่งข้อมูลไป TTN/ChirpStack</p>
+        </div>
+        <div class="arch-item">
+          <h4>☁️ Cloud/Dashboard</h4>
+          <p>TTN → Node-RED → InfluxDB → Grafana แสดงกราฟความชื้นดิน, อุณหภูมิ, แจ้งเตือน Line OA</p>
+        </div>
+        <div class="arch-item">
+          <h4>⚡ Power</h4>
+          <p>โซลาร์ 5W + แบตเตอรี่ 18650 2S, ชาร์จด้วย CN3791 MPPT, ส่งข้อมูลทุก 15 นาที</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: Machine Vision ===== -->
+  <section id="machine-vision">
+    <h2>👁️ ESP-VISION — กรอบงาน Computer Vision อย่างเป็นทางการจาก Espressif</h2>
+
+    <div class="cards">
+      <div class="card">
+        <span class="tag tag-lib">Framework ใหม่</span>
+        <h3>ESP-VISION — Low-Code Edge AI Vision Framework (2026)</h3>
+        <p>Espressif เปิดตัว ESP-VISION เป็น framework Python ระดับ official สำหรับ Computer Vision บน ESP32-P4 และ ESP32-S3 สร้างแอป object detection ได้ใน 17 บรรทัด</p>
+        <ul>
+          <li>Object Detection, Pose Estimation, Image Classification</li>
+          <li>QR Code, Barcode, AprilTag detection ในตัว</li>
+          <li>H.264 video encoding (ESP32-P4 เท่านั้น)</li>
+          <li>Docs: <code>docs.espressif.com/projects/esp-vision</code></li>
+        </ul>
+        <div class="highlight">
+          บอร์ดที่รองรับ: <span class="code-pill">ESP32-P4X-EYE</span> <span class="code-pill">ESP32-P4X-Function-EV-Board</span> <span class="code-pill">ESP32-S3-EYE</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="tag tag-hw">Hardware</span>
+        <h3>DFRobot ESP32-S3 AI CAM (DFR1154) — กล้อง AI ครบครัน</h3>
+        <p>บอร์ดกล้องจาก DFRobot ที่รวมทุกอย่างไว้ในแผ่นเดียว ออกแบบมาสำหรับ Edge AI โดยเฉพาะ</p>
+        <ul>
+          <li>กล้อง OV2640 พร้อม IR Night Vision</li>
+          <li>Microphone ในตัว + Ambient Light Sensor</li>
+          <li>รองรับ Edge Impulse deployment โดยตรง</li>
+          <li>Inference resolution: 96×96 หรือ 160×160 px สำหรับ TinyML</li>
+        </ul>
+        <div class="highlight">
+          ทดสอบแล้ว: โปรเจกต์จำแนกผลไม้ด้วย Edge Impulse — collect → train → deploy TFLite → run บน ESP32-S3
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="tag tag-hw">Open Source</span>
+        <h3>Maxlab Tokay Lite — กล้อง Open Source สำหรับ Edge AI</h3>
+        <p>บอร์ดกล้อง open-source สำหรับ ESP32 ที่เน้นความยืดหยุ่นและ hackability สำหรับนักพัฒนา Edge AI</p>
+        <ul>
+          <li>Sensor: OV2640 camera module</li>
+          <li>Memory: 512 KB SRAM + 8 MB PSRAM (รองรับ model ขนาดใหญ่กว่า)</li>
+          <li>Open hardware — schematic เปิดเผยสาธารณะ</li>
+          <li>เหมาะกับการ prototype ระบบ vision โดยไม่ถูกล็อกกับ vendor</li>
+        </ul>
+        <div class="highlight">
+          8 MB PSRAM คือข้อได้เปรียบหลัก — รองรับ model TFLite ที่ใหญ่กว่า ESP32-CAM ทั่วไป และ buffer ภาพความละเอียดสูงขึ้น
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="tag tag-tip">Benchmark</span>
+        <h3>ประสิทธิภาพ Vision Inference บน ESP32 — ตัวเลขจริงที่ควรรู้</h3>
+        <p>ก่อนออกแบบโปรเจกต์ Vision ควรเข้าใจข้อจำกัดด้านความเร็ว inference ของแต่ละชิป</p>
+        <ul>
+          <li><strong>ESP32-S3:</strong> CNN ขนาดเล็ก (~200–500 ms/frame), Audio TinyML ~30–100 ms</li>
+          <li><strong>ESP32-P4:</strong> เร็วกว่า S3 ประมาณ 3–5× ด้วย dual-core 400 MHz + vector unit</li>
+          <li><strong>Resolution แนะนำ:</strong> 96×96 หรือ 160×160 px สำหรับ classification</li>
+          <li><strong>Model size:</strong> ควร &lt;500 KB สำหรับ S3, &lt;2 MB สำหรับ P4 พร้อม PSRAM</li>
+        </ul>
+        <div class="highlight">
+          กฎง่ายๆ: ถ้าต้องการ real-time (&gt;10 fps) ให้ใช้ ESP32-P4; ถ้าแค่ "sense and decide" ทุก 1–5 วินาที ESP32-S3 เพียงพอ
+        </div>
+      </div>
+    </div>
+
+    <div class="wide-card" style="margin-top:1.25rem;">
+      <div class="tag tag-project">ไอเดียโปรเจกต์</div>
+      <h3>🔍 ESP32-S3 Smart Waste Sorter — แยกขยะด้วย AI กล้องขนาดพกพา</h3>
+      <p>ระบบจำแนกขยะด้วย Machine Learning บน ESP32-S3 + กล้อง OV2640 ใช้งานแบบ standalone ไม่ต้องมีอินเทอร์เน็ต</p>
+      <div class="steps">
+        <div class="step"><p><strong>เก็บ Dataset:</strong> ถ่ายภาพขยะ 5 ประเภท (พลาสติก กระดาษ แก้ว โลหะ อินทรีย์) ประเภทละ 100–200 ภาพ</p></div>
+        <div class="step"><p><strong>Train บน Edge Impulse:</strong> สร้าง Image Classification project → MobileNetV1 96×96 → quantize เป็น INT8 TFLite</p></div>
+        <div class="step"><p><strong>Deploy:</strong> Export เป็น Arduino library → build บน ESP32-S3 + DFR1154 AI CAM</p></div>
+        <div class="step"><p><strong>Output:</strong> แสดงผลบน OLED + เปิด servo 5 ตัว แยกช่องทิ้งขยะตามประเภทที่ตรวจพบ</p></div>
+        <div class="step"><p><strong>Power:</strong> USB-C 5V/2A หรือ Li-Po 3.7V 2000 mAh พร้อม boost converter 5V</p></div>
+      </div>
+    </div>
+
+    <div class="wide-card">
+      <div class="tag tag-project">ไอเดียโปรเจกต์</div>
+      <h3>🚗 ESP32-P4 + Camera — ระบบนับรถและวิเคราะห์จราจร Edge AI</h3>
+      <p>ใช้ ESP32-P4X-EYE กับ ESP-VISION framework สร้างระบบนับรถและประเมินความหนาแน่นจราจรแบบ real-time โดยไม่ส่ง video ออก cloud</p>
+      <ul>
+        <li><strong>Hardware:</strong> ESP32-P4X-EYE (dual 400 MHz core, vector unit), กล้อง 5 MP, PoE power</li>
+        <li><strong>Software:</strong> ESP-VISION Object Detection (COCO pre-trained, fine-tune เพิ่ม truck/motorcycle)</li>
+        <li><strong>Output:</strong> นับรถทุก 1 นาที → ส่งผ่าน MQTT ไป dashboard, ไม่มี video ส่งออก (Privacy-first)</li>
+        <li><strong>Use case:</strong> ทางแยกโรงเรียน ลานจอดรถ หรือ checkpoint โรงงาน</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: BLE Indoor Positioning ===== -->
+  <section id="ble-indoor">
+    <h2>📍 BLE Indoor Positioning &amp; Asset Tracking — ติดตามตำแหน่งในอาคารด้วย ESP32</h2>
+
+    <div class="cards">
+      <div class="card">
+        <span class="tag tag-ble">Technology</span>
+        <h3>RSSI-Based BLE Trilateration — หลักการและความแม่นยำจริง</h3>
+        <p>ระบบ BLE Indoor Positioning ใช้ ESP32 เป็น beacon ส่ง iBeacon signal และ ESP32 scanner วัด RSSI แล้วคำนวณระยะทางด้วย trilateration</p>
+        <ul>
+          <li><strong>ความแม่นยำดิบ:</strong> ± 3–5 เมตร (RSSI ผันผวนสูง)</li>
+          <li><strong>หลังใช้ RSSI filtering:</strong> error ลดเหลือ &lt;30% ที่ระยะ 10 เมตร</li>
+          <li><strong>Algorithm:</strong> Kalman Filter หรือ Weighted Moving Average ลด noise</li>
+          <li>ต้องใช้ beacon อย่างน้อย 3 จุดต่อพื้นที่ เพื่อ trilateration</li>
+        </ul>
+        <div class="highlight">
+          ข้อสังเกต: RSSI ได้รับผลกระทบจากผนัง คน และโลหะ — ควร calibrate ในสภาพแวดล้อมจริง และใช้ beacon หนาแน่นขึ้นในพื้นที่ซับซ้อน
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="tag tag-ble">ESP-NOW</span>
+        <h3>ESP-NOW Asset Zone Tracking — ง่ายกว่า แม่นพอ สำหรับ Zone-Level</h3>
+        <p>สำหรับงานที่ต้องการรู้เพียงว่า asset อยู่ "โซนไหน" ไม่ต้องการพิกัด XY แม่นยำ ESP-NOW เป็นทางออกที่เรียบง่ายกว่า BLE RSSI</p>
+        <ul>
+          <li>Payload: 250 bytes, latency &lt;10 ms, ระยะ &lt;200 m indoor</li>
+          <li>ไม่ต้อง pair — ESP-NOW ใช้ MAC address โดยตรง</li>
+          <li>Tag ส่ง heartbeat ทุก 30 วินาที → gateway ระบุโซน</li>
+          <li>ใช้ ESP32 ราคาถูกเป็น anchor node กระจายทั่วพื้นที่</li>
+        </ul>
+        <div class="highlight">
+          เหมาะกับ: คลังสินค้า โรงงาน หรือโรงพยาบาล ที่ต้องการรู้ว่า asset อยู่ห้องไหน ไม่ใช่พิกัด cm
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="tag tag-ble">Hybrid System</span>
+        <h3>Wi-Fi RTT + BLE RSSI Hybrid — ความแม่นยำสูงสุดสำหรับ Industrial</h3>
+        <p>ระบบ hybrid ที่รวม Wi-Fi RTT (Round-Trip Time) ระบุตำแหน่ง mobile device และ BLE RSSI ระบุ asset tag ในรัศมี ~10 เมตร</p>
+        <ul>
+          <li>Wi-Fi RTT: ความแม่นยำ 1–2 เมตร (ต้องใช้ AP รองรับ IEEE 802.11mc)</li>
+          <li>BLE RSSI: ระบุ asset ที่ติด tag ในรัศมีจาก mobile device</li>
+          <li>Use case: พนักงานถือ phone → app รู้ว่าอยู่ where → แสดง asset ใกล้เคียง</li>
+          <li>อ้างอิงจาก BIBA MeshTrack Project (Bremen, Germany)</li>
+        </ul>
+        <div class="highlight">
+          สำหรับโรงงานที่ต้องการความแม่นยำระดับ 1–3 เมตร และมี Wi-Fi AP กระจายทั่ว — hybrid นี้ให้ผลดีที่สุด
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="tag tag-tip">อนาคต</span>
+        <h3>Bluetooth AoA/AoD + BLE Mesh — ทิศทางที่ Espressif กำลังพัฒนา</h3>
+        <p>Espressif ประกาศ roadmap รวม Bluetooth AoA (Angle of Arrival) / AoD เข้ากับ Bluetooth Mesh เพื่อ indoor positioning ผ่าน smart lighting grid</p>
+        <ul>
+          <li><strong>AoA:</strong> วัดมุมสัญญาณด้วย antenna array → แม่นยำกว่า RSSI มาก (&lt;0.5 เมตร)</li>
+          <li><strong>AoD:</strong> กลับกัน — transmitter ที่มี antenna array, receiver ธรรมดา</li>
+          <li>รวมกับ BLE Mesh → ทุก node เป็นทั้ง anchor และ relay</li>
+          <li>ยังไม่มี ESP32 SDK ที่ deploy ได้ในปัจจุบัน — เป็น forward-looking roadmap</li>
+        </ul>
+        <div class="highlight">
+          น่าจับตามอง: ถ้า Espressif release AoA SDK บน ESP32-C6 หรือ ESP32-H2 จะเปลี่ยน landscape ของ indoor positioning DIY อย่างสิ้นเชิง
+        </div>
+      </div>
+    </div>
+
+    <div class="wide-card" style="margin-top:1.25rem;">
+      <div class="tag tag-project">ไอเดียโปรเจกต์</div>
+      <h3>🏭 ESP32 BLE Asset Tracker สำหรับอุปกรณ์ในโรงงาน</h3>
+      <p>ระบบติดตาม tool และอุปกรณ์ในโรงงาน ใช้ BLE beacon ราคาถูก + ESP32 anchor node กระจายทั่วพื้นที่</p>
+      <div class="arch-grid">
+        <div class="arch-item">
+          <h4>🏷️ Asset Tag</h4>
+          <p>ESP32-C3 Mini + แบตกระดุม CR2032, ส่ง BLE iBeacon ทุก 5 วินาที (UUID + Asset ID) อายุถ่าน 3–6 เดือน</p>
+        </div>
+        <div class="arch-item">
+          <h4>📡 Anchor Node</h4>
+          <p>ESP32 + Wi-Fi, scan BLE ทุก 1 วินาที → บันทึก RSSI ของ tag ที่เห็น → ส่ง MQTT ผ่าน Wi-Fi ไป server</p>
+        </div>
+        <div class="arch-item">
+          <h4>🖥️ Backend</h4>
+          <p>Node.js server รับ MQTT → Kalman filter RSSI → trilateration หรือ zone detection → บันทึกใน PostgreSQL</p>
+        </div>
+        <div class="arch-item">
+          <h4>📊 Dashboard</h4>
+          <p>Grafana floor plan overlay แสดง asset location แบบ real-time, แจ้งเตือนเมื่อ asset ออกนอกโซน</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: Resources ===== -->
+  <section id="resources">
+    <h2>📚 แหล่งข้อมูลและลิงก์แนะนำ</h2>
+    <div class="link-grid">
+      <div class="link-card">
+        <h4>RadioLib LoRaWAN Docs</h4>
+        <p>Documentation และ example สำหรับ RadioLib v6.6.0 บน ESP32</p>
+        <a href="https://components.espressif.com/components/jgromes/radiolib" target="_blank">components.espressif.com → jgromes/radiolib</a>
+      </div>
+      <div class="link-card">
+        <h4>TTN Community Forum</h4>
+        <p>Thread RadioLib LoRaWAN v1.1 Open Beta พร้อม community troubleshooting</p>
+        <a href="https://www.thethingsnetwork.org/forum" target="_blank">thethingsnetwork.org/forum</a>
+      </div>
+      <div class="link-card">
+        <h4>EzLoRaWAN GitHub</h4>
+        <p>Library LoRaWAN lightweight บน BasicMAC สำหรับ EU868</p>
+        <a href="https://github.com/rgot-org/EzLoRaWAN" target="_blank">github.com/rgot-org/EzLoRaWAN</a>
+      </div>
+      <div class="link-card">
+        <h4>ESP-VISION Official Docs</h4>
+        <p>Framework Computer Vision อย่างเป็นทางการจาก Espressif สำหรับ ESP32-P4/S3</p>
+        <a href="https://docs.espressif.com/projects/esp-vision" target="_blank">docs.espressif.com/projects/esp-vision</a>
+      </div>
+      <div class="link-card">
+        <h4>ESP-VISION Live Demo</h4>
+        <p>ทดลองดูผล object detection บน ESP32-P4 ผ่านเว็บ</p>
+        <a href="https://vision.espressif.com" target="_blank">vision.espressif.com</a>
+      </div>
+      <div class="link-card">
+        <h4>DFRobot ESP32-S3 AI CAM Wiki</h4>
+        <p>เอกสาร DFR1154 + ตัวอย่าง Edge Impulse fruit classification</p>
+        <a href="https://wiki.dfrobot.com/dfr1154" target="_blank">wiki.dfrobot.com/dfr1154</a>
+      </div>
+      <div class="link-card">
+        <h4>Seeed Wio SX1262 + XIAO ESP32S3</h4>
+        <p>คู่มือสร้าง LoRa sensor node กะทัดรัดด้วย XIAO ESP32S3</p>
+        <a href="https://wiki.seeedstudio.com" target="_blank">wiki.seeedstudio.com</a>
+      </div>
+      <div class="link-card">
+        <h4>Edge Impulse Studio</h4>
+        <p>แพลตฟอร์ม TinyML cloud-based สำหรับ train และ deploy model บน ESP32-S3</p>
+        <a href="https://edgeimpulse.com" target="_blank">edgeimpulse.com</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Research Agent &nbsp;|&nbsp; <strong>21 ตุลาคม 2569</strong> &nbsp;|&nbsp; หัวข้อ: LoRaWAN · ESP-VISION · BLE Indoor Positioning</p>
+  <p style="margin-top:0.4rem;">แหล่งอ้างอิง: Espressif ESP-VISION Docs (2026-07-28), TTN Forum — RadioLib LoRaWAN v1.1 Beta, Seeed Wiki, DFRobot Wiki, Hackster.io — Maxlab Tokay Lite, BeaconZone BLE RSSI Study (Oct 2025), BIBA MeshTrack Project</p>
+</footer>
+
+</body>
+</html>
