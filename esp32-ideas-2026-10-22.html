@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 22 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.8; }
+
+  header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 40%, #1a1a3e 100%);
+    border-bottom: 2px solid #334155;
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: -60px; right: -60px;
+    height: 200px;
+    background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #818cf8, #38bdf8, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header .subtitle { color: #94a3b8; font-size: 0.95rem; }
+  header .badge-row {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 0.5rem; margin-top: 1rem;
+  }
+  .badge {
+    background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.35);
+    color: #a5b4fc; border-radius: 999px; padding: 0.25rem 0.85rem;
+    font-size: 0.78rem; font-weight: 600;
+  }
+
+  main { max-width: 960px; margin: 0 auto; padding: 2rem 1rem 3rem; }
+
+  section { margin-bottom: 3.5rem; }
+
+  .section-header {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 1.5rem; padding-bottom: 0.75rem;
+    border-bottom: 1px solid #1e293b;
+  }
+  .section-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; flex-shrink: 0;
+  }
+  .icon-indigo  { background: linear-gradient(135deg,#4338ca,#818cf8); box-shadow: 0 0 16px rgba(129,140,248,0.25); }
+  .icon-emerald { background: linear-gradient(135deg,#065f46,#34d399); box-shadow: 0 0 16px rgba(52,211,153,0.2); }
+  .icon-rose    { background: linear-gradient(135deg,#9f1239,#fb7185); box-shadow: 0 0 16px rgba(251,113,133,0.2); }
+  .icon-amber   { background: linear-gradient(135deg,#92400e,#fbbf24); box-shadow: 0 0 16px rgba(251,191,36,0.2); }
+
+  .section-header h2 { font-size: 1.25rem; font-weight: 700; color: #f1f5f9; }
+
+  .card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 14px;
+    padding: 1.5rem; margin-bottom: 1.25rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .card:hover { border-color: #475569; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+  .card h3 { font-size: 1.05rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.6rem; }
+  .card p  { color: #94a3b8; font-size: 0.93rem; margin-bottom: 0.5rem; }
+  .card p:last-child { margin-bottom: 0; }
+
+  .tag {
+    display: inline-block; border-radius: 6px;
+    padding: 0.15rem 0.6rem; font-size: 0.75rem; font-weight: 600;
+    margin-right: 0.35rem; margin-bottom: 0.25rem;
+  }
+  .tag-new    { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+  .tag-hot    { background: rgba(251,113,133,0.15); color: #fb7185; border: 1px solid rgba(251,113,133,0.3); }
+  .tag-tip    { background: rgba(251,191,36,0.15);  color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
+  .tag-chip   { background: rgba(129,140,248,0.15); color: #a5b4fc; border: 1px solid rgba(129,140,248,0.3); }
+  .tag-ai     { background: rgba(167,139,250,0.15); color: #c4b5fd; border: 1px solid rgba(167,139,250,0.3); }
+
+  .spec-table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.88rem; }
+  .spec-table th { background: #0f172a; color: #94a3b8; font-weight: 600; padding: 0.5rem 0.75rem; text-align: left; border: 1px solid #334155; }
+  .spec-table td { padding: 0.45rem 0.75rem; border: 1px solid #1e293b; color: #cbd5e1; }
+  .spec-table tr:nth-child(even) td { background: #162032; }
+
+  .code-block {
+    background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+    padding: 1rem; font-family: 'Courier New', monospace; font-size: 0.82rem;
+    color: #7dd3fc; margin-top: 0.75rem; overflow-x: auto; white-space: pre;
+  }
+
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(56,189,248,0.06));
+    border: 1px solid rgba(99,102,241,0.25); border-radius: 10px;
+    padding: 1rem 1.25rem; margin-top: 0.75rem;
+  }
+  .highlight-box p { color: #c7d2fe; font-size: 0.9rem; }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; }
+
+  .step-list { list-style: none; counter-reset: step; padding: 0; margin-top: 0.5rem; }
+  .step-list li { counter-increment: step; display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.4rem 0; color: #94a3b8; font-size: 0.92rem; }
+  .step-list li::before { content: counter(step); background: #334155; color: #94a3b8; border-radius: 50%; width: 1.5rem; height: 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; margin-top: 0.15rem; }
+
+  .resource-link {
+    display: flex; align-items: center; gap: 0.75rem;
+    background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+    padding: 0.85rem 1rem; margin-bottom: 0.75rem;
+    text-decoration: none; color: #e2e8f0;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .resource-link:hover { border-color: #6366f1; background: #243044; }
+  .resource-link .r-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .resource-link .r-title { font-weight: 600; font-size: 0.93rem; color: #f1f5f9; }
+  .resource-link .r-sub { font-size: 0.8rem; color: #64748b; }
+
+  footer {
+    text-align: center; padding: 2rem 1rem;
+    color: #475569; font-size: 0.82rem;
+    border-top: 1px solid #1e293b;
+  }
+  footer a { color: #6366f1; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    .card { padding: 1.1rem; }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚡ ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">รายงานประจำวัน | 22 ตุลาคม 2569 (2026)</p>
+  <div class="badge-row">
+    <span class="badge">🔬 4 นวัตกรรม</span>
+    <span class="badge">🛠️ 4 ไอเดียโปรเจกต์</span>
+    <span class="badge">📡 4 Sensors</span>
+    <span class="badge">🔗 6 แหล่งข้อมูล</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- SECTION 1: INNOVATIONS -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-indigo">🔬</div>
+      <h2>นวัตกรรมและอัปเดตสำคัญ</h2>
+    </div>
+
+    <div class="card">
+      <span class="tag tag-new">ใหม่ มีนาคม 2026</span>
+      <span class="tag tag-chip">ESP32-H21</span>
+      <h3>ESP32-H21 — ชิปพลังงานต่ำสุดจาก Espressif สำหรับ Matter/Thread/Zigbee</h3>
+      <p>Espressif ประกาศ ESP32-H21 อย่างเป็นทางการเมื่อวันที่ 3 มีนาคม 2026 โดยเป็นการวิวัฒนาการจาก ESP32-H2 เพิ่ม DC-DC Converter ออนชิปเพื่อลดการใช้พลังงานขณะ Active ให้เหลือเพียง <strong>8.2 mA</strong> เท่านั้น</p>
+      <table class="spec-table">
+        <tr>
+          <th>พารามิเตอร์</th><th>ค่า</th><th>หมายเหตุ</th>
+        </tr>
+        <tr><td>CPU</td><td>RISC-V 32-bit, 96 MHz</td><td>ประมวลผลเร็วพอสำหรับ IoT Tasks</td></tr>
+        <tr><td>RAM</td><td>320 KB SRAM</td><td>รุ่น MINI-1</td></tr>
+        <tr><td>Flash</td><td>4 MB</td><td>รุ่น MINI-1</td></tr>
+        <tr><td>วิทยุ</td><td>IEEE 802.15.4 + BLE 5</td><td>ไม่มี Wi-Fi</td></tr>
+        <tr><td>TX Power</td><td>สูงสุด 20 dBm</td><td>สัญญาณแรงสำหรับ Mesh</td></tr>
+        <tr><td>Active Current (RX)</td><td>~8.2 mA</td><td>พร้อม DC-DC enabled</td></tr>
+        <tr><td>Light Sleep</td><td>~9 µA</td><td>ต่ำมากสำหรับ Coin Cell</td></tr>
+        <tr><td>Deep Sleep</td><td>~5 µA</td><td>แบตเตอรี่อยู่ได้หลายปี</td></tr>
+        <tr><td>SDK</td><td>ESP-IDF 6.0 (Preview)</td><td>รองรับแล้วตั้งแต่ v6.0</td></tr>
+      </table>
+      <div class="highlight-box">
+        <p>💡 <strong>เหมาะสำหรับ:</strong> Smart Home Sensor Node (Matter over Thread), Zigbee Remote Switch, BLE Asset Tag — ทุกอุปกรณ์ที่ต้องการอายุแบตเตอรี่นานเป็นปีโดยไม่ต้องชาร์จ</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="tag tag-new">ใหม่ มีนาคม 2026</span>
+      <span class="tag tag-hot">Breaking Change</span>
+      <h3>ESP-IDF 6.0 — อัปเดตใหญ่ที่สุดในรอบหลายปีของนักพัฒนา ESP32</h3>
+      <p>Espressif ปล่อย ESP-IDF 6.0 ในเดือนมีนาคม 2026 พร้อมการเปลี่ยนแปลงสำคัญที่ส่งผลต่อทุกโปรเจกต์ที่ใช้ framework นี้:</p>
+      <ul style="list-style:none; padding:0; margin-top:0.75rem;">
+        <li style="padding:0.4rem 0; border-bottom:1px solid #1e293b; color:#94a3b8; font-size:0.92rem;">
+          🔁 <strong style="color:#c7d2fe;">Picolibc แทน Newlib</strong> — C Library ตัวใหม่ทำให้ Binary ขนาดเล็กลง, RAM ใช้น้อยลง
+        </li>
+        <li style="padding:0.4rem 0; border-bottom:1px solid #1e293b; color:#94a3b8; font-size:0.92rem;">
+          🔐 <strong style="color:#c7d2fe;">Mbed TLS 4.x + PSA Crypto API</strong> — API เดิม <code style="background:#0f172a;padding:0.1rem 0.3rem;border-radius:4px;font-size:0.8rem;">mbedtls_*</code> ต้องแก้ไขให้เป็น PSA
+        </li>
+        <li style="padding:0.4rem 0; border-bottom:1px solid #1e293b; color:#94a3b8; font-size:0.92rem;">
+          ⚠️ <strong style="color:#fbbf24;">Legacy Driver ถูกลบ</strong> — ADC, DAC, I2S Driver รุ่นเก่าถูกนำออก ต้องใช้ Driver ใหม่
+        </li>
+        <li style="padding:0.4rem 0; border-bottom:1px solid #1e293b; color:#94a3b8; font-size:0.92rem;">
+          🛠️ <strong style="color:#c7d2fe;">Build System v2 (CMake Preview)</strong> — สถาปัตยกรรมใหม่ที่ backward compatible กับ v1
+        </li>
+        <li style="padding:0.4rem 0; border-bottom:1px solid #1e293b; color:#94a3b8; font-size:0.92rem;">
+          🤖 <strong style="color:#c4b5fd;">Built-in MCP Server</strong> — ใช้กับ AI Coding Assistant ได้โดยตรงจาก IDE
+        </li>
+        <li style="padding:0.4rem 0; border-bottom:1px solid #1e293b; color:#94a3b8; font-size:0.92rem;">
+          📶 <strong style="color:#c7d2fe;">Wi-Fi Aware USD + WPA3 Compatible Mode</strong> — รองรับ Client ทั้ง WPA2/WPA3 พร้อมกัน
+        </li>
+        <li style="padding:0.4rem 0; color:#94a3b8; font-size:0.92rem;">
+          🆕 <strong style="color:#c7d2fe;">Chip ใหม่ที่รองรับ:</strong> ESP32-C5 &amp; C61 (เต็มรูปแบบ), ESP32-H21 &amp; H4 (Preview)
+        </li>
+      </ul>
+      <div class="highlight-box" style="margin-top:1rem;">
+        <p>⚠️ <strong>Migration Guide จำเป็นมาก:</strong> ก่อน Upgrade จาก v5.x ควรอ่าน Official Migration Guide เพราะ Compiler Warnings ถูกตั้งเป็น Error by Default ซึ่งอาจทำให้ Build ล้มเหลวโดยไม่คาดคิด</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="tag tag-hot">Trending 2026</span>
+      <span class="tag tag-ai">TinyML</span>
+      <h3>ESP32 Predictive Maintenance — ตรวจจับความผิดปกติของเครื่องจักรด้วย FFT + ML</h3>
+      <p>งานวิจัยปี 2025–2026 แสดงให้เห็นว่า ESP32 สามารถทำ Predictive Maintenance ได้จริงในระดับอุตสาหกรรม โดยผสาน MEMS Accelerometer กับ FFT Analysis บนตัวชิปเอง:</p>
+      <ul class="step-list">
+        <li>ติด MEMS Accelerometer (MPU6050 หรือ ADXL345) บนตัวเครื่องจักร</li>
+        <li>Sample ข้อมูล Vibration ที่ความถี่ 1–100 kHz ขึ้นอยู่กับประเภทเครื่อง</li>
+        <li>ใช้ ESP-DSP Library คำนวณ FFT บน ESP32-S3 (รัน Core 1 สำหรับ DSP, Core 0 สำหรับ WiFi/MQTT)</li>
+        <li>เปรียบเทียบ Frequency Spectrum กับ Baseline ปกติ หรือ Deploy ML Model</li>
+        <li>ส่ง Alert ผ่าน MQTT เมื่อ Anomaly Score เกิน Threshold</li>
+      </ul>
+      <div class="highlight-box">
+        <p>📊 <strong>ผลการทดสอบจริง:</strong> ระบบที่ใช้ ESP32 + MEMS Accelerometer + Microphone ตรวจจับ Imbalance และ Wear Fault ได้ความแม่นยำ ~73% — ถือว่าดีมากสำหรับ Hardware ราคาต่ำกว่า 300 บาท</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="tag tag-ai">Edge AI</span>
+      <span class="tag tag-chip">ESP32-S3</span>
+      <h3>ESP-AFE + MEMS Microphone — Offline Voice Command บน ESP32-S3</h3>
+      <p>Espressif เปิดตัว <strong>ESP AFE (Audio Front-End)</strong> ที่ใช้ประโยชน์จากคำสั่ง AI/DSP ของ ESP32-S3 โดยเฉพาะ ทำให้ระบบสั่งงานด้วยเสียงทำงานได้โดยไม่ต้องใช้ Internet:</p>
+      <div class="grid-2" style="margin-top:0.75rem;">
+        <div style="background:#0f172a; border-radius:10px; padding:1rem;">
+          <p style="color:#7dd3fc; font-weight:600; font-size:0.9rem; margin-bottom:0.5rem;">🎤 Pipeline</p>
+          <p style="color:#94a3b8; font-size:0.85rem;">I2S Capture → Ring Buffer → Feature Extraction → Model Inference → Command Output</p>
+        </div>
+        <div style="background:#0f172a; border-radius:10px; padding:1rem;">
+          <p style="color:#7dd3fc; font-weight:600; font-size:0.9rem; margin-bottom:0.5rem;">🔊 Hardware ที่เหมาะสม</p>
+          <p style="color:#94a3b8; font-size:0.85rem;">ESP32-S3 + SPH0645LM4H-B (I2S MEMS Mic) หรือ INMP441 — Interface เดี่ยวเชื่อมต่อง่าย</p>
+        </div>
+      </div>
+      <div class="highlight-box" style="margin-top:0.75rem;">
+        <p>🎯 <strong>Use Case:</strong> Smart Home Voice Switch โดยไม่ต้องพึ่ง Cloud, เครื่องมือในโรงงานที่สั่งงานด้วยเสียง, Accessibility Device สำหรับผู้ที่ใช้มือไม่ได้</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: PROJECTS -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-emerald">🛠️</div>
+      <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+    </div>
+
+    <div class="card">
+      <span class="tag tag-hot">Industry 4.0</span>
+      <h3>ESP32-S3 Motor Health Monitor — ตรวจจับ Bearing Fault ด้วย Dual-Core + ESP-DSP</h3>
+      <p>โปรเจกต์ตรวจสุขภาพมอเตอร์แบบ Non-Intrusive ราคาประหยัด ใช้แนวคิดจากงานวิจัยโปรตุเกส 2025 มาปรับใช้จริง:</p>
+      <div class="code-block">// Core 1: Data Acquisition (ไม่ถูกขัดจังหวะโดย WiFi)
+void IRAM_ATTR task_dsp(void *param) {
+  while(1) {
+    sample_accelerometer_100Hz(buf, FFT_SIZE);
+    dsps_fft2r_fc32(buf, FFT_SIZE);      // ESP-DSP FFT
+    float rms = compute_rms(buf);
+    float peak_freq = find_peak(buf);
+    xQueueSend(result_queue, &rms, 0);   // ส่งไปให้ Core 0
+  }
+}
+
+// Core 0: MQTT Publish (WiFi safe)
+void task_mqtt(void *param) {
+  float rms;
+  while(1) {
+    xQueueReceive(result_queue, &rms, portMAX_DELAY);
+    if(rms > ANOMALY_THRESHOLD)
+      mqtt_publish("factory/motor1/alert", ...);
+  }
+}</div>
+      <p style="margin-top:0.75rem;"><strong>Hardware:</strong> ESP32-S3 DevKitC + MPU6050 (I2C) + DS18B20 (วัดอุณหภูมิ Bearing) + Li-Ion + Solar Cell</p>
+    </div>
+
+    <div class="card">
+      <span class="tag tag-new">Smart Home</span>
+      <span class="tag tag-chip">ESP32-H21</span>
+      <h3>ESP32-H21 Thread Border Router Node — ขยาย Matter Mesh ในบ้านด้วยต้นทุนต่ำ</h3>
+      <p>ใช้ ESP32-H21 ร่วมกับ ESP32-C6 สร้าง Thread Network ครอบคลุมทั้งบ้าน โดยที่ ESP32-C6 ทำหน้าที่ Border Router (มี Wi-Fi) และ ESP32-H21 เป็น End Device ประหยัดพลังงาน:</p>
+      <div class="grid-2" style="margin-top:0.75rem;">
+        <div style="background:#0f172a; border-radius:10px; padding:1rem;">
+          <p style="color:#34d399; font-weight:600; font-size:0.9rem; margin-bottom:0.5rem;">🌐 Border Router (ESP32-C6)</p>
+          <p style="color:#94a3b8; font-size:0.85rem;">Wi-Fi 6 + Thread — เชื่อม Matter Network กับ Internet, ต้องต่อไฟถาวร</p>
+        </div>
+        <div style="background:#0f172a; border-radius:10px; padding:1rem;">
+          <p style="color:#a5b4fc; font-weight:600; font-size:0.9rem; margin-bottom:0.5rem;">🔋 End Device (ESP32-H21)</p>
+          <p style="color:#94a3b8; font-size:0.85rem;">Thread Only — Sensor Node ใช้แบตเตอรี่ AA 2 ก้อน ตื่นทุก 60 วินาที อยู่ได้ &gt;3 ปี</p>
+        </div>
+      </div>
+      <div class="highlight-box" style="margin-top:0.75rem;">
+        <p>💰 <strong>ต้นทุนโดยประมาณ:</strong> ESP32-H21 Module ~$2.5, ESP32-C6 Board ~$5 — สร้าง Smart Home Network ทั้งบ้านงบไม่ถึง 500 บาทต่อห้อง</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="tag tag-ai">Edge AI</span>
+      <h3>ESP32-S3 Offline Voice Assistant สำหรับผู้สูงอายุ — ควบคุมบ้านด้วยเสียงไทย</h3>
+      <p>ใช้ ESP-AFE + Wake Word Detection ทำ Voice Interface ภาษาไทยอย่างง่ายโดยไม่ต้องพึ่ง Cloud เหมาะสำหรับผู้สูงอายุที่ใช้ Smartphone ไม่คล่อง:</p>
+      <ul class="step-list">
+        <li>Wake Word: "เฮ้ ESP" หรือ "สวัสดี" — ตรวจจับด้วย Keyword Spotter บนชิป</li>
+        <li>Command Recognition: "เปิดไฟ", "ปิดแอร์", "โทรหาลูก" — 10–20 คำสั่ง</li>
+        <li>Execute: สั่ง Relay, ส่ง ESP-NOW, หรือ HTTP Request ไปยัง Home Assistant</li>
+        <li>Feedback: Text-to-Speech กลับทาง Speaker (I2S DAC + MAX98357)</li>
+      </ul>
+      <p style="margin-top:0.5rem; color:#94a3b8; font-size:0.9rem;">Library ที่แนะนำ: <strong>esp-sr</strong> (Espressif Speech Recognition) + <strong>esp-tts</strong></p>
+    </div>
+
+    <div class="card">
+      <span class="tag tag-chip">ESP32-S3</span>
+      <h3>Smart Pump Guard — ระบบเฝ้าระวังปั๊มน้ำเกษตร ป้องกันปั๊มแห้งและ Bearing เสีย</h3>
+      <p>โปรเจกต์ IoT สำหรับเกษตรกรไทย ตรวจสอบสภาพปั๊มน้ำแบบ Non-Intrusive ราคาต่ำกว่า 800 บาท:</p>
+      <div class="grid-2" style="margin-top:0.75rem;">
+        <div style="background:#0f172a; border-radius:10px; padding:1rem;">
+          <p style="color:#fbbf24; font-weight:600; font-size:0.9rem; margin-bottom:0.5rem;">📊 Sensors ที่ใช้</p>
+          <p style="color:#94a3b8; font-size:0.85rem;">MPU6050 (Vibration) + DS18B20 (Temp) + CT Sensor (Current Draw) + Pressure Transducer (4–20mA)</p>
+        </div>
+        <div style="background:#0f172a; border-radius:10px; padding:1rem;">
+          <p style="color:#fbbf24; font-weight:600; font-size:0.9rem; margin-bottom:0.5rem;">🚨 Alarm Logic</p>
+          <p style="color:#94a3b8; font-size:0.85rem;">Vibration RMS สูง → Bearing เสีย; กระแสลด → ปั๊มแห้ง; Temp สูง → ผิดปกติ</p>
+        </div>
+      </div>
+      <p style="margin-top:0.75rem; color:#94a3b8; font-size:0.9rem;">ส่ง Alert ผ่าน LINE Notify + Dashboard บน Grafana + InfluxDB บน Raspberry Pi</p>
+    </div>
+  </section>
+
+  <!-- SECTION 3: SENSORS -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-rose">📡</div>
+      <h2>Sensors &amp; อุปกรณ์น่าสนใจ</h2>
+    </div>
+
+    <div class="card">
+      <span class="tag tag-hot">นิยมสุด</span>
+      <h3>MPU6050 — 6-Axis IMU สำหรับ Vibration &amp; Motion Analysis</h3>
+      <p>Sensor วิเคราะห์การสั่นสะเทือนยอดนิยมที่สุด ราคา ~35 บาท/ชิ้น ทำงานร่วมกับ ESP32 ผ่าน I2C ได้เลยโดยไม่ต้องใช้ Library พิเศษ:</p>
+      <table class="spec-table">
+        <tr><th>คุณสมบัติ</th><th>รายละเอียด</th></tr>
+        <tr><td>Axes</td><td>3-Axis Gyro + 3-Axis Accelerometer</td></tr>
+        <tr><td>Interface</td><td>I2C (400 kHz) / SPI</td></tr>
+        <tr><td>Accel Range</td><td>±2g / ±4g / ±8g / ±16g</td></tr>
+        <tr><td>Gyro Range</td><td>±250 / ±500 / ±1000 / ±2000 °/s</td></tr>
+        <tr><td>Sample Rate</td><td>สูงสุด 1 kHz (DLPF Off)</td></tr>
+        <tr><td>Built-in DMP</td><td>รองรับ — ประมวล Quaternion บนชิป</td></tr>
+        <tr><td>ราคา</td><td>~35–60 บาท (Module พร้อม Level Shifter)</td></tr>
+      </table>
+      <div class="highlight-box">
+        <p>⚙️ <strong>Tip การใช้งาน:</strong> สำหรับ Vibration Analysis ควรปิด DLPF (Digital Low Pass Filter) เพื่อให้ได้ Sample Rate สูงสุด และ Mount PCB ให้แน่นสนิทกับ Housing เครื่องจักรโดยตรง</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="tag tag-new">แนะนำ</span>
+      <h3>INMP441 — I2S MEMS Microphone สำหรับ Offline Voice &amp; Audio Analysis</h3>
+      <p>ไมโครโฟน MEMS Digital แบบ I2S ที่ใช้งานกับ ESP32 ได้ง่ายที่สุด ไม่ต้องใช้ ADC เพราะส่งข้อมูล Digital โดยตรง:</p>
+      <table class="spec-table">
+        <tr><th>คุณสมบัติ</th><th>รายละเอียด</th></tr>
+        <tr><td>Interface</td><td>I2S Standard (WS, SCK, SD)</td></tr>
+        <tr><td>Frequency Response</td><td>60 Hz – 15 kHz</td></tr>
+        <tr><td>SNR</td><td>61 dBA (เสียงชัดเจน)</td></tr>
+        <tr><td>Supply Voltage</td><td>1.8V – 3.3V</td></tr>
+        <tr><td>ราคา</td><td>~80–120 บาท (Module)</td></tr>
+        <tr><td>Use Case</td><td>Voice Command, Acoustic Monitoring, Noise Level</td></tr>
+      </table>
+      <div class="code-block">// ESP32 I2S INMP441 (Arduino)
+i2s_config_t i2s_config = {
+  .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
+  .sample_rate = 16000,
+  .bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT,
+  .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
+  .communication_format = I2S_COMM_FORMAT_I2S_MSB,
+  .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
+  .dma_buf_count = 4,
+  .dma_buf_len = 1024,
+};</div>
+    </div>
+
+    <div class="card">
+      <span class="tag tag-tip">บทความใหม่ 2026</span>
+      <h3>ADXL355 — Low-Noise Accelerometer สำหรับ High-Precision Vibration</h3>
+      <p>สำหรับงาน Predictive Maintenance ที่ต้องการความละเอียดสูงกว่า MPU6050 ADXL355 จาก Analog Devices ให้ Noise Level ต่ำกว่ามากและเหมาะสำหรับ Industrial Use:</p>
+      <div class="grid-2" style="margin-top:0.75rem;">
+        <div style="background:#0f172a; border-radius:10px; padding:1rem;">
+          <p style="color:#fb7185; font-weight:600; font-size:0.9rem; margin-bottom:0.5rem;">✅ ข้อดี</p>
+          <p style="color:#94a3b8; font-size:0.85rem;">Noise: 25 µg/√Hz (เทียบ MPU6050: ~400 µg/√Hz), SPI Interface, ODR สูงสุด 4 kHz, ไม่มี Gyro (ลด Noise Cross-Talk)</p>
+        </div>
+        <div style="background:#0f172a; border-radius:10px; padding:1rem;">
+          <p style="color:#fb7185; font-weight:600; font-size:0.9rem; margin-bottom:0.5rem;">⚠️ ข้อด้อย</p>
+          <p style="color:#94a3b8; font-size:0.85rem;">ราคา ~$8–12/ชิ้น (แพงกว่า MPU6050 มาก), ต้องใช้ SPI ไม่มี I2C, เกินความต้องการสำหรับงาน DIY ทั่วไป</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="tag tag-chip">ESP32-H21</span>
+      <h3>AHT21 + SGP40 — Temperature/Humidity + VOC Sensor คู่ขวัญสำหรับ Indoor Air Quality</h3>
+      <p>Sensor แนะนำสำหรับ ESP32-H21 Thread Node เพราะทั้งคู่ใช้ I2C, ราคาประหยัด และให้ข้อมูลที่มีประโยชน์จริงๆ สำหรับ Smart Home:</p>
+      <table class="spec-table">
+        <tr><th>Sensor</th><th>วัดอะไร</th><th>Interface</th><th>ราคา</th></tr>
+        <tr><td>AHT21</td><td>Temperature ±0.3°C, Humidity ±2%RH</td><td>I2C</td><td>~50 บาท</td></tr>
+        <tr><td>SGP40</td><td>VOC Index 0–500 (แก๊สอินทรีย์ระเหยง่าย)</td><td>I2C</td><td>~180 บาท</td></tr>
+      </table>
+      <div class="highlight-box">
+        <p>🏠 <strong>DIY Thread Sensor Node ราคารวม:</strong> ESP32-H21 MINI-1 (~$2.5) + AHT21 (~50฿) + SGP40 (~180฿) + PCB + Battery Holder ≈ ไม่เกิน 350 บาท ต่อ Node</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: RESOURCES -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-amber">🔗</div>
+      <h2>แหล่งข้อมูลและลิงก์แนะนำ</h2>
+    </div>
+
+    <a class="resource-link" href="https://www.espressif.com/en/products/socs/esp32-h21" target="_blank" rel="noopener">
+      <span class="r-icon">🔴</span>
+      <div>
+        <div class="r-title">Espressif — ESP32-H21 Official Product Page</div>
+        <div class="r-sub">ข้อมูลชิป, Power Spec, SDK Support และ Module รุ่นที่มีจำหน่าย</div>
+      </div>
+    </a>
+
+    <a class="resource-link" href="https://esp32.co.uk/esp32-h21-announced-low-power-thread-bluetooth-le-soc/" target="_blank" rel="noopener">
+      <span class="r-icon">📰</span>
+      <div>
+        <div class="r-title">esp32.co.uk — ESP32-H21 Announced</div>
+        <div class="r-sub">บทวิเคราะห์ ESP32-H21 สำหรับ Low-Power Thread/BLE Application</div>
+      </div>
+    </a>
+
+    <a class="resource-link" href="https://esp32.co.uk/esp-idf-6-0-released-biggest-changes-for-esp32-developers/" target="_blank" rel="noopener">
+      <span class="r-icon">📦</span>
+      <div>
+        <div class="r-title">esp32.co.uk — ESP-IDF 6.0: Biggest Changes for Developers</div>
+        <div class="r-sub">สรุปการเปลี่ยนแปลงสำคัญ, Breaking Changes และ Migration Guide</div>
+      </div>
+    </a>
+
+    <a class="resource-link" href="https://developer.espressif.com/blog/2026/03/idf-v6-0-release/" target="_blank" rel="noopener">
+      <span class="r-icon">🛠️</span>
+      <div>
+        <div class="r-title">Espressif Developer Blog — IDF v6.0 Release Notes</div>
+        <div class="r-sub">บล็อกทางการจาก Espressif อธิบาย Feature ใหม่ใน ESP-IDF 6.0</div>
+      </div>
+    </a>
+
+    <a class="resource-link" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12609400/" target="_blank" rel="noopener">
+      <span class="r-icon">🔬</span>
+      <div>
+        <div class="r-title">PubMed — Low-Cost IoT Predictive Maintenance (2025–2026)</div>
+        <div class="r-sub">งานวิจัยเชิงวิทยาศาสตร์เรื่องการใช้ ESP32 + MEMS ทำ Predictive Maintenance ในอุตสาหกรรม</div>
+      </div>
+    </a>
+
+    <a class="resource-link" href="https://hackaday.io/project/206084-esp32-offline-speech-to-text-with-edge-ai" target="_blank" rel="noopener">
+      <span class="r-icon">🎙️</span>
+      <div>
+        <div class="r-title">Hackaday.io — ESP32 Offline Speech-to-Text with Edge AI</div>
+        <div class="r-sub">โปรเจกต์ตัวอย่าง Offline Speech Recognition บน ESP32 โดยไม่ต้องพึ่ง Cloud</div>
+      </div>
+    </a>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Research Bot | 22 ตุลาคม 2569 (2026)</p>
+  <p style="margin-top:0.4rem;">
+    แหล่งอ้างอิง:
+    <a href="https://www.espressif.com/en/news/ESP32_H21" target="_blank" rel="noopener">Espressif ESP32-H21</a> ·
+    <a href="https://developer.espressif.com/blog/2026/03/idf-v6-0-release/" target="_blank" rel="noopener">ESP-IDF v6.0</a> ·
+    <a href="https://www.cnx-software.com/2026/03/24/esp-idf-v6-0-framework-adds-support-for-esp32-c5-and-esp32-c61-preview-for-esp32-h21-and-esp32-h4/" target="_blank" rel="noopener">CNX-Software</a> ·
+    <a href="https://esp32.co.uk/category/news/" target="_blank" rel="noopener">esp32.co.uk</a>
+  </p>
+</footer>
+
+</body>
+</html>
