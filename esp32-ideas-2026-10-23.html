@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 23 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1a2744;
+    --accent-cyan: #06b6d4;
+    --accent-purple: #8b5cf6;
+    --accent-green: #10b981;
+    --accent-orange: #f97316;
+    --accent-pink: #ec4899;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #2d3d5a;
+  }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(99,102,241,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(6,182,212,0.15);
+    border: 1px solid rgba(6,182,212,0.4);
+    border-radius: 999px;
+    padding: 0.3rem 1rem;
+    font-size: 0.8rem;
+    color: var(--accent-cyan);
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #06b6d4, #8b5cf6, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .header-sub {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .stat-chip span { color: var(--text-primary); font-weight: 600; }
+
+  /* Nav */
+  nav {
+    background: rgba(30,41,59,0.95);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+  nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.35rem 0.9rem;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  nav a:hover {
+    background: rgba(6,182,212,0.15);
+    color: var(--accent-cyan);
+    border-color: rgba(6,182,212,0.3);
+  }
+
+  /* Main */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 3rem;
+  }
+
+  /* Section */
+  section { margin-bottom: 3rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .section-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .icon-cyan { background: rgba(6,182,212,0.2); border: 1px solid rgba(6,182,212,0.4); }
+  .icon-purple { background: rgba(139,92,246,0.2); border: 1px solid rgba(139,92,246,0.4); }
+  .icon-green { background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.4); }
+  .icon-orange { background: rgba(249,115,22,0.2); border: 1px solid rgba(249,115,22,0.4); }
+  .section-header h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-header p {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+  }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.2rem;
+  }
+  .card-grid.two-col { grid-template-columns: repeat(auto-fill, minmax(460px, 1fr)); }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(6,182,212,0.35);
+  }
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    margin-bottom: 0.8rem;
+  }
+  .card-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+  .badge-cyan { background: rgba(6,182,212,0.2); color: var(--accent-cyan); }
+  .badge-purple { background: rgba(139,92,246,0.2); color: var(--accent-purple); }
+  .badge-green { background: rgba(16,185,129,0.2); color: var(--accent-green); }
+  .badge-orange { background: rgba(249,115,22,0.2); color: var(--accent-orange); }
+  .badge-pink { background: rgba(236,72,153,0.2); color: var(--accent-pink); }
+  .card h3 {
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+    line-height: 1.7;
+  }
+  .card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.9rem;
+  }
+  .meta-tag {
+    font-size: 0.75rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 0.15rem 0.55rem;
+    color: var(--text-muted);
+  }
+  .highlight-box {
+    background: rgba(99,102,241,0.08);
+    border: 1px solid rgba(99,102,241,0.25);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.8rem;
+    font-size: 0.88rem;
+    color: #a5b4fc;
+  }
+  .highlight-box strong { color: #c7d2fe; }
+
+  /* Spec table */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.6rem;
+    font-size: 0.88rem;
+  }
+  .spec-table td {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid rgba(45,61,90,0.6);
+    color: var(--text-secondary);
+  }
+  .spec-table td:first-child {
+    font-weight: 600;
+    color: var(--text-primary);
+    width: 42%;
+  }
+
+  /* Sensor cards */
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.2rem 1.4rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+  .sensor-card:hover { border-color: rgba(16,185,129,0.35); }
+  .sensor-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+  }
+  .sensor-body h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.3rem; }
+  .sensor-body p { font-size: 0.87rem; color: var(--text-secondary); }
+  .sensor-specs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+  .spec-pill {
+    font-size: 0.75rem;
+    background: rgba(16,185,129,0.1);
+    color: var(--accent-green);
+    border: 1px solid rgba(16,185,129,0.25);
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+  }
+
+  /* Resources */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem;
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.2s;
+    display: block;
+  }
+  .resource-card:hover {
+    border-color: rgba(139,92,246,0.4);
+    background: rgba(139,92,246,0.07);
+    transform: translateY(-2px);
+  }
+  .resource-type {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent-purple);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
+  }
+  .resource-card h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; }
+  .resource-card p { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
+
+  /* Footer */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  footer a { color: var(--accent-cyan); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    .card-grid.two-col { grid-template-columns: 1fr; }
+    .stat-row { gap: 0.8rem; }
+    nav { gap: 0.3rem; }
+    nav a { font-size: 0.8rem; padding: 0.3rem 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">🤖 AI Research Daily • ESP32 & IoT</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="header-sub">23 ตุลาคม 2026 — รวมนวัตกรรม ไอเดียโปรเจกต์ และ Sensors ล่าสุด</p>
+  <div class="stat-row">
+    <div class="stat-chip"><span>4</span> นวัตกรรมใหม่</div>
+    <div class="stat-chip"><span>4</span> ไอเดียโปรเจกต์</div>
+    <div class="stat-chip"><span>4</span> Sensors แนะนำ</div>
+    <div class="stat-chip"><span>6</span> แหล่งอ้างอิง</div>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations">🔬 นวัตกรรม</a>
+  <a href="#projects">💡 โปรเจกต์</a>
+  <a href="#sensors">📡 Sensors</a>
+  <a href="#resources">📚 แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- INNOVATIONS -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-cyan">🔬</div>
+      <div>
+        <h2>นวัตกรรมและอัปเดตสำคัญ</h2>
+        <p>ความเคลื่อนไหวใหม่จากวงการ ESP32 และ IoT ประจำวันนี้</p>
+      </div>
+    </div>
+    <div class="card-grid two-col">
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-badge badge-cyan">ฮาร์ดแวร์</span>
+          <h3>ESP32-P4 Revision 3.0 — อัปเกรดสถาปัตยกรรมใหม่ พร้อม Power Rail เพิ่ม</h3>
+        </div>
+        <p>Espressif ประกาศ ESP32-P4 v3.x อย่างเป็นทางการ ยกระดับ CPU สูงสุดเป็น <strong>400 MHz</strong> เพิ่ม Zb bit-manipulation extension และแก้ไขบัก MSPI wake-up กับ Secure Boot ที่ค้างมานาน</p>
+        <p style="margin-top:0.5rem;">การเปลี่ยนแปลงสำคัญ: Pin 54 ถูกเปลี่ยนจาก NC เป็น VDD_HP_1 Power Rail ทำให้ PCB layout เก่าใช้ร่วมกันไม่ได้ — นักพัฒนาต้องออกแบบ PCB ใหม่และอัปเดต firmware</p>
+        <table class="spec-table">
+          <tr><td>Core speed (v3.x)</td><td>สูงสุด 400 MHz (เพิ่มจาก 360 MHz)</td></tr>
+          <tr><td>ISP upgrades</td><td>Black level, Dead pixel, White balance, Crop</td></tr>
+          <tr><td>Multimedia</td><td>ISP + PPA modules ปรับปรุงใหม่</td></tr>
+          <tr><td>คำแนะนำ</td><td>หลีกเลี่ยง revision 1.0, 1.1, 1.3 สำหรับ design ใหม่</td></tr>
+        </table>
+        <div class="card-meta">
+          <span class="meta-tag">ESP32-P4</span>
+          <span class="meta-tag">RISC-V</span>
+          <span class="meta-tag">HMI</span>
+          <span class="meta-tag">Multimedia</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-badge badge-purple">โปรเจกต์ Open Source</span>
+          <h3>ESP-KVM — IP KVM แบบ Open Source บน ESP32-P4 ราคาประหยัด</h3>
+        </div>
+        <p>โปรเจกต์ ESP-KVM สร้าง IP KVM (Keyboard Video Mouse over IP) โดยใช้บอร์ด Waveshare ที่ใช้ชิป ESP32-P4 เชื่อมต่อผ่านเครือข่ายเพื่อรีโมตคอนโทรลคอมพิวเตอร์ได้จากทุกที่</p>
+        <p style="margin-top:0.5rem;">ทดสอบบน revision 1.3 ได้ <strong>~20 FPS ด้วย MJPEG</strong> และ 7 FPS ด้วย H.264 — คาดว่า v3.x จะให้ H.264 ที่ดีกว่านี้มาก เนื่องจาก hardware encoder ที่ปรับปรุงแล้ว</p>
+        <div class="highlight-box">
+          <strong>ทำไมน่าสนใจ:</strong> KVM switch แบบ IP ปกติราคาหลักพัน — ESP32-P4 ทำสิ่งเดียวกันได้ในราคาต่ำกว่า 10 เท่า เหมาะสำหรับ lab, homelab, หรือ remote server ขนาดเล็ก
+        </div>
+        <div class="card-meta">
+          <span class="meta-tag">ESP32-P4</span>
+          <span class="meta-tag">KVM</span>
+          <span class="meta-tag">H.264</span>
+          <span class="meta-tag">Waveshare</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-badge badge-green">เกษตร / สิ่งแวดล้อม</span>
+          <h3>ESP32 + LoRaWAN Water Quality — ระบบตรวจคุณภาพน้ำระยะไกลด้วย Solar</h3>
+        </div>
+        <p>งานวิจัยปี 2026 จาก Malaysian University ใช้บอร์ด Heltec WiFi LoRa32-V3 ส่งข้อมูลผ่าน LoRaWAN ไปยัง The Things Network แล้วแสดงผลใน Grafana Dashboard แบบ Realtime</p>
+        <p style="margin-top:0.5rem;">ระบบ Solar-powered จากฟิลิปปินส์ใช้ MPPT controller กับแบตเตอรี่ LiFePO₄ ทำงานได้ตลอดคืนและวันที่มีเมฆ ทดสอบจริงในบ่อกุ้ง (Aquaculture) โดยมีข้อมูล pH, DO, Salinity ครบ</p>
+        <table class="spec-table">
+          <tr><td>พารามิเตอร์วัด</td><td>pH, Turbidity, TDS, DO, Salinity, Temperature</td></tr>
+          <tr><td>โปรโตคอล</td><td>LoRaWAN → TTN → Node-RED → InfluxDB/MySQL</td></tr>
+          <tr><td>Security</td><td>AES-128 + SHA-256 ป้องกันข้อมูล</td></tr>
+          <tr><td>Power</td><td>Solar MPPT + LiFePO₄ (autonomous operation)</td></tr>
+        </table>
+        <div class="card-meta">
+          <span class="meta-tag">LoRaWAN</span>
+          <span class="meta-tag">Water Quality</span>
+          <span class="meta-tag">Heltec</span>
+          <span class="meta-tag">Aquaculture</span>
+          <span class="meta-tag">Grafana</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-badge badge-orange">AI / ML</span>
+          <h3>TinyML บน ESP32-S3 — Hybrid Cloud-to-Device สำหรับ Production IoT</h3>
+        </div>
+        <p>แนวทาง 2026 สำหรับ TinyML จริงในสาย Production คือ <strong>Train ใน Cloud → Quantize → Deploy บน ESP32-S3</strong> โมเดลขนาด 1M–100M parameters เหมาะสำหรับ Anomaly Detection, Wake Word, Image Classification</p>
+        <p style="margin-top:0.5rem;">Edge Impulse รองรับการ export เป็น TensorFlow Lite Micro ที่รันบน ESP32-S3 ได้โดยตรง ต้นทุน inference ต่ำมาก เหมาะสำหรับ startup IoT ที่ต้องการ privacy และ offline operation</p>
+        <div class="highlight-box">
+          <strong>Pattern ที่แนะนำ:</strong> ฝึก model ใน Google Colab → Export INT8 quantized → Flash ลง ESP32-S3 → Re-train ด้วย data ใหม่ทุก sprint — ลดการพึ่งพา cloud inference และ latency เป็นศูนย์
+        </div>
+        <div class="card-meta">
+          <span class="meta-tag">TinyML</span>
+          <span class="meta-tag">Edge AI</span>
+          <span class="meta-tag">TFLite Micro</span>
+          <span class="meta-tag">Edge Impulse</span>
+          <span class="meta-tag">Quantization</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">💡</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+        <p>โปรเจกต์ที่ต่อยอดจากนวัตกรรมวันนี้ สร้างได้จริงด้วยงบสมเหตุสมผล</p>
+      </div>
+    </div>
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-badge badge-purple">HMI / Video</span>
+          <h3>ESP32-P4 Smart Video Doorbell — ความละเอียดสูง + Face Detection Offline</h3>
+        </div>
+        <p>ใช้ ESP32-P4 v3.x กับกล้อง MIPI CSI 2MP และ LCD 7 นิ้วสร้างกริ่งประตูอัจฉริยะที่ตรวจจับหน้าคนได้ด้วย TinyML แบบ offline ไม่ต้องส่งข้อมูลออก Cloud เลย</p>
+        <div class="highlight-box">
+          <strong>อุปกรณ์หลัก:</strong> ESP32-P4 EV Board + MIPI Camera 2MP + MicroSD Card + IR LED ring (กลางคืน)
+        </div>
+        <div class="card-meta">
+          <span class="meta-tag">ESP32-P4</span>
+          <span class="meta-tag">MIPI CSI</span>
+          <span class="meta-tag">Face Detection</span>
+          <span class="meta-tag">Privacy-First</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-badge badge-green">เกษตร</span>
+          <h3>LoRa Water Station — สถานีวัดคุณภาพน้ำชลประทาน 5 km ไร้สาย</h3>
+        </div>
+        <p>สร้าง node วัดค่า pH, EC (ค่านำไฟฟ้า), อุณหภูมิ, ระดับน้ำ ส่งผ่าน LoRa 915 MHz ไปยัง gateway กลาง แสดงผลใน Dashboard บน Grafana พร้อมแจ้งเตือน LINE เมื่อค่าผิดปกติ</p>
+        <div class="highlight-box">
+          <strong>อุปกรณ์หลัก:</strong> TTGO T-Beam ESP32 + Atlas Scientific EZO sensors + Solar 5W + LiPo 3000mAh
+        </div>
+        <div class="card-meta">
+          <span class="meta-tag">LoRa 915MHz</span>
+          <span class="meta-tag">Atlas Scientific</span>
+          <span class="meta-tag">Grafana</span>
+          <span class="meta-tag">Line Notify</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-badge badge-orange">TinyML</span>
+          <h3>ESP32-S3 Electronic Nose — วิเคราะห์กลิ่นด้วย Gas Sensor Array + ML</h3>
+        </div>
+        <p>ใช้ MQ sensor หลายตัว (MQ-2, MQ-7, MQ-135, BME680) เป็น feature vector ป้อนเข้า neural network ขนาดเล็กเพื่อจำแนกประเภทกลิ่น เช่น ก๊าซรั่ว, ควันบุหรี่, อาหารเน่า, หรือ VOC อันตราย</p>
+        <div class="highlight-box">
+          <strong>อุปกรณ์หลัก:</strong> ESP32-S3 + MQ-2, MQ-7, MQ-135, BME688 + OLED Display + Edge Impulse training
+        </div>
+        <div class="card-meta">
+          <span class="meta-tag">Electronic Nose</span>
+          <span class="meta-tag">Gas Sensor Array</span>
+          <span class="meta-tag">Edge Impulse</span>
+          <span class="meta-tag">BME688</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-badge badge-pink">Homelab</span>
+          <h3>ESP32-P4 Mini KVM DIY — Remote Access Raspberry Pi / PC ผ่านเว็บ</h3>
+        </div>
+        <p>ต่อยอดจาก ESP-KVM project สร้าง KVM ราคาถูกสำหรับ Homelab โดยใช้ ESP32-P4 + HDMI Capture module + USB HID emulator ควบคุมคอมพิวเตอร์จาก browser บน LAN หรือ VPN</p>
+        <div class="highlight-box">
+          <strong>อุปกรณ์หลัก:</strong> Waveshare ESP32-P4 board + MS2109 HDMI capture + CH9329 USB HID chip + Web UI
+        </div>
+        <div class="card-meta">
+          <span class="meta-tag">ESP32-P4</span>
+          <span class="meta-tag">HDMI Capture</span>
+          <span class="meta-tag">USB HID</span>
+          <span class="meta-tag">Homelab</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SENSORS -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">📡</div>
+      <div>
+        <h2>Sensors & อุปกรณ์น่าสนใจ</h2>
+        <p>Sensor ที่เข้ากับโปรเจกต์วันนี้และหาซื้อได้ง่าย</p>
+      </div>
+    </div>
+    <div class="card-grid">
+
+      <div class="sensor-card">
+        <div class="sensor-icon">💧</div>
+        <div class="sensor-body">
+          <h3>Atlas Scientific EZO-pH — Isolated pH Probe สำหรับงานจริง</h3>
+          <p>Sensor pH แบบ isolated สำหรับน้ำที่ต้องการความแม่นยำสูง ใช้งานใน aquaculture, hydroponics, water treatment รองรับ I2C/UART calibrate ได้ 3 จุด ทนต่อน้ำเค็มและสารเคมี</p>
+          <div class="sensor-specs">
+            <span class="spec-pill">Range: 0.001–14.000 pH</span>
+            <span class="spec-pill">Accuracy: ±0.002 pH</span>
+            <span class="spec-pill">I2C / UART</span>
+            <span class="spec-pill">3.3V / 5V</span>
+            <span class="spec-pill">Isolated circuit</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">⚗️</div>
+        <div class="sensor-body">
+          <h3>BME688 — 4-in-1 Environmental + AI Gas Sensor จาก Bosch</h3>
+          <p>อัปเกรดจาก BME680 เพิ่ม AI/ML features ในตัว วัดอุณหภูมิ ความชื้น ความดัน และ VOC pattern แยกกลิ่นได้ด้วย Bosch BSEC2 library ทำงานร่วมกับ Edge Impulse สำหรับ Electronic Nose</p>
+          <div class="sensor-specs">
+            <span class="spec-pill">Temp / Humidity / Pressure</span>
+            <span class="spec-pill">Gas Resistance (VOC)</span>
+            <span class="spec-pill">AI Pattern Recognition</span>
+            <span class="spec-pill">I2C / SPI</span>
+            <span class="spec-pill">3.3V</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">🌊</div>
+        <div class="sensor-body">
+          <h3>DFRobot Turbidity Sensor — วัดความขุ่นน้ำแบบ Analog/Digital</h3>
+          <p>Sensor วัดความขุ่นของน้ำราคาประหยัด ใช้งานง่ายกับ ESP32 ADC เหมาะกับโปรเจกต์ตรวจคุณภาพน้ำเบื้องต้น ทนต่อน้ำทะเลและน้ำปนเปื้อน มี breakout board แบบ analog output</p>
+          <div class="sensor-specs">
+            <span class="spec-pill">Output: 0–5V analog / digital</span>
+            <span class="spec-pill">NTU: 0–3000</span>
+            <span class="spec-pill">5V supply</span>
+            <span class="spec-pill">ราคา: ~300 บาท</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-icon">📶</div>
+        <div class="sensor-body">
+          <h3>Heltec WiFi LoRa32 V3 — ESP32-S3 + LoRa SX1262 ในบอร์ดเดียว</h3>
+          <p>บอร์ดพัฒนาที่รวม ESP32-S3, LoRa SX1262 (LoRaWAN 868/915 MHz) และ OLED 0.96" ไว้ในชิ้นเดียว ใช้ในงานวิจัยตรวจคุณภาพน้ำหลายงาน รองรับ The Things Network โดยตรง</p>
+          <div class="sensor-specs">
+            <span class="spec-pill">ESP32-S3</span>
+            <span class="spec-pill">SX1262 LoRa</span>
+            <span class="spec-pill">868/915 MHz</span>
+            <span class="spec-pill">OLED 0.96"</span>
+            <span class="spec-pill">USB-C</span>
+            <span class="spec-pill">LoRaWAN ready</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- RESOURCES -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">📚</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์แนะนำ</h2>
+        <p>แหล่งอ้างอิงที่ใช้ค้นคว้าวันนี้และแหล่งที่น่าติดตาม</p>
+      </div>
+    </div>
+    <div class="resource-grid">
+
+      <a href="https://www.espressif.com/en/news/ESP32_P4_v3.x_Upgrade" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-type">Official</div>
+        <h4>ESP32-P4 v3.x Upgrade</h4>
+        <p>หน้าประกาศอย่างเป็นทางการจาก Espressif เกี่ยวกับ chip revision 3.x ทุกรายละเอียด</p>
+      </a>
+
+      <a href="https://www.cnx-software.com/2026/07/30/esp-kvm-an-open-source-ip-kvm-solution-based-on-esp32-p4-risc-v-mcu/" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-type">Project</div>
+        <h4>ESP-KVM บน ESP32-P4</h4>
+        <p>รีวิวโปรเจกต์ IP KVM open source จาก CNX-Software พร้อมผลทดสอบ FPS จริง</p>
+      </a>
+
+      <a href="https://www.cnx-software.com/2026/03/23/esp32-p4-revision-3-0-gains-new-power-rail-requires-new-pcb-design-and-firmware/" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-type">Hardware</div>
+        <h4>ESP32-P4 Rev 3.0 PCB Change</h4>
+        <p>รายละเอียด PCB และ firmware ที่ต้องเปลี่ยน เมื่ออัปเกรดเป็น revision 3.0</p>
+      </a>
+
+      <a href="https://mjst.ustp.edu.ph/index.php/mjst/article/view/2501" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-type">Research</div>
+        <h4>Solar Water Quality Monitor</h4>
+        <p>งานวิจัย ESP32 LoRaWAN solar-powered สำหรับตรวจคุณภาพน้ำระยะไกล</p>
+      </a>
+
+      <a href="https://developer.espressif.com/tags/esp32-p4/" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-type">Docs</div>
+        <h4>ESP32-P4 Developer Portal</h4>
+        <p>รวม blog, tutorial, และ example project สำหรับ ESP32-P4 จาก Espressif Developer</p>
+      </a>
+
+      <a href="https://aiindigo.com/blog/the-rise-of-tinyml-running-llms-on-microcontrollers-for-edge-computing" class="resource-card" target="_blank" rel="noopener">
+        <div class="resource-type">Article</div>
+        <h4>TinyML & Edge AI 2026</h4>
+        <p>ภาพรวม TinyML ในปี 2026 ขนาด model ที่เหมาะสม และแนวทาง hybrid deployment</p>
+      </a>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Research Bot • 23 ตุลาคม 2026</p>
+  <p style="margin-top:0.4rem;">แหล่งข้อมูล: <a href="https://www.espressif.com" target="_blank">Espressif</a> •
+  <a href="https://www.cnx-software.com" target="_blank">CNX-Software</a> •
+  <a href="https://developer.espressif.com" target="_blank">ESP Developer Portal</a> •
+  Academic Research 2026</p>
+</footer>
+
+</body>
+</html>
