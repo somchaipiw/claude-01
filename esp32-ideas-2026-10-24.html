@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 24 ตุลาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f172a;
+    --bg2: #1e293b;
+    --bg3: #334155;
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: #2d3f55;
+    --card: #162032;
+  }
+  body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); line-height: 1.85; font-size: 16px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #ec4899 100%);
+    padding: 3rem 2rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(45deg, transparent, transparent 30px, rgba(255,255,255,.04) 30px, rgba(255,255,255,.04) 60px);
+  }
+  header h1 { font-size: 2rem; font-weight: 700; color: #fff; position: relative; text-shadow: 0 2px 8px rgba(0,0,0,.4); }
+  header .sub { font-size: 1rem; color: rgba(255,255,255,.85); margin-top: .4rem; position: relative; }
+  .badges { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; margin-top: 1.2rem; position: relative; }
+  .badge { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25); color: #fff; border-radius: 999px; padding: .25rem .85rem; font-size: .8rem; font-weight: 600; backdrop-filter: blur(4px); }
+
+  /* Navigation */
+  nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: .75rem 2rem; display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; position: sticky; top: 0; z-index: 100; }
+  nav a { color: var(--muted); font-size: .85rem; padding: .3rem .8rem; border-radius: 6px; transition: all .2s; }
+  nav a:hover { color: var(--text); background: var(--bg3); text-decoration: none; }
+
+  /* Main layout */
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* Section */
+  .section { margin-bottom: 3.5rem; }
+  .section-header { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.5rem; padding-bottom: .75rem; border-bottom: 2px solid var(--border); }
+  .section-icon { font-size: 1.6rem; }
+  .section-header h2 { font-size: 1.4rem; font-weight: 700; color: var(--text); }
+  .section-header .count { background: var(--bg3); color: var(--muted); border-radius: 999px; padding: .15rem .6rem; font-size: .75rem; margin-left: auto; }
+
+  /* Cards grid */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem; transition: transform .2s, border-color .2s; }
+  .card:hover { transform: translateY(-2px); border-color: var(--bg3); }
+  .card-header { display: flex; align-items: flex-start; gap: .75rem; margin-bottom: .85rem; }
+  .card-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: .1rem; }
+  .card-title { font-size: 1rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+  .card-subtitle { font-size: .8rem; color: var(--accent); margin-top: .2rem; }
+  .card p { font-size: .9rem; color: var(--muted); line-height: 1.75; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .85rem; }
+  .tag { background: var(--bg3); color: var(--muted); border-radius: 4px; padding: .15rem .55rem; font-size: .75rem; }
+  .tag.blue { background: rgba(56,189,248,.15); color: var(--accent); }
+  .tag.purple { background: rgba(129,140,248,.15); color: var(--accent2); }
+  .tag.green { background: rgba(52,211,153,.15); color: var(--accent3); }
+  .tag.orange { background: rgba(251,146,60,.15); color: var(--accent4); }
+  .tag.pink { background: rgba(244,114,182,.15); color: var(--accent5); }
+
+  /* Wide card */
+  .card-wide { grid-column: 1 / -1; }
+
+  /* Code block */
+  .code-block { background: #0d1b2a; border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; margin-top: .85rem; overflow-x: auto; }
+  .code-block pre { font-family: 'Courier New', monospace; font-size: .82rem; color: #7dd3fc; line-height: 1.6; white-space: pre; }
+  .code-block .comment { color: #475569; }
+  .code-block .keyword { color: #c084fc; }
+  .code-block .string { color: #86efac; }
+  .code-block .number { color: #fb923c; }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; margin-top: .85rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  th { background: var(--bg3); color: var(--text); font-weight: 600; padding: .65rem 1rem; text-align: left; }
+  td { border-bottom: 1px solid var(--border); padding: .6rem 1rem; color: var(--muted); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+  td strong { color: var(--text); }
+
+  /* Highlight box */
+  .highlight { background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.25); border-radius: 8px; padding: 1rem 1.2rem; margin-top: .85rem; }
+  .highlight.green { background: rgba(52,211,153,.08); border-color: rgba(52,211,153,.25); }
+  .highlight.orange { background: rgba(251,146,60,.08); border-color: rgba(251,146,60,.25); }
+  .highlight.purple { background: rgba(129,140,248,.08); border-color: rgba(129,140,248,.25); }
+  .highlight p { font-size: .88rem; color: var(--muted); }
+  .highlight strong { color: var(--text); }
+
+  /* Timeline / list */
+  .timeline { list-style: none; padding: 0; margin-top: .85rem; }
+  .timeline li { display: flex; gap: .75rem; padding: .6rem 0; border-bottom: 1px solid var(--border); font-size: .88rem; }
+  .timeline li:last-child { border-bottom: none; }
+  .tl-date { color: var(--accent2); font-weight: 700; white-space: nowrap; flex-shrink: 0; width: 6rem; }
+  .tl-body { color: var(--muted); }
+  .tl-body strong { color: var(--text); }
+
+  /* Two columns */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  @media (max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* Steps */
+  .steps { list-style: none; padding: 0; counter-reset: step; margin-top: .85rem; }
+  .steps li { counter-increment: step; display: flex; gap: .85rem; padding: .65rem 0; border-bottom: 1px solid var(--border); font-size: .88rem; color: var(--muted); }
+  .steps li:last-child { border-bottom: none; }
+  .steps li::before { content: counter(step); background: var(--accent); color: #0f172a; font-weight: 700; border-radius: 50%; width: 1.5rem; height: 1.5rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: .78rem; }
+  .steps li strong { color: var(--text); }
+
+  /* Footer */
+  footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 2rem; text-align: center; color: var(--muted); font-size: .85rem; }
+  footer a { color: var(--accent); }
+
+  @media (max-width: 640px) {
+    header h1 { font-size: 1.4rem; }
+    .cards { grid-template-columns: 1fr; }
+    main { padding: 1.5rem 1rem 3rem; }
+    .card-wide { grid-column: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📡 ESP32 & Sensor Innovations</h1>
+  <p class="sub">24 ตุลาคม 2569 — mmWave Radar · ESPHome 2026 · CAN Bus · AMOLED Display · USB Host</p>
+  <div class="badges">
+    <span class="badge">🎯 5 หัวข้อใหม่</span>
+    <span class="badge">📡 mmWave Radar</span>
+    <span class="badge">🚗 CAN Bus / TWAI</span>
+    <span class="badge">🖥 AMOLED Round</span>
+    <span class="badge">🔌 USB OTG Host</span>
+    <span class="badge">🏠 ESPHome 2026</span>
+  </div>
+</header>
+
+<nav>
+  <a href="#radar">📡 mmWave Radar</a>
+  <a href="#esphome">🏠 ESPHome 2026</a>
+  <a href="#canbus">🚗 CAN Bus</a>
+  <a href="#amoled">🖥 AMOLED Display</a>
+  <a href="#usb">🔌 USB Host</a>
+  <a href="#resources">🔗 แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- ===== 1. mmWave Radar ===== -->
+  <section id="radar" class="section">
+    <div class="section-header">
+      <span class="section-icon">📡</span>
+      <h2>mmWave Radar Sensors — ตรวจจับคนได้แม้นิ่งสนิท</h2>
+      <span class="count">3 chips</span>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🎯</span>
+          <div>
+            <div class="card-title">HLK-LD2410C — 24 GHz FMCW Radar</div>
+            <div class="card-subtitle">Hi-Link · รุ่นยอดนิยม · ตรวจสถิตและเคลื่อนที่</div>
+          </div>
+        </div>
+        <p>เซ็นเซอร์ radar 24 GHz แบบ FMCW แก้ปัญหาที่ PIR ทำไม่ได้คือ <strong>ตรวจจับคนนิ่งๆ ได้</strong> เช่น นั่งอ่านหนังสือ หรือนอนหลับ ระยะตรวจสูงสุด 6 เมตร แบ่งเป็น 8 gate ละ 0.75 m ปรับ sensitivity รายเขตได้</p>
+        <div class="highlight">
+          <p>✨ <strong>รุ่น C</strong> มี Bluetooth onboard สำหรับ config ผ่านแอปมือถือ <strong>Hi-Link Radar</strong> ไม่ต้องเขียน code เพื่อตั้งค่า</p>
+        </div>
+        <div class="code-block"><pre><span class="comment">// ESPHome YAML - HLK-LD2410</span>
+uart:
+  id: uart_ld2410
+  tx_pin: GPIO17
+  rx_pin: GPIO18
+  baud_rate: 256000
+
+ld2410:
+  uart_id: uart_ld2410
+
+binary_sensor:
+  - platform: ld2410
+    has_target:
+      name: <span class="string">"Presence"</span>
+    has_moving_target:
+      name: <span class="string">"Motion"</span>
+    has_still_target:
+      name: <span class="string">"Still Person"</span></pre></div>
+        <div class="card-tags">
+          <span class="tag blue">24 GHz FMCW</span>
+          <span class="tag green">ESPHome Native</span>
+          <span class="tag">UART 256000</span>
+          <span class="tag">~฿180</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🗺</span>
+          <div>
+            <div class="card-title">HLK-LD2450 — Multi-Target Tracking</div>
+            <div class="card-subtitle">รุ่นใหม่กว่า · ติดตาม 3 คน + พิกัด X/Y</div>
+          </div>
+        </div>
+        <p>พัฒนาขึ้นจาก LD2410 อย่างมาก สามารถ <strong>track ได้สูงสุด 3 targets พร้อมกัน</strong> และรายงานพิกัด X/Y จริง (มม.) กำหนด Zone สี่เหลี่ยมได้ 3 โซน เหมาะสำหรับ room counting และ zone detection</p>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Feature</th><th>LD2410C</th><th>LD2450</th></tr>
+            <tr><td>Targets</td><td>1</td><td><strong>3 พร้อมกัน</strong></td></tr>
+            <tr><td>X/Y position</td><td>ไม่มี</td><td><strong>มี</strong></td></tr>
+            <tr><td>Zone config</td><td>8 gates</td><td><strong>3 รูปสี่เหลี่ยม</strong></td></tr>
+            <tr><td>ราคา</td><td>~฿180</td><td>~฿220</td></tr>
+          </table>
+        </div>
+        <div class="card-tags">
+          <span class="tag blue">Multi-target</span>
+          <span class="tag purple">X/Y Coordinates</span>
+          <span class="tag green">ESPHome 2026.9</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">⚡</span>
+          <div>
+            <div class="card-title">HLK-LD6002B — 60 GHz Radar</div>
+            <div class="card-subtitle">ความถี่สูง · ทะลุสิ่งกีดขวางได้ดีกว่า</div>
+          </div>
+        </div>
+        <p>รุ่นใหม่ล่าสุดที่ใช้ <strong>60 GHz</strong> ทะลุผ่านวัสดุบาง เช่น พลาสติก, ไม้ได้ดีกว่า 24 GHz เพิ่งเข้า ESPHome ใน <strong>2026.8.0</strong> ยังเป็น experimental แต่น่าจับตา โดยเฉพาะสำหรับการซ่อนเซ็นเซอร์ไว้ใต้ผิวหน้า</p>
+        <div class="highlight orange">
+          <p>⚠️ <strong>สถานะปัจจุบัน:</strong> ESPHome component ยังใหม่มาก เอกสารน้อย แนะนำทดสอบในสภาพแวดล้อม controlled ก่อน production</p>
+        </div>
+        <div class="card-tags">
+          <span class="tag orange">60 GHz</span>
+          <span class="tag">ESPHome 2026.8</span>
+          <span class="tag">Experimental</span>
+        </div>
+      </div>
+
+      <div class="card card-wide">
+        <div class="card-header">
+          <span class="card-icon">💡</span>
+          <div>
+            <div class="card-title">ไอเดียโปรเจกต์: Smart Room Occupancy System</div>
+            <div class="card-subtitle">LD2450 + ESP32-C6 + Home Assistant + ESPHome</div>
+          </div>
+        </div>
+        <div class="two-col">
+          <div>
+            <p>ระบบตรวจจับการใช้งานห้องอัจฉริยะ ใช้ LD2450 ติด ceiling ของห้องประชุม ส่ง X/Y position ไป Home Assistant เพื่อ automate แสงและแอร์ตาม zone ที่คนอยู่</p>
+            <ul class="steps">
+              <li><strong>LD2450</strong> ติดเพดานมองลงมา ครอบคลุม zone ต่างๆ</li>
+              <li><strong>ESP32-C6</strong> รับข้อมูล UART ส่ง MQTT ไป HA</li>
+              <li><strong>Home Assistant</strong> วาด map overlay แสดง heatmap</li>
+              <li>Automation <strong>ปิดแอร์ zone</strong> ที่ไม่มีคนนั่ง ประหยัดไฟ</li>
+            </ul>
+          </div>
+          <div>
+            <div class="highlight green">
+              <p><strong>ข้อได้เปรียบเหนือ PIR:</strong></p>
+              <p>✅ ตรวจคนนิ่งๆ ได้ (นั่งทำงาน, นอนหลับ)</p>
+              <p>✅ ไม่ถูกรบกวนจากแสง, อุณหภูมิ</p>
+              <p>✅ รู้จำนวนคนและตำแหน่ง</p>
+              <p>✅ ราคาถูก &lt;฿300/จุด</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. ESPHome 2026 ===== -->
+  <section id="esphome" class="section">
+    <div class="section-header">
+      <span class="section-icon">🏠</span>
+      <h2>ESPHome 2026 — อัปเดตครึ่งปีหลัง</h2>
+      <span class="count">5 releases</span>
+    </div>
+
+    <div class="cards">
+      <div class="card card-wide">
+        <div class="card-header">
+          <span class="card-icon">📅</span>
+          <div>
+            <div class="card-title">Timeline อัปเดตสำคัญ 2026</div>
+            <div class="card-subtitle">ESPHome ยังคงเติบโตต่อเนื่องทุกเดือน</div>
+          </div>
+        </div>
+        <ul class="timeline">
+          <li><span class="tl-date">Oct 2026</span><span class="tl-body"><strong>2026.10.0:</strong> PZEM-6L24 three-phase energy monitor, Xiaomi body scale S200/S400, persistent counter sensor, systa_bus</span></li>
+          <li><span class="tl-date">Sep 2026</span><span class="tl-body"><strong>2026.9.0:</strong> DS1603L V1.0 (ระดับน้ำ ultrasonic), SFA40 (formaldehyde), D01 PM2.5; breaking: ESP-IDF 5.3+ required</span></li>
+          <li><span class="tl-date">Aug 2026</span><span class="tl-body"><strong>2026.8.0:</strong> Platform-neutral BLE layer! ทุก BLE sensor ทำงานบน Pi Pico W, BK72xx, LN882H ได้แล้ว, LD6002B 60 GHz radar, modbus_client component</span></li>
+          <li><span class="tl-date">Jul 2026</span><span class="tl-body"><strong>2026.7.0:</strong> e-paper display drivers เพิ่ม, OpenThread basic บน Zephyr/nRF52, ESP-NOW v2 max_payload_size</span></li>
+          <li><span class="tl-date">Jun 2026</span><span class="tl-body"><strong>2026.6.0:</strong> Bosch BMI270 IMU, STMicro LSM6DS IMU, PCM5122 audio DAC, XDB401 pressure sensor</span></li>
+          <li><span class="tl-date">May 2026</span><span class="tl-body"><strong>2026.5.0:</strong> Zigbee end-device บน ESP32-C6 + H2, OTA partition table update</span></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🌐</span>
+          <div>
+            <div class="card-title">Platform-Neutral BLE Layer (2026.8)</div>
+            <div class="card-subtitle">ก้าวกระโดดที่สำคัญที่สุดปีนี้</div>
+          </div>
+        </div>
+        <p>ESPHome 2026.8 refactor layer BLE ใหม่ทั้งหมด ทำให้ <strong>เซ็นเซอร์ BLE ทั้ง 39 ตัว</strong> ทำงานได้บนทุก platform ไม่ใช่แค่ ESP32 อีกต่อไป</p>
+        <div class="highlight">
+          <p>🆕 <strong>BT Proxy</strong> รันได้บน: Pi Pico W, BK72xx (Tuya chip), LN882H — ลด cost สำหรับ Bluetooth gateway ลงมาก</p>
+        </div>
+        <div class="card-tags">
+          <span class="tag blue">BLE Proxy</span>
+          <span class="tag purple">Pi Pico W</span>
+          <span class="tag green">Multi-platform</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">⚡</span>
+          <div>
+            <div class="card-title">PZEM-6L24 — Three-Phase Energy Monitor</div>
+            <div class="card-subtitle">ใหม่ใน ESPHome 2026.10</div>
+          </div>
+        </div>
+        <p>เซ็นเซอร์วัดพลังงาน <strong>ไฟฟ้า 3 เฟส</strong> รุ่นใหม่จาก Peacefair วัดได้ทั้ง Voltage, Current, Power, Energy, PF ต่อ phase รองรับโรงงาน อาคารพาณิชย์ ราคาถูกกว่า industrial meter มาก</p>
+        <div class="code-block"><pre><span class="comment"># ESPHome 2026.10+ YAML</span>
+sensor:
+  - platform: pzem6l24
+    phase_a:
+      voltage:
+        name: <span class="string">"Phase A Voltage"</span>
+      current:
+        name: <span class="string">"Phase A Current"</span>
+      power:
+        name: <span class="string">"Phase A Power"</span></pre></div>
+        <div class="card-tags">
+          <span class="tag orange">3-Phase</span>
+          <span class="tag blue">Energy Monitor</span>
+          <span class="tag green">ESPHome 2026.10</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🦾</span>
+          <div>
+            <div class="card-title">Zigbee End-Device บน ESP32-C6/H2</div>
+            <div class="card-subtitle">ESPHome 2026.5 — Experimental</div>
+          </div>
+        </div>
+        <p>ครั้งแรก! ESPHome รองรับ Zigbee end-device บน <strong>ESP32-H2</strong> (แนะนำ) และ C6 ทำให้ ESP32 กลายเป็น Zigbee sensor โดยตรง เชื่อมกับ ZHA, Zigbee2MQTT ได้เลย</p>
+        <div class="highlight green">
+          <p>✅ <strong>ESP32-H2 แนะนำกว่า C6</strong> เพราะ Zigbee reliable กว่า, รองรับ Thread ด้วย<br>⚠️ ยังไม่รองรับ Zigbee Coordinator — ต้องมี coordinator แยก (ZHA, Z2M)</p>
+        </div>
+        <div class="card-tags">
+          <span class="tag blue">Zigbee 3.0</span>
+          <span class="tag purple">ESP32-H2</span>
+          <span class="tag">ZHA / Z2M</span>
+          <span class="tag orange">Experimental</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. CAN Bus / TWAI ===== -->
+  <section id="canbus" class="section">
+    <div class="section-header">
+      <span class="section-icon">🚗</span>
+      <h2>ESP32 CAN Bus / TWAI — เชื่อมรถยนต์และอุตสาหกรรม</h2>
+      <span class="count">4 โปรเจกต์</span>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🔧</span>
+          <div>
+            <div class="card-title">TWAI Controller — CAN ในตัว ESP32</div>
+            <div class="card-subtitle">Two-Wire Automotive Interface · CAN 2.0B</div>
+          </div>
+        </div>
+        <p>ESP32 ทุกรุ่น (ยกเว้น ESP32-C2) มี <strong>TWAI controller</strong> ในตัว รองรับ CAN 2.0B ต้องต่อแค่ IC transceiver ภายนอก แค่ตัวเดียว</p>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Transceiver</th><th>แรงดัน</th><th>แนะนำ</th></tr>
+            <tr><td><strong>SN65HVD230</strong></td><td>3.3V native</td><td>✅ <strong>ดีที่สุด</strong></td></tr>
+            <tr><td>TJA1050</td><td>5V</td><td>ต้องแปลง level</td></tr>
+            <tr><td>MCP2551</td><td>5V</td><td>ต้องแปลง level</td></tr>
+          </table>
+        </div>
+        <div class="code-block"><pre><span class="keyword">#include</span> <span class="string">"driver/twai.h"</span>
+
+<span class="comment">// กำหนด timing สำหรับ 500 kbps</span>
+twai_general_config_t g_config =
+  TWAI_GENERAL_CONFIG_DEFAULT(
+    GPIO_NUM_21,  <span class="comment">// TX</span>
+    GPIO_NUM_22,  <span class="comment">// RX</span>
+    TWAI_MODE_NORMAL);
+twai_timing_config_t t_config =
+  TWAI_TIMING_CONFIG_500KBITS();
+twai_filter_config_t f_config =
+  TWAI_FILTER_CONFIG_ACCEPT_ALL();
+
+twai_driver_install(&g_config,
+  &t_config, &f_config);
+twai_start();</pre></div>
+        <div class="card-tags">
+          <span class="tag blue">CAN 2.0B</span>
+          <span class="tag green">Built-in TWAI</span>
+          <span class="tag">500 kbps</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🚙</span>
+          <div>
+            <div class="card-title">OBD-II Diagnostics บน ESP32</div>
+            <div class="card-subtitle">OBD2_CanBus Library v1.0.1 · ISO 15765-4</div>
+          </div>
+        </div>
+        <p>Library <strong>OBD2_CanBus</strong> (MIT, Sep 2025) implement ISO 15765-4 สำหรับ OBD-II over CAN อ่านข้อมูลรถยนต์ได้เช่น RPM, Speed, Coolant Temp, MAF, DTC codes</p>
+        <div class="highlight">
+          <p>💡 <strong>RevMatch Project:</strong> ESP32 + SN65HVD230 อ่าน Engine RPM จาก OBD-II ทำ shift-light display LED bar บน HUD ของรถ</p>
+        </div>
+        <div class="card-tags">
+          <span class="tag orange">OBD-II</span>
+          <span class="tag blue">ISO 15765-4</span>
+          <span class="tag">MIT License</span>
+          <span class="tag">Arduino</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🏎</span>
+          <div>
+            <div class="card-title">Dual CAN Dashboard — ESP32-S3</div>
+            <div class="card-subtitle">Alfa Romeo / สำหรับรถที่มี 2 CAN bus</div>
+          </div>
+        </div>
+        <p>รถสมัยใหม่หลายรุ่นมี <strong>2 CAN bus</strong> แยกกัน เช่น Powertrain CAN + Comfort CAN ESP32-S3 รับมือได้ด้วยการใช้ TWAI built-in ตัวหนึ่ง และ <strong>MCP2515 SPI</strong> เพิ่มอีกตัว</p>
+        <div class="code-block"><pre><span class="comment">// Bus 1: TWAI built-in (500 kbps)</span>
+<span class="comment">// Bus 2: MCP2515 via SPI</span>
+MCP2515 can2(CS_PIN);
+can2.reset();
+can2.setBitrate(CAN_500KBPS,
+  MCP_8MHZ);
+can2.setNormalMode();</pre></div>
+        <div class="card-tags">
+          <span class="tag purple">Dual CAN</span>
+          <span class="tag blue">TWAI + MCP2515</span>
+          <span class="tag">SPI</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🏭</span>
+          <div>
+            <div class="card-title">CAN-DAQ — Automotive Data Logger Open Source</div>
+            <div class="card-subtitle">ESP32-S3 · Published on Mendeley Data</div>
+          </div>
+        </div>
+        <p>โปรเจกต์ open-source <strong>CAN-DAQ</strong> ใช้ ESP32-S3 เป็น automotive data logger บันทึกข้อมูล CAN bus ลง SD card พร้อม timestamp แม่นยำ เผยแพร่ dataset บน Mendeley Data</p>
+        <div class="highlight green">
+          <p>🎯 <strong>ประยุกต์สำหรับโรงงาน:</strong> TWAI เป็น gateway รับข้อมูลจาก PLC/motor controller ส่ง MQTT ขึ้น cloud เพื่อ predictive maintenance</p>
+        </div>
+        <div class="card-tags">
+          <span class="tag green">Open Source</span>
+          <span class="tag blue">Data Logger</span>
+          <span class="tag">SD Card</span>
+          <span class="tag orange">Industrial</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. AMOLED Display ===== -->
+  <section id="amoled" class="section">
+    <div class="section-header">
+      <span class="section-icon">🖥</span>
+      <h2>ESP32-S3 + AMOLED Round Display — UI สวยงาม</h2>
+      <span class="count">3 บอร์ด</span>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">⭕</span>
+          <div>
+            <div class="card-title">Waveshare ESP32-S3 Touch AMOLED 1.43" Round</div>
+            <div class="card-subtitle">466×466 px · QSPI · SH8601 · Best Round Option</div>
+          </div>
+        </div>
+        <p>ตัวเลือกจอ round AMOLED ที่ดีที่สุดในตลาดขณะนี้ จอ <strong>466×466 px</strong> กลมสมบูรณ์ ต่อผ่าน QSPI (4-bit) ความเร็วสูง รุ่น <strong>"-B"</strong> มี CNC metal case สำหรับการใช้งานจริง</p>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Spec</th><th>ค่า</th></tr>
+            <tr><td>ขนาดจอ</td><td>1.43 นิ้ว</td></tr>
+            <tr><td>ความละเอียด</td><td>466 × 466 px (round)</td></tr>
+            <tr><td>Driver IC</td><td>SH8601 / C05300</td></tr>
+            <tr><td>Interface</td><td>QSPI (4-bit)</td></tr>
+            <tr><td>Touch</td><td>มี (capacitive)</td></tr>
+            <tr><td>MCU</td><td>ESP32-S3 (built-in)</td></tr>
+          </table>
+        </div>
+        <div class="card-tags">
+          <span class="tag blue">AMOLED Round</span>
+          <span class="tag purple">QSPI</span>
+          <span class="tag green">Touch</span>
+          <span class="tag">ESP32-S3</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🎨</span>
+          <div>
+            <div class="card-title">LVGL บน ESP32-S3 AMOLED — Smooth UI 60 fps</div>
+            <div class="card-subtitle">LVGL v9 + SH8601 QSPI Driver</div>
+          </div>
+        </div>
+        <p>ใช้ <strong>LVGL v9</strong> (Light and Versatile Embedded Graphics Library) กับ QSPI display driver สำหรับ SH8601 ได้ 60 fps smooth animation บน ESP32-S3 ที่ 240 MHz</p>
+        <div class="code-block"><pre><span class="comment">// LVGL flush callback สำหรับ QSPI</span>
+<span class="keyword">void</span> lvgl_flush_cb(lv_display_t *disp,
+  <span class="keyword">const</span> lv_area_t *area,
+  uint8_t *px_map) {
+  sh8601_draw_bitmap(
+    area->x1, area->y1,
+    area->x2, area->y2,
+    (uint16_t*)px_map);
+  lv_display_flush_ready(disp);
+}</pre></div>
+        <div class="highlight">
+          <p>💡 <strong>Project Idea:</strong> Smart Watch Face สำหรับงาน IoT — แสดง sensor data สวยงามในจอกลม เช่น Temperature dial, AQI gauge, Heart rate</p>
+        </div>
+        <div class="card-tags">
+          <span class="tag blue">LVGL v9</span>
+          <span class="tag purple">60 fps</span>
+          <span class="tag green">Smooth UI</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">📊</span>
+          <div>
+            <div class="card-title">Waveshare 2.41" Round AMOLED</div>
+            <div class="card-subtitle">ขนาดใหญ่ขึ้น · เหมาะ Dashboard</div>
+          </div>
+        </div>
+        <p>สำหรับงานที่ต้องการจอใหญ่ขึ้น Waveshare มีรุ่น <strong>2.41 นิ้ว</strong> กลมเช่นกัน เหมาะสำหรับ wall-mounted sensor dashboard หรือ smart home display ตั้งโต๊ะ</p>
+        <div class="highlight purple">
+          <p>🎯 <strong>เปรียบเทียบกับ TFT:</strong> AMOLED มีสีดำแท้ (0 nit), contrast ratio สูงกว่ามาก, ประหยัดพลังงานเมื่อแสดง dark content, มองเห็นดีในที่มืด</p>
+        </div>
+        <div class="card-tags">
+          <span class="tag blue">2.41" Round</span>
+          <span class="tag orange">Dashboard</span>
+          <span class="tag">Wall Mount</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 5. USB Host / OTG ===== -->
+  <section id="usb" class="section">
+    <div class="section-header">
+      <span class="section-icon">🔌</span>
+      <h2>ESP32 USB Host / OTG — เชื่อมอุปกรณ์ USB</h2>
+      <span class="count">3 use cases</span>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🖱</span>
+          <div>
+            <div class="card-title">USB HID Host — Keyboard & Mouse</div>
+            <div class="card-subtitle">ESP32-S3 / P4 · espp usb_host v1.3.9</div>
+          </div>
+        </div>
+        <p>ESP32-S3 และ P4 มี USB hardware ในตัว ทำหน้าที่เป็น <strong>USB Host</strong> ได้ Library <strong>espp</strong> v1.3.9 มี `usb_host` component ที่ parse HID report ได้ถูกต้องสำหรับ keyboard, mouse, gamepad</p>
+        <div class="highlight orange">
+          <p>⚠️ <strong>Hardware Note:</strong> บอร์ดหลายรุ่นต้องบัดกรี solder bridge เพื่อเปิด 5V VBUS ขาออก ตรวจ schematic ก่อน เสียบอุปกรณ์ USB</p>
+        </div>
+        <div class="card-tags">
+          <span class="tag blue">USB HID Host</span>
+          <span class="tag purple">espp v1.3.9</span>
+          <span class="tag green">ESP32-S3/P4</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">📷</span>
+          <div>
+            <div class="card-title">USB Barcode Scanner Gateway</div>
+            <div class="card-subtitle">ESP32-S3 อ่าน Barcode → WiFi → Backend</div>
+          </div>
+        </div>
+        <p>ไอเดียที่ใช้งานได้จริง: เชื่อม <strong>USB barcode scanner</strong> เข้า ESP32-S3 (USB HID host mode) แล้วส่งข้อมูลผ่าน WiFi หรือ MQTT ไปยัง backend แทนที่จะต้องเสียบ scanner เข้า PC</p>
+        <div class="code-block"><pre><span class="comment">// Pseudo-code: USB HID → MQTT</span>
+usb_host.onHIDReport([](
+  uint8_t *data, size_t len) {
+  String barcode = parseHID(
+    data, len);
+  mqtt.publish(
+    <span class="string">"/scanner/data"</span>,
+    barcode);
+});</pre></div>
+        <div class="card-tags">
+          <span class="tag orange">Barcode Scanner</span>
+          <span class="tag blue">MQTT</span>
+          <span class="tag">Warehouse IoT</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🎵</span>
+          <div>
+            <div class="card-title">USB MIDI Host บน ESP32-S3</div>
+            <div class="card-subtitle">ต่อ MIDI Keyboard ตรงเข้า ESP32</div>
+          </div>
+        </div>
+        <p>ESP32-S3 เป็น <strong>USB MIDI Host</strong> รับข้อมูล MIDI Note จาก keyboard/controller แล้วประมวลผลตอบสนอง เช่น สั่ง LED strip, ส่ง OSC ไปยัง software หรือทำ MIDI router</p>
+        <div class="highlight green">
+          <p>🎼 <strong>Use Case:</strong> เชื่อม MIDI keyboard กับ ESP32-S3 เพื่อสร้าง interactive LED installation — กด note → LED สีต่างกัน เปลี่ยน pattern ตาม velocity</p>
+        </div>
+        <div class="card-tags">
+          <span class="tag pink">USB MIDI</span>
+          <span class="tag blue">LED Strip</span>
+          <span class="tag purple">Creative</span>
+        </div>
+      </div>
+
+      <div class="card card-wide">
+        <div class="card-header">
+          <span class="card-icon">📋</span>
+          <div>
+            <div class="card-title">เปรียบเทียบ: ESP32-S2 vs S3 vs P4 สำหรับ USB Host</div>
+            <div class="card-subtitle">เลือก chip ให้ถูกต้องตามงาน</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Chip</th><th>USB Hardware</th><th>Host Support</th><th>Speed</th><th>แนะนำสำหรับ</th></tr>
+            <tr><td><strong>ESP32-S2</strong></td><td>USB OTG FS</td><td>ได้ (ด้วย espp)</td><td>12 Mbps</td><td>โปรเจกต์ง่าย, ราคาต่ำ</td></tr>
+            <tr><td><strong>ESP32-S3</strong></td><td>USB OTG FS</td><td>ได้ (ดีที่สุด)</td><td>12 Mbps</td><td><strong>แนะนำ</strong> — ecosystem ครบ</td></tr>
+            <tr><td><strong>ESP32-P4</strong></td><td>USB 2.0 HS</td><td>ได้ (HS mode)</td><td>480 Mbps</td><td>High-bandwidth: UVC camera, storage</td></tr>
+          </table>
+        </div>
+        <div class="highlight purple">
+          <p>💡 <strong>ESP32-P4</strong> รองรับ <strong>USB High-Speed 480 Mbps</strong> เป็นตัวแรกในตระกูล ESP32 — ทำให้ใช้ USB UVC camera ความละเอียดสูงได้, USB audio, USB mass storage</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Resources ===== -->
+  <section id="resources" class="section">
+    <div class="section-header">
+      <span class="section-icon">🔗</span>
+      <h2>แหล่งข้อมูลและลิงก์แนะนำ</h2>
+      <span class="count">5 หมวด</span>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">📡</span>
+          <div>
+            <div class="card-title">mmWave Radar</div>
+          </div>
+        </div>
+        <ul style="list-style:none;padding:0;font-size:.88rem;color:var(--muted)">
+          <li style="padding:.4rem 0;border-bottom:1px solid var(--border)">🔗 <a href="https://esphome.io/components/sensor/ld2410.html">ESPHome LD2410 Component Docs</a></li>
+          <li style="padding:.4rem 0;border-bottom:1px solid var(--border)">🔗 <a href="https://esphome.io/components/sensor/ld2450.html">ESPHome LD2450 Multi-Target Docs</a></li>
+          <li style="padding:.4rem 0">🔗 <a href="https://github.com/rain931215/ESPHome-HLK-LD2450">GitHub: ESPHome-HLK-LD2450 Custom</a></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🏠</span>
+          <div>
+            <div class="card-title">ESPHome 2026</div>
+          </div>
+        </div>
+        <ul style="list-style:none;padding:0;font-size:.88rem;color:var(--muted)">
+          <li style="padding:.4rem 0;border-bottom:1px solid var(--border)">🔗 <a href="https://esphome.io/changelog/2026.10.0.html">ESPHome 2026.10.0 Changelog</a></li>
+          <li style="padding:.4rem 0;border-bottom:1px solid var(--border)">🔗 <a href="https://esphome.io/changelog/2026.8.0.html">ESPHome 2026.8 - BLE Platform-Neutral</a></li>
+          <li style="padding:.4rem 0">🔗 <a href="https://esphome.io/components/zigbee.html">ESPHome Zigbee End-Device Docs</a></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🚗</span>
+          <div>
+            <div class="card-title">CAN Bus / TWAI</div>
+          </div>
+        </div>
+        <ul style="list-style:none;padding:0;font-size:.88rem;color:var(--muted)">
+          <li style="padding:.4rem 0;border-bottom:1px solid var(--border)">🔗 <a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/twai.html">ESP-IDF TWAI API Reference</a></li>
+          <li style="padding:.4rem 0;border-bottom:1px solid var(--border)">🔗 <a href="https://github.com/sandeepmistry/arduino-OBD2">Arduino OBD2 Library (CAN)</a></li>
+          <li style="padding:.4rem 0">🔗 <a href="https://www.ti.com/product/SN65HVD230">TI SN65HVD230 Datasheet</a></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🖥</span>
+          <div>
+            <div class="card-title">AMOLED Display</div>
+          </div>
+        </div>
+        <ul style="list-style:none;padding:0;font-size:.88rem;color:var(--muted)">
+          <li style="padding:.4rem 0;border-bottom:1px solid var(--border)">🔗 <a href="https://www.waveshare.com/product/esp32-s3-touch-amoled-1.43.htm">Waveshare ESP32-S3 AMOLED 1.43"</a></li>
+          <li style="padding:.4rem 0;border-bottom:1px solid var(--border)">🔗 <a href="https://github.com/Bodmer/TFT_eSPI">TFT_eSPI Library (LVGL compatible)</a></li>
+          <li style="padding:.4rem 0">🔗 <a href="https://lvgl.io">LVGL Official Site</a></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-icon">🔌</span>
+          <div>
+            <div class="card-title">USB Host / OTG</div>
+          </div>
+        </div>
+        <ul style="list-style:none;padding:0;font-size:.88rem;color:var(--muted)">
+          <li style="padding:.4rem 0;border-bottom:1px solid var(--border)">🔗 <a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/peripherals/usb_host.html">ESP-IDF USB Host Library</a></li>
+          <li style="padding:.4rem 0;border-bottom:1px solid var(--border)">🔗 <a href="https://github.com/esp-cpp/espp">espp Library (usb_host component)</a></li>
+          <li style="padding:.4rem 0">🔗 <a href="https://github.com/adafruit/Adafruit_TinyUSB_Arduino">Adafruit TinyUSB Arduino</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างเมื่อ <strong>24 ตุลาคม 2569</strong> &nbsp;|&nbsp; ESP32 & IoT Daily Research</p>
+  <p style="margin-top:.5rem;color:#475569;font-size:.8rem">
+    แหล่งอ้างอิง: ESPHome Changelog 2026, Espressif Docs, Hi-Link Product Pages, Waveshare Docs, TI Datasheet, GitHub Open Source Projects
+  </p>
+</footer>
+
+</body>
+</html>
