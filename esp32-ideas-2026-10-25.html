@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 25 ตุลาคม 2569</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1a2744;
+    --accent-blue: #3b82f6;
+    --accent-cyan: #06b6d4;
+    --accent-green: #10b981;
+    --accent-purple: #8b5cf6;
+    --accent-orange: #f59e0b;
+    --accent-pink: #ec4899;
+    --accent-red: #ef4444;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --gradient-1: linear-gradient(135deg, #1e3a5f, #0f172a);
+    --gradient-2: linear-gradient(135deg, #1a2744, #0f172a);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ====== HEADER ====== */
+  header {
+    background: linear-gradient(135deg, #0a1628 0%, #1e3a5f 40%, #0a2040 100%);
+    border-bottom: 1px solid #1e40af;
+    padding: 3rem 1rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% -20%, rgba(59,130,246,0.18) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.4);
+    color: #93c5fd;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.9rem;
+    border-radius: 20px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #60a5fa, #38bdf8, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 400;
+    margin-bottom: 1.5rem;
+  }
+  .stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 0.4rem 1rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+  .stat-chip span { color: #60a5fa; font-weight: 700; }
+
+  /* ====== MAIN LAYOUT ====== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  /* ====== SECTION TITLE ====== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: rgba(59,130,246,0.2); }
+  .icon-green { background: rgba(16,185,129,0.2); }
+  .icon-purple { background: rgba(139,92,246,0.2); }
+  .icon-orange { background: rgba(245,158,11,0.2); }
+  .section-title { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); }
+  .section-count {
+    margin-left: auto;
+    background: rgba(59,130,246,0.15);
+    color: #93c5fd;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.15rem 0.6rem;
+    border-radius: 8px;
+  }
+
+  section { margin-bottom: 3rem; }
+
+  /* ====== CARD GRID ====== */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+  .card-grid-wide { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem; }
+
+  /* ====== CARD BASE ====== */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(59,130,246,0.4);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+
+  /* ====== INNOVATION CARD ====== */
+  .inno-card { border-left: 4px solid; }
+  .inno-blue { border-color: var(--accent-blue); }
+  .inno-cyan { border-color: var(--accent-cyan); }
+  .inno-green { border-color: var(--accent-green); }
+  .inno-purple { border-color: var(--accent-purple); }
+  .inno-orange { border-color: var(--accent-orange); }
+  .inno-pink { border-color: var(--accent-pink); }
+
+  .card-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.6rem;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .card-label::before { content: ''; width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+  .label-blue { color: #60a5fa; } .label-blue::before { background: #60a5fa; }
+  .label-cyan { color: #22d3ee; } .label-cyan::before { background: #22d3ee; }
+  .label-green { color: #34d399; } .label-green::before { background: #34d399; }
+  .label-purple { color: #a78bfa; } .label-purple::before { background: #a78bfa; }
+  .label-orange { color: #fbbf24; } .label-orange::before { background: #fbbf24; }
+  .label-pink { color: #f472b6; } .label-pink::before { background: #f472b6; }
+
+  .card h3 { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; line-height: 1.4; }
+  .card p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; }
+
+  /* ====== SPEC TABLE ====== */
+  .spec-table { margin-top: 1rem; border-radius: 8px; overflow: hidden; }
+  .spec-row {
+    display: flex; gap: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.82rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .spec-row:last-child { border-bottom: none; }
+  .spec-row:nth-child(odd) { background: rgba(255,255,255,0.03); }
+  .spec-key { color: var(--text-muted); min-width: 100px; flex-shrink: 0; }
+  .spec-val { color: var(--text-primary); font-weight: 600; }
+
+  /* ====== STEPS ====== */
+  .steps { list-style: none; margin-top: 0.75rem; }
+  .step { display: flex; gap: 0.75rem; margin-bottom: 0.6rem; font-size: 0.88rem; }
+  .step-num {
+    width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 700; margin-top: 0.15rem;
+    background: rgba(59,130,246,0.25); color: #93c5fd;
+  }
+  .step-text { color: var(--text-secondary); line-height: 1.6; }
+
+  /* ====== CODE BLOCK ====== */
+  .code-block {
+    background: #0a1628;
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin-top: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #7dd3fc;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.6;
+  }
+  .code-comment { color: #475569; }
+  .code-keyword { color: #c084fc; }
+  .code-string { color: #86efac; }
+  .code-fn { color: #38bdf8; }
+
+  /* ====== TAG ====== */
+  .tag {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin: 0.15rem 0.1rem;
+  }
+  .tag-blue { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.25); }
+  .tag-green { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.25); }
+  .tag-purple { background: rgba(139,92,246,0.15); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.25); }
+  .tag-orange { background: rgba(245,158,11,0.15); color: #fde68a; border: 1px solid rgba(245,158,11,0.25); }
+  .tag-cyan { background: rgba(6,182,212,0.15); color: #a5f3fc; border: 1px solid rgba(6,182,212,0.25); }
+  .tag-red { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+
+  /* ====== HIGHLIGHT BOX ====== */
+  .highlight {
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.8rem;
+    font-size: 0.85rem;
+  }
+  .highlight-blue { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); color: #93c5fd; }
+  .highlight-green { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); color: #6ee7b7; }
+  .highlight-orange { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); color: #fde68a; }
+  .highlight-purple { background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.2); color: #c4b5fd; }
+
+  /* ====== COMPARISON TABLE ====== */
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.75rem; }
+  .compare-table th {
+    background: rgba(59,130,246,0.15);
+    color: #93c5fd;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .compare-table td {
+    padding: 0.45rem 0.75rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .td-bold { color: var(--text-primary); font-weight: 600; }
+
+  /* ====== PROJECT CARD ====== */
+  .project-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.2s;
+  }
+  .project-card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.3); }
+  .project-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; gap: 0.5rem; }
+  .project-title { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+  .difficulty-badge {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 8px;
+  }
+  .diff-easy { background: rgba(16,185,129,0.2); color: #34d399; }
+  .diff-medium { background: rgba(245,158,11,0.2); color: #fbbf24; }
+  .diff-hard { background: rgba(239,68,68,0.2); color: #f87171; }
+  .project-desc { font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 0.75rem; line-height: 1.7; }
+  .project-parts { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.5rem; }
+
+  /* ====== SENSOR CARD ====== */
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    transition: all 0.2s;
+  }
+  .sensor-card:hover { border-color: rgba(16,185,129,0.4); transform: translateY(-2px); }
+  .sensor-name { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.3rem; }
+  .sensor-type { font-size: 0.75rem; color: var(--accent-green); font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.5rem; }
+  .sensor-desc { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+
+  /* ====== RESOURCE CARD ====== */
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem;
+    transition: all 0.2s;
+    display: flex; flex-direction: column; gap: 0.4rem;
+  }
+  .resource-card:hover { border-color: rgba(139,92,246,0.4); transform: translateY(-2px); }
+  .resource-icon { font-size: 1.5rem; }
+  .resource-name { font-size: 0.92rem; font-weight: 700; color: var(--text-primary); }
+  .resource-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+
+  /* ====== HERO CARD ====== */
+  .hero-card {
+    background: linear-gradient(135deg, #1a2f5e, #1e293b);
+    border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    position: relative; overflow: hidden;
+  }
+  .hero-card::after {
+    content: '';
+    position: absolute; top: 0; right: 0;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .hero-chip {
+    display: inline-block;
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.35);
+    color: #fca5a5;
+    font-size: 0.72rem; font-weight: 700;
+    padding: 0.2rem 0.7rem; border-radius: 10px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+  }
+  .hero-card h2 { font-size: 1.4rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.5rem; }
+  .hero-card p { color: var(--text-secondary); font-size: 0.92rem; line-height: 1.75; }
+
+  /* ====== DIVIDER ====== */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+  /* ====== FOOTER ====== */
+  footer {
+    background: #080f1e;
+    border-top: 1px solid var(--border);
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+  footer .footer-logo { font-size: 1.1rem; font-weight: 700; color: #60a5fa; margin-bottom: 0.5rem; }
+  footer a { color: #60a5fa; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ====== PROGRESS BAR ====== */
+  .progress-bar-wrap { background: rgba(255,255,255,0.07); border-radius: 6px; height: 8px; margin-top: 0.6rem; overflow: hidden; }
+  .progress-bar { height: 8px; border-radius: 6px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+  /* ====== RESPONSIVE ====== */
+  @media (max-width: 640px) {
+    .card-grid, .card-grid-wide { grid-template-columns: 1fr; }
+    .resource-grid { grid-template-columns: repeat(2, 1fr); }
+    main { padding: 1.5rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-badge">Daily Research Report</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">25 ตุลาคม 2569 &nbsp;|&nbsp; Thread, Matter 1.4 & Smart Agriculture Edition</p>
+  <div class="stats-row">
+    <div class="stat-chip">หัวข้อหลัก <span>4</span> หมวด</div>
+    <div class="stat-chip">ไอเดียโปรเจกต์ <span>6</span> ชิ้น</div>
+    <div class="stat-chip">Sensors ใหม่ <span>5</span> รายการ</div>
+    <div class="stat-chip">แหล่งข้อมูล <span>8</span> แห่ง</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== TODAY HERO ===== -->
+  <div class="hero-card">
+    <div class="hero-chip">🔥 Highlight วันนี้</div>
+    <h2>ESP32-H2 กับอนาคตของ Smart Home Protocol</h2>
+    <p>
+      วันนี้เราโฟกัสที่ ESP32-H2 — ชิปที่ถูกออกแบบมาสำหรับ Zigbee 3.0, Thread 1.4 และ Matter โดยเฉพาะ
+      พร้อม M5Stack NanoH2 บอร์ดขนาดจิ๋วราคาเพียง $7 ที่ทำให้การสร้าง Thread end device
+      ง่ายกว่าที่เคย รวมถึงแนวทางการทำ Smart Agriculture ด้วย ESP32 แบบครบวงจร
+      และการใช้ TinyML สำหรับตรวจจับการเสียหายของอุปกรณ์แบบ real-time
+    </p>
+  </div>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔬</div>
+      <div class="section-title">นวัตกรรมและอัปเดตสำคัญ</div>
+      <div class="section-count">4 รายการ</div>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Card 1: NanoH2 -->
+      <div class="card inno-card inno-blue">
+        <div class="card-label label-blue">Hardware ใหม่</div>
+        <h3>M5Stack NanoH2 — ESP32-H2 บอร์ดจิ๋วราคา $7</h3>
+        <p>
+          บอร์ดพัฒนา ESP32-H2 ขนาดเล็กที่สุดในตลาด วัดเพียง 23.5 × 12 × 9.5 mm
+          ที่รองรับ Zigbee 3.0, Thread 1.4 และ Matter ในตัว พัฒนาได้ผ่านทั้ง Arduino IDE และ ESP-IDF
+        </p>
+        <div class="spec-table">
+          <div class="spec-row"><span class="spec-key">SoC</span><span class="spec-val">ESP32-H2FH4S (RISC-V 32-bit, 96 MHz)</span></div>
+          <div class="spec-row"><span class="spec-key">SRAM</span><span class="spec-val">320 KB + 4 KB LP memory</span></div>
+          <div class="spec-row"><span class="spec-key">Flash</span><span class="spec-val">4 MB onboard</span></div>
+          <div class="spec-row"><span class="spec-key">วิทยุ</span><span class="spec-val">IEEE 802.15.4 (Zigbee + Thread)</span></div>
+          <div class="spec-row"><span class="spec-key">ระยะ Thread</span><span class="spec-val">สูงสุด 225 เมตร (0% packet loss)</span></div>
+          <div class="spec-row"><span class="spec-key">พอร์ต</span><span class="spec-val">USB-C, Grove interface</span></div>
+          <div class="spec-row"><span class="spec-key">Onboard</span><span class="spec-val">LED, IR Transmitter, RGB, Button</span></div>
+          <div class="spec-row"><span class="spec-key">ราคา</span><span class="spec-val">~$7 USD (ถูกที่สุดในประเภท)</span></div>
+        </div>
+        <div class="highlight highlight-blue" style="margin-top:0.8rem;">
+          💡 ต่างจาก Unit Gateway H2 คือ NanoH2 ใช้งานเป็น standalone ได้เลย ไม่ต้องต่อกับบอร์ด M5Stack อื่น
+        </div>
+      </div>
+
+      <!-- Card 2: ESPHome Thread -->
+      <div class="card inno-card inno-cyan">
+        <div class="card-label label-cyan">Firmware Update</div>
+        <h3>ESPHome 2025.6.0+ รองรับ Thread Native บน ESP32-H2</h3>
+        <p>
+          ตั้งแต่ ESPHome เวอร์ชัน 2025.6.0 สามารถ flash firmware Thread native ลงบอร์ด
+          ESP32-H2 หรือ ESP32-C6 ได้เลย ทำให้สร้าง Thread end device โดยไม่ต้องเขียน code ซับซ้อน
+        </p>
+        <div class="code-block"><span class="code-comment"># esphome config สำหรับ Thread device</span>
+esphome:
+  name: thread-sensor-01
+
+esp32:
+  board: esp32-h2-devkitm-1
+  framework:
+    type: esp-idf
+
+openthread:
+  <span class="code-comment"># Thread stack จาก Espressif</span>
+
+sensor:
+  - platform: dht
+    pin: GPIO4
+    temperature:
+      name: "<span class="code-string">Temperature</span>"
+    humidity:
+      name: "<span class="code-string">Humidity</span>"</div>
+        <div class="highlight highlight-cyan" style="margin-top:0.8rem;">
+          ✅ ใช้ framework: esp-idf + component openthread เพื่อ enable Thread stack
+        </div>
+      </div>
+
+      <!-- Card 3: Matter 1.4 -->
+      <div class="card inno-card inno-purple">
+        <div class="card-label label-purple">Protocol</div>
+        <h3>Matter 1.4 — อัปเดตใหม่สำหรับ ESP32 Smart Home 2026</h3>
+        <p>
+          Matter เวอร์ชัน 1.4 (ยืนยันปี 2026) ขยาย device type ใหม่หลายรายการ
+          รวมถึง Energy Monitoring และ Air Quality endpoints เพิ่มเติม
+          ทำให้ ESP32 สามารถเป็นได้ทั้ง Matter Bridge, End Device และ Router
+        </p>
+        <div class="spec-table" style="margin-top:0.8rem;">
+          <div class="spec-row"><span class="spec-key">ESP32-H2</span><span class="spec-val">Thread end device, Zigbee coordinator</span></div>
+          <div class="spec-row"><span class="spec-key">ESP32-C6</span><span class="spec-val">Matter over Wi-Fi + Thread Border Router</span></div>
+          <div class="spec-row"><span class="spec-key">ESP32-S3</span><span class="spec-val">Matter Bridge (Zigbee ↔ Wi-Fi)</span></div>
+          <div class="spec-row"><span class="spec-key">Library</span><span class="spec-val">esp32_matter_extra_endpoints (Arduino)</span></div>
+        </div>
+        <div style="margin-top:0.75rem;">
+          <span class="tag tag-purple">Air Quality</span>
+          <span class="tag tag-blue">Energy Monitor</span>
+          <span class="tag tag-green">Rain Sensor</span>
+          <span class="tag tag-cyan">Ambient Light</span>
+          <span class="tag tag-orange">Flow Sensor</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Zigbee vs Thread -->
+      <div class="card inno-card inno-orange">
+        <div class="card-label label-orange">เปรียบเทียบ</div>
+        <h3>Zigbee vs Thread vs Matter — เลือกใช้อะไรกับ ESP32-H2?</h3>
+        <p>
+          ESP32-H2 มีวิทยุ IEEE 802.15.4 เพียงตัวเดียว จึงรัน Zigbee หรือ Thread ได้ครั้งละ protocol
+          การเลือกขึ้นอยู่กับ ecosystem และอุปกรณ์ที่บ้านหรือระบบที่ต้องการต่อ
+        </p>
+        <div style="overflow-x:auto;">
+          <table class="compare-table" style="margin-top:0.85rem;">
+            <thead>
+              <tr>
+                <th>เกณฑ์</th>
+                <th>Zigbee 3.0</th>
+                <th>Thread 1.4</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="td-bold">IPv6</td><td>ไม่รองรับ</td><td>✅ รองรับ</td>
+              </tr>
+              <tr>
+                <td class="td-bold">IP-Routable</td><td>ต้องการ Hub</td><td>✅ ไม่ต้อง</td>
+              </tr>
+              <tr>
+                <td class="td-bold">Ecosystem</td><td>ใหญ่มาก (Philips Hue ฯลฯ)</td><td>กำลังเติบโต</td>
+              </tr>
+              <tr>
+                <td class="td-bold">Matter</td><td>ผ่าน Bridge</td><td>✅ native</td>
+              </tr>
+              <tr>
+                <td class="td-bold">Battery life</td><td>ดีมาก</td><td>ดีมาก</td>
+              </tr>
+              <tr>
+                <td class="td-bold">Latency</td><td>~10–50 ms</td><td>~10–50 ms</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="highlight highlight-orange" style="margin-top:0.8rem;">
+          ⚠️ หมายเหตุ: วิทยุ 802.15.4 บน H2 ทำงาน Zigbee และ Thread ได้ แต่ไม่พร้อมกันในเวลาเดียวกัน
+        </div>
+      </div>
+
+    </div><!-- end card-grid -->
+  </section>
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-green">🚀</div>
+      <div class="section-title">ไอเดียโปรเจกต์ที่น่าสร้าง</div>
+      <div class="section-count">6 โปรเจกต์</div>
+    </div>
+
+    <div class="card-grid-wide">
+
+      <!-- Project 1: Thread Sensor Node -->
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-title">ESP32-H2 Thread Temperature & Humidity Node</div>
+          <div class="difficulty-badge diff-easy">ง่าย</div>
+        </div>
+        <p class="project-desc">
+          สร้าง Thread end device ด้วย NanoH2 + SHT31 วัดอุณหภูมิ-ความชื้นแบบ wireless
+          ส่งข้อมูลผ่าน Thread mesh ไปยัง Home Assistant ผ่าน Thread Border Router (ESP32-C6 หรือ Apple TV 4K)
+          ไม่ต้องเขียน firmware เอง ใช้ ESPHome 2025.6.0+ เพียงไฟล์ YAML ไม่กี่บรรทัด
+        </p>
+        <div class="project-parts">
+          <span class="tag tag-blue">M5Stack NanoH2</span>
+          <span class="tag tag-green">SHT31 Sensor</span>
+          <span class="tag tag-purple">ESPHome</span>
+          <span class="tag tag-cyan">Thread Mesh</span>
+          <span class="tag tag-orange">Home Assistant</span>
+        </div>
+        <div class="highlight highlight-blue" style="margin-top:0.8rem;">
+          💰 ต้นทุน: ~$9 ต่อ node (NanoH2 $7 + SHT31 $2) เหมาะกับการ deploy หลาย node พร้อมกัน
+        </div>
+        <ol class="steps" style="margin-top:0.75rem;">
+          <li class="step"><span class="step-num">1</span><span class="step-text">ติดตั้ง ESPHome 2025.6.0+ และ Home Assistant</span></li>
+          <li class="step"><span class="step-num">2</span><span class="step-text">สร้าง Thread Border Router จาก ESP32-C6 หรือใช้ Apple TV 4K Gen3</span></li>
+          <li class="step"><span class="step-num">3</span><span class="step-text">เขียน YAML config สำหรับ NanoH2 ด้วย openthread component</span></li>
+          <li class="step"><span class="step-num">4</span><span class="step-text">Flash ผ่าน USB-C และ join Thread network ด้วย dataset ที่ขโมยจาก Border Router</span></li>
+        </ol>
+      </div>
+
+      <!-- Project 2: Smart Rice Greenhouse -->
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-title">ระบบ Smart Greenhouse ตรวจสอบกล้าข้าว (IoT Academic)</div>
+          <div class="difficulty-badge diff-medium">กลาง</div>
+        </div>
+        <p class="project-desc">
+          งานวิจัยมหาวิทยาลัยล่าสุดปี 2026 สาธิตระบบ ESP32 ติดตามสภาพแวดล้อมในโรงเรือนกล้าข้าว
+          วัดอุณหภูมิ, ความชื้นดิน, pH และ TDS (สารละลายธาตุอาหาร) ส่งข้อมูล HTTP ขึ้น web server
+          พร้อม LCD I2C แสดงผลในโรงเรือน — ผลทดสอบพิสูจน์ว่าส่งข้อมูลต่อเนื่องได้จริง
+        </p>
+        <div class="project-parts">
+          <span class="tag tag-blue">ESP32 WROOM-32</span>
+          <span class="tag tag-green">Capacitive Soil Moisture</span>
+          <span class="tag tag-purple">pH Probe</span>
+          <span class="tag tag-orange">TDS Meter</span>
+          <span class="tag tag-cyan">DHT22</span>
+          <span class="tag tag-blue">I2C LCD 16x2</span>
+        </div>
+        <div class="code-block"><span class="code-comment">// HTTP POST sensor data ขึ้น server</span>
+<span class="code-keyword">if</span>(WiFi.status() == WL_CONNECTED) {
+  HTTPClient http;
+  http.<span class="code-fn">begin</span>(<span class="code-string">"http://192.168.1.10/api/sensor"</span>);
+  http.<span class="code-fn">addHeader</span>(<span class="code-string">"Content-Type"</span>, <span class="code-string">"application/json"</span>);
+  String payload = <span class="code-string">"{\"temp\":"</span> + String(temperature)
+    + <span class="code-string">",\"soil\":"</span> + String(soilMoisture)
+    + <span class="code-string">",\"ph\":"</span> + String(pH)
+    + <span class="code-string">",\"tds\":"</span> + String(tds) + <span class="code-string">"}"</span>;
+  http.<span class="code-fn">POST</span>(payload);
+}</div>
+      </div>
+
+      <!-- Project 3: Fuzzy Logic Irrigation -->
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-title">ESP32 Fuzzy Logic Smart Irrigation System</div>
+          <div class="difficulty-badge diff-medium">กลาง</div>
+        </div>
+        <p class="project-desc">
+          ระบบรดน้ำอัตโนมัติด้วย Fuzzy Logic บน ESP32 ปรับปริมาณน้ำตาม input 2 ตัว:
+          ความชื้นดิน (0–100%) และอุณหภูมิอากาศ คำนวณ fuzzy membership function แบบ real-time
+          ไม่ต้องตั้งเกณฑ์แข็ง เหมาะกับพืชที่ความต้องการน้ำแปรผัน เช่น สตรอเบอร์รี่, มะเขือเทศ
+        </p>
+        <div class="project-parts">
+          <span class="tag tag-blue">ESP32</span>
+          <span class="tag tag-green">Soil Moisture v1.2</span>
+          <span class="tag tag-purple">DHT11/22</span>
+          <span class="tag tag-orange">Relay Module</span>
+          <span class="tag tag-cyan">Water Pump 5V</span>
+        </div>
+        <div style="margin-top:0.85rem;">
+          <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.07em;">ตัวอย่าง Fuzzy Rule</div>
+          <div class="spec-table">
+            <div class="spec-row"><span class="spec-key" style="min-width:120px;">Dry + Hot</span><span class="spec-val">→ รดน้ำ 100% (max)</span></div>
+            <div class="spec-row"><span class="spec-key" style="min-width:120px;">Dry + Normal</span><span class="spec-val">→ รดน้ำ 70%</span></div>
+            <div class="spec-row"><span class="spec-key" style="min-width:120px;">Moist + Hot</span><span class="spec-val">→ รดน้ำ 40%</span></div>
+            <div class="spec-row"><span class="spec-key" style="min-width:120px;">Moist + Normal</span><span class="spec-val">→ รดน้ำ 15%</span></div>
+            <div class="spec-row"><span class="spec-key" style="min-width:120px;">Wet + Any</span><span class="spec-val">→ ไม่รดน้ำ (0%)</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 4: TinyML Failure Prediction -->
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-title">ESP32-S3 TinyML — ทำนายความล้มเหลวของระบบแบบ Real-time</div>
+          <div class="difficulty-badge diff-hard">ยาก</div>
+        </div>
+        <p class="project-desc">
+          งานวิจัยปี 2025 แสดงให้เห็นว่า ESP32 สามารถรัน AI model ขนาด ~32 KB ใน SRAM
+          เพื่อทำนาย network failure และ memory leak แบบ real-time ได้ โดยใช้ TensorFlow Lite Micro
+          inference เวลาน้อยกว่า 5ms ต่อรอบ เหมาะกับ Industrial IoT ที่ต้องการ predictive maintenance
+        </p>
+        <div class="project-parts">
+          <span class="tag tag-blue">ESP32-S3</span>
+          <span class="tag tag-purple">TFLite Micro</span>
+          <span class="tag tag-green">PSRAM 8MB</span>
+          <span class="tag tag-orange">Current Sensor</span>
+          <span class="tag tag-cyan">Vibration Sensor</span>
+        </div>
+        <div class="highlight highlight-purple" style="margin-top:0.8rem;">
+          🧠 Key insight: Quantized INT8 model ใน 32 KB SRAM, inference &lt;5ms, accuracy &gt;92%
+          สำหรับ anomaly detection ของมอเตอร์และ pump ในโรงงาน
+        </div>
+        <ol class="steps" style="margin-top:0.75rem;">
+          <li class="step"><span class="step-num">1</span><span class="step-text">เก็บข้อมูล vibration + current signature ของอุปกรณ์ปกติ</span></li>
+          <li class="step"><span class="step-num">2</span><span class="step-text">Train Autoencoder หรือ CNN ด้วย Python, export เป็น .tflite + quantize INT8</span></li>
+          <li class="step"><span class="step-num">3</span><span class="step-text">Deploy ด้วย ESP-DL หรือ TFLM บน ESP32-S3 (512 KB SRAM + 8 MB PSRAM)</span></li>
+          <li class="step"><span class="step-num">4</span><span class="step-text">Inference ทุก 100ms, alert ผ่าน MQTT เมื่อค่า reconstruction error สูงเกิน threshold</span></li>
+        </ol>
+      </div>
+
+      <!-- Project 5: Wearable Health Monitor -->
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-title">ESP32 Wearable Bioimpedance Health Monitor</div>
+          <div class="difficulty-badge diff-hard">ยาก</div>
+        </div>
+        <p class="project-desc">
+          ESP32 ร่วมกับ AD5933 (Bioimpedance Analyzer IC) สร้างอุปกรณ์วัด body composition
+          และ hydration level แบบพกพา ส่งข้อมูลขึ้น cloud ผ่าน BLE ไปยัง mobile app
+          งานวิจัยล่าสุดพิสูจน์ว่าวัดค่า bioimpedance ได้แม่นยำและส่ง real-time ได้จริง
+        </p>
+        <div class="project-parts">
+          <span class="tag tag-blue">ESP32 (BLE)</span>
+          <span class="tag tag-purple">AD5933 BIA IC</span>
+          <span class="tag tag-green">MAX30102 (PPG)</span>
+          <span class="tag tag-orange">LiPo 350mAh</span>
+          <span class="tag tag-cyan">BLE GATT Profile</span>
+        </div>
+        <div class="highlight highlight-green" style="margin-top:0.8rem;">
+          🏥 ประยุกต์ใช้: วัด body fat %, hydration status, muscle mass — ใช้ความถี่ AC 5 kHz–100 kHz
+          สัญญาณ 2V peak-to-peak ผ่าน electrode แบบ 4-wire
+        </div>
+      </div>
+
+      <!-- Project 6: Multi-sensor Field Monitor -->
+      <div class="project-card">
+        <div class="project-header">
+          <div class="project-title">ESP32 + Firebase Multi-sensor Field Monitor (Precision Farming)</div>
+          <div class="difficulty-badge diff-medium">กลาง</div>
+        </div>
+        <p class="project-desc">
+          ระบบ IoT ตรวจสอบไร่นาแบบ remote ด้วย ESP32 + sensor หลายตัว ส่งข้อมูลขึ้น
+          Firebase Realtime Database เข้าถึงผ่าน Mobile App (Flutter) แสดง map overlay
+          ของค่าความชื้นดิน, pH, อุณหภูมิ, แสง — อ้างอิงจากงานวิจัย EngrXiv preprint 2026
+        </p>
+        <div class="project-parts">
+          <span class="tag tag-blue">ESP32 WROOM</span>
+          <span class="tag tag-green">Soil Moisture</span>
+          <span class="tag tag-purple">DS18B20 (Soil Temp)</span>
+          <span class="tag tag-orange">BH1750 (Light)</span>
+          <span class="tag tag-cyan">Firebase RTDB</span>
+          <span class="tag tag-blue">Flutter App</span>
+        </div>
+        <div class="code-block"><span class="code-comment">// Firebase Realtime Database write</span>
+FirebaseData fbdo;
+Firebase.<span class="code-fn">setFloat</span>(fbdo, <span class="code-string">"/field/node1/soil_moisture"</span>, moisture);
+Firebase.<span class="code-fn">setFloat</span>(fbdo, <span class="code-string">"/field/node1/temperature"</span>, temp);
+Firebase.<span class="code-fn">setFloat</span>(fbdo, <span class="code-string">"/field/node1/light_lux"</span>, lux);
+Firebase.<span class="code-fn">setFloat</span>(fbdo, <span class="code-string">"/field/node1/ph"</span>, pH);
+Firebase.<span class="code-fn">setString</span>(fbdo, <span class="code-string">"/field/node1/timestamp"</span>, timeStr);</div>
+      </div>
+
+    </div><!-- end card-grid-wide -->
+  </section>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-purple">🔌</div>
+      <div class="section-title">Sensors น่าสนใจ</div>
+      <div class="section-count">5 รายการ</div>
+    </div>
+
+    <div class="card-grid">
+
+      <div class="sensor-card">
+        <div class="sensor-type">Soil / Agricultural</div>
+        <div class="sensor-name">Capacitive Soil Moisture v2.0</div>
+        <p class="sensor-desc">
+          เซ็นเซอร์ความชื้นดินแบบ capacitive ไม่กัดกร่อนเหมือน resistive type
+          อ่านค่า analog 0–3.3V เชื่อมกับ ESP32 ADC โดยตรง ราคา ~$2
+          เหมาะกับ deployment ระยะยาวในดิน ควรใช้ร่วมกับ epoxy coating กันน้ำ
+        </p>
+        <div style="margin-top:0.75rem;">
+          <div class="progress-bar-wrap"><div class="progress-bar" style="width:88%; background: linear-gradient(90deg, #10b981, #34d399);"></div></div>
+          <div class="progress-label"><span>ความน่าเชื่อถือ</span><span>88%</span></div>
+          <div class="progress-bar-wrap" style="margin-top:0.4rem;"><div class="progress-bar" style="width:95%; background: linear-gradient(90deg, #3b82f6, #60a5fa);"></div></div>
+          <div class="progress-label"><span>ความง่ายต่อการใช้งาน</span><span>95%</span></div>
+        </div>
+        <div style="margin-top:0.6rem;">
+          <span class="tag tag-green">Analog</span>
+          <span class="tag tag-blue">3.3V / 5V</span>
+          <span class="tag tag-purple">ราคาถูก</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-type">Water Quality</div>
+        <div class="sensor-name">DFRobot Gravity TDS Sensor V1.0</div>
+        <p class="sensor-desc">
+          วัด Total Dissolved Solids ในน้ำ 0–1000 ppm ใช้ analg output เชื่อมกับ ESP32 ADC
+          เหมาะกับการตรวจ hydroponics nutrient solution, น้ำดื่ม, น้ำบ่อ
+          ต้องทำ temperature compensation ร่วมกับ DS18B20 เพื่อความแม่นยำ
+        </p>
+        <div style="margin-top:0.75rem;">
+          <div class="progress-bar-wrap"><div class="progress-bar" style="width:82%; background: linear-gradient(90deg, #10b981, #34d399);"></div></div>
+          <div class="progress-label"><span>ความแม่นยำ</span><span>82%</span></div>
+        </div>
+        <div style="margin-top:0.6rem;">
+          <span class="tag tag-cyan">TDS / PPM</span>
+          <span class="tag tag-blue">Analog</span>
+          <span class="tag tag-orange">Hydroponics</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-type">Health / Biometric</div>
+        <div class="sensor-name">MAX30102 — Pulse Oximeter & Heart Rate Sensor</div>
+        <p class="sensor-desc">
+          ชิปจาก Maxim ที่ใช้ PPG (Photoplethysmography) วัด SpO2 และ Heart Rate
+          interface แบบ I2C กินไฟเพียง 600 µA ในโหมดวัด เหมาะกับ wearable
+          ESP32 อ่านค่าผ่าน library SparkFun MAX3010x ได้ทันที
+        </p>
+        <div style="margin-top:0.75rem;">
+          <div class="progress-bar-wrap"><div class="progress-bar" style="width:90%; background: linear-gradient(90deg, #ec4899, #f472b6);"></div></div>
+          <div class="progress-label"><span>ความแม่นยำ SpO2</span><span>90%</span></div>
+          <div class="progress-bar-wrap" style="margin-top:0.4rem;"><div class="progress-bar" style="width:75%; background: linear-gradient(90deg, #8b5cf6, #a78bfa);"></div></div>
+          <div class="progress-label"><span>ความแม่นยำ HR</span><span>75%</span></div>
+        </div>
+        <div style="margin-top:0.6rem;">
+          <span class="tag tag-pink">PPG</span>
+          <span class="tag tag-blue">I2C</span>
+          <span class="tag tag-green">Low Power</span>
+          <span class="tag tag-purple">Wearable</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-type">Environmental / Soil</div>
+        <div class="sensor-name">DS18B20 — Waterproof Soil Temperature Sensor</div>
+        <p class="sensor-desc">
+          เซ็นเซอร์วัดอุณหภูมิ OneWire แบบกันน้ำ ความแม่นยำ ±0.5°C ช่วง -55 ถึง +125°C
+          สาย probe กันน้ำสำหรับวัดในดิน, น้ำ หรือสภาพแวดล้อมชื้นแฉะ
+          ต่อได้พร้อมกันหลายตัวบนสายเดียว (multi-drop)
+        </p>
+        <div style="margin-top:0.6rem;">
+          <span class="tag tag-blue">OneWire</span>
+          <span class="tag tag-green">±0.5°C</span>
+          <span class="tag tag-cyan">IP67</span>
+          <span class="tag tag-orange">Multi-drop</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-type">Biometric / Medical</div>
+        <div class="sensor-name">AD5933 — Bioimpedance Network Analyzer IC</div>
+        <p class="sensor-desc">
+          IC วิเคราะห์ impedance ความถี่ 1 kHz ถึง 100 kHz ใช้สร้างอุปกรณ์
+          วัด body composition, hydration level, tissue analysis
+          ESP32 ควบคุมผ่าน I2C และอ่านค่า real/imaginary impedance โดยตรง
+          ใช้กับ electrode แบบ 4-wire เพื่อความแม่นยำสูง
+        </p>
+        <div style="margin-top:0.6rem;">
+          <span class="tag tag-pink">BIA</span>
+          <span class="tag tag-blue">I2C</span>
+          <span class="tag tag-purple">Medical Grade</span>
+          <span class="tag tag-orange">1kHz–100kHz</span>
+        </div>
+      </div>
+
+    </div><!-- end card-grid -->
+  </section>
+
+  <!-- ===== SECTION 4: RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔗</div>
+      <div class="section-title">แหล่งข้อมูลและลิงก์แนะนำ</div>
+    </div>
+
+    <div class="resource-grid">
+      <div class="resource-card">
+        <div class="resource-icon">📡</div>
+        <div class="resource-name">M5Stack NanoH2 Docs</div>
+        <div class="resource-desc">เอกสารและ tutorial อย่างเป็นทางการของ NanoH2 พร้อม Arduino IDE guide</div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">🏠</div>
+        <div class="resource-name">ESPHome Thread Guide</div>
+        <div class="resource-desc">วิธีสร้าง Thread device ด้วย ESP32-H2 บน ESPHome 2025.6+</div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">🔬</div>
+        <div class="resource-name">ESP-Matter GitHub</div>
+        <div class="resource-desc">Espressif's official Matter SDK สำหรับ ESP32 ทุกรุ่น</div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">🌱</div>
+        <div class="resource-name">EngrXiv Agriculture IoT</div>
+        <div class="resource-desc">งานวิจัย field monitoring ด้วย ESP32 + Firebase 2026</div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">🧠</div>
+        <div class="resource-name">Espressif ESP-DL</div>
+        <div class="resource-desc">Deep Learning inference library สำหรับ ESP32-S3 อย่างเป็นทางการ</div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">📖</div>
+        <div class="resource-name">TFLite Micro ESP32-S3</div>
+        <div class="resource-desc">DEV.to tutorial: wake-word detection + image classification</div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">🔧</div>
+        <div class="resource-name">zbotic.in ESP32-H2 Guide</div>
+        <div class="resource-desc">บทความเปรียบเทียบ Zigbee vs Thread และคู่มือ ESP32-H2</div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">📰</div>
+        <div class="resource-name">CNX Software NanoH2</div>
+        <div class="resource-desc">บทวิจารณ์ M5Stack NanoH2 และ spec เปรียบเทียบกับ Unit Gateway H2</div>
+      </div>
+    </div>
+
+    <!-- Summary Table -->
+    <div class="card" style="margin-top:2rem;">
+      <h3 style="font-size:1rem; margin-bottom:1rem; color:#e2e8f0;">📊 สรุปเนื้อหาวันนี้</h3>
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>หมวด</th>
+            <th>หัวข้อหลัก</th>
+            <th>ระดับ</th>
+            <th>สถานะ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-bold">นวัตกรรม</td>
+            <td>M5Stack NanoH2 + Thread via ESPHome</td>
+            <td><span class="tag tag-blue">ใหม่</span></td>
+            <td><span class="tag tag-green">Production Ready</span></td>
+          </tr>
+          <tr>
+            <td class="td-bold">Protocol</td>
+            <td>Matter 1.4 + Zigbee vs Thread Comparison</td>
+            <td><span class="tag tag-purple">2026</span></td>
+            <td><span class="tag tag-green">Confirmed</span></td>
+          </tr>
+          <tr>
+            <td class="td-bold">Agriculture</td>
+            <td>Smart Greenhouse + Fuzzy Irrigation + Firebase</td>
+            <td><span class="tag tag-orange">กลาง</span></td>
+            <td><span class="tag tag-cyan">Academic Validated</span></td>
+          </tr>
+          <tr>
+            <td class="td-bold">AI/ML</td>
+            <td>TinyML Predictive Maintenance บน ESP32-S3</td>
+            <td><span class="tag tag-red">ยาก</span></td>
+            <td><span class="tag tag-cyan">Research Stage</span></td>
+          </tr>
+          <tr>
+            <td class="td-bold">Health</td>
+            <td>Bioimpedance Wearable + MAX30102 PPG</td>
+            <td><span class="tag tag-red">ยาก</span></td>
+            <td><span class="tag tag-purple">Prototype</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-logo">ESP32 Daily Research</div>
+  <p>สร้างโดย AI Research Bot &nbsp;|&nbsp; 25 ตุลาคม 2569</p>
+  <p style="margin-top:0.4rem;">
+    แหล่งอ้างอิง:
+    <a href="https://docs.m5stack.com/en/core/NanoH2" target="_blank">M5Stack NanoH2 Docs</a> ·
+    <a href="https://botmonster.com/smart-home/esphome-thread-esp32-h2-device/" target="_blank">ESPHome Thread Guide</a> ·
+    <a href="https://www.cnx-software.com/2025/12/26/m5stack-nanoh2-an-ultra-compact-esp32-h2-iot-development-kit-with-zigbee-thread-and-matter-connectivity/" target="_blank">CNX Software</a> ·
+    <a href="https://zbotic.in/esp32-h2-zigbee-and-thread-native-support-guide/" target="_blank">Zbotic ESP32-H2 Guide</a> ·
+    <a href="https://engrxiv.org/preprint/view/6091" target="_blank">EngrXiv IoT Agriculture</a>
+  </p>
+  <p style="margin-top:0.5rem; color:#475569;">ข้อมูลจากแหล่งวิจัยล่าสุด ควรตรวจสอบ spec กับ datasheet ก่อน deploy จริง</p>
+</footer>
+
+</body>
+</html>
