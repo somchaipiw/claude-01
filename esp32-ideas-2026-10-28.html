@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 28 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.8; }
+
+  header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 50%, #1a1040 100%);
+    border-bottom: 2px solid #334155;
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 60% 0%, rgba(99,102,241,0.18) 0%, transparent 70%);
+  }
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #a5b4fc, #c4b5fd, #67e8f9);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header .subtitle {
+    color: #94a3b8;
+    font-size: 0.95rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-item .num { font-size: 1.6rem; font-weight: 700; color: #818cf8; }
+  .stat-item .label { font-size: 0.75rem; color: #64748b; }
+
+  nav.toc {
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    padding: 0.75rem 1.5rem;
+    display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+  }
+  nav.toc a {
+    color: #94a3b8; text-decoration: none; font-size: 0.85rem;
+    padding: 0.25rem 0.75rem; border-radius: 6px; transition: all 0.2s;
+  }
+  nav.toc a:hover { background: #334155; color: #e2e8f0; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+  .section-header {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin: 3rem 0 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #334155;
+  }
+  .section-icon {
+    width: 2.5rem; height: 2.5rem;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+  }
+  .icon-purple { background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+  .icon-teal  { background: linear-gradient(135deg, #0d9488, #0891b2); }
+  .icon-amber { background: linear-gradient(135deg, #d97706, #b45309); }
+  .icon-rose  { background: linear-gradient(135deg, #e11d48, #be123c); }
+
+  .section-header h2 {
+    font-size: 1.35rem; font-weight: 700; color: #e2e8f0;
+  }
+  .section-header .section-date {
+    margin-left: auto; font-size: 0.75rem; color: #475569;
+  }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 1.5rem;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .card:hover { transform: translateY(-3px); border-color: #4f46e5; }
+  .card-tag {
+    display: inline-block;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em;
+    padding: 0.2rem 0.65rem; border-radius: 999px;
+    margin-bottom: 0.75rem; text-transform: uppercase;
+  }
+  .tag-new    { background: rgba(99,102,241,0.2); color: #818cf8; }
+  .tag-hot    { background: rgba(239,68,68,0.2);  color: #f87171; }
+  .tag-sensor { background: rgba(20,184,166,0.2); color: #2dd4bf; }
+  .tag-project{ background: rgba(251,146,60,0.2); color: #fb923c; }
+  .tag-ai     { background: rgba(168,85,247,0.2); color: #c084fc; }
+  .tag-health { background: rgba(236,72,153,0.2); color: #f472b6; }
+
+  .card h3 {
+    font-size: 1rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.5rem;
+  }
+  .card p { font-size: 0.875rem; color: #94a3b8; line-height: 1.7; }
+  .card .specs {
+    margin-top: 0.75rem;
+    background: #0f172a;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 0.8rem;
+  }
+  .card .specs li { list-style: none; color: #64748b; padding: 0.15rem 0; }
+  .card .specs li span { color: #94a3b8; }
+  .card .specs li::before { content: '▸ '; color: #4f46e5; }
+
+  .hero-card {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #1e1b4b 0%, #1e293b 60%, #0c1a2e 100%);
+    border: 1px solid #4338ca;
+    border-radius: 16px;
+    padding: 2rem;
+    display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;
+  }
+  .hero-card .hero-body { flex: 1; min-width: 220px; }
+  .hero-card .hero-side {
+    flex: 0 0 220px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+  .hero-card h3 { font-size: 1.25rem; font-weight: 700; color: #a5b4fc; margin-bottom: 0.5rem; }
+  .hero-card p  { font-size: 0.9rem; color: #94a3b8; }
+  .hero-card .hero-side h4 { font-size: 0.8rem; font-weight: 700; color: #6366f1; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .hero-card .hero-side li { list-style: none; font-size: 0.8rem; color: #64748b; padding: 0.2rem 0; }
+  .hero-card .hero-side li::before { content: '✓ '; color: #22c55e; }
+
+  .flow-steps {
+    display: flex; gap: 0; flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  .flow-step {
+    flex: 1; min-width: 140px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    padding: 1rem;
+    text-align: center;
+    position: relative;
+  }
+  .flow-step:not(:last-child)::after {
+    content: '→';
+    position: absolute; right: -0.75rem; top: 50%; transform: translateY(-50%);
+    color: #4f46e5; font-size: 1.2rem; z-index: 1;
+  }
+  .flow-step:first-child { border-radius: 10px 0 0 10px; }
+  .flow-step:last-child  { border-radius: 0 10px 10px 0; }
+  .flow-step .step-icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+  .flow-step .step-label { font-size: 0.75rem; color: #94a3b8; }
+
+  .comparison-table {
+    width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.85rem;
+  }
+  .comparison-table th {
+    background: #0f172a; color: #6366f1; font-weight: 700;
+    padding: 0.6rem 0.8rem; text-align: left; border: 1px solid #334155;
+  }
+  .comparison-table td {
+    padding: 0.6rem 0.8rem; border: 1px solid #1e293b; color: #94a3b8;
+    vertical-align: top;
+  }
+  .comparison-table tr:nth-child(even) td { background: #1e293b; }
+  .comparison-table td.highlight { color: #a5b4fc; font-weight: 600; }
+
+  .code-block {
+    background: #0d1117; border: 1px solid #30363d; border-radius: 8px;
+    padding: 1rem; font-family: 'Courier New', monospace;
+    font-size: 0.78rem; color: #c9d1d9; overflow-x: auto;
+    margin-top: 0.75rem; line-height: 1.6;
+  }
+  .code-block .kw { color: #ff7b72; }
+  .code-block .str { color: #a5d6ff; }
+  .code-block .cmt { color: #8b949e; }
+  .code-block .num { color: #79c0ff; }
+  .code-block .fn  { color: #d2a8ff; }
+
+  .resource-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem;
+  }
+  .resource-card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.25rem;
+    display: flex; gap: 0.75rem; align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+  .resource-card:hover { border-color: #0891b2; }
+  .resource-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .resource-card h4 { font-size: 0.9rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.25rem; }
+  .resource-card p { font-size: 0.78rem; color: #64748b; }
+  .resource-card a { color: #38bdf8; font-size: 0.78rem; text-decoration: none; }
+  .resource-card a:hover { text-decoration: underline; }
+
+  .callout {
+    background: rgba(99,102,241,0.1);
+    border-left: 3px solid #6366f1;
+    border-radius: 0 8px 8px 0;
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.85rem; color: #a5b4fc;
+  }
+
+  footer {
+    background: #0f172a;
+    border-top: 1px solid #1e293b;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: #475569;
+    font-size: 0.8rem;
+  }
+  footer .footer-title { font-weight: 700; color: #64748b; margin-bottom: 0.5rem; }
+  footer .sources { max-width: 700px; margin: 0.75rem auto 0; line-height: 2; }
+  footer a { color: #38bdf8; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    .hero-card { flex-direction: column; }
+    .hero-card .hero-side { flex: 1; width: 100%; }
+    .flow-step:not(:last-child)::after { display: none; }
+    .stats-row { gap: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily ESP32 Research — ตุลาคม 2026</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">28 ตุลาคม 2026 · Adafruit Metro P4 Hydra · Wearable Biometrics · Smart Indoor Farming</p>
+  <div class="stats-row">
+    <div class="stat-item"><div class="num">4</div><div class="label">หัวข้อหลัก</div></div>
+    <div class="stat-item"><div class="num">12</div><div class="label">ไอเดียโปรเจกต์</div></div>
+    <div class="stat-item"><div class="num">8</div><div class="label">Sensor ใหม่</div></div>
+    <div class="stat-item"><div class="num">5</div><div class="label">แหล่งอ้างอิง</div></div>
+  </div>
+</header>
+
+<nav class="toc">
+  <a href="#innovations">🚀 นวัตกรรมใหม่</a>
+  <a href="#projects">🛠 ไอเดียโปรเจกต์</a>
+  <a href="#sensors">🔬 Sensors น่าสนใจ</a>
+  <a href="#resources">📚 แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- INNOVATIONS -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-purple">🚀</div>
+      <h2>นวัตกรรมและอัปเดตสำคัญ</h2>
+      <span class="section-date">28 ต.ค. 2026</span>
+    </div>
+
+    <div class="card-grid">
+
+      <!-- Hero card: Adafruit Metro ESP32-P4 Hydra -->
+      <div class="hero-card">
+        <div class="hero-body">
+          <span class="card-tag tag-new">NEW · 26 ต.ค. 2026</span>
+          <h3>🦑 Adafruit Metro ESP32-P4 Hydra — Arduino UNO รูปร่าง ขุมพลัง P4</h3>
+          <p>
+            Adafruit เพิ่งเปิดตัว <strong>Metro ESP32-P4 Hydra</strong> บอร์ดรูปทรง Arduino UNO ที่ใช้ชิป <strong>ESP32-P4 (dual-core RISC-V 360 MHz)</strong> พร้อม <strong>16 MB PSRAM</strong> และ 16 MB Flash — เหมาะสำหรับงาน HMI, กล้อง และ IoT ขั้นสูง จุดเด่นคือมี MIPI DSI และ CSI connectors ที่รองรับ Raspberry Pi display/camera ecosystem โดยตรง
+          </p>
+          <p style="margin-top:0.6rem;">
+            การสื่อสารไร้สายทำผ่าน <strong>ESP32-C6 co-processor</strong> (Wi-Fi 6, BLE 5.3, Thread, Zigbee) ที่เชื่อมต่อผ่าน SDIO — ทำให้ได้ทั้งพลังประมวลผลของ P4 และ multi-protocol wireless ของ C6 ในบอร์ดเดียว
+          </p>
+          <div class="callout">
+            ⚠️ Adafruit ระบุว่าบอร์ดรุ่นนี้ใช้ ESP32-P4 "v1" ไม่ใช่ P4X รุ่นใหม่ — ผู้ที่ต้องการ P4X ควรรอดูก่อน
+          </div>
+        </div>
+        <div class="hero-side">
+          <h4>Specs หลัก</h4>
+          <ul>
+            <li>CPU: dual-core RISC-V, 360 MHz</li>
+            <li>16 MB PSRAM + 16 MB Flash</li>
+            <li>ESP32-C6: Wi-Fi 6, BLE 5.3</li>
+            <li>Thread &amp; Zigbee (802.15.4)</li>
+            <li>MIPI DSI + CSI (RPi compatible)</li>
+            <li>USB 2.0 High Speed</li>
+            <li>Ethernet MAC built-in</li>
+            <li>Arduino UNO form factor</li>
+            <li>Hardware AES/SHA crypto</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Card: ESP32-P4 vs P4X -->
+      <div class="card">
+        <span class="card-tag tag-new">ข้อมูลชิป</span>
+        <h3>ESP32-P4 กับ ESP32-P4X — ต่างกันอย่างไร?</h3>
+        <p>
+          ESP32-P4 รุ่น v1 ที่วางตลาดอยู่ในปัจจุบันมีความเร็ว CPU สูงสุด 360–400 MHz ส่วน ESP32-P4X คือรุ่นอัปเกรดที่มีการปรับปรุงด้าน performance และ peripheral — ยังไม่มีข้อมูล datasheet เต็มรูปแบบในช่วงนี้
+        </p>
+        <ul class="specs">
+          <li><span>H.264 encode/decode</span> hardware built-in</li>
+          <li><span>ISP</span> Image Signal Processor ออนชิป</li>
+          <li><span>Pixel Processing</span> Accelerator สำหรับ format conversion</li>
+          <li><span>USB 2.0 HS</span> ทำ USB webcam streaming ได้</li>
+          <li><span>ไม่มี radio</span> ต้องใช้ C6 ช่วย wireless</li>
+        </ul>
+      </div>
+
+      <!-- Card: Dual-band ESP32 ecosystem -->
+      <div class="card">
+        <span class="card-tag tag-hot">Ecosystem</span>
+        <h3>บอร์ด P4+C6 Dual-Chip คืออะไร ทำไมถึงนิยม?</h3>
+        <p>
+          เนื่องจาก ESP32-P4 ไม่มี wireless onboard ผู้ผลิตจึงนิยม pair กับ ESP32-C6 เพื่อรับ Wi-Fi 6, BLE, Thread, Zigbee ไว้ในบอร์ดเดียว เป็น pattern ใหม่ใน ESP32 ecosystem ที่กำลังแพร่หลาย
+        </p>
+        <ul class="specs">
+          <li><span>GUITION P4+C6:</span> 32 MB PSRAM, Ethernet, RS-485 ~$14</li>
+          <li><span>Waveshare P4-POE:</span> PoE Ethernet, MIPI CSI/DSI</li>
+          <li><span>Adafruit Metro Hydra:</span> Arduino UNO shape, 16 MB PSRAM</li>
+        </ul>
+        <div class="callout">ราคาบอร์ด P4+C6 เริ่มต้นที่ประมาณ $14–$40 ขึ้นอยู่กับ feature</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-teal">🛠</div>
+      <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+    </div>
+
+    <!-- Smart Indoor Farming -->
+    <h3 style="color:#2dd4bf; font-size:1.1rem; margin-bottom:1rem;">🌱 Smart Indoor Farming ด้วย ESP32</h3>
+    <div class="card-grid">
+
+      <div class="card">
+        <span class="card-tag tag-project">Cloud IoT</span>
+        <h3>ESP32 + BLE App + AWS — ระบบฟาร์มในบ้านอัตโนมัติ</h3>
+        <p>
+          WeMakeIoT เผยแพร่ case study (ต.ค. 2026) ของระบบ indoor farming ที่ใช้ ESP32 ควบคุม grow light และ irrigation จากข้อมูล sensor แบบ real-time ผ่าน BLE app และส่งข้อมูลขึ้น AWS IoT Core
+        </p>
+        <div class="flow-steps">
+          <div class="flow-step"><div class="step-icon">🌡</div><div class="step-label">Sensors</div></div>
+          <div class="flow-step"><div class="step-icon">📱</div><div class="step-label">BLE App</div></div>
+          <div class="flow-step"><div class="step-icon">☁️</div><div class="step-label">AWS IoT</div></div>
+          <div class="flow-step"><div class="step-icon">💡</div><div class="step-label">Control</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-project">Sensor</span>
+        <h3>Capacitive Soil Moisture + Alexa Control ด้วย Sinric Pro</h3>
+        <p>
+          ใช้ capacitive soil moisture sensor (ดีกว่า resistive ที่ผุกร่อนภายในไม่กี่สัปดาห์) เชื่อมต่อ ESP32 ส่งข้อมูลผ่าน Sinric Pro cloud สั่งงานปั๊มน้ำได้จาก Alexa voice command
+        </p>
+        <ul class="specs">
+          <li><span>Sensor:</span> Capacitive (ไม่กัดกร่อน)</li>
+          <li><span>Cloud:</span> Sinric Pro (free tier)</li>
+          <li><span>Integration:</span> Amazon Alexa</li>
+          <li><span>Output:</span> Water pump relay control</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-project">Multi-Sensor</span>
+        <h3>ESP32-S3 Indoor Environmental Monitor — มหาวิทยาลัยใช้จริง</h3>
+        <p>
+          งานวิจัย Springer 2026 ใช้ ESP32-WROOM ร่วมกับ DHT22 (Temp/Humidity), BH1750 (แสง) และ particulate sensor ติดตามคุณภาพอากาศในมหาวิทยาลัย 3 วัน ด้วย adaptive sampling (ปรับ interval ตามการเปลี่ยนแปลงค่า)
+        </p>
+        <div class="code-block">
+<span class="cmt">// Adaptive sampling — เพิ่ม rate เมื่อค่าเปลี่ยนเร็ว</span>
+<span class="kw">if</span> (abs(newTemp - lastTemp) > <span class="num">0.5</span>) {
+  sampleInterval = <span class="num">10</span>;  <span class="cmt">// 10 วินาที</span>
+} <span class="kw">else</span> {
+  sampleInterval = <span class="num">60</span>;  <span class="cmt">// 60 วินาที (ประหยัดพลังงาน)</span>
+}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Wearable Biometric -->
+    <h3 style="color:#f472b6; font-size:1.1rem; margin: 2rem 0 1rem;">❤️ Wearable & Biometric Projects</h3>
+    <div class="card-grid">
+
+      <div class="card">
+        <span class="card-tag tag-health">Health</span>
+        <h3>ESP32 + AD8232 — ECG Wearable ส่งข้อมูลไร้สาย</h3>
+        <p>
+          AD8232 ECG front end จับสัญญาณไฟฟ้าจากหัวใจผ่าน electrode สามจุด ESP32 ประมวลผลและ stream waveform ไปยัง smartphone หรือคอมพิวเตอร์แบบ real-time ผ่าน BLE หรือ Wi-Fi
+        </p>
+        <ul class="specs">
+          <li><span>Sensor:</span> AD8232 ECG Module (~$3)</li>
+          <li><span>Output:</span> Lead I ECG waveform</li>
+          <li><span>Protocol:</span> BLE Notify (GATT)</li>
+          <li><span>Display:</span> Python + matplotlib real-time</li>
+        </ul>
+        <div class="code-block">
+<span class="cmt">// อ่านค่า ECG จาก AD8232</span>
+<span class="kw">int</span> <span class="fn">readECG</span>() {
+  <span class="kw">if</span> (<span class="fn">digitalRead</span>(LEADS_OFF_PLUS) == <span class="num">0</span> &&
+      <span class="fn">digitalRead</span>(LEADS_OFF_MINUS) == <span class="num">0</span>) {
+    <span class="kw">return</span> <span class="fn">analogRead</span>(ECG_PIN);
+  }
+  <span class="kw">return</span> -<span class="num">1</span>; <span class="cmt">// Leads off</span>
+}
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-health">SpO2 + HR</span>
+        <h3>MAX30102 + ESP32 — Pulse Oximeter แบบ DIY</h3>
+        <p>
+          MAX30102 เป็น optical biosensor ที่วัด SpO2 (ออกซิเจนในเลือด) และ heart rate ด้วยแสง IR+Red ใช้ I2C เชื่อมต่อ ESP32 ง่ายมาก นิยมมากในโปรเจกต์ wearable health monitor
+        </p>
+        <ul class="specs">
+          <li><span>MAX30102</span> SpO2 + Heart Rate Sensor</li>
+          <li><span>MLX90614</span> Non-contact temp (เสริม)</li>
+          <li><span>Protocol:</span> I2C (address 0x57)</li>
+          <li><span>Library:</span> Sparkfun MAX3010x</li>
+          <li><span>Power:</span> 1.8V supply (ต้องใช้ level shifter)</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-health">Animal IoT</span>
+        <h3>ESP32 Mini — Wearable สุขภาพสัตว์เลี้ยง</h3>
+        <p>
+          โปรเจกต์บน PCBWay ออกแบบปลอกคอสัตว์เลี้ยงที่มี IR temperature sensor และ accelerometer บน ESP32 Mini ติดตาม activity level, อุณหภูมิร่างกาย และ detect ความผิดปกติแบบ real-time
+        </p>
+        <ul class="specs">
+          <li><span>MCU:</span> ESP32 Mini (D1 Mini)</li>
+          <li><span>Sensor:</span> MLX90614 + MPU6050</li>
+          <li><span>Alert:</span> Telegram Bot notification</li>
+          <li><span>Battery:</span> LiPo 500 mAh พร้อม solar charging</li>
+        </ul>
+        <div class="callout">แนวคิดนี้ต่อยอดได้เป็น livestock monitoring ในฟาร์มสัตว์</div>
+      </div>
+
+    </div>
+
+    <!-- P4 HMI Projects -->
+    <h3 style="color:#818cf8; font-size:1.1rem; margin: 2rem 0 1rem;">🖥 ESP32-P4 HMI & Vision Projects</h3>
+    <div class="card-grid">
+
+      <div class="card">
+        <span class="card-tag tag-ai">Vision AI</span>
+        <h3>ESP32-P4 Face Recognition Doorbell แบบ Local AI</h3>
+        <p>
+          ESP32-P4 มี ISP และ pixel processing accelerator onboard ทำให้รัน face recognition แบบ local ได้โดยไม่ต้องส่งภาพขึ้น cloud เหมาะสำหรับโปรเจกต์ smart doorbell ที่ต้องการ privacy
+        </p>
+        <ul class="specs">
+          <li><span>Camera:</span> OV5640 ผ่าน MIPI CSI</li>
+          <li><span>AI:</span> ESP-WHO face detection library</li>
+          <li><span>Display:</span> MIPI DSI 7" touchscreen</li>
+          <li><span>Network:</span> ESP32-C6 Wi-Fi 6 notification</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-project">Industrial</span>
+        <h3>ESP32-P4 + RS-485 — Industrial 1080p HMI Panel</h3>
+        <p>
+          ใช้ LVGL framework บน ESP32-P4 สร้าง industrial HMI ที่แสดงผลความละเอียด 1080p รับข้อมูลจาก PLC และ sensor ผ่าน RS-485/Modbus RTU — บอร์ด GUITION ที่มี RS-485 built-in เหมาะมาก
+        </p>
+        <ul class="specs">
+          <li><span>GUI:</span> LVGL v9 (GPU accelerated)</li>
+          <li><span>Resolution:</span> 1080p MIPI DSI</li>
+          <li><span>Protocol:</span> Modbus RTU ผ่าน RS-485</li>
+          <li><span>PoE:</span> Waveshare board รองรับ PoE</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SENSORS -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-amber">🔬</div>
+      <h2>Sensors น่าสนใจประจำวัน</h2>
+    </div>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Sensor</th>
+          <th>วัดอะไร</th>
+          <th>Interface</th>
+          <th>ราคาประมาณ</th>
+          <th>เหมาะกับงาน</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="highlight">AD8232</td>
+          <td>ECG / Heart Electrical</td>
+          <td>Analog + GPIO</td>
+          <td>~$3–8</td>
+          <td>Wearable ECG, health monitor</td>
+        </tr>
+        <tr>
+          <td class="highlight">MAX30102</td>
+          <td>SpO2, Heart Rate, Temperature</td>
+          <td>I2C (0x57)</td>
+          <td>~$3–6</td>
+          <td>Pulse oximeter, fitness band</td>
+        </tr>
+        <tr>
+          <td class="highlight">MLX90614</td>
+          <td>Infrared Non-Contact Temperature</td>
+          <td>I2C (0x5A)</td>
+          <td>~$5–12</td>
+          <td>Body temp, animal monitor</td>
+        </tr>
+        <tr>
+          <td class="highlight">MPU6050</td>
+          <td>6-axis Accel + Gyroscope</td>
+          <td>I2C (0x68)</td>
+          <td>~$1–3</td>
+          <td>Activity, fall detection, wearable</td>
+        </tr>
+        <tr>
+          <td class="highlight">BH1750</td>
+          <td>Ambient Light (lux)</td>
+          <td>I2C (0x23)</td>
+          <td>~$1–2</td>
+          <td>Smart lighting, plant monitor</td>
+        </tr>
+        <tr>
+          <td class="highlight">DHT22 / SHT31</td>
+          <td>Temperature + Humidity</td>
+          <td>1-Wire / I2C</td>
+          <td>~$3–8</td>
+          <td>Environmental, indoor air quality</td>
+        </tr>
+        <tr>
+          <td class="highlight">Capacitive Soil</td>
+          <td>Soil Moisture (ไม่กัดกร่อน)</td>
+          <td>Analog</td>
+          <td>~$2–5</td>
+          <td>Smart irrigation, indoor farm</td>
+        </tr>
+        <tr>
+          <td class="highlight">PMS5003</td>
+          <td>PM1.0, PM2.5, PM10</td>
+          <td>UART</td>
+          <td>~$15–25</td>
+          <td>Air quality, indoor environment</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="card-grid" style="margin-top:1.5rem;">
+      <div class="card">
+        <span class="card-tag tag-sensor">Tips</span>
+        <h3>ทำไมต้องเลือก Capacitive ไม่ใช่ Resistive Soil Sensor?</h3>
+        <p>
+          Resistive soil moisture sensor ใช้ได้ไม่กี่สัปดาห์ก่อนที่ probe จะผุกร่อนจากปฏิกิริยาไฟฟ้าเคมีในดิน ส่วน capacitive sensor วัดผ่านสนามไฟฟ้า ไม่มีโลหะสัมผัสดิน จึงทนทานกว่ามาก เป็นตัวเลือกมาตรฐานสำหรับโปรเจกต์ smart irrigation จริงจัง
+        </p>
+      </div>
+      <div class="card">
+        <span class="card-tag tag-sensor">Tips</span>
+        <h3>MAX30102 กับ MAX30100 ต่างกันอย่างไร?</h3>
+        <p>
+          MAX30100 รุ่นเก่าต้องการ voltage supply แยก (1.8V สำหรับ core, 3.3V สำหรับ LED) ทำให้วงจรซับซ้อน MAX30102 รุ่นใหม่ใช้ไฟเดียว 1.8V สำหรับ core ส่วน LED ใช้ 3.3–5V ได้ตรงไปตรงมากว่า นิยมกว่าในโปรเจกต์ DIY
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESOURCES -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-rose">📚</div>
+      <h2>แหล่งข้อมูลและลิงก์แนะนำ</h2>
+    </div>
+
+    <div class="resource-grid">
+      <div class="resource-card">
+        <div class="resource-icon">🦑</div>
+        <div>
+          <h4>Adafruit Metro ESP32-P4 Hydra</h4>
+          <p>บอร์ด Arduino UNO form factor ที่ใช้ P4 + C6 (ต.ค. 2026)</p>
+          <a href="https://www.cnx-software.com/2026/10/26/adafruit-metro-esp32-p4-hydra-an-arduino-uno-shaped-esp32-p4-esp32-c6-board-with-wifi-6-mipi-interfaces/" target="_blank">อ่านเพิ่มเติม →</a>
+        </div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">🌱</div>
+        <div>
+          <h4>Smart Indoor Farming — WeMakeIoT</h4>
+          <p>ESP32 + BLE App + AWS IoT Core ควบคุมฟาร์มในบ้าน</p>
+          <a href="https://www.wemakeiot.com/smart-indoor-farming-iot-esp32-ble-aws/" target="_blank">ดู Case Study →</a>
+        </div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">🏥</div>
+        <div>
+          <h4>Wearable Animal Health Monitor</h4>
+          <p>PCBWay project — ESP32 Mini + IR temp + Accelerometer</p>
+          <a href="https://www.pcbway.com/project/shareproject/Wearable_Health_Monitoring_Sensor_for_Domestic_Animals_Using_ESP32_5ccca0a9.html" target="_blank">ดู Project →</a>
+        </div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">📄</div>
+        <div>
+          <h4>IoT Indoor Environmental Monitoring</h4>
+          <p>Springer 2026 — ESP32-WROOM, DHT22, BH1750, Adaptive Sampling</p>
+          <a href="https://link.springer.com/article/10.1007/s44291-026-00157-3" target="_blank">อ่านงานวิจัย →</a>
+        </div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">🚀</div>
+        <div>
+          <h4>ESP32-P4 Projects Overview — Zbotic</h4>
+          <p>สรุป features และไอเดียโปรเจกต์ ESP32-P4 ฉบับเข้าใจง่าย</p>
+          <a href="https://zbotic.in/esp32-p4-high-performance-mcu-new-features-and-projects/" target="_blank">อ่านบทความ →</a>
+        </div>
+      </div>
+      <div class="resource-card">
+        <div class="resource-icon">🌐</div>
+        <div>
+          <h4>ESP32-C6 Smart Home Guide</h4>
+          <p>Thread, Zigbee, Matter + Home Assistant integration แบบ step-by-step</p>
+          <a href="https://jrattechworks.com/esp32-c6-a-practical-guide/" target="_blank">อ่านคู่มือ →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-title">ESP32 & IoT Daily Research</div>
+  <div>สร้างโดย AI Researcher อัตโนมัติ · 28 ตุลาคม 2026</div>
+  <div class="sources">
+    <strong>แหล่งอ้างอิง:</strong><br>
+    <a href="https://www.cnx-software.com/2026/10/26/adafruit-metro-esp32-p4-hydra-an-arduino-uno-shaped-esp32-p4-esp32-c6-board-with-wifi-6-mipi-interfaces/">CNX Software — Adafruit Metro ESP32-P4 Hydra (Oct 2026)</a> ·
+    <a href="https://www.adafruit.com/product/6536">Adafruit Product Page #6536</a> ·
+    <a href="https://www.wemakeiot.com/smart-indoor-farming-iot-esp32-ble-aws/">WeMakeIoT Smart Indoor Farming</a> ·
+    <a href="https://link.springer.com/article/10.1007/s44291-026-00157-3">Springer IoT Environmental Monitoring 2026</a> ·
+    <a href="https://www.pcbway.com/project/shareproject/Wearable_Health_Monitoring_Sensor_for_Domestic_Animals_Using_ESP32_5ccca0a9.html">PCBWay Animal Wearable</a> ·
+    <a href="https://zbotic.in/esp32-p4-high-performance-mcu-new-features-and-projects/">Zbotic ESP32-P4 Projects</a>
+  </div>
+</footer>
+
+</body>
+</html>
