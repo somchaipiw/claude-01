@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 29 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263349;
+    --accent-cyan: #22d3ee;
+    --accent-violet: #a78bfa;
+    --accent-emerald: #34d399;
+    --accent-amber: #fbbf24;
+    --accent-rose: #fb7185;
+    --accent-blue: #60a5fa;
+    --accent-orange: #fb923c;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border-color: #334155;
+    --gradient-header: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    font-size: 16px;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: var(--gradient-header);
+    border-bottom: 2px solid var(--accent-cyan);
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60%;
+    left: -10%;
+    width: 120%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(34,211,238,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: rgba(34,211,238,0.15);
+    border: 1px solid var(--accent-cyan);
+    color: var(--accent-cyan);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+  }
+
+  header h1 span { color: var(--accent-cyan); }
+
+  .header-sub {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-chip {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .stat-chip strong { color: var(--text-primary); }
+
+  /* ===== NAV ===== */
+  nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.6rem 1rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+
+  nav a:hover {
+    color: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    background: rgba(34,211,238,0.08);
+  }
+
+  /* ===== MAIN ===== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem 3rem;
+  }
+
+  /* ===== SECTION ===== */
+  section {
+    margin-bottom: 3.5rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.8rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .section-icon {
+    font-size: 1.5rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .section-header .section-tag {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.05);
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    white-space: nowrap;
+  }
+
+  /* ===== CARDS ===== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.2rem;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.4rem;
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .card.cyan::before  { background: var(--accent-cyan); }
+  .card.violet::before { background: var(--accent-violet); }
+  .card.emerald::before { background: var(--accent-emerald); }
+  .card.amber::before  { background: var(--accent-amber); }
+  .card.rose::before   { background: var(--accent-rose); }
+  .card.blue::before   { background: var(--accent-blue); }
+  .card.orange::before { background: var(--accent-orange); }
+
+  .card:hover {
+    border-color: rgba(148,163,184,0.4);
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+  }
+
+  .card-label {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    margin-bottom: 0.7rem;
+  }
+
+  .label-cyan    { background: rgba(34,211,238,0.15);  color: var(--accent-cyan); }
+  .label-violet  { background: rgba(167,139,250,0.15); color: var(--accent-violet); }
+  .label-emerald { background: rgba(52,211,153,0.15);  color: var(--accent-emerald); }
+  .label-amber   { background: rgba(251,191,36,0.15);  color: var(--accent-amber); }
+  .label-rose    { background: rgba(251,113,133,0.15); color: var(--accent-rose); }
+  .label-blue    { background: rgba(96,165,250,0.15);  color: var(--accent-blue); }
+  .label-orange  { background: rgba(251,146,60,0.15);  color: var(--accent-orange); }
+
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+  }
+
+  .card p {
+    font-size: 0.93rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    margin-bottom: 0.7rem;
+  }
+
+  .card p:last-child { margin-bottom: 0; }
+
+  /* ===== SPEC TABLE ===== */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin-top: 0.6rem;
+  }
+
+  .spec-table td {
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .spec-table td:first-child {
+    color: var(--text-muted);
+    width: 38%;
+    font-size: 0.82rem;
+  }
+
+  .spec-table td:last-child { color: var(--text-secondary); }
+
+  /* ===== CODE BLOCK ===== */
+  pre {
+    background: #0d1117;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    margin-top: 0.8rem;
+  }
+
+  code { font-family: 'Courier New', monospace; color: #e2e8f0; }
+
+  .code-keyword { color: #ff7b72; }
+  .code-string  { color: #a5d6ff; }
+  .code-comment { color: #8b949e; font-style: italic; }
+  .code-num     { color: #79c0ff; }
+  .code-func    { color: #d2a8ff; }
+
+  /* ===== INFO BOX ===== */
+  .info-box {
+    background: rgba(34,211,238,0.06);
+    border-left: 3px solid var(--accent-cyan);
+    border-radius: 0 8px 8px 0;
+    padding: 0.9rem 1.1rem;
+    margin-top: 0.8rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  .warn-box {
+    background: rgba(251,191,36,0.07);
+    border-left: 3px solid var(--accent-amber);
+    border-radius: 0 8px 8px 0;
+    padding: 0.9rem 1.1rem;
+    margin-top: 0.8rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  /* ===== WIDE CARD ===== */
+  .card-wide {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.6rem;
+    margin-bottom: 1.2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-wide::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .card-wide.cyan::before   { background: var(--accent-cyan); }
+  .card-wide.violet::before { background: var(--accent-violet); }
+  .card-wide.emerald::before{ background: var(--accent-emerald); }
+  .card-wide.amber::before  { background: var(--accent-amber); }
+
+  .card-wide h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.8rem;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ===== TAG LIST ===== */
+  .tag-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.7rem; }
+
+  .tag {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+  }
+
+  /* ===== RESOURCES ===== */
+  .resource-list { list-style: none; }
+
+  .resource-list li {
+    padding: 0.7rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    font-size: 0.93rem;
+  }
+
+  .resource-list li:last-child { border-bottom: none; }
+
+  .resource-list .res-icon {
+    font-size: 1.1rem;
+    margin-top: 0.1rem;
+    flex-shrink: 0;
+  }
+
+  .resource-list a {
+    color: var(--accent-blue);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .resource-list a:hover { text-decoration: underline; }
+
+  .resource-list .res-desc { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.1rem; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+    padding: 1.8rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  footer .footer-title { font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg-primary); }
+  ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-badge">Daily ESP32 Research — 29 ตุลาคม 2026</div>
+  <h1>ESP32 & <span>Sensor Innovations</span></h1>
+  <p class="header-sub">mmWave Radar · LoRa Agriculture · Solar Harvesting · CAN Bus · ESP-MESH</p>
+  <div class="stats-row">
+    <div class="stat-chip"><strong>5</strong> หมวดหมู่</div>
+    <div class="stat-chip"><strong>16+</strong> ไอเดียโปรเจกต์</div>
+    <div class="stat-chip"><strong>2026</strong> ข้อมูลล่าสุด</div>
+    <div class="stat-chip">🔭 mmWave · 🌾 LoRa · ☀️ Solar · 🤖 CAN · 🔗 Mesh</div>
+  </div>
+</header>
+
+<!-- ===== NAV ===== -->
+<nav>
+  <a href="#radar">📡 mmWave Radar</a>
+  <a href="#lora-agri">🌾 LoRa เกษตร</a>
+  <a href="#solar">☀️ Solar Harvest</a>
+  <a href="#canbus">🤖 CAN Bus</a>
+  <a href="#mesh">🔗 ESP-MESH</a>
+  <a href="#resources">📚 แหล่งข้อมูล</a>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<main>
+
+  <!-- ==============================
+       SECTION 1: mmWave Radar
+       ============================== -->
+  <section id="radar">
+    <div class="section-header">
+      <span class="section-icon">📡</span>
+      <h2>ESP32 + mmWave Radar Sensor</h2>
+      <span class="section-tag">60 GHz · LD2410 · Presence Detection</span>
+    </div>
+
+    <div class="card-grid">
+      <!-- Card 1: C1001 -->
+      <div class="card cyan">
+        <span class="card-label label-cyan">DFRobot</span>
+        <h3>🎯 C1001 60GHz Radar — Fall Detection + Sleep Monitor</h3>
+        <p>เซ็นเซอร์ 60 GHz มีอัลกอริทึมตรวจจับการล้ม วัดระดับการหายใจ และติดตาม Sleep Stage ในตัว ส่งผลลัพธ์ผ่าน UART เข้า ESP32 โดยตรง ไม่ต้อง DSP เพิ่มเติม</p>
+        <table class="spec-table">
+          <tr><td>ความถี่</td><td>60 GHz</td></tr>
+          <tr><td>ระยะตรวจจับ</td><td>11 m (motion) / 1.5 m (heartrate)</td></tr>
+          <tr><td>ติดตั้ง</td><td>เพดาน 2.7 m ขึ้นไป</td></tr>
+          <tr><td>Interface</td><td>UART (3.3 V / 5 V)</td></tr>
+          <tr><td>ราคาโดยประมาณ</td><td>~$25–35 USD</td></tr>
+        </table>
+        <div class="info-box">
+          ✅ เหมาะสำหรับ <strong>โปรเจกต์ผู้สูงอายุ</strong> — ตรวจจับการล้มทันทีแล้วส่ง Alert ผ่าน LINE Notify หรือ MQTT Broker
+        </div>
+      </div>
+
+      <!-- Card 2: MR60BHA2 -->
+      <div class="card violet">
+        <span class="card-label label-violet">Seeed Studio</span>
+        <h3>💓 MR60BHA2 — Breathing & Heartrate บน XIAO ESP32-C6</h3>
+        <p>บอร์ดออล-อิน-วัน ที่รวม 60 GHz radar กับ XIAO ESP32-C6 รองรับ ESPHome + Home Assistant โดยตรง สัญญาณเรดาร์ประมวลผลโดย closed firmware ในตัวโมดูล</p>
+        <p>
+          <strong style="color: var(--accent-violet);">ความสามารถ:</strong> ตรวจจับการหายใจแม้ไม่มีการเคลื่อนไหว · วัด Heart Rate แบบไม่สัมผัส · Zone detection
+        </p>
+        <div class="warn-box">
+          ⚠️ Radar module ใช้ closed firmware จาก Seeed — ปรับแต่ง DSP algorithm เองไม่ได้ แต่ ESP32-C6 ด้าน logic ยังโปรแกรมได้เต็มที่
+        </div>
+        <div class="tag-list">
+          <span class="tag">ESPHome</span>
+          <span class="tag">Home Assistant</span>
+          <span class="tag">XIAO C6</span>
+          <span class="tag">60GHz</span>
+        </div>
+      </div>
+
+      <!-- Card 3: DIY Open Source -->
+      <div class="card emerald">
+        <span class="card-label label-emerald">Open Source</span>
+        <h3>🛠 DIY ESP32-C6 mmWave — 2D Spatial Tracking ราคา $10</h3>
+        <p>โปรเจกต์ชุมชน (community design) ที่สร้างบอร์ด mmWave presence sensor เองโดยใช้ 3-antenna radar module สำหรับ 2D target tracking และ Zone detection</p>
+        <table class="spec-table">
+          <tr><td>MCU</td><td>ESP32-C6</td></tr>
+          <tr><td>ต้นทุนต่อหน่วย</td><td>~$10 (vs $40–100 commercial)</td></tr>
+          <tr><td>ฟีเจอร์</td><td>2D tracking, multi-zone, ESPHome</td></tr>
+          <tr><td>Antenna</td><td>3-antenna array สำหรับ direction</td></tr>
+        </table>
+        <div class="info-box">
+          💡 เหมาะสำหรับ <strong>Smart Home DIY</strong> — ติดตั้งมุมห้อง รู้ว่าใครอยู่ที่ไหนในห้อง แบ่ง Zone ได้ไม่ต้องใช้กล้อง
+        </div>
+      </div>
+
+      <!-- Card 4: LD2410 + ESPHome -->
+      <div class="card blue">
+        <span class="card-label label-blue">ESPHome Guide</span>
+        <h3>📶 LD2410 24GHz Presence Sensor + ESPHome 2026</h3>
+        <p>ตัวเลือกที่คุ้มค่าสำหรับ Presence Detection ทั่วไป ราคา $3–5 ต่อโมดูล รองรับ ESPHome native component ตั้งแต่ปี 2025 ง่ายกว่า 60 GHz มาก</p>
+        <pre><code><span class="code-comment"># ESPHome config สำหรับ LD2410</span>
+ld2410:
+  id: ld2410_sensor
+
+binary_sensor:
+  - platform: ld2410
+    has_target:
+      name: <span class="code-string">"Presence"</span>
+    has_moving_target:
+      name: <span class="code-string">"Motion"</span>
+    has_still_target:
+      name: <span class="code-string">"Still"</span></code></pre>
+      </div>
+    </div>
+
+    <!-- Project Idea: Elderly Care -->
+    <div class="card-wide cyan" style="margin-top:1.2rem;">
+      <div class="card-label label-cyan" style="display:inline-block;margin-bottom:0.8rem;">💡 ไอเดียโปรเจกต์</div>
+      <h3>👴 Elderly Fall Detection Hub — ระบบดูแลผู้สูงอายุแบบไม่รุกราน</h3>
+      <div class="two-col">
+        <div>
+          <p style="font-weight:600; color:var(--accent-cyan); margin-bottom:0.4rem;">Hardware ที่ต้องใช้</p>
+          <p>• DFRobot C1001 60GHz Radar (ติดเพดาน)<br>
+             • ESP32-C6 หรือ ESP32-S3<br>
+             • Buzzer + LED แสดงสถานะ<br>
+             • LiPo Battery + TP4056 charger</p>
+        </div>
+        <div>
+          <p style="font-weight:600; color:var(--accent-cyan); margin-bottom:0.4rem;">Software Flow</p>
+          <p>• รับ UART data จาก C1001<br>
+             • ถ้าตรวจพบ fall → publish MQTT topic<br>
+             • Node-RED รับแล้วส่ง LINE Notify<br>
+             • Log ข้อมูล Sleep pattern บน InfluxDB</p>
+        </div>
+      </div>
+      <div class="warn-box" style="margin-top:1rem;">
+        🎯 <strong>Unique Selling Point:</strong> ไม่ใช้กล้อง = ไม่มีปัญหาความเป็นส่วนตัว เหมาะกับห้องนอนผู้สูงอายุมาก
+      </div>
+    </div>
+  </section>
+
+  <!-- ==============================
+       SECTION 2: LoRa Agriculture
+       ============================== -->
+  <section id="lora-agri">
+    <div class="section-header">
+      <span class="section-icon">🌾</span>
+      <h2>ESP32 + LoRa เกษตรอัจฉริยะ</h2>
+      <span class="section-tag">SX1276 · SX1278 · Long Range · Thailand Farm</span>
+    </div>
+
+    <div class="card-grid">
+      <!-- Card: Architecture -->
+      <div class="card emerald">
+        <span class="card-label label-emerald">Architecture</span>
+        <h3>🏗 โครงสร้างระบบ LoRa Farm Network 3 Layer</h3>
+        <p>การออกแบบระบบ IoT เกษตรระยะไกลด้วย LoRa สามารถครอบคลุมพื้นที่ได้หลายร้อยไร่ ด้วย Gateway เพียงตัวเดียวที่ตำแหน่งสูงสุดของฟาร์ม</p>
+        <table class="spec-table">
+          <tr><td>Layer 1</td><td>Field Node (ESP32 + Sensor + LoRa)</td></tr>
+          <tr><td>Layer 2</td><td>Gateway (ESP32 + LoRa + Wi-Fi/4G)</td></tr>
+          <tr><td>Layer 3</td><td>Cloud Dashboard (Node-RED / Grafana)</td></tr>
+          <tr><td>รัศมี 1 Gateway</td><td>ดูแลได้ 10–50 nodes</td></tr>
+          <tr><td>ความถี่ไทย</td><td>433 MHz หรือ 920 MHz</td></tr>
+        </table>
+        <div class="info-box">
+          📡 ไทยอนุญาตใช้ LoRa ที่ 920–925 MHz (LoRaWAN AU915) ในหมวด ISM Band ความจุ 20 dBm ตรวจสอบกับ NBTC ก่อนนำไปใช้จริง
+        </div>
+      </div>
+
+      <!-- Card: Sensor Node -->
+      <div class="card amber">
+        <span class="card-label label-amber">Sensor Node</span>
+        <h3>🌱 ESP32 + LoRa Farm Node — Sensor Pack 2026</h3>
+        <p>Node เดียวที่ครอบคลุมข้อมูลสภาพแวดล้อมทั้งหมดที่เกษตรกรต้องการ</p>
+        <table class="spec-table">
+          <tr><td>ดิน</td><td>Capacitive Soil Moisture + Temperature</td></tr>
+          <tr><td>อากาศ</td><td>BME280 (Temp / Humidity / Pressure)</td></tr>
+          <tr><td>แสง</td><td>BH1750 lux meter</td></tr>
+          <tr><td>ฝน</td><td>Rain gauge พร้อม tipping bucket</td></tr>
+          <tr><td>สื่อสาร</td><td>SX1276 LoRa 868/915 MHz</td></tr>
+          <tr><td>พลังงาน</td><td>18650 LiPo + แผงโซลาร์ 6V 1W</td></tr>
+        </table>
+        <div class="tag-list">
+          <span class="tag">BME280</span>
+          <span class="tag">SX1276</span>
+          <span class="tag">Solar</span>
+          <span class="tag">Deep Sleep</span>
+        </div>
+      </div>
+
+      <!-- Card: Gateway -->
+      <div class="card rose">
+        <span class="card-label label-rose">Gateway</span>
+        <h3>📡 LoRa-to-Cloud Gateway ด้วย ESP32 + 4G</h3>
+        <p>Gateway รับข้อมูลจาก field nodes แล้วส่งขึ้น MQTT broker บน cloud ใช้ SIM7600 module สำหรับพื้นที่ไม่มี Wi-Fi</p>
+        <pre><code><span class="code-comment">// รับ LoRa packet แล้วส่ง MQTT</span>
+<span class="code-keyword">void</span> <span class="code-func">onReceive</span>(<span class="code-keyword">int</span> pktSize) {
+  String data = <span class="code-string">""</span>;
+  <span class="code-keyword">while</span> (LoRa.<span class="code-func">available</span>())
+    data += (<span class="code-keyword">char</span>)LoRa.<span class="code-func">read</span>();
+
+  <span class="code-comment">// Forward to MQTT</span>
+  client.<span class="code-func">publish</span>(<span class="code-string">"farm/sensor"</span>,
+                  data.<span class="code-func">c_str</span>());
+}</code></pre>
+      </div>
+
+      <!-- Card: E-Paper Display -->
+      <div class="card cyan">
+        <span class="card-label label-cyan">Display</span>
+        <h3>🖥 LoRa + E-Paper Display Node — ข้อมูลฟาร์มแบบไม่ต้องชาร์จบ่อย</h3>
+        <p>เพิ่ม Waveshare E-Paper 2.9" เข้ากับ Node เพื่อแสดงข้อมูลสภาพแวดล้อม ณ จุดนั้น บนแสดงผลแบบ zero-power (เห็นข้อมูลแม้ไม่มีไฟ) เพิ่มอายุ battery 3–5 เท่า</p>
+        <div class="info-box">
+          🌿 <strong>Use Case:</strong> ติดไว้ที่หัวแปลงผัก ดูอุณหภูมิ/ความชื้น/ค่า pH ดินได้เลยโดยไม่ต้องเปิดแอป — อัปเดตทุก 30 นาที
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==============================
+       SECTION 3: Solar Harvesting
+       ============================== -->
+  <section id="solar">
+    <div class="section-header">
+      <span class="section-icon">☀️</span>
+      <h2>Solar Energy Harvesting สำหรับ ESP32</h2>
+      <span class="section-tag">Deep Sleep · MPPT · Battery Life</span>
+    </div>
+
+    <div class="card-wide emerald">
+      <h3>⚡ คำนวณอายุ Battery แบบง่ายๆ</h3>
+      <div class="two-col">
+        <div>
+          <p style="color:var(--text-secondary); margin-bottom:0.6rem;">กำหนด Duty Cycle ให้ถูก คือสิ่งสำคัญที่สุด</p>
+          <table class="spec-table">
+            <tr><td>Wake ทุก 10 นาที</td><td>~16 วัน (2400 mAh)</td></tr>
+            <tr><td>Wake ทุก 1 ชั่วโมง</td><td>~99 วัน (2400 mAh)</td></tr>
+            <tr><td>Deep sleep current</td><td>10 µA (bare ESP32)</td></tr>
+            <tr><td>Dev board (ไม่แก้)</td><td>~800 µA – 2.8 mA</td></tr>
+          </table>
+        </div>
+        <div>
+          <p style="color:var(--text-secondary); margin-bottom:0.6rem;">ต้องแก้ไขบอร์ดเพื่อให้ Deep Sleep ต่ำจริง</p>
+          <p>• ถอด/bypass Power LED<br>
+             • เปลี่ยน onboard LDO เป็นแบบ low-quiescent (กินไม่เกิน 100 µA)<br>
+             • ปิด peripherals ที่ไม่ใช้ก่อน deep sleep<br>
+             • วัด current จริงด้วย INA219 ก่อนออกแบบ solar</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-grid" style="margin-top:1.2rem;">
+      <!-- Card: MPPT -->
+      <div class="card amber">
+        <span class="card-label label-amber">MPPT</span>
+        <h3>🔋 BQ25570 MPPT Energy Harvester + ESP32</h3>
+        <p>IC จาก Texas Instruments ที่ทำ Maximum Power Point Tracking สำหรับ solar cell ขนาดเล็ก — ใช้คู่กับ ESP32 e-paper display ในโปรเจกต์ weather station ที่ทำงานจาก แสงแดดสก็อตแลนด์ในฤดูหนาว (ซึ่งน้อยมาก)</p>
+        <table class="spec-table">
+          <tr><td>Input voltage</td><td>0.1 V – 3.0 V (จาก solar cell)</td></tr>
+          <tr><td>Cold-start</td><td>330 mV เท่านั้น</td></tr>
+          <tr><td>Efficiency</td><td>>90% ที่ load เบา</td></tr>
+          <tr><td>Output</td><td>ปรับได้ 1.8–5.1 V</td></tr>
+        </table>
+        <div class="info-box">
+          🌤 เหมาะสำหรับ indoor solar หรือพื้นที่มีแสงน้อย — เปลี่ยนแสงจากหน้าต่างเป็นพลังงานได้
+        </div>
+      </div>
+
+      <!-- Card: Solar sizing -->
+      <div class="card blue">
+        <span class="card-label label-blue">Sizing Guide</span>
+        <h3>📐 คำนวณขนาดแผงโซลาร์ให้พอดีกับ ESP32 Node</h3>
+        <p>แผง 1W มักจะ "ใหญ่เกินไป" สำหรับ ESP32 deep-sleep weather station ทั่วไป ลองคำนวณก่อนซื้อ:</p>
+        <pre><code><span class="code-comment">/* ตัวอย่าง: Wake ทุก 30 นาที, 20 วินาที */</span>
+wake_mAh   = <span class="code-num">180</span>mA × <span class="code-num">20</span>s / <span class="code-num">3600</span> = <span class="code-num">1</span> mAh
+sleep_mAh  = <span class="code-num">0.1</span>mA × (<span class="code-num">30</span>×<span class="code-num">60</span>-<span class="code-num">20</span>)s/<span class="code-num">3600</span>
+           = <span class="code-num">0.083</span> mAh
+total_per_cycle = <span class="code-num">1.083</span> mAh per 30 min
+daily_use  = <span class="code-num">1.083</span> × <span class="code-num">48</span> = ~<span class="code-num">52</span> mAh/day
+
+<span class="code-comment">/* แผง 0.5W @ 5V ให้ 100mA → ใช้ 3 ชม. เก็บ 300mAh */</span>
+<span class="code-comment">/* เกินพอ! */</span></code></pre>
+      </div>
+
+      <!-- Card: arXiv research -->
+      <div class="card violet">
+        <span class="card-label label-violet">Research 2026</span>
+        <h3>📄 Embedded Solar Forecasting บน ESP32 WROOM32</h3>
+        <p>งานวิจัย arXiv 2026 นำเสนอ ESP32 environmental monitor ที่ฝัง solar energy forecasting algorithm ไว้ในตัว — ทำนายว่าจะมีพลังงานพอเก็บข้อมูลหรือไม่ก่อนจะตื่นขึ้นมา</p>
+        <p>Deep sleep current วัดได้ <strong style="color:var(--accent-violet);">10 µA</strong> บน ESP32 WROOM32 โดยไม่แก้ไขฮาร์ดแวร์ (ถอด LDO แล้ว)</p>
+        <div class="tag-list">
+          <span class="tag">On-device ML</span>
+          <span class="tag">Incremental Learning</span>
+          <span class="tag">Solar Forecasting</span>
+          <span class="tag">arXiv 2026</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==============================
+       SECTION 4: CAN Bus / Robotics
+       ============================== -->
+  <section id="canbus">
+    <div class="section-header">
+      <span class="section-icon">🤖</span>
+      <h2>ESP32 TWAI — CAN Bus สำหรับ Robotics & Automation</h2>
+      <span class="section-tag">TWAI · CAN 2.0B · Industrial</span>
+    </div>
+
+    <div class="card-grid">
+      <!-- Card: TWAI overview -->
+      <div class="card orange">
+        <span class="card-label label-orange">ESP-IDF</span>
+        <h3>🔌 TWAI — CAN Controller ในตัว ESP32</h3>
+        <p>ESP32 มี CAN controller ในตัว ที่ Espressif เรียกว่า <strong style="color:var(--accent-orange);">TWAI</strong> (Two-Wire Automotive Interface) รองรับ CAN 2.0B ต้องใช้ Transceiver ภายนอกเพิ่มอีกชิ้น</p>
+        <table class="spec-table">
+          <tr><td>Standard</td><td>CAN 2.0B (Classical CAN)</td></tr>
+          <tr><td>CAN-FD</td><td>ไม่รองรับ (ใช้ ESP32-C6 แทน)</td></tr>
+          <tr><td>Transceiver</td><td>TJA1050 / TJA1051 / SN65HVD230</td></tr>
+          <tr><td>Design</td><td>ใกล้เคียง NXP SJA1000</td></tr>
+          <tr><td>Speed</td><td>ถึง 1 Mbit/s</td></tr>
+        </table>
+        <div class="warn-box">
+          ⚠️ <strong>CAN-FD ต้องการ ESP32-C6 หรือ ESP32-P4</strong> — ถ้าต้องการ baudrate สูง หรือ payload &gt;8 bytes ต้องเปลี่ยน chip
+        </div>
+      </div>
+
+      <!-- Card: Transceiver -->
+      <div class="card rose">
+        <span class="card-label label-rose">Hardware</span>
+        <h3>⚡ เลือก CAN Transceiver ให้ถูกต้อง</h3>
+        <p>Transceiver ทำหน้าที่แปลง logic-level TX/RX จาก ESP32 เป็น differential signal บนสาย CAN Bus</p>
+        <table class="spec-table">
+          <tr><td>TJA1050</td><td>High-speed, 5V supply, ราคาถูก</td></tr>
+          <tr><td>TJA1051</td><td>ปลอดภัยกว่า, slope control, 3.3/5V</td></tr>
+          <tr><td>SN65HVD230</td><td>3.3V native, เหมาะกับ ESP32 มาก</td></tr>
+          <tr><td>MCP2551</td><td>ใช้คู่ MCP2515 ถ้าต้องการ 2nd port</td></tr>
+        </table>
+        <div class="info-box">
+          💡 <strong>แนะนำ SN65HVD230</strong> สำหรับโปรเจกต์ ESP32 เพราะทำงานที่ 3.3V โดยตรง ไม่ต้องใช้ level shifter
+        </div>
+      </div>
+
+      <!-- Card: Robotics -->
+      <div class="card cyan">
+        <span class="card-label label-cyan">Robotics</span>
+        <h3>🦾 ESP32 + CAN Bus สำหรับ Robotic Arm / Motor Control</h3>
+        <p>CAN Bus เป็นโปรโตคอลมาตรฐานในหุ่นยนต์และเครื่องจักรอุตสาหกรรม ช่วยให้ ESP32 เป็น central controller ที่สั่ง motor driver หลายตัวพร้อมกันบนสายเดียว</p>
+        <pre><code><span class="code-comment">// ส่งคำสั่งไป Motor Driver ID=1</span>
+twai_message_t msg;
+msg.identifier = <span class="code-num">0x01</span>;     <span class="code-comment">// Motor ID</span>
+msg.data_length_code = <span class="code-num">4</span>;
+msg.data[<span class="code-num">0</span>] = <span class="code-num">0x01</span>;      <span class="code-comment">// CMD: velocity</span>
+msg.data[<span class="code-num">1</span>] = <span class="code-num">0x00</span>;      <span class="code-comment">// direction</span>
+msg.data[<span class="code-num">2</span>] = <span class="code-num">200</span>;       <span class="code-comment">// speed (0-255)</span>
+msg.data[<span class="code-num">3</span>] = <span class="code-num">0</span>;         <span class="code-comment">// spare</span>
+twai_transmit(&msg, pdMS_TO_TICKS(<span class="code-num">100</span>));</code></pre>
+      </div>
+
+      <!-- Card: Industrial -->
+      <div class="card violet">
+        <span class="card-label label-violet">Industrial</span>
+        <h3>🏭 ESP32 + CAN สำหรับ Industrial Sensor Gateway</h3>
+        <p>เชื่อมต่อ sensor เก่าที่ใช้ CAN bus (เช่น อุปกรณ์ยานยนต์ หรือ factory equipment) เข้ากับ cloud ผ่าน ESP32 Wi-Fi โดยไม่ต้องเปลี่ยนฮาร์ดแวร์เดิม</p>
+        <p><strong style="color:var(--accent-violet);">Use Cases จริง:</strong><br>
+          • OBD-II to MQTT gateway สำหรับยานพาหนะ<br>
+          • เชื่อม elevator/HVAC controller เก่าเข้า IoT platform<br>
+          • Industrial arm telemetry 50 Hz via CAN+Wi-Fi</p>
+        <div class="info-box">
+          🔧 <strong>Copperhill Technologies</strong> มี library + tutorial สำหรับ ESP32 CAN bus ครบถ้วน รวมถึง dual-CAN controller ด้วย MCP2515
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==============================
+       SECTION 5: ESP-MESH
+       ============================== -->
+  <section id="mesh">
+    <div class="section-header">
+      <span class="section-icon">🔗</span>
+      <h2>ESP-MESH, ESP-NOW และ Thread Mesh</h2>
+      <span class="section-tag">ESP-MESH · ESP-NOW · OpenThread · C6/H2</span>
+    </div>
+
+    <div class="card-grid">
+      <!-- Card: ESP-MESH vs ESP-NOW -->
+      <div class="card cyan">
+        <span class="card-label label-cyan">Comparison</span>
+        <h3>🔄 ESP-MESH vs ESP-NOW vs Thread — เลือกอะไรปี 2026?</h3>
+        <table class="spec-table">
+          <tr><td>Protocol</td><td>Chip</td></tr>
+          <tr><td>ESP-MESH</td><td>ESP32, ทุกรุ่น — Wi-Fi mesh</td></tr>
+          <tr><td>ESP-NOW</td><td>ESP32 — peer-to-peer latency ต่ำ</td></tr>
+          <tr><td>Thread</td><td>ESP32-H2, C6 — IPv6 mesh ต่ำ</td></tr>
+          <tr><td>Zigbee</td><td>ESP32-H2, C6 — legacy compatible</td></tr>
+        </table>
+        <div class="info-box">
+          💡 <strong>2026 Recommendation:</strong> ถ้า node ใหม่ทั้งหมด → <strong>Thread</strong> บน ESP32-H2/C6 ดีที่สุด · ถ้ามี ESP32 เดิม → <strong>ESP-NOW</strong> latency ต่ำสุด
+        </div>
+      </div>
+
+      <!-- Card: 10-node temp array -->
+      <div class="card emerald">
+        <span class="card-label label-emerald">ESP-MESH</span>
+        <h3>🌡 10-Node Temperature Array ด้วย ESP-MESH</h3>
+        <p>สร้าง sensor network ครอบคลุมอาคารทั้งหมดโดยที่ root node เชื่อมกับ router ผ่าน Station mode พร้อมกัน — node ที่เหลือส่งข้อมูลผ่าน mesh โดยอัตโนมัติ</p>
+        <pre><code><span class="code-comment">// ESP-MESH Setup (ESP-IDF)</span>
+mesh_cfg_t cfg = MESH_INIT_CONFIG_DEFAULT();
+cfg.mesh_id = MESH_ID;
+cfg.router.ssid_len = strlen(CONFIG_ROUTER_SSID);
+memcpy(cfg.router.ssid, CONFIG_ROUTER_SSID,
+       cfg.router.ssid_len);
+esp_mesh_set_config(&cfg);
+esp_mesh_start();</code></pre>
+        <p>Root node ที่ระยะ 5 hop สามารถครอบคลุม ~200 m ในอาคาร</p>
+      </div>
+
+      <!-- Card: OpenThread border router -->
+      <div class="card violet">
+        <span class="card-label label-violet">Thread 2026</span>
+        <h3>📡 OpenThread Border Router บน ESP32-C6 + Home Assistant</h3>
+        <p>ใน ESPHome 2025.6.0+ ESP32-H2 และ ESP32-C6 รองรับ Thread Native โดยตรง ทำให้สร้าง Thread border router เชื่อมกับ Home Assistant ได้ผ่าน firmware flasher อย่างง่าย</p>
+        <table class="spec-table">
+          <tr><td>Firmware</td><td>OpenThread Radio Co-Processor</td></tr>
+          <tr><td>Integration</td><td>Home Assistant Thread add-on</td></tr>
+          <tr><td>Protocol</td><td>IPv6 mesh (IEEE 802.15.4)</td></tr>
+          <tr><td>ประหยัดพลังงาน</td><td>Sleepy End Device &lt;30 µA</td></tr>
+        </table>
+        <div class="info-box">
+          🏠 Thread + Matter = อนาคต Smart Home — ลงทุนเรียนรู้ตอนนี้ก่อนที่จะเป็น standard หลัก
+        </div>
+      </div>
+
+      <!-- Card: ESP-NOW Project -->
+      <div class="card amber">
+        <span class="card-label label-amber">ESP-NOW</span>
+        <h3>⚡ ESP-NOW Sensor Network — Latency &lt;1ms, ไม่ต้อง Router</h3>
+        <p>ESP-NOW เหมาะสำหรับโปรเจกต์ที่ต้องการ response time เร็ว เช่น remote control, wireless sensor กระจายในพื้นที่ โดยไม่ต้องมี Wi-Fi infrastructure</p>
+        <p><strong style="color:var(--accent-amber);">Killer Use Cases ปี 2026:</strong><br>
+          • Wireless macropad / gamepad ไร้ Wi-Fi<br>
+          • Multi-sensor alarm system (trigger เร็ว)<br>
+          • Barn monitoring ที่ไม่มี Wi-Fi<br>
+          • Low-latency robot remote control</p>
+        <div class="tag-list">
+          <span class="tag">Peer-to-Peer</span>
+          <span class="tag">&lt;1ms latency</span>
+          <span class="tag">No Router</span>
+          <span class="tag">250 bytes payload</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==============================
+       SECTION 6: Resources
+       ============================== -->
+  <section id="resources">
+    <div class="section-header">
+      <span class="section-icon">📚</span>
+      <h2>แหล่งข้อมูลและลิงก์แนะนำ</h2>
+      <span class="section-tag">Tutorials · Docs · Community</span>
+    </div>
+
+    <div class="card-wide cyan">
+      <h3>🔗 ลิงก์อ้างอิงประจำวันที่ 29 ตุลาคม 2026</h3>
+      <ul class="resource-list">
+        <li>
+          <span class="res-icon">📡</span>
+          <div>
+            <a href="https://how2electronics.com/esp32-c1001-mmwave-sensor-for-sleep-fall-life-detection/" target="_blank">How2Electronics: C1001 60GHz mmWave</a>
+            <div class="res-desc">Tutorial ครบถ้วน — ESP32 + C1001 Fall Detection, Sleep Monitor บน UART</div>
+          </div>
+        </li>
+        <li>
+          <span class="res-icon">🏥</span>
+          <div>
+            <a href="https://smarthomescene.com/reviews/seeed-studio-60ghz-mmwave-sensors-review/" target="_blank">Smart Home Scene: Seeed 60GHz Review</a>
+            <div class="res-desc">รีวิว MR60BHA2 / MR60FDA2 อย่างละเอียด + ESPHome integration</div>
+          </div>
+        </li>
+        <li>
+          <span class="res-icon">🌾</span>
+          <div>
+            <a href="https://zbotic.in/esp32-lora-long-range-sensor-network-for-indian-farms/" target="_blank">Zbotic: ESP32 LoRa Long Range Farm Network</a>
+            <div class="res-desc">สร้าง 3-Layer LoRa farm network ครบวงจร รองรับ 50+ nodes</div>
+          </div>
+        </li>
+        <li>
+          <span class="res-icon">☀️</span>
+          <div>
+            <a href="https://www.atomic14.com/videos/posts/fRm0HUeX4o" target="_blank">Atomic14: Solar Harvesting ด้วย BQ25570</a>
+            <div class="res-desc">วิดีโอ + blog ทดสอบ Energy harvester กับ ESP32 e-paper display แสงน้อย</div>
+          </div>
+        </li>
+        <li>
+          <span class="res-icon">🔋</span>
+          <div>
+            <a href="https://zbotic.in/solar-powered-iot-sensor-node-esp32-with-deep-sleep/" target="_blank">Zbotic: Solar Powered ESP32 with Deep Sleep</a>
+            <div class="res-desc">คำนวณ Duty Cycle + Solar sizing + Battery life ครบถ้วน</div>
+          </div>
+        </li>
+        <li>
+          <span class="res-icon">🤖</span>
+          <div>
+            <a href="https://lastminuteengineers.com/esp32-can-bus-tutorial" target="_blank">Last Minute Engineers: ESP32 CAN Bus Tutorial</a>
+            <div class="res-desc">Tutorial พื้นฐาน TWAI driver + TJA1050 transceiver แบบ 2-board</div>
+          </div>
+        </li>
+        <li>
+          <span class="res-icon">🏭</span>
+          <div>
+            <a href="https://copperhilltech.com/blog/embedded-can-bus-development-with-the-esp32-processor/" target="_blank">Copperhill Tech: CAN Bus Development</a>
+            <div class="res-desc">เจาะลึก CAN 2.0B, MCP2515 dual-CAN, automotive IoT บน ESP32</div>
+          </div>
+        </li>
+        <li>
+          <span class="res-icon">📡</span>
+          <div>
+            <a href="https://circuitdigest.com/news/this-diy-open-source-mmwave-presence-sensor-features-esp32-c6-with-precision-2d-spatial-tracking" target="_blank">Circuit Digest: DIY Open-Source mmWave ESP32-C6</a>
+            <div class="res-desc">โปรเจกต์ชุมชน 2D spatial tracking ราคา $10 ด้วย 3-antenna radar</div>
+          </div>
+        </li>
+        <li>
+          <span class="res-icon">📄</span>
+          <div>
+            <a href="https://arxiv.org/pdf/2608.14698" target="_blank">arXiv: ESP32 + Embedded Solar Forecasting (2026)</a>
+            <div class="res-desc">งานวิจัย on-device incremental learning + solar forecasting บน ESP32 WROOM32</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Summary box -->
+    <div class="card-wide amber" style="margin-top:1.2rem;">
+      <h3>📊 สรุปเนื้อหาวันที่ 29 ตุลาคม 2026</h3>
+      <div class="two-col">
+        <div>
+          <p style="font-weight:600; color:var(--accent-amber); margin-bottom:0.5rem;">หัวข้อที่ครอบคลุม</p>
+          <p>📡 mmWave Radar 60GHz (C1001, MR60BHA2, DIY ESP32-C6)<br>
+             🌾 LoRa Agriculture Network 3-Layer (ไทย 920 MHz)<br>
+             ☀️ Solar Energy Harvesting + MPPT BQ25570<br>
+             🤖 TWAI CAN Bus สำหรับ Robotics/Industrial<br>
+             🔗 ESP-MESH vs ESP-NOW vs Thread 2026</p>
+        </div>
+        <div>
+          <p style="font-weight:600; color:var(--accent-amber); margin-bottom:0.5rem;">โปรเจกต์ที่น่าสร้างที่สุด</p>
+          <p>🥇 Elderly Fall Detection Hub (C1001 + LINE Notify)<br>
+             🥈 Solar LoRa Farm Node แบบ Off-Grid<br>
+             🥉 DIY mmWave ESP32-C6 ราคา $10<br>
+             4️⃣ CAN Bus OBD-II to MQTT Gateway<br>
+             5️⃣ Thread Border Router ด้วย ESP32-C6</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p class="footer-title">ESP32 & Sensor Innovations Daily Research</p>
+  <p>สร้างเมื่อ: 29 ตุลาคม 2026 · หัวข้อ: mmWave Radar · LoRa Agriculture · Solar Harvesting · CAN Bus · ESP-MESH</p>
+  <p style="margin-top:0.5rem;">แหล่งข้อมูล: how2electronics.com · smarthomescene.com · zbotic.in · lastminuteengineers.com · copperhilltech.com · circuitdigest.com · arxiv.org · atomic14.com</p>
+</footer>
+
+</body>
+</html>
