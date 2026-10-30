@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 30 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263247;
+    --accent-blue: #38bdf8;
+    --accent-green: #34d399;
+    --accent-purple: #a78bfa;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --accent-yellow: #fbbf24;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --tag-bg: #1e3a5f;
+    --tag-text: #7dd3fc;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%; transform: translateX(-50%);
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(56,189,248,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent-blue);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 0.25rem 0.9rem;
+    border-radius: 99px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.7rem, 5vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #e2e8f0 0%, #38bdf8 60%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header p.subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    display: block;
+  }
+  .stat-label { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* Nav */
+  nav {
+    background: rgba(30,41,59,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 0.5rem 1rem;
+  }
+  .nav-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.88rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  nav a:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+  /* Main layout */
+  main {
+    max-width: 1100px;
+    margin: 2.5rem auto;
+    padding: 0 1rem;
+  }
+
+  /* Section heading */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    font-size: 1.5rem;
+    width: 42px; height: 42px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+  .icon-blue  { background: rgba(56,189,248,0.15); }
+  .icon-green { background: rgba(52,211,153,0.15); }
+  .icon-purple{ background: rgba(167,139,250,0.15); }
+  .icon-orange{ background: rgba(251,146,60,0.15); }
+  .icon-pink  { background: rgba(244,114,182,0.15); }
+
+  .section-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-header p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+  }
+
+  /* Cards grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 3rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(56,189,248,0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  }
+  .card-accent {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+  .accent-blue   { background: linear-gradient(90deg, #38bdf8, #818cf8); }
+  .accent-green  { background: linear-gradient(90deg, #34d399, #059669); }
+  .accent-purple { background: linear-gradient(90deg, #a78bfa, #ec4899); }
+  .accent-orange { background: linear-gradient(90deg, #fb923c, #f59e0b); }
+  .accent-pink   { background: linear-gradient(90deg, #f472b6, #818cf8); }
+  .accent-yellow { background: linear-gradient(90deg, #fbbf24, #f97316); }
+
+  .card-icon { font-size: 2rem; margin-bottom: 0.75rem; display: block; }
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+  }
+
+  /* Tag pills */
+  .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .tag {
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 99px;
+    font-weight: 600;
+  }
+  .tag-green  { background: rgba(52,211,153,0.15); color: #6ee7b7; }
+  .tag-purple { background: rgba(167,139,250,0.15); color: #c4b5fd; }
+  .tag-orange { background: rgba(251,146,60,0.15); color: #fdba74; }
+  .tag-pink   { background: rgba(244,114,182,0.15); color: #f9a8d4; }
+  .tag-yellow { background: rgba(251,191,36,0.15); color: #fde68a; }
+
+  /* Highlight boxes */
+  .highlight-box {
+    background: rgba(56,189,248,0.07);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-left: 3px solid var(--accent-blue);
+    border-radius: 0 10px 10px 0;
+    padding: 0.9rem 1.1rem;
+    margin: 0.75rem 0;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+  }
+  .highlight-box.green {
+    background: rgba(52,211,153,0.07);
+    border-color: rgba(52,211,153,0.2);
+    border-left-color: var(--accent-green);
+  }
+  .highlight-box.purple {
+    background: rgba(167,139,250,0.07);
+    border-color: rgba(167,139,250,0.2);
+    border-left-color: var(--accent-purple);
+  }
+  .highlight-box.orange {
+    background: rgba(251,146,60,0.07);
+    border-color: rgba(251,146,60,0.2);
+    border-left-color: var(--accent-orange);
+  }
+
+  /* Code block */
+  .code-block {
+    background: #0a0f1e;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #7dd3fc;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+    line-height: 1.6;
+  }
+  .code-comment { color: var(--text-muted); }
+  .code-keyword { color: #a78bfa; }
+  .code-string  { color: #86efac; }
+  .code-num     { color: #fb923c; }
+
+  /* Spec table */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin: 0.75rem 0;
+  }
+  .spec-table th {
+    background: rgba(56,189,248,0.12);
+    color: var(--accent-blue);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.8rem;
+  }
+  .spec-table td {
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+  .spec-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* Wide card */
+  .card-wide {
+    grid-column: 1 / -1;
+  }
+
+  /* Resources section */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem;
+    transition: all 0.2s;
+  }
+  .resource-card:hover {
+    border-color: rgba(167,139,250,0.4);
+    background: var(--bg-card-hover);
+  }
+  .resource-card a {
+    color: var(--accent-blue);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .resource-card a:hover { text-decoration: underline; }
+  .resource-card p {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    margin-top: 0.35rem;
+  }
+  .resource-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--accent-purple);
+    margin-bottom: 0.35rem;
+  }
+
+  /* Summary box */
+  .summary-card {
+    background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(167,139,250,0.08));
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 3rem;
+  }
+  .summary-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+    margin-bottom: 1rem;
+  }
+  .summary-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.6rem;
+  }
+  .summary-list li {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .summary-list li::before {
+    content: '→';
+    color: var(--accent-green);
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  /* Footer */
+  footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 1.75rem 1rem;
+    font-size: 0.83rem;
+    color: var(--text-muted);
+  }
+  footer a { color: var(--accent-blue); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  section { margin-bottom: 1rem; }
+
+  @media (max-width: 600px) {
+    .header-stats { gap: 1.2rem; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .resource-grid { grid-template-columns: 1fr; }
+    .card-wide { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">📅 อัปเดตประจำวัน</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">30 ตุลาคม 2026 • รวบรวมโดย AI Researcher อัตโนมัติ</p>
+  <div class="header-stats">
+    <div class="stat-item">
+      <span class="stat-num">4</span>
+      <span class="stat-label">หัวข้อหลัก</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">11</span>
+      <span class="stat-label">ไอเดียโปรเจกต์</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">8</span>
+      <span class="stat-label">แหล่งอ้างอิง</span>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#zigbee">🐝 ESP32-H2 Zigbee</a>
+    <a href="#energy">⚡ Energy Monitor</a>
+    <a href="#airquality">🌿 ENS160 Air Quality</a>
+    <a href="#usb-midi">🎹 USB MIDI</a>
+    <a href="#resources">🔗 แหล่งข้อมูล</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- Summary -->
+  <div class="summary-card">
+    <h3>📊 สรุปเนื้อหาวันที่ 30 ตุลาคม 2026</h3>
+    <ul class="summary-list">
+      <li>ESP32-H2 เป็น Zigbee End Device เชื่อมต่อ Zigbee2MQTT / ZHA ได้แล้ว</li>
+      <li>สร้าง Smart Energy Meter ด้วย ESP32 + PZEM-004T + MQTT Dashboard</li>
+      <li>ENS160 เซนเซอร์คุณภาพอากาศ VOC/eCO2 รุ่นใหม่ รองรับ ESPHome 2026</li>
+      <li>ESP32-S3 เป็น USB MIDI Controller สำหรับนักดนตรี DIY</li>
+      <li>USB Host HID บน ESP32-S3/P4 รองรับ keyboard, mouse, gamepad</li>
+    </ul>
+  </div>
+
+  <!-- Section 1: ESP32-H2 Zigbee -->
+  <section id="zigbee">
+    <div class="section-header">
+      <div class="section-icon icon-yellow">🐝</div>
+      <div>
+        <h2>ESP32-H2 — Zigbee End Device Sensor Node</h2>
+        <p>ชิปไร้ Wi-Fi ที่เชี่ยวชาญ 802.15.4 / Zigbee / Thread / Matter</p>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-accent accent-yellow"></div>
+        <span class="card-icon">🔭</span>
+        <h3>ESP32-H2 คืออะไร และทำงานอย่างไร?</h3>
+        <p>ESP32-H2 เป็นชิปพิเศษในตระกูล ESP32 ที่ <strong>ไม่มี Wi-Fi เลย</strong> แต่เน้นโปรโตคอล 802.15.4 อย่าง Zigbee, Thread, และ BLE 5.0 รองรับ Matter ผ่าน Thread</p>
+        <div class="highlight-box purple">
+          เหมาะที่สุดสำหรับ: Battery-powered sensor node ที่ต้องการอายุแบตฯ หลายปี โดยไม่ต้องใช้ Wi-Fi ในทุก node
+        </div>
+        <table class="spec-table">
+          <tr><th>คุณสมบัติ</th><th>ESP32-H2</th></tr>
+          <tr><td>Wi-Fi</td><td>❌ ไม่มี</td></tr>
+          <tr><td>Zigbee / Thread</td><td>✅ 802.15.4</td></tr>
+          <tr><td>BLE</td><td>✅ BLE 5.0</td></tr>
+          <tr><td>Matter</td><td>✅ ผ่าน Thread</td></tr>
+          <tr><td>Deep Sleep</td><td>~5 µA</td></tr>
+          <tr><td>Flash</td><td>4 MB</td></tr>
+        </table>
+        <div class="tags">
+          <span class="tag tag-yellow">ESP32-H2</span>
+          <span class="tag tag-purple">Zigbee</span>
+          <span class="tag">Thread</span>
+          <span class="tag tag-green">Low Power</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-yellow"></div>
+        <span class="card-icon">🏠</span>
+        <h3>เชื่อมต่อ Zigbee2MQTT และ ZHA</h3>
+        <p>ESPHome 2026.5.0 รองรับ ESP32-H2 เป็น Zigbee End Device แบบ native สามารถ pair กับ Zigbee2MQTT หรือ ZHA ใน Home Assistant ได้โดยตรง</p>
+        <div class="highlight-box">
+          <strong>วิธีเพิ่ม Custom Device:</strong> สร้างไฟล์ external converter ใน Zigbee2MQTT configuration เพื่อ map cluster ที่กำหนดเอง
+        </div>
+        <div class="code-block">
+<span class="code-comment"># ESPHome config (zigbee end device)</span>
+<span class="code-keyword">esphome:</span>
+  name: h2-sensor-node
+
+<span class="code-keyword">esp32:</span>
+  variant: esp32h2
+  framework:
+    type: esp-idf
+
+<span class="code-keyword">sensor:</span>
+  - platform: <span class="code-string">sht3xd</span>
+    address: <span class="code-num">0x44</span>
+    temperature:
+      name: <span class="code-string">"Temperature"</span>
+      zigbee_cluster: <span class="code-string">"temperature"</span>
+    humidity:
+      name: <span class="code-string">"Humidity"</span>
+</div>
+        <div class="tags">
+          <span class="tag tag-yellow">ESPHome 2026.5</span>
+          <span class="tag">Zigbee2MQTT</span>
+          <span class="tag tag-green">ZHA</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-yellow"></div>
+        <span class="card-icon">📡</span>
+        <h3>SMLIGHT SLZB — ESP32-H2 Zigbee Coordinator</h3>
+        <p>นอกจาก End Device แล้ว ESP32-H2 ยังถูกใช้เป็น radio chip ในอุปกรณ์ Zigbee Coordinator เชิงพาณิชย์ เช่น SMLIGHT SLZB series ที่มีทั้ง PoE และ Dual-Radio รองรับ Thread Border Router</p>
+        <div class="highlight-box orange">
+          M5Stack ก็ออก H2 Gateway Unit ที่ใช้ต่อผ่าน Grove UART เพื่อเพิ่ม 802.15.4 radio ให้บอร์ด ESP32 ทั่วไปได้ทันที
+        </div>
+        <div class="tags">
+          <span class="tag tag-orange">Coordinator</span>
+          <span class="tag">PoE</span>
+          <span class="tag tag-yellow">Dual-Radio</span>
+          <span class="tag tag-purple">Thread BR</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-yellow"></div>
+        <span class="card-icon">🔋</span>
+        <h3>ไอเดีย: Battery Zigbee Environment Node</h3>
+        <p>โปรเจกต์ยอดนิยมบน GitHub 2026 คือ ESP32-H2 SuperMini + เซนเซอร์ SHT40 หรือ BME280 ใช้แบตฯ AA 2 ก้อน อายุการใช้งาน 2-3 ปี ส่งข้อมูลผ่าน Zigbee ไป Zigbee2MQTT</p>
+        <div class="highlight-box green">
+          Deep sleep ระหว่าง 2 นาทีใช้กระแสเพียง ~5 µA ตื่นขึ้นมาอ่าน sensor 1 วิ แล้วส่ง Zigbee report ใช้ ~20 mA เป็นเวลา 50ms เท่านั้น
+        </div>
+        <p style="font-size:0.85rem; color:var(--text-muted);">ตัวอย่าง repos: <strong>zigbee-esp32</strong> (SmartHomeScene), <strong>RollBee</strong> (ESP-IDF 5.4 + ESP-Zigbee-SDK 5.4)</p>
+        <div class="tags">
+          <span class="tag tag-green">Battery</span>
+          <span class="tag tag-yellow">H2 SuperMini</span>
+          <span class="tag">2-3 ปี</span>
+          <span class="tag tag-purple">GitHub</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Energy Monitoring -->
+  <section id="energy">
+    <div class="section-header">
+      <div class="section-icon icon-orange">⚡</div>
+      <div>
+        <h2>Smart Energy Meter ด้วย ESP32 + PZEM-004T</h2>
+        <p>ติดตามการใช้ไฟฟ้าแบบ real-time พร้อม MQTT Dashboard และ SMS alert</p>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card card-wide">
+        <div class="card-accent accent-orange"></div>
+        <span class="card-icon">🔌</span>
+        <h3>ระบบ Smart Energy Meter ครบวงจร</h3>
+        <p>ESP32 + PZEM-004T เป็น combo ยอดนิยมปี 2026 สำหรับ DIY energy monitoring วัดได้ทั้ง voltage, current, power, energy (kWh), frequency และ power factor ผ่าน UART ส่งไป MQTT dashboard ได้ทันที</p>
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap:1rem; margin: 0.75rem 0;">
+          <div class="highlight-box">
+            <strong>PZEM-004T-100A V3.0</strong><br>
+            วัดกระแส AC 0-100A<br>
+            ต่อ CT Clamp แบบ non-invasive<br>
+            ราคา ~150-200 บาท
+          </div>
+          <div class="highlight-box green">
+            <strong>CT Sensor Clamp</strong><br>
+            หนีบสายไฟโดยไม่ต้องตัด<br>
+            ติดตั้งที่ Distribution Board<br>
+            ปลอดภัยกว่า Direct Wire
+          </div>
+          <div class="highlight-box purple">
+            <strong>MQTT + Dashboard</strong><br>
+            ส่งข้อมูลทุก 5 วินาที<br>
+            Grafana / Home Assistant<br>
+            SMS alert เมื่อผิดปกติ
+          </div>
+        </div>
+        <div class="code-block">
+<span class="code-comment">// PZEM-004T ด้วย Arduino ESP32</span>
+<span class="code-keyword">#include</span> <span class="code-string">&lt;PZEM004Tv30.h&gt;</span>
+<span class="code-keyword">#include</span> <span class="code-string">&lt;PubSubClient.h&gt;</span>
+
+PZEM004Tv30 pzem(<span class="code_SERIAL, RX_PIN, TX_PIN</span><span class="code-num">16, 17</span>);
+
+<span class="code-keyword">void</span> readAndPublish() {
+  <span class="code-keyword">float</span> voltage  = pzem.voltage();
+  <span class="code-keyword">float</span> current  = pzem.current();
+  <span class="code-keyword">float</span> power    = pzem.power();
+  <span class="code-keyword">float</span> energy   = pzem.energy();   <span class="code-comment">// kWh</span>
+  <span class="code-keyword">float</span> freq     = pzem.frequency();
+  <span class="code-keyword">float</span> pf       = pzem.pf();        <span class="code-comment">// Power Factor</span>
+
+  <span class="code-comment">// ส่ง JSON ไป MQTT</span>
+  String json = <span class="code-string">"{\"V\":"</span> + String(voltage) +
+                <span class="code-string">",\"A\":"</span> + String(current) +
+                <span class="code-string">",\"W\":"</span> + String(power) + <span class="code-string">"}"</span>;
+  client.publish(<span class="code-string">"home/energy"</span>, json.c_str());
+}
+        </div>
+        <div class="tags">
+          <span class="tag tag-orange">PZEM-004T</span>
+          <span class="tag">CT Sensor</span>
+          <span class="tag tag-green">MQTT</span>
+          <span class="tag">kWh</span>
+          <span class="tag tag-yellow">Power Factor</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-orange"></div>
+        <span class="card-icon">📊</span>
+        <h3>วิธีเลือก Energy Sensing Method</h3>
+        <p>มีหลายวิธีในการวัดการใช้ไฟฟ้าแต่ละแบบมีข้อดีต่างกัน</p>
+        <table class="spec-table">
+          <tr><th>วิธี</th><th>ราคา</th><th>ความแม่น</th></tr>
+          <tr><td>Pulse counter</td><td>ฟรี</td><td>ปานกลาง</td></tr>
+          <tr><td>CT Clamp + ADC</td><td>~100฿</td><td>ดี</td></tr>
+          <tr><td>PZEM-004T</td><td>~180฿</td><td>ดีมาก</td></tr>
+          <tr><td>Modbus DIN Meter</td><td>~800฿</td><td>แม่นยำสูง</td></tr>
+        </table>
+        <div class="highlight-box orange">
+          ⚠️ ความปลอดภัย: PZEM-004T ต่อกับไฟบ้านโดยตรง ต้องใช้กล่องฉนวนและติดตั้งโดยช่างไฟที่มีใบอนุญาต
+        </div>
+        <div class="tags">
+          <span class="tag tag-orange">Safety First</span>
+          <span class="tag">Modbus</span>
+          <span class="tag">SDM120</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-orange"></div>
+        <span class="card-icon">🚨</span>
+        <h3>SMS Alert เมื่อพลังงานผิดปกติ</h3>
+        <p>โปรเจกต์จาก Digikey Maker.io 2026 ใช้ ESP32 + PZEM-004T ส่ง SMS ผ่าน Twilio หรือ IFTTT เมื่อ Power สูงเกินค่าที่กำหนด หรือ Power Factor ต่ำกว่า 0.8</p>
+        <div class="highlight-box">
+          Threshold alert: Power &gt; 2000W → SMS ทันที<br>
+          Daily report: ส่งสรุป kWh ทุกเที่ยงคืน<br>
+          Monthly: คำนวณค่าไฟโดยอัตโนมัติ
+        </div>
+        <div class="tags">
+          <span class="tag tag-pink">SMS Alert</span>
+          <span class="tag">Twilio</span>
+          <span class="tag tag-orange">Power Alert</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Air Quality ENS160 -->
+  <section id="airquality">
+    <div class="section-header">
+      <div class="section-icon icon-green">🌿</div>
+      <div>
+        <h2>ENS160 — เซนเซอร์คุณภาพอากาศรุ่นใหม่</h2>
+        <p>ตัวแทน CCS811 ที่แม่นยำกว่า วัด VOC, eCO2 และ Air Quality Index</p>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-accent accent-green"></div>
+        <span class="card-icon">🌬️</span>
+        <h3>ENS160 คืออะไร? ดีกว่า CCS811 อย่างไร?</h3>
+        <p>ENS160 จาก ScioSense เป็น Metal-Oxide Multi-Gas Sensor รุ่นใหม่ที่ออกแบบมาแทน CCS811 มี 4 hot plates ทำงานพร้อมกัน วัดได้แม่นยำกว่ามาก</p>
+        <table class="spec-table">
+          <tr><th>คุณสมบัติ</th><th>ENS160</th><th>CCS811</th></tr>
+          <tr><td>Hot Plates</td><td>4 ตัว</td><td>1 ตัว</td></tr>
+          <tr><td>VOC</td><td>✅ แม่นยำ</td><td>✅ ปานกลาง</td></tr>
+          <tr><td>eCO2</td><td>✅ 400-65000ppm</td><td>✅ 400-8192ppm</td></tr>
+          <tr><td>AQI (TVOC)</td><td>✅ 1-5 ระดับ</td><td>❌</td></tr>
+          <tr><td>Warm-up</td><td>3 นาที</td><td>20 นาที</td></tr>
+          <tr><td>Interface</td><td>I2C / SPI</td><td>I2C เท่านั้น</td></tr>
+        </table>
+        <div class="tags">
+          <span class="tag tag-green">ENS160</span>
+          <span class="tag">VOC</span>
+          <span class="tag">eCO2</span>
+          <span class="tag tag-purple">AQI</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-green"></div>
+        <span class="card-icon">🔧</span>
+        <h3>ENS160 + ESP32 + ESPHome 2026</h3>
+        <p>ESPHome 2026.3.0 และ 2026.6.0-dev รองรับ ENS160 แบบ native พร้อม component library <code>k0i05/esp_ens160</code> บน ESP-IDF Component Registry</p>
+        <div class="code-block">
+<span class="code-comment"># ESPHome configuration</span>
+<span class="code-keyword">sensor:</span>
+  - platform: <span class="code-string">ens160</span>
+    eco2:
+      name: <span class="code-string">"eCO2"</span>
+      unit_of_measurement: <span class="code-string">"ppm"</span>
+    tvoc:
+      name: <span class="code-string">"TVOC"</span>
+      unit_of_measurement: <span class="code-string">"ppb"</span>
+    aqi:
+      name: <span class="code-string">"Air Quality Index"</span>
+
+  <span class="code-comment"># ต้องมี temp/humidity compensation</span>
+  - platform: <span class="code-string">bme280_i2c</span>
+    temperature:
+      name: <span class="code-string">"Temperature"</span>
+      id: temp_sensor
+    humidity:
+      name: <span class="code-string">"Humidity"</span>
+      id: hum_sensor
+        </div>
+        <div class="highlight-box green">
+          ⚠️ ต้องส่งค่า temperature และ humidity เข้า ENS160 เพื่อ compensation ไม่เช่นนั้นค่าจะคลาดเคลื่อน แนะนำให้คู่กับ BME280 หรือ SHT40
+        </div>
+        <div class="tags">
+          <span class="tag tag-green">ESPHome 2026</span>
+          <span class="tag">I2C</span>
+          <span class="tag tag-purple">ESP-IDF</span>
+          <span class="tag">BME280</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-green"></div>
+        <span class="card-icon">🏠</span>
+        <h3>Indoor Air Quality Station</h3>
+        <p>โปรเจกต์ Indoor Air Quality Monitor สำหรับห้องนอน สำนักงาน หรือโรงเรียน ใช้ ENS160 + AHT21 (หรือ BME280) + ESP32 + OLED Display</p>
+        <div class="highlight-box">
+          <strong>AQI Level:</strong><br>
+          🟢 1 = Excellent (&lt;50 ppb TVOC)<br>
+          🟡 2 = Good (50-150 ppb)<br>
+          🟠 3 = Moderate (150-250 ppb)<br>
+          🔴 4 = Poor (250-350 ppb)<br>
+          🟣 5 = Unhealthy (&gt;350 ppb)
+        </div>
+        <p style="font-size:0.85rem; color:var(--text-secondary);">Adafruit ENS160 breakout มี STEMMA QT / Qwiic connector สะดวกสำหรับ prototyping ราคา ~$10</p>
+        <div class="tags">
+          <span class="tag tag-green">AQI</span>
+          <span class="tag">OLED</span>
+          <span class="tag tag-pink">Classroom</span>
+          <span class="tag">STEMMA QT</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-green"></div>
+        <span class="card-icon">🧪</span>
+        <h3>AirGradient — เซนเซอร์คุณภาพอากาศ Open Source</h3>
+        <p>AirGradient ปล่อย Arduino library เวอร์ชัน 3.6.5 (13 พ.ค. 2026) รองรับ ESP32-C3 ครบชุด: PM2.5 (PMS5003), CO2 (SCD41), TVOC, Humidity ส่งข้อมูลขึ้น cloud แบบ open API</p>
+        <div class="highlight-box green">
+          ข้อมูล AirGradient เปิดสาธารณะ ช่วยให้ community ตรวจสอบคุณภาพอากาศในพื้นที่ร่วมกัน — ดีสำหรับ community science
+        </div>
+        <div class="tags">
+          <span class="tag tag-green">Open Source</span>
+          <span class="tag">SCD41 CO2</span>
+          <span class="tag">PM2.5</span>
+          <span class="tag tag-purple">Community</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: USB MIDI -->
+  <section id="usb-midi">
+    <div class="section-header">
+      <div class="section-icon icon-purple">🎹</div>
+      <div>
+        <h2>ESP32-S3 USB MIDI Controller — ดนตรีไร้สาย</h2>
+        <p>USB Host / Device mode บน ESP32-S3 สำหรับนักดนตรีและ maker</p>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-accent accent-purple"></div>
+        <span class="card-icon">🎵</span>
+        <h3>ESP32-S3 เป็น USB MIDI Device</h3>
+        <p>ESP32-S3 มี USB-OTG hardware ทำให้สามารถแสดงตัวเป็น USB MIDI Controller ต่อ DAW อย่าง Ableton, Logic Pro, GarageBand ได้โดยตรง ไม่ต้องใช้ driver พิเศษ</p>
+        <div class="highlight-box purple">
+          Library <strong>EspUsbDevice</strong> (อัปเดต 2026-07-08) รองรับ USB MIDI class บน ESP32-S3 เป็น composite device ร่วมกับ CDC-ACM ใน sketch Arduino เดียว
+        </div>
+        <div class="code-block">
+<span class="code-comment">// ESP32-S3 USB MIDI ใน Arduino</span>
+<span class="code-keyword">#include</span> <span class="code-string">&lt;USB.h&gt;</span>
+<span class="code-keyword">#include</span> <span class="code-string">&lt;USBMIDI.h&gt;</span>
+
+USBMIDI MIDI;
+
+<span class="code-keyword">void</span> setup() {
+  USB.begin();
+  MIDI.begin();
+}
+
+<span class="code-keyword">void</span> loop() {
+  <span class="code-keyword">if</span> (buttonPressed) {
+    MIDI.noteOn(<span class="code-num">60</span>, <span class="code-num">127</span>, <span class="code-num">1</span>);  <span class="code-comment">// C4, vel 127, ch1</span>
+    delay(<span class="code-num">200</span>);
+    MIDI.noteOff(<span class="code-num">60</span>, <span class="code-num">0</span>, <span class="code-num">1</span>);
+  }
+}
+        </div>
+        <div class="tags">
+          <span class="tag tag-purple">USB MIDI</span>
+          <span class="tag">ESP32-S3</span>
+          <span class="tag tag-pink">DAW</span>
+          <span class="tag">Ableton</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-purple"></div>
+        <span class="card-icon">🔌</span>
+        <h3>USB Host Mode — รับ MIDI Keyboard เข้า ESP32</h3>
+        <p>ใช้ ESP32-S3 เป็น USB Host อ่านสัญญาณจาก USB MIDI Keyboard แล้วแปลงเป็น BLE MIDI หรือ Wi-Fi OSC ส่งต่อไปยัง device อื่น</p>
+        <div class="highlight-box">
+          Library <strong>ESP32_Host_MIDI v5.2.0</strong> (2026-03-11) รองรับ 9 MIDI transports ในหน้าเดียว: USB Host, BLE MIDI, Apple MIDI (RTP), OSC, ESP-NOW, DIN-5 และอื่นๆ Latency &lt;1ms สำหรับ USB path
+        </div>
+        <div class="highlight-box purple">
+          ⚠️ ข้อจำกัด: USB Host และ USB Device ใช้ hardware USB-OTG เดียวกัน ใช้ได้ทีละโหมด ไม่สามารถรันพร้อมกัน
+        </div>
+        <div class="tags">
+          <span class="tag tag-purple">USB Host</span>
+          <span class="tag">BLE MIDI</span>
+          <span class="tag tag-green">9 Transports</span>
+          <span class="tag">OSC</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-purple"></div>
+        <span class="card-icon">🎛️</span>
+        <h3>ไอเดียโปรเจกต์: DIY MIDI Controller 12 ปุ่ม</h3>
+        <p>โปรเจกต์จาก Berkeley HOPE course 2026 สร้าง custom PCB ESP32-S3 ที่มี key matrix 12 ปุ่ม, slide potentiometer, และ speaker output แต่ละปุ่มส่ง Note On/Off ผ่าน USB MIDI</p>
+        <div class="highlight-box green">
+          <strong>ส่วนประกอบ:</strong><br>
+          • ESP32-S3 mini board<br>
+          • Key switch matrix 4×3<br>
+          • Slide potentiometer (MIDI CC)<br>
+          • WS2812B LED per key<br>
+          • USB-C ต่อ DAW โดยตรง
+        </div>
+        <p style="font-size:0.85rem; color:var(--text-secondary);">แต่ละปุ่มส่ง CC change สำหรับ volume/expression ได้ด้วย ทำให้เป็น multi-function controller ราคา &lt;500 บาท</p>
+        <div class="tags">
+          <span class="tag tag-purple">DIY</span>
+          <span class="tag">Custom PCB</span>
+          <span class="tag tag-pink">WS2812B</span>
+          <span class="tag">MIDI CC</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-blue"></div>
+        <span class="card-icon">⌨️</span>
+        <h3>USB Host HID — Keyboard/Mouse/Gamepad บน ESP32</h3>
+        <p>นอกจาก MIDI แล้ว ESP32-S3/P4 ยังรับ USB HID devices ได้ด้วย ใช้ <code>espp/usb_host</code> library v1.3.10 (ESP-IDF ≥ 5.4) enumerate HID device โดยอัตโนมัติ</p>
+        <div class="highlight-box">
+          รองรับ: USB keyboard, mouse, gamepad, vendor-specific HID<br>
+          ทดสอบบน ESP32-S3-BOX กับ USB keyboard dock<br>
+          Console ต้องใช้ UART0 แยกต่างหาก เพราะ USB-OTG ถูก Host ใช้แล้ว
+        </div>
+        <div class="tags">
+          <span class="tag">USB HID</span>
+          <span class="tag tag-blue">ESP32-S3</span>
+          <span class="tag tag-orange">ESP32-P4</span>
+          <span class="tag">Gamepad</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Resources -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔗</div>
+      <div>
+        <h2>แหล่งอ้างอิงและลิงก์ประจำวันที่ 30 ตุลาคม 2026</h2>
+        <p>เว็บไซต์ เอกสาร และ GitHub repos ที่ใช้ค้นคว้าวันนี้</p>
+      </div>
+    </div>
+    <div class="resource-grid">
+      <div class="resource-card">
+        <div class="resource-label">🐝 Zigbee / H2</div>
+        <a href="https://esp32tutorials.com/best-esp32-based-zigbee-and-thread-coordinators-9-smlight-slzb-poe-dual-radio-and-thread-border-router-picks-for-home-assistant-buying-guide/" target="_blank" rel="noopener">ESP32 Zigbee Coordinator Guide</a>
+        <p>เปรียบเทียบ SMLIGHT SLZB และอุปกรณ์ coordinator สำหรับ Home Assistant</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-label">🐝 Zigbee2MQTT</div>
+        <a href="https://community.home-assistant.io/t/esp32-h2-esp32-c6-with-zigbee-ncp-firmware-to-become-usable-as-remote-zigbee-coordinator-for-the-zha-integration-via-new-radio-library-for-zigpy/685638" target="_blank" rel="noopener">ESP32-H2 Zigbee NCP สำหรับ ZHA</a>
+        <p>ชุมชน Home Assistant — การใช้ ESP32-H2/C6 เป็น Zigbee Coordinator</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-label">⚡ Energy</div>
+        <a href="https://esp32.co.uk/esp32-energy-monitoring-methods-pulse-ct-pzem-modbus/" target="_blank" rel="noopener">ESP32 Energy Monitoring Methods</a>
+        <p>เปรียบเทียบวิธีวัดพลังงาน: Pulse, CT, PZEM, Modbus</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-label">⚡ PZEM-004T</div>
+        <a href="https://zbotic.in/home-energy-monitor-with-esp32-and-pzem-004t-module/" target="_blank" rel="noopener">Home Energy Monitor — Zbotic</a>
+        <p>Tutorial ครบขั้นตอน ESP32 + PZEM-004T + MQTT</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-label">🌿 ENS160</div>
+        <a href="https://esp32.co.uk/ens160-esp32-esphome-voc-eco2-air-quality-index/" target="_blank" rel="noopener">ENS160 + ESPHome — VOC, eCO₂, AQI</a>
+        <p>คู่มือใช้งาน ENS160 กับ ESP32 และ ESPHome แบบละเอียด</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-label">🌿 Component</div>
+        <a href="https://components.espressif.com/components/k0i05/esp_ens160" target="_blank" rel="noopener">esp_ens160 — ESP-IDF Component</a>
+        <p>Official ESP-IDF component สำหรับ ENS160 sensor driver</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-label">🎹 MIDI</div>
+        <a href="https://esp32.com/viewtopic.php?p=153694" target="_blank" rel="noopener">ESP32_Host_MIDI v5.0.0 Forum</a>
+        <p>9 MIDI transports บน ESP32-S3 เดียว — USB, BLE, Apple MIDI ฯลฯ</p>
+      </div>
+      <div class="resource-card">
+        <div class="resource-label">⌨️ USB HID</div>
+        <a href="https://components.espressif.com/components/espp/usb_host/versions/1.3.10/readme" target="_blank" rel="noopener">espp/usb_host v1.3.10</a>
+        <p>ESP-IDF component สำหรับ USB Host HID — keyboard, mouse, gamepad</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดยระบบอัตโนมัติ • 30 ตุลาคม 2026 • เวลา 07:00 UTC</p>
+  <p style="margin-top:0.5rem">
+    แหล่งข้อมูล:
+    <a href="https://esp32tutorials.com" target="_blank" rel="noopener">esp32tutorials.com</a> ·
+    <a href="https://esp32.co.uk" target="_blank" rel="noopener">esp32.co.uk</a> ·
+    <a href="https://community.home-assistant.io" target="_blank" rel="noopener">Home Assistant Community</a> ·
+    <a href="https://components.espressif.com" target="_blank" rel="noopener">Espressif Component Registry</a> ·
+    <a href="https://github.com/topics/esp32-h2" target="_blank" rel="noopener">GitHub esp32-h2</a>
+  </p>
+  <p style="margin-top:0.5rem; font-size:0.75rem; color:#475569">
+    เนื้อหาทั้งหมดเป็นข้อมูลทางการศึกษา ตรวจสอบ datasheet และ official docs ก่อนนำไปใช้งานจริง
+  </p>
+</footer>
+
+</body>
+</html>
