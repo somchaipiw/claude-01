@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 31 ตุลาคม 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #0a0f1e; color: #e2e8f0; line-height: 1.8; }
+
+  header {
+    background: linear-gradient(135deg, #1e0533 0%, #0d1b3e 40%, #0f2027 100%);
+    border-bottom: 2px solid #7c3aed;
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(124,58,237,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 50%, rgba(249,115,22,0.1) 0%, transparent 60%);
+  }
+  header .badge {
+    display: inline-block;
+    background: linear-gradient(90deg, #7c3aed, #f97316);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    color: #f8fafc;
+    position: relative;
+    text-shadow: 0 0 30px rgba(124,58,237,0.5);
+  }
+  header h1 span { color: #a78bfa; }
+  header .subtitle {
+    color: #94a3b8;
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    position: relative;
+  }
+  header .stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  header .stat-item {
+    text-align: center;
+  }
+  header .stat-num {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #a78bfa;
+  }
+  header .stat-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  nav {
+    background: #0f172a;
+    border-bottom: 1px solid #1e293b;
+    padding: 0.75rem 1rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav a {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid #1e293b;
+    transition: all 0.2s;
+  }
+  nav a:hover { color: #a78bfa; border-color: #7c3aed; background: rgba(124,58,237,0.1); }
+
+  main { max-width: 960px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+
+  section { margin-bottom: 3rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid;
+  }
+  .section-header.purple { border-color: #7c3aed; }
+  .section-header.orange { border-color: #f97316; }
+  .section-header.teal { border-color: #14b8a6; }
+  .section-header.pink { border-color: #ec4899; }
+  .section-header.blue { border-color: #3b82f6; }
+  .section-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+  .section-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+  .section-header .section-tag {
+    margin-left: auto;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(124,58,237,0.2);
+    color: #a78bfa;
+    border: 1px solid rgba(124,58,237,0.3);
+    white-space: nowrap;
+  }
+
+  .card {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover { border-color: #334155; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 2px 0 0 2px;
+  }
+  .card.purple::before { background: linear-gradient(to bottom, #7c3aed, #4f46e5); }
+  .card.orange::before { background: linear-gradient(to bottom, #f97316, #dc2626); }
+  .card.teal::before { background: linear-gradient(to bottom, #14b8a6, #0ea5e9); }
+  .card.pink::before { background: linear-gradient(to bottom, #ec4899, #a855f7); }
+  .card.blue::before { background: linear-gradient(to bottom, #3b82f6, #6366f1); }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .card p { color: #94a3b8; font-size: 0.9rem; margin-bottom: 0.5rem; }
+  .card p:last-child { margin-bottom: 0; }
+
+  .highlight-box {
+    background: rgba(124,58,237,0.08);
+    border: 1px solid rgba(124,58,237,0.2);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+    font-size: 0.85rem;
+    color: #c4b5fd;
+  }
+  .highlight-box.orange {
+    background: rgba(249,115,22,0.08);
+    border-color: rgba(249,115,22,0.2);
+    color: #fed7aa;
+  }
+  .highlight-box.teal {
+    background: rgba(20,184,166,0.08);
+    border-color: rgba(20,184,166,0.2);
+    color: #99f6e4;
+  }
+  .highlight-box.pink {
+    background: rgba(236,72,153,0.08);
+    border-color: rgba(236,72,153,0.2);
+    color: #fbcfe8;
+  }
+  .highlight-box.blue {
+    background: rgba(59,130,246,0.08);
+    border-color: rgba(59,130,246,0.2);
+    color: #bfdbfe;
+  }
+
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.5rem 0;
+  }
+  .chip {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .chip.purple { background: rgba(124,58,237,0.2); color: #a78bfa; border: 1px solid rgba(124,58,237,0.3); }
+  .chip.orange { background: rgba(249,115,22,0.2); color: #fb923c; border: 1px solid rgba(249,115,22,0.3); }
+  .chip.teal { background: rgba(20,184,166,0.2); color: #2dd4bf; border: 1px solid rgba(20,184,166,0.3); }
+  .chip.pink { background: rgba(236,72,153,0.2); color: #f472b6; border: 1px solid rgba(236,72,153,0.3); }
+  .chip.blue { background: rgba(59,130,246,0.2); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+  .chip.green { background: rgba(34,197,94,0.2); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+  .chip.red { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+
+  .code-block {
+    background: #020617;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: #7dd3fc;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+    white-space: pre;
+  }
+  .code-block .comment { color: #475569; }
+  .code-block .keyword { color: #a78bfa; }
+  .code-block .string { color: #4ade80; }
+  .code-block .number { color: #fb923c; }
+
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin: 0.75rem 0;
+  }
+  .comparison-table th {
+    background: #1e293b;
+    color: #94a3b8;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .comparison-table td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid #0f172a;
+    color: #cbd5e1;
+    vertical-align: top;
+  }
+  .comparison-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .comparison-table td.yes { color: #4ade80; }
+  .comparison-table td.no { color: #f87171; }
+  .comparison-table td.partial { color: #fb923c; }
+
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin: 0.75rem 0;
+    font-size: 0.82rem;
+  }
+  .flow-step {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 0.4rem 0.75rem;
+    color: #e2e8f0;
+    white-space: nowrap;
+  }
+  .flow-arrow { color: #475569; font-size: 1rem; }
+
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.75rem;
+  }
+  .resource-card {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 1rem;
+    text-decoration: none;
+    display: block;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .resource-card:hover { border-color: #7c3aed; transform: translateY(-2px); }
+  .resource-card .rc-type {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.3rem;
+  }
+  .resource-card .rc-title {
+    color: #e2e8f0;
+    font-weight: 600;
+    font-size: 0.88rem;
+    margin-bottom: 0.25rem;
+  }
+  .resource-card .rc-desc {
+    color: #64748b;
+    font-size: 0.78rem;
+  }
+
+  .summary-box {
+    background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(249,115,22,0.05));
+    border: 1px solid rgba(124,58,237,0.25);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .summary-box h3 {
+    color: #a78bfa;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
+  }
+  .summary-item {
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: center;
+  }
+  .summary-item .si-num {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #c4b5fd;
+  }
+  .summary-item .si-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 0.2rem;
+  }
+
+  footer {
+    background: #020617;
+    border-top: 1px solid #1e293b;
+    padding: 2rem 1rem;
+    text-align: center;
+    color: #475569;
+    font-size: 0.8rem;
+  }
+  footer .footer-logo {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #7c3aed;
+    margin-bottom: 0.5rem;
+  }
+  footer a { color: #7c3aed; text-decoration: none; }
+  footer a:hover { color: #a78bfa; }
+
+  @media (max-width: 640px) {
+    .card { padding: 1rem; }
+    .comparison-table { font-size: 0.75rem; }
+    .comparison-table th, .comparison-table td { padding: 0.4rem 0.5rem; }
+    .flow-diagram { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">🎃 Halloween Edition · 31 ตุลาคม 2026</div>
+  <h1>ESP32 &amp; <span>Sensor</span> Innovations</h1>
+  <p class="subtitle">นวัตกรรมล่าสุด · ไอเดียโปรเจกต์ · Sensors น่าสนใจ · ทรัพยากรคัดสรร</p>
+  <div class="stats">
+    <div class="stat-item">
+      <div class="stat-num">5</div>
+      <div class="stat-label">หัวข้อหลัก</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">18</div>
+      <div class="stat-label">ไอเดียโปรเจกต์</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">10</div>
+      <div class="stat-label">แหล่งอ้างอิง</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">2026</div>
+      <div class="stat-label">ปีล่าสุด</div>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <a href="#matter">Matter Protocol</a>
+  <a href="#tinyml">TinyML / Edge AI</a>
+  <a href="#airquality">Air Quality</a>
+  <a href="#audio">Audio & Voice</a>
+  <a href="#water">Water Quality</a>
+  <a href="#resources">แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- SUMMARY -->
+  <div class="summary-box">
+    <h3>📋 สรุปเนื้อหาวันที่ 31 ตุลาคม 2026</h3>
+    <p style="color:#94a3b8; font-size:0.88rem; margin-bottom:1rem;">
+      ฉบับพิเศษ Halloween Edition — วันนี้เจาะลึก 5 หัวข้อที่กำลังร้อนแรงในโลก ESP32:
+      <strong style="color:#c4b5fd;">Matter protocol</strong> สำหรับ Smart Home แบบ universal,
+      <strong style="color:#c4b5fd;">TinyML/Edge AI</strong> บนไมโครคอนโทรลเลอร์,
+      <strong style="color:#c4b5fd;">Air Quality Sensor</strong> รุ่นใหม่อย่าง BME688 และ SGP41,
+      <strong style="color:#c4b5fd;">Voice Recognition</strong> แบบ offline ด้วย I2S mic,
+      และ <strong style="color:#c4b5fd;">Water Quality Monitor</strong> สำหรับตู้ปลาและ Hydroponics
+    </p>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="si-num">🏠</div>
+        <div class="si-label">Matter · Thread · Zigbee</div>
+      </div>
+      <div class="summary-item">
+        <div class="si-num">🧠</div>
+        <div class="si-label">Edge Impulse · TFLite</div>
+      </div>
+      <div class="summary-item">
+        <div class="si-num">💨</div>
+        <div class="si-label">BME688 · SGP41 · IAQ</div>
+      </div>
+      <div class="summary-item">
+        <div class="si-num">🎙</div>
+        <div class="si-label">INMP441 · I2S · Offline ASR</div>
+      </div>
+      <div class="summary-item">
+        <div class="si-num">💧</div>
+        <div class="si-label">TDS · pH · Aquarium IoT</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SECTION 1: MATTER PROTOCOL ===================== -->
+  <section id="matter">
+    <div class="section-header purple">
+      <span class="section-icon">🏠</span>
+      <h2>ESP32 กับ Matter Protocol — Smart Home แห่งอนาคต</h2>
+      <span class="section-tag">นวัตกรรม 2026</span>
+    </div>
+
+    <div class="card purple">
+      <h3>🌐 Matter คืออะไร และทำไม ESP32-C6 ถึงเป็นตัวเลือกยอดนิยม?</h3>
+      <p>
+        <strong>Matter</strong> คือมาตรฐาน Smart Home แบบ open-source จาก Connectivity Standards Alliance (CSA)
+        ที่ให้อุปกรณ์จาก Apple, Google, Amazon และ Samsung ทำงานร่วมกันได้โดยไม่ต้องง้อแพลตฟอร์มเดิม
+      </p>
+      <div class="highlight-box">
+        💡 <strong>ESP32-C6</strong> เป็นบอร์ดที่ดีที่สุดสำหรับ Matter ในปี 2026 เพราะมี Wi-Fi 6,
+        Bluetooth 5 LE, Zigbee 3.0 <em>และ</em> Thread ในชิปเดียว — ไม่ต้องเลือกข้างอีกต่อไป
+      </div>
+      <div class="chip-row">
+        <span class="chip purple">Matter over Wi-Fi</span>
+        <span class="chip teal">Matter over Thread</span>
+        <span class="chip orange">ESP32-C6</span>
+        <span class="chip blue">esp-matter SDK</span>
+      </div>
+      <p>
+        Espressif ออก <strong>esp-matter SDK</strong> (อัปเดตล่าสุด กรกฎาคม 2026) รองรับ Device Types
+        กว่า 30 ประเภท ตั้งแต่หลอดไฟ, socket, thermostat ไปจนถึง door lock และ window covering
+      </p>
+    </div>
+
+    <div class="card purple">
+      <h3>🔀 เลือก Chip ให้ถูกต้อง: C6 vs H2 vs H21 vs S3</h3>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Chip</th>
+            <th>Wi-Fi</th>
+            <th>Thread/Zigbee</th>
+            <th>BLE</th>
+            <th>เหมาะกับ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>ESP32-C6</strong></td>
+            <td class="yes">Wi-Fi 6</td>
+            <td class="yes">Thread + Zigbee</td>
+            <td class="yes">5.0 LE</td>
+            <td>Mains-powered hub/switch</td>
+          </tr>
+          <tr>
+            <td><strong>ESP32-H2</strong></td>
+            <td class="no">ไม่มี</td>
+            <td class="yes">Thread + Zigbee</td>
+            <td class="yes">5.3 LE</td>
+            <td>Battery Sensor Node</td>
+          </tr>
+          <tr>
+            <td><strong>ESP32-H21</strong></td>
+            <td class="no">ไม่มี</td>
+            <td class="yes">Thread + Zigbee + BLE</td>
+            <td class="yes">5.4 LE</td>
+            <td>Ultra-low power sensor</td>
+          </tr>
+          <tr>
+            <td><strong>ESP32-S3</strong></td>
+            <td class="yes">Wi-Fi 4</td>
+            <td class="no">ไม่มี</td>
+            <td class="yes">5.0 LE</td>
+            <td>Matter + Camera/Display</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>คำแนะนำ: ใช้ <strong>C6 สำหรับ Mains-powered</strong>, ใช้ <strong>H2/H21 สำหรับ battery sensor</strong></p>
+    </div>
+
+    <div class="card purple">
+      <h3>💡 โปรเจกต์ Matter น่าสร้าง: Smart Plug + Energy Monitor</h3>
+      <p>
+        สร้าง Matter Smart Plug ด้วย ESP32-C6 + BL0937 (Energy Meter IC) ส่งข้อมูล Watt, kWh
+        ขึ้น Apple Home / Google Home / Home Assistant พร้อมกัน ไม่ต้องใช้ Hub แยก
+      </p>
+      <div class="flow-diagram">
+        <span class="flow-step">ESP32-C6</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">BL0937 Energy IC</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Matter SDK</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Apple / Google / Amazon</span>
+      </div>
+      <div class="highlight-box orange">
+        🛒 ต้นทุน: ESP32-C6 mini ~$3 + BL0937 module ~$2 + case = ราคาต่ำกว่า Smart Plug สำเร็จรูปที่ขายอยู่
+      </div>
+      <div class="chip-row">
+        <span class="chip orange">BL0937</span>
+        <span class="chip purple">Matter 1.3</span>
+        <span class="chip green">Open Source</span>
+        <span class="chip blue">Home Assistant</span>
+      </div>
+    </div>
+
+    <div class="card purple">
+      <h3>🌡 Matter Temperature/Humidity Sensor ด้วย ESP32-H2</h3>
+      <p>
+        ใช้ ESP32-H2 + SHT41 ทำ Matter-over-Thread sensor แขวนในบ้าน ใช้พลังงานแบตเตอรี่ AA
+        ได้นานกว่า 2 ปี เพราะ Thread ประหยัดพลังงานกว่า Wi-Fi มาก (Deep Sleep 10 µA)
+      </p>
+      <div class="code-block"><span class="comment">// esp-matter sensor endpoint</span>
+<span class="keyword">#include</span> <span class="string">"esp_matter.h"</span>
+<span class="keyword">#include</span> <span class="string">"app_driver.h"</span>
+
+<span class="comment">// สร้าง Temperature Measurement cluster</span>
+node::create_params_t node_params = node::create_params_t();
+endpoint_t *ep = temperature_sensor::create(node, &node_params, FLAGS_NONE, NULL);
+cluster_t *cl = cluster::get(ep, TemperatureMeasurement::Id);
+attribute::create(cl, TemperatureMeasurement::Attributes::MeasuredValue::Id, ...);</div>
+    </div>
+  </section>
+
+  <!-- ===================== SECTION 2: TINYML / EDGE AI ===================== -->
+  <section id="tinyml">
+    <div class="section-header orange">
+      <span class="section-icon">🧠</span>
+      <h2>TinyML &amp; Edge AI บน ESP32 — สมองอัจฉริยะในชิปเล็ก</h2>
+      <span class="section-tag">Hot Topic 2026</span>
+    </div>
+
+    <div class="card orange">
+      <h3>⚡ ESP32-S3 + TensorFlow Lite Micro (TFLM) — อนุมานผลบนตัวเอง</h3>
+      <p>
+        <strong>TensorFlow Lite Micro</strong> หรือ <strong>esp-tflite-micro</strong>
+        คือ framework ที่ช่วยรัน Neural Network บนไมโครคอนโทรลเลอร์โดยไม่ต้องพึ่งคลาวด์
+        ESP32-S3 เป็น hardware ที่เหมาะที่สุดเพราะมี Vector Processing Unit (AIE)
+      </p>
+      <div class="highlight-box orange">
+        🚀 ESP32-S3 รัน INT8 inference เร็วกว่า float32 ถึง <strong>2 เท่า</strong>
+        ทำให้ person detection จาก camera ทำได้ที่ ~50ms/frame
+      </div>
+      <div class="flow-diagram">
+        <span class="flow-step">Train บน PC</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Quantize INT8</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">.tflite → C Array</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">รันบน ESP32-S3</span>
+      </div>
+      <div class="chip-row">
+        <span class="chip orange">esp-tflite-micro</span>
+        <span class="chip purple">INT8 Quantization</span>
+        <span class="chip teal">ESP32-S3 AIE</span>
+        <span class="chip blue">ESP-IDF Component</span>
+      </div>
+    </div>
+
+    <div class="card orange">
+      <h3>🎯 Edge Impulse + ESP32 — No-Code ML Pipeline</h3>
+      <p>
+        <strong>Edge Impulse</strong> เป็นแพลตฟอร์มที่ทำให้สร้าง ML model สำหรับ ESP32
+        ได้โดยไม่ต้องเขียน Python หรือ TensorFlow ด้วยตัวเอง
+        รองรับตั้งแต่ motion classification ไปจนถึง keyword spotting และ image classification
+      </p>
+      <div class="highlight-box orange">
+        📋 <strong>Workflow:</strong> เก็บ data ผ่าน Edge Impulse Studio → Design processing blocks
+        → Train model → Export เป็น Arduino library → Flash ลง ESP32 ทันที
+      </div>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Use Case</th>
+            <th>Input</th>
+            <th>Model Size</th>
+            <th>ESP32 Target</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Keyword Spotting</td>
+            <td>I2S Microphone</td>
+            <td>~50 KB</td>
+            <td>ESP32, S3</td>
+          </tr>
+          <tr>
+            <td>Gesture Recognition</td>
+            <td>IMU (MPU6050)</td>
+            <td>~20 KB</td>
+            <td>ESP32, C3</td>
+          </tr>
+          <tr>
+            <td>Anomaly Detection</td>
+            <td>Vibration/Temp</td>
+            <td>~15 KB</td>
+            <td>ESP32, C3, S3</td>
+          </tr>
+          <tr>
+            <td>Image Classification</td>
+            <td>OV2640 Camera</td>
+            <td>~200 KB</td>
+            <td>ESP32-S3 เท่านั้น</td>
+          </tr>
+          <tr>
+            <td>Object Detection (FOMO)</td>
+            <td>OV2640 Camera</td>
+            <td>~100 KB</td>
+            <td>ESP32-S3 + PSRAM</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card orange">
+      <h3>🔧 โปรเจกต์ไอเดีย: Machine Fault Detector ด้วย MPU6050 + ESP32</h3>
+      <p>
+        ติด ESP32 + MPU6050 บนเครื่องปั๊มน้ำหรือมอเตอร์ เก็บข้อมูลการสั่นสะเทือน
+        ฝึก Anomaly Detection model ผ่าน Edge Impulse ให้แจ้งเตือนเมื่อเครื่องเริ่มมีอาการผิดปกติ
+        ก่อนที่จะพังสนิท
+      </p>
+      <div class="chip-row">
+        <span class="chip orange">Predictive Maintenance</span>
+        <span class="chip purple">Edge Impulse</span>
+        <span class="chip teal">MPU6050</span>
+        <span class="chip green">Industrial IoT</span>
+      </div>
+      <div class="highlight-box">
+        💰 ประหยัดได้มาก: ป้องกันเครื่องจักรพังกะทันหัน ด้วยต้นทุน ESP32 + sensor ไม่ถึง 200 บาท
+      </div>
+    </div>
+
+    <div class="card orange">
+      <h3>⚠️ ข้อควรระวัง: ESP32 Arduino Core Version</h3>
+      <p>
+        ณ ปี 2026 แนะนำให้ใช้ <strong>ESP32 Arduino Core v2.x</strong> สำหรับ TFLM และ camera
+        เพราะ v3.x มีการเปลี่ยน API ที่ยัง break library ชุมชนหลายตัว
+        หากใช้ ESP-IDF ให้ใช้ component <code style="background:#1e293b;padding:0.1rem 0.3rem;border-radius:4px;font-size:0.8rem;">espressif/esp-tflite-micro</code> ผ่าน component manager แทน
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================== SECTION 3: AIR QUALITY ===================== -->
+  <section id="airquality">
+    <div class="section-header teal">
+      <span class="section-icon">💨</span>
+      <h2>Air Quality Sensors รุ่นใหม่ — BME688 &amp; SGP41</h2>
+      <span class="section-tag">Sensors 2026</span>
+    </div>
+
+    <div class="card teal">
+      <h3>🔬 BME688 — Sensor 4-in-1 พร้อม AI Gas Scanner</h3>
+      <p>
+        <strong>BME688</strong> จาก Bosch Sensortec คือ sensor ที่วัดได้ 4 อย่างในตัวเดียว:
+        Temperature, Humidity, Pressure <em>และ</em> Gas (VOC/IAQ)
+        จุดเด่นคือ <strong>BSEC (Bosch Sensortec Environmental Cluster)</strong> library
+        ที่คำนวณ Index of Air Quality (IAQ) แบบ calibrated ให้เลย
+      </p>
+      <div class="highlight-box teal">
+        📊 <strong>IAQ Index Scale:</strong><br>
+        0–50 = ดีมาก | 51–100 = ดี | 101–150 = เริ่มน่ากังวล | 151–200 = แย่ | 201–300 = แย่มาก | &gt;300 = อันตราย
+      </div>
+      <div class="chip-row">
+        <span class="chip teal">Temperature</span>
+        <span class="chip teal">Humidity</span>
+        <span class="chip teal">Pressure</span>
+        <span class="chip teal">VOC Gas</span>
+        <span class="chip orange">IAQ 0–400</span>
+        <span class="chip purple">I2C / SPI</span>
+      </div>
+      <div class="code-block"><span class="comment">// BME688 BSEC กับ ESP32 (Arduino)</span>
+<span class="keyword">#include</span> <span class="string">"bsec.h"</span>
+Bsec iaqSensor;
+
+<span class="keyword">void</span> setup() {
+  iaqSensor.begin(BME68X_I2C_ADDR_LOW, Wire);
+  iaqSensor.updateSubscription(sensorList, nSensors, BSEC_SAMPLE_RATE_LP);
+}
+
+<span class="keyword">void</span> loop() {
+  <span class="keyword">if</span> (iaqSensor.run()) {
+    Serial.print(<span class="string">"IAQ: "</span>);
+    Serial.println(iaqSensor.iaq); <span class="comment">// 0-400</span>
+    Serial.print(<span class="string">"Temp: "</span>);
+    Serial.println(iaqSensor.temperature);
+  }
+}</div>
+    </div>
+
+    <div class="card teal">
+      <h3>🧪 SGP41 — VOC + NOx Sensor จาก Sensirion</h3>
+      <p>
+        <strong>SGP41</strong> จาก Sensirion เพิ่ม <strong>NOx (Nitrogen Oxides)</strong> index
+        มาจาก SGP40 ซึ่งวัดได้แค่ VOC อย่างเดียว ทำให้เหมาะกับการตรวจจับมลพิษจากการเผาไหม้
+        หรือพื้นที่ใกล้ถนน/โรงงาน
+      </p>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Sensor</th>
+            <th>VOC Index</th>
+            <th>NOx Index</th>
+            <th>True CO₂</th>
+            <th>ราคา</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>SGP40</strong></td>
+            <td class="yes">✓</td>
+            <td class="no">✗</td>
+            <td class="no">✗</td>
+            <td>~$5</td>
+          </tr>
+          <tr>
+            <td><strong>SGP41</strong></td>
+            <td class="yes">✓</td>
+            <td class="yes">✓</td>
+            <td class="no">✗</td>
+            <td>~$8</td>
+          </tr>
+          <tr>
+            <td><strong>BME688</strong></td>
+            <td class="yes">✓ (IAQ)</td>
+            <td class="no">✗</td>
+            <td class="no">✗</td>
+            <td>~$10</td>
+          </tr>
+          <tr>
+            <td><strong>SCD41</strong></td>
+            <td class="no">✗</td>
+            <td class="no">✗</td>
+            <td class="yes">✓ True CO₂</td>
+            <td>~$20</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="highlight-box teal">
+        🎯 <strong>คำแนะนำ Stack Air Quality สมบูรณ์:</strong><br>
+        SGP41 (VOC+NOx) + SCD41 (CO₂) + SHT45 (Temp/Humidity) + PMS5003 (PM2.5) → ESP32-C3 + ESPHome
+      </div>
+    </div>
+
+    <div class="card teal">
+      <h3>🏗 โปรเจกต์: Indoor Air Quality Dashboard สำหรับห้องนอน</h3>
+      <p>
+        ใช้ ESP32-C3 + BME688 + SCD41 + 1.3" OLED display ติดที่หัวเตียง
+        แสดงค่า CO₂, IAQ, Temp, Humidity แบบ real-time ส่งข้อมูลขึ้น Home Assistant
+        ผ่าน MQTT หรือ ESPHome ตั้งให้แจ้งเตือนเมื่อ CO₂ > 1000ppm (เริ่มง่วง)
+        หรือ IAQ > 100 (เริ่มน่ากังวล)
+      </p>
+      <div class="chip-row">
+        <span class="chip teal">BME688</span>
+        <span class="chip teal">SCD41</span>
+        <span class="chip blue">ESPHome</span>
+        <span class="chip orange">Home Assistant</span>
+        <span class="chip purple">OLED Display</span>
+        <span class="chip green">~$30 ทั้งหมด</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SECTION 4: AUDIO & VOICE ===================== -->
+  <section id="audio">
+    <div class="section-header pink">
+      <span class="section-icon">🎙</span>
+      <h2>ESP32 Audio &amp; Voice Recognition — ฟังและเข้าใจ</h2>
+      <span class="section-tag">TinyML + I2S</span>
+    </div>
+
+    <div class="card pink">
+      <h3>🎤 INMP441 — I2S Digital Microphone ราคาถูก คุณภาพดี</h3>
+      <p>
+        <strong>INMP441</strong> คือ MEMS microphone ดิจิตอล I2S ที่เป็น standard สำหรับงาน
+        audio บน ESP32 ราคาไม่ถึง 50 บาท ให้คุณภาพเสียงดีกว่า mic analog อย่างมาก
+        เพราะส่งสัญญาณดิจิตอลโดยตรง ไม่มี noise จาก ADC
+      </p>
+      <div class="highlight-box pink">
+        📍 <strong>การต่อสาย INMP441 → ESP32:</strong><br>
+        SCK (CLK) → GPIO 26 | WS (LRCK) → GPIO 25 | SD (Data) → GPIO 22 | VDD → 3.3V | GND → GND
+      </div>
+      <div class="code-block"><span class="comment">// อ่าน audio จาก INMP441 ผ่าน I2S</span>
+<span class="keyword">#include</span> <span class="string">"driver/i2s.h"</span>
+
+i2s_config_t i2s_config = {
+  .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
+  .sample_rate = <span class="number">16000</span>,
+  .bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT,
+  .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
+  .communication_format = I2S_COMM_FORMAT_STAND_I2S,
+  .dma_buf_count = <span class="number">8</span>,
+  .dma_buf_len = <span class="number">64</span>,
+};</div>
+      <div class="chip-row">
+        <span class="chip pink">I2S Protocol</span>
+        <span class="chip purple">16kHz Sample Rate</span>
+        <span class="chip teal">MEMS Digital</span>
+        <span class="chip orange">~$1 ราคา</span>
+      </div>
+    </div>
+
+    <div class="card pink">
+      <h3>🤖 Offline Keyword Spotting ด้วย Edge Impulse — ไม่ต้อง Cloud</h3>
+      <p>
+        สร้างระบบ voice command ที่รันบน ESP32 ได้ 100% offline ตัวอย่างเช่น
+        พูด "เปิดไฟ" / "ปิดไฟ" แล้วให้ ESP32 ทำงานโดยตรง
+        ใช้ Edge Impulse ฝึก model ที่มีขนาดแค่ ~50KB เหมาะกับ RAM ของ ESP32
+      </p>
+      <div class="flow-diagram">
+        <span class="flow-step">เก็บ audio samples</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Edge Impulse Studio</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Train MFCC+NN</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Export Arduino Lib</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Flash ลง ESP32</span>
+      </div>
+      <div class="highlight-box pink">
+        🎯 <strong>ข้อดีของ Offline:</strong> ไม่ต้อง Internet, latency &lt;100ms, privacy ดีกว่า
+        ข้อเสีย: จำกัดคำศัพท์ 5–10 คำ, ต้องเก็บ dataset เองสำหรับภาษาไทย
+      </div>
+    </div>
+
+    <div class="card pink">
+      <h3>☁️ Cloud Speech-to-Text ด้วย INMP441 + Deepgram API</h3>
+      <p>
+        สำหรับ use case ที่ต้องการรู้จำคำพูดไทยหลายคำ หรือประโยคยาว:
+        ใช้ ESP32 บันทึกเสียงแล้วส่งไป Deepgram API หรือ Google Speech-to-Text
+        รับผล transcription กลับมาผ่าน HTTPS ทำงานได้ดีเมื่อมี Wi-Fi
+      </p>
+      <div class="chip-row">
+        <span class="chip pink">Deepgram API</span>
+        <span class="chip blue">HTTPS POST</span>
+        <span class="chip teal">SD Card Buffer</span>
+        <span class="chip purple">ภาษาไทย</span>
+      </div>
+    </div>
+
+    <div class="card pink">
+      <h3>🔊 Bonus: ESP32 เป็น Speaker ด้วย MAX98357A + I2S</h3>
+      <p>
+        นอกจาก mic แล้ว ESP32 ยังเล่น audio ออกลำโพงได้ผ่าน
+        <strong>MAX98357A</strong> — Class D Amplifier แบบ I2S ราคาถูก
+        สร้างได้ตั้งแต่นาฬิกาปลุกพูดภาษาไทย ไปจนถึง Voice Response System
+      </p>
+      <div class="chip-row">
+        <span class="chip pink">MAX98357A</span>
+        <span class="chip purple">I2S Output</span>
+        <span class="chip orange">3W Speaker</span>
+        <span class="chip green">3.3V–5V</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SECTION 5: WATER QUALITY ===================== -->
+  <section id="water">
+    <div class="section-header blue">
+      <span class="section-icon">💧</span>
+      <h2>ESP32 Water Quality Monitor — น้ำดี ชีวิตดี</h2>
+      <span class="section-tag">Aquarium · Hydroponics</span>
+    </div>
+
+    <div class="card blue">
+      <h3>🐟 Smart Aquarium Monitor — TDS + pH + Temperature + Turbidity</h3>
+      <p>
+        ตู้ปลาคือ IoT project ที่สนุกมาก เพราะมี parameter หลายตัวที่ต้องดูแล
+        ESP32 สามารถอ่าน sensor ทุกตัวพร้อมกัน ส่งข้อมูลขึ้น dashboard
+        และแจ้งเตือน LINE/email เมื่อค่าผิดปกติ
+      </p>
+      <div class="highlight-box blue">
+        🐠 <strong>ค่ามาตรฐานน้ำสำหรับปลาน้ำจืดทั่วไป:</strong><br>
+        TDS: 200–400 PPM | pH: 6.5–7.5 | Temperature: 24–28°C | Turbidity: &lt;5 NTU
+      </div>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Sensor</th>
+            <th>วัดอะไร</th>
+            <th>Interface</th>
+            <th>ราคา</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Gravity TDS</strong></td>
+            <td>Total Dissolved Solids (PPM)</td>
+            <td>Analog</td>
+            <td>~$12</td>
+          </tr>
+          <tr>
+            <td><strong>pH-4502C</strong></td>
+            <td>ค่าความเป็นกรด-ด่าง</td>
+            <td>Analog</td>
+            <td>~$15</td>
+          </tr>
+          <tr>
+            <td><strong>DS18B20</strong></td>
+            <td>อุณหภูมิน้ำ</td>
+            <td>1-Wire</td>
+            <td>~$3</td>
+          </tr>
+          <tr>
+            <td><strong>SEN0189</strong></td>
+            <td>Turbidity (ความขุ่น)</td>
+            <td>Analog</td>
+            <td>~$8</td>
+          </tr>
+          <tr>
+            <td><strong>DO Sensor</strong></td>
+            <td>Dissolved Oxygen</td>
+            <td>Analog/UART</td>
+            <td>~$40</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card blue">
+      <h3>🌿 Hydroponics Water Monitor — ปลูกผักสมาร์ท</h3>
+      <p>
+        ระบบ Hydroponics ต้องการค่าน้ำที่แม่นยำมาก โดยเฉพาะ TDS (nutrient concentration)
+        และ pH ใช้ ESP32 ควบคุม dosing pump อัตโนมัติ เติม nutrient solution
+        หรือปรับ pH เมื่อค่าออกจาก range
+      </p>
+      <div class="flow-diagram">
+        <span class="flow-step">TDS &amp; pH Sensors</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">ESP32 ADC</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Logic Check</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Relay + Dosing Pump</span>
+      </div>
+      <div class="highlight-box blue">
+        🥬 <strong>ค่า TDS สำหรับ Hydroponics:</strong><br>
+        ผักใบ (ผักสลัด, โหระพา): 560–840 PPM | มะเขือเทศ: 1400–3500 PPM | แตงกวา: 1190–1750 PPM
+      </div>
+    </div>
+
+    <div class="card blue">
+      <h3>🔬 ข้อสำคัญ: Calibration pH Probe</h3>
+      <p>
+        <strong>pH probe ต้องคาลิเบรตสม่ำเสมอ</strong> เพราะอ่อนไหวต่อ temperature และเสื่อมตามเวลา
+        ใช้ <strong>buffer solution pH 4.0 และ pH 7.0</strong> เพื่อ 2-point calibration
+        แนะนำให้คาลิเบรตทุก 2–4 สัปดาห์สำหรับตู้ปลา ทุก 1 สัปดาห์สำหรับ Hydroponics
+      </p>
+      <div class="code-block"><span class="comment">// 2-point pH calibration บน ESP32</span>
+<span class="keyword">float</span> calibratePH(<span class="keyword">float</span> voltage) {
+  <span class="comment">// point1: pH 4.0 @ voltage V1</span>
+  <span class="comment">// point2: pH 7.0 @ voltage V2</span>
+  <span class="keyword">float</span> slope = (<span class="number">7.0</span> - <span class="number">4.0</span>) / (V2 - V1);
+  <span class="keyword">float</span> intercept = <span class="number">7.0</span> - slope * V2;
+  <span class="keyword">return</span> slope * voltage + intercept;
+}</div>
+      <div class="chip-row">
+        <span class="chip blue">2-Point Calibration</span>
+        <span class="chip teal">Buffer pH 4.0 + 7.0</span>
+        <span class="chip orange">Temperature Compensation</span>
+      </div>
+    </div>
+
+    <div class="card blue">
+      <h3>📱 โปรเจกต์สมบูรณ์: IoT Water Quality Station พร้อม Dashboard</h3>
+      <p>
+        สร้าง Water Quality Monitor ครบวงจรด้วย ESP32 + sensor ทุกตัว
+        ส่งข้อมูลผ่าน MQTT ขึ้น Grafana dashboard หรือ Home Assistant
+        เพิ่ม automatic alert ผ่าน LINE Notify เมื่อค่าออกจาก range
+        เก็บ log ข้อมูลลง InfluxDB หรือ Google Sheets
+      </p>
+      <div class="chip-row">
+        <span class="chip blue">MQTT</span>
+        <span class="chip purple">Grafana</span>
+        <span class="chip orange">LINE Notify</span>
+        <span class="chip teal">InfluxDB</span>
+        <span class="chip green">~$60 ทั้งระบบ</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SECTION: RESOURCES ===================== -->
+  <section id="resources">
+    <div class="section-header purple">
+      <span class="section-icon">🔗</span>
+      <h2>แหล่งข้อมูลและลิงก์แนะนำ</h2>
+      <span class="section-tag">คัดสรรแล้ว</span>
+    </div>
+
+    <div class="resources-grid">
+      <div class="resource-card">
+        <div class="rc-type" style="color:#a78bfa;">Official · Matter SDK</div>
+        <div class="rc-title">Espressif esp-matter SDK</div>
+        <div class="rc-desc">Matter Development Guide 2026 — รองรับ Wi-Fi, Thread และ Ethernet</div>
+      </div>
+      <div class="resource-card">
+        <div class="rc-type" style="color:#fb923c;">Tutorial · Matter</div>
+        <div class="rc-title">ESP32 Matter On/Off Light (Random Nerd)</div>
+        <div class="rc-desc">ทำงานกับ Alexa, Apple Home, Google, Home Assistant</div>
+      </div>
+      <div class="resource-card">
+        <div class="rc-type" style="color:#fb923c;">Guide · ESP32 Board Selection</div>
+        <div class="rc-title">Best ESP32 for ESPHome 2026</div>
+        <div class="rc-desc">เปรียบเทียบ C6, H2, S3, C3 สำหรับ Home Assistant</div>
+      </div>
+      <div class="resource-card">
+        <div class="rc-type" style="color:#a78bfa;">Component · TinyML</div>
+        <div class="rc-title">esp-tflite-micro (Espressif Registry)</div>
+        <div class="rc-desc">TensorFlow Lite Micro component สำหรับ ESP-IDF อย่างเป็นทางการ</div>
+      </div>
+      <div class="resource-card">
+        <div class="rc-type" style="color:#2dd4bf;">Platform · Edge AI</div>
+        <div class="rc-title">Edge Impulse Studio</div>
+        <div class="rc-desc">No-code ML สำหรับ ESP32 — Gesture, Keyword, Vision</div>
+      </div>
+      <div class="resource-card">
+        <div class="rc-type" style="color:#2dd4bf;">Tutorial · Air Quality</div>
+        <div class="rc-title">BME688 BSEC Library (Bosch)</div>
+        <div class="rc-desc">IAQ Index 0–400, VOC + Gas Scan + Self-training AI</div>
+      </div>
+      <div class="resource-card">
+        <div class="rc-type" style="color:#f472b6;">Tutorial · Audio</div>
+        <div class="rc-title">INMP441 + ESP32 Voice Recognition (Zbotic 2026)</div>
+        <div class="rc-desc">Wiring guide + RMS voice activity detection sketch</div>
+      </div>
+      <div class="resource-card">
+        <div class="rc-type" style="color:#f472b6;">Project · Speech</div>
+        <div class="rc-title">Offline ESP32 Voice Recognition (Electromaker)</div>
+        <div class="rc-desc">Edge Impulse + I2S mic — runs 100% without internet</div>
+      </div>
+      <div class="resource-card">
+        <div class="rc-type" style="color:#60a5fa;">Tutorial · Water</div>
+        <div class="rc-title">ESP32 Aquarium Water Quality Monitor (How2Electronics)</div>
+        <div class="rc-desc">TDS + Temperature + Dashboard สำหรับตู้ปลา</div>
+      </div>
+      <div class="resource-card">
+        <div class="rc-type" style="color:#60a5fa;">Research · Water IoT</div>
+        <div class="rc-title">IoT Smart Aquarium System (arXiv 2601.08484)</div>
+        <div class="rc-desc">งานวิจัย ESP32 + pH, TDS, Temperature ครบวงจร</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-logo">🎃 ESP32 Daily Innovations</div>
+  <p>สร้างโดยอัตโนมัติ · 31 ตุลาคม 2026 (Halloween Edition)</p>
+  <p style="margin-top:0.5rem;">
+    แหล่งข้อมูล: Espressif Systems, Edge Impulse, Bosch Sensortec, Random Nerd Tutorials,
+    Zbotic, Electromaker, How2Electronics, arXiv
+  </p>
+  <p style="margin-top:0.5rem; color:#374151;">
+    หัวข้อวันนี้: Matter Protocol · TinyML/Edge AI · BME688 &amp; SGP41 Air Quality · INMP441 Voice Recognition · Water Quality Monitor
+  </p>
+</footer>
+
+</body>
+</html>
