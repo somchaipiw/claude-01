@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 1 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-deep:    #0f172a;
+    --bg-card:    #1e293b;
+    --bg-card2:   #263345;
+    --accent1:    #38bdf8;
+    --accent2:    #818cf8;
+    --accent3:    #34d399;
+    --accent4:    #fb923c;
+    --accent5:    #f472b6;
+    --text-main:  #e2e8f0;
+    --text-muted: #94a3b8;
+    --border:     #334155;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-main);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1a2744 40%, #0f2952 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(56,189,248,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 50%, rgba(129,140,248,0.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(129,140,248,0.2));
+    border: 1px solid rgba(56,189,248,0.4);
+    border-radius: 999px;
+    padding: 0.25rem 1rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent1);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+  header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+  }
+  .header-sub {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.4rem;
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .stat-chip span { color: var(--accent1); font-weight: 700; }
+
+  /* ===== NAV ===== */
+  nav {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 1rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  nav a:hover {
+    color: var(--accent1);
+    border-color: rgba(56,189,248,0.3);
+    background: rgba(56,189,248,0.07);
+  }
+
+  /* ===== LAYOUT ===== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem 3rem;
+  }
+
+  /* ===== SECTION TITLE ===== */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 2.5rem 0 1.2rem;
+  }
+  .section-title .icon {
+    width: 2.4rem; height: 2.4rem;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .section-title h2 {
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .section-desc {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 1.2rem;
+    padding-left: 3.15rem;
+    line-height: 1.7;
+  }
+
+  /* ===== CARDS ===== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.3rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover {
+    border-color: rgba(56,189,248,0.35);
+    transform: translateY(-2px);
+  }
+  .card h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.55rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.87rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .card .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.8rem;
+  }
+  .tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+  }
+  .tag-blue   { background: rgba(56,189,248,0.15);  color: var(--accent1); }
+  .tag-violet { background: rgba(129,140,248,0.15); color: var(--accent2); }
+  .tag-green  { background: rgba(52,211,153,0.15);  color: var(--accent3); }
+  .tag-orange { background: rgba(251,146,60,0.15);  color: var(--accent4); }
+  .tag-pink   { background: rgba(244,114,182,0.15); color: var(--accent5); }
+
+  /* ===== WIDE CARD ===== */
+  .card-wide {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.4rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .card-wide h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* ===== CODE BLOCK ===== */
+  .code-block {
+    background: #0d1526;
+    border: 1px solid #1e3a5f;
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: #7dd3fc;
+    overflow-x: auto;
+    margin: 0.7rem 0;
+    line-height: 1.6;
+  }
+  .code-block .c  { color: #64748b; }
+  .code-block .k  { color: #93c5fd; }
+  .code-block .s  { color: #86efac; }
+  .code-block .n  { color: #c4b5fd; }
+
+  /* ===== COMPARISON TABLE ===== */
+  .table-wrap { overflow-x: auto; margin: 0.7rem 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.83rem;
+  }
+  thead th {
+    background: var(--bg-card2);
+    color: var(--accent1);
+    padding: 0.55rem 0.8rem;
+    text-align: left;
+    border-bottom: 2px solid var(--accent1);
+    white-space: nowrap;
+  }
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:hover { background: rgba(255,255,255,0.03); }
+  tbody td { padding: 0.5rem 0.8rem; color: var(--text-muted); }
+  tbody td:first-child { color: var(--text-main); font-weight: 600; }
+
+  /* ===== HIGHLIGHT BOX ===== */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(129,140,248,0.06));
+    border: 1px solid rgba(56,189,248,0.25);
+    border-left: 3px solid var(--accent1);
+    border-radius: 8px;
+    padding: 0.9rem 1.1rem;
+    margin: 0.8rem 0;
+    font-size: 0.87rem;
+    line-height: 1.7;
+  }
+  .highlight-box strong { color: var(--accent1); }
+  .warn-box {
+    background: rgba(251,146,60,0.07);
+    border: 1px solid rgba(251,146,60,0.3);
+    border-left: 3px solid var(--accent4);
+    border-radius: 8px;
+    padding: 0.9rem 1.1rem;
+    margin: 0.8rem 0;
+    font-size: 0.87rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+  }
+  .warn-box strong { color: var(--accent4); }
+
+  /* ===== STEP LIST ===== */
+  .step-list { list-style: none; counter-reset: steps; }
+  .step-list li {
+    counter-increment: steps;
+    padding: 0.6rem 0.5rem 0.6rem 2.8rem;
+    position: relative;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    line-height: 1.7;
+  }
+  .step-list li::before {
+    content: counter(steps);
+    position: absolute; left: 0; top: 0.55rem;
+    width: 1.8rem; height: 1.8rem;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; font-weight: 700; color: #0f172a;
+    line-height: 1.8rem;
+    text-align: center;
+  }
+  .step-list li strong { color: var(--text-main); }
+
+  /* ===== PROJECT BOX ===== */
+  .project-box {
+    background: linear-gradient(135deg, rgba(52,211,153,0.07), rgba(56,189,248,0.04));
+    border: 1px solid rgba(52,211,153,0.25);
+    border-radius: 10px;
+    padding: 1.1rem 1.3rem;
+    margin-top: 1rem;
+  }
+  .project-box h4 {
+    font-size: 0.95rem;
+    color: var(--accent3);
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+  }
+  .project-box ul {
+    list-style: none;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 0.3rem;
+  }
+  .project-box ul li::before { content: "→ "; color: var(--accent3); font-weight: 700; }
+
+  /* ===== RESOURCES ===== */
+  .res-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 0.8rem;
+  }
+  .res-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+  }
+  .res-card .res-src {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.3rem;
+  }
+  .res-card a {
+    color: var(--accent1);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: block;
+    line-height: 1.4;
+  }
+  .res-card a:hover { text-decoration: underline; }
+  .res-card p { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.3rem; line-height: 1.5; }
+
+  /* ===== DIVIDER ===== */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 1.5rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+  footer strong { color: var(--accent1); }
+
+  /* ===== COLOR VARIANTS FOR SECTION ICONS ===== */
+  .icon-blue   { background: rgba(56,189,248,0.15);  }
+  .icon-violet { background: rgba(129,140,248,0.15); }
+  .icon-green  { background: rgba(52,211,153,0.15);  }
+  .icon-orange { background: rgba(251,146,60,0.15);  }
+  .icon-pink   { background: rgba(244,114,182,0.15); }
+
+  @media (max-width: 600px) {
+    .stats-row { gap: 0.7rem; }
+    .section-desc { padding-left: 0; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">🔬 ESP32 Daily Research</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="header-sub">1 พฤศจิกายน 2026 | วิจัยและรวบรวมโดย AI Researcher</p>
+  <div class="stats-row">
+    <div class="stat-chip">📡 หัวข้อ <span>5</span> เรื่อง</div>
+    <div class="stat-chip">💡 ไอเดียโปรเจกต์ <span>8+</span> แบบ</div>
+    <div class="stat-chip">🔧 Library &amp; Tool <span>10+</span> ตัว</div>
+  </div>
+</header>
+
+<nav>
+  <a href="#gps">📍 GPS Tracking</a>
+  <a href="#cellular">📶 Cellular 4G/LTE</a>
+  <a href="#thermal">🌡 Thermal Camera</a>
+  <a href="#ota">🔄 OTA Update</a>
+  <a href="#nfc">🏷 NFC/RFID</a>
+  <a href="#resources">🔗 แหล่งอ้างอิง</a>
+</nav>
+
+<main>
+
+  <!-- ===== SECTION 1: GPS Tracking ===== -->
+  <div class="section-title" id="gps">
+    <div class="icon icon-blue">📍</div>
+    <h2>ESP32 + GPS Tracking — ติดตามตำแหน่งด้วย GNSS</h2>
+  </div>
+  <p class="section-desc">
+    GPS tracking บน ESP32 เป็นหนึ่งในงานที่นิยมมากที่สุด ตั้งแต่ระบบติดตามยานพาหนะ ไปจนถึง Asset Tracker แบบพกพา
+    โมดูล GNSS รุ่นใหม่รองรับหลายระบบดาวเทียม (GPS, GLONASS, Galileo, BeiDou) พร้อมกัน ทำให้ Fix Time เร็วขึ้น และแม่นยำกว่าเดิมมาก
+  </p>
+
+  <div class="card-wide">
+    <h3>🛰 เปรียบเทียบโมดูล GPS/GNSS ที่ใช้กับ ESP32</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>โมดูล</th>
+            <th>ระบบดาวเทียม</th>
+            <th>ราคาโดยประมาณ</th>
+            <th>Interface</th>
+            <th>จุดเด่น</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>NEO-6M</td>
+            <td>GPS เท่านั้น</td>
+            <td>~$5–8</td>
+            <td>UART</td>
+            <td>ราคาถูก เริ่มต้นง่าย</td>
+          </tr>
+          <tr>
+            <td>NEO-M8N</td>
+            <td>GPS+GLONASS+Galileo</td>
+            <td>~$15–25</td>
+            <td>UART / I²C / SPI</td>
+            <td>Multi-GNSS ราคากลาง</td>
+          </tr>
+          <tr>
+            <td>NEO-M9N</td>
+            <td>GPS+GLONASS+Galileo+BeiDou</td>
+            <td>~$30–45</td>
+            <td>UART / I²C / SPI</td>
+            <td>92-channel, Fix ไว มี SMA connector</td>
+          </tr>
+          <tr>
+            <td>L76K (Quectel)</td>
+            <td>GPS+GLONASS+BeiDou</td>
+            <td>~$8–15</td>
+            <td>UART</td>
+            <td>ประหยัดพลังงาน Backup Battery</td>
+          </tr>
+          <tr>
+            <td>GT-U7</td>
+            <td>GPS+GLONASS</td>
+            <td>~$6–10</td>
+            <td>UART</td>
+            <td>ราคาถูก มี LED Indicator</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="highlight-box">
+      <strong>แนะนำ:</strong> สำหรับโปรเจกต์ที่ต้องการความแม่นยำสูง ใช้ <strong>NEO-M9N</strong> (92 channels, รองรับทั้ง 4 ระบบดาวเทียม)
+      ถ้างบจำกัด ใช้ <strong>NEO-M8N</strong> ก็เพียงพอสำหรับงานส่วนใหญ่
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>📡 Library ยอดนิยม: TinyGPS++</h3>
+      <p>
+        TinyGPS++ คือ library มาตรฐานสำหรับ Parse NMEA Sentences จาก GPS module บน Arduino/ESP32
+        รองรับ GGA, RMC, GSA, GSV ฯลฯ พร้อม Custom NMEA Parser สำหรับ Protocol เฉพาะ
+      </p>
+      <div class="code-block">
+<span class="c">// ติดตั้ง TinyGPS++ ผ่าน Arduino Library Manager</span>
+<span class="k">#include</span> &lt;TinyGPS++.h&gt;
+TinyGPSPlus gps;
+HardwareSerial gpsSerial(1);
+
+<span class="k">void</span> <span class="n">setup</span>() {
+  gpsSerial.begin(9600, SERIAL_8N1, 16, 17);
+}
+<span class="k">void</span> <span class="n">loop</span>() {
+  <span class="k">while</span>(gpsSerial.available())
+    gps.encode(gpsSerial.read());
+  <span class="k">if</span>(gps.location.isUpdated()) {
+    Serial.printf(<span class="s">"Lat: %.6f, Lng: %.6f\n"</span>,
+      gps.location.lat(), gps.location.lng());
+  }
+}</div>
+      <div class="tag-row">
+        <span class="tag tag-blue">TinyGPS++</span>
+        <span class="tag tag-green">Arduino</span>
+        <span class="tag tag-violet">NMEA</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🚗 Vehicle Tracker + Telegram Alert</h3>
+      <p>
+        ส่งตำแหน่งรถไปยัง Telegram Bot โดยตรงจาก ESP32 ทุก N วินาที
+        หรือเมื่อรถเคลื่อนที่ออกนอก Geofence ที่กำหนด พร้อมลิงก์ Google Maps
+      </p>
+      <div class="highlight-box">
+        <strong>ฟีเจอร์หลัก:</strong> GPS Fix → Format URL → ส่ง Telegram via HTTPS
+        <code style="display:block;margin-top:4px;font-size:0.78rem">https://maps.google.com/?q=13.7563,100.5018</code>
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-orange">Telegram Bot</span>
+        <span class="tag tag-blue">Geofence</span>
+        <span class="tag tag-green">HTTPSClient</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🗺 ESP32 + GPS + MQTT + Node-RED Dashboard</h3>
+      <p>
+        ส่งข้อมูล GPS ผ่าน MQTT ไปยัง Node-RED แล้วแสดงบนแผนที่ Leaflet.js แบบ Real-time
+        เหมาะสำหรับ Fleet Tracking หรือติดตามสัตว์ในฟาร์ม
+      </p>
+      <div class="tag-row">
+        <span class="tag tag-violet">MQTT</span>
+        <span class="tag tag-blue">Node-RED</span>
+        <span class="tag tag-green">Leaflet.js</span>
+        <span class="tag tag-orange">Real-time</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>⚡ LILYGO T-SIM7600G + GPS — All-in-One</h3>
+      <p>
+        บอร์ด LILYGO รวม ESP32, SIM7600G (4G LTE), และ GPS GNSS ในบอร์ดเดียว
+        พร้อม SD Card slot และ Battery management เหมาะสำหรับงาน Cellular IoT Tracker
+        ที่ต้องทำงานในพื้นที่ไม่มี WiFi
+      </p>
+      <div class="tag-row">
+        <span class="tag tag-orange">LILYGO</span>
+        <span class="tag tag-blue">SIM7600G</span>
+        <span class="tag tag-violet">All-in-One</span>
+        <span class="tag tag-green">SD Card</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="project-box">
+    <h4>🛠 ไอเดียโปรเจกต์ GPS ที่น่าสร้าง</h4>
+    <ul>
+      <li>GPS Data Logger บัน SD Card — บันทึกเส้นทางการขับรถ</li>
+      <li>Pet Tracker — ติดตามสัตว์เลี้ยงที่วิ่งออกนอกบ้าน</li>
+      <li>School Bus Monitor — แจ้งผู้ปกครองเมื่อรถใกล้ถึง</li>
+      <li>Geofencing Alert — แจ้งเตือนเมื่ออุปกรณ์ออกนอกพื้นที่</li>
+      <li>Sports Activity Tracker — บันทึกเส้นทางวิ่ง/ปั่นจักรยาน</li>
+      <li>Drone Position Logger — บันทึก Flight Path</li>
+    </ul>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ===== SECTION 2: Cellular 4G/LTE ===== -->
+  <div class="section-title" id="cellular">
+    <div class="icon icon-violet">📶</div>
+    <h2>ESP32 + Cellular 4G LTE — IoT ไร้ WiFi ด้วย SIM7600</h2>
+  </div>
+  <p class="section-desc">
+    เมื่อต้องการ IoT ในพื้นที่ห่างไกลที่ไม่มี WiFi หรือต้องการ Backup Internet โมดูล 4G LTE เช่น SIM7600
+    คือคำตอบ รองรับ LTE Cat-4 (150 Mbps DL), SMS, Voice Call, และ GNSS ในโมดูลเดียว
+  </p>
+
+  <div class="card-wide">
+    <h3>📱 เปรียบเทียบโมดูล Cellular ที่ใช้กับ ESP32</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>โมดูล</th>
+            <th>เทคโนโลยี</th>
+            <th>ความเร็ว</th>
+            <th>จุดเด่น</th>
+            <th>เหมาะกับ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>SIM800L</td>
+            <td>2G GSM/GPRS</td>
+            <td>~85 kbps</td>
+            <td>ราคาถูก ~$3-5, ใช้ง่าย</td>
+            <td>SMS Alert, GPRS Data (ระวัง: 2G กำลังถูกปิด!)</td>
+          </tr>
+          <tr>
+            <td>SIM7020E</td>
+            <td>NB-IoT Cat-NB1</td>
+            <td>~127 kbps</td>
+            <td>พลังงานต่ำมาก, 10 ปีบน Battery</td>
+            <td>Smart Meter, เซนเซอร์สิ่งแวดล้อม</td>
+          </tr>
+          <tr>
+            <td>SIM7080G</td>
+            <td>NB-IoT + LTE-M</td>
+            <td>~589 kbps</td>
+            <td>Dual-mode, Global Band</td>
+            <td>Low-power Remote Monitoring</td>
+          </tr>
+          <tr>
+            <td>SIM7600G-H</td>
+            <td>LTE Cat-4</td>
+            <td>150/50 Mbps</td>
+            <td>4G เต็มสปีด, มี GPS ในตัว</td>
+            <td>Video Streaming, Real-time Dashboard</td>
+          </tr>
+          <tr>
+            <td>A7670E</td>
+            <td>LTE Cat-1 bis</td>
+            <td>~10 Mbps</td>
+            <td>ราคาถูกกว่า SIM7600, ประหยัดไฟกว่า</td>
+            <td>IoT ที่ต้องการ LTE แต่ไม่ต้องการสปีดสูง</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>🔧 TinyGSM — Library มาตรฐานสำหรับ Cellular</h3>
+      <p>
+        TinyGSM เป็น Library ที่รองรับโมดูล Cellular กว่า 20 รุ่น ให้ API เหมือน Arduino WiFiClient
+        ทำให้โค้ดที่เคยใช้ WiFi สามารถ Switch มาใช้ Cellular ได้โดยแก้ไขน้อยมาก
+      </p>
+      <div class="code-block">
+<span class="c">// เปลี่ยนจาก WiFi เป็น 4G แค่บรรทัดเดียว!</span>
+<span class="k">#define</span> TINY_GSM_MODEM_SIM7600
+<span class="k">#include</span> &lt;TinyGsmClient.h&gt;
+<span class="k">#include</span> &lt;ArduinoHttpClient.h&gt;
+
+TinyGsm modem(SerialAT);
+TinyGsmClient client(modem);
+HttpClient http(client, server, 80);</div>
+      <div class="tag-row">
+        <span class="tag tag-violet">TinyGSM</span>
+        <span class="tag tag-blue">HTTP Client</span>
+        <span class="tag tag-green">Arduino API</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>⚠️ ข้อควรระวัง: 2G กำลังถูกปิดให้บริการ</h3>
+      <p>
+        SIM800L ใช้เครือข่าย 2G GSM/GPRS ซึ่งผู้ให้บริการในไทยและหลายประเทศกำลังทยอยปิดให้บริการ
+        โครงการใหม่ควรเลือกใช้ NB-IoT, LTE-M หรือ LTE Cat-1 ขึ้นไปแทน
+      </p>
+      <div class="warn-box">
+        <strong>⚡ แนะนำ:</strong> เลือก <strong>A7670E</strong> สำหรับงาน IoT ทั่วไปที่ต้องการ LTE ราคาประหยัด
+        หรือ <strong>SIM7080G</strong> สำหรับ Low-power Sensor Node ที่ทำงานบนแบตเตอรี่
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-orange">NB-IoT</span>
+        <span class="tag tag-violet">LTE-M</span>
+        <span class="tag tag-blue">LTE Cat-1</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📦 LILYGO T-SIM Series — บอร์ดพร้อมใช้</h3>
+      <p>
+        LILYGO มีบอร์ด T-SIM หลายรุ่นที่รวม ESP32 + Cellular module + GPS + Power management
+        ไว้ในบอร์ดเดียว พร้อมตัวอย่างโค้ดครบ เหมาะสำหรับ Prototype ที่รวดเร็ว
+      </p>
+      <ul style="font-size:0.83rem;color:var(--text-muted);margin-top:0.5rem;padding-left:1.2rem;">
+        <li>T-SIM7600G — ESP32 + 4G LTE + GPS (~$45)</li>
+        <li>T-SIM7080G — ESP32-S3 + NB-IoT + LTE-M (~$25)</li>
+        <li>T-A7670E — ESP32 + LTE Cat-1 ราคาประหยัด</li>
+      </ul>
+      <div class="tag-row">
+        <span class="tag tag-orange">LILYGO</span>
+        <span class="tag tag-blue">Ready-to-Use</span>
+        <span class="tag tag-green">All-in-One</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🌐 Remote Sensor Node ด้วย SIM7080G + MQTT</h3>
+      <p>
+        ใช้ SIM7080G (NB-IoT) ส่งข้อมูลเซนเซอร์ผ่าน MQTT ทุก 15 นาที โดยใช้กระแสไฟฟ้า
+        เพียง ~5µA ใน Sleep Mode ทำให้ Node ทำงานได้บนถ่าน AA 2 ก้อนนานกว่า 5 ปี
+      </p>
+      <div class="highlight-box">
+        <strong>Power Budget:</strong> Sleep 5µA × 99% + Active 150mA × 1% = 1.55mA average
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-green">Ultra Low Power</span>
+        <span class="tag tag-violet">NB-IoT</span>
+        <span class="tag tag-blue">MQTT</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ===== SECTION 3: Thermal Camera ===== -->
+  <div class="section-title" id="thermal">
+    <div class="icon icon-orange">🌡</div>
+    <h2>ESP32 + Thermal Camera — กล้องอินฟราเรดด้วย MLX90640 &amp; AMG8833</h2>
+  </div>
+  <p class="section-desc">
+    กล้อง Thermal บน ESP32 เป็นโปรเจกต์ที่น่าทึ่งมาก สามารถสร้าง Handheld Thermal Imager ราคา ~$30-60
+    ที่ใช้งานได้จริง ตรวจสอบการรั่วของความร้อน, ตรวจวัดอุณหภูมิร่างกาย, หรือดู Hotspot ในวงจรอิเล็กทรอนิกส์
+  </p>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>🔬 MLX90640 — 32×24 Pixel Thermal Array</h3>
+      <p>
+        MLX90640 คือเซนเซอร์ IR Array ขนาด 32×24 pixels (768 pixels) จาก Melexis
+        วัดอุณหภูมิได้ตั้งแต่ -40°C ถึง +300°C แม่นยำ ±1.5°C Refresh Rate สูงสุด 64 Hz
+        เชื่อมต่อผ่าน I²C
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Spec</th><th>ค่า</th></tr></thead>
+          <tbody>
+            <tr><td>Resolution</td><td>32×24 pixels (768)</td></tr>
+            <tr><td>FOV</td><td>55° × 35° หรือ 110° × 75°</td></tr>
+            <tr><td>Refresh Rate</td><td>0.5 – 64 Hz</td></tr>
+            <tr><td>Range</td><td>-40°C ถึง +300°C</td></tr>
+            <tr><td>Accuracy</td><td>±1.5°C</td></tr>
+            <tr><td>Interface</td><td>I²C (Address: 0x33)</td></tr>
+            <tr><td>Supply</td><td>3.3V</td></tr>
+            <tr><td>ราคา</td><td>~$20-35</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-orange">MLX90640</span>
+        <span class="tag tag-blue">I²C</span>
+        <span class="tag tag-violet">32×24px</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>💰 AMG8833 — 8×8 Budget Option</h3>
+      <p>
+        AMG8833 (Panasonic Grid-EYE) มีความละเอียดเพียง 8×8 pixels (64 pixels) แต่ราคาถูกกว่ามาก
+        เหมาะสำหรับ Presence Detection, People Counting, หรืองานที่ไม่ต้องการภาพ Thermal ละเอียด
+      </p>
+      <div class="highlight-box">
+        <strong>เลือก AMG8833 เมื่อ:</strong> งบจำกัด, ต้องการ Detect คนมากกว่า "ดู" Thermal Image<br>
+        <strong>เลือก MLX90640 เมื่อ:</strong> ต้องการเห็นรายละเอียด เช่น ตรวจ Hotspot หรือวัดอุณหภูมิแม่น
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-green">AMG8833</span>
+        <span class="tag tag-blue">8×8px</span>
+        <span class="tag tag-orange">Presence Detection</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🖥 DIY Handheld Thermal Camera</h3>
+      <p>
+        โปรเจกต์ยอดนิยม: ESP32 WROVER + MLX90640 + จอ ILI9341 2.4" + TP4056 Battery charger
+        + เคส 3D print พร้อม Colormap (Iron, Rainbow, Jet) แบบเดียวกับ FLIR ราคาหลักหมื่น
+      </p>
+      <ul style="font-size:0.83rem;color:var(--text-muted);margin-top:0.6rem;padding-left:1.2rem;">
+        <li>ESP32 WROVER (PSRAM สำหรับ Frame Buffer)</li>
+        <li>MLX90640 (I²C: SDA=21, SCL=22)</li>
+        <li>ILI9341 2.4" TFT Display (SPI)</li>
+        <li>TP4056 + LiPo 1000mAh</li>
+        <li>Library: Adafruit_MLX90640 หรือ SparkFun MLX90640</li>
+      </ul>
+      <div class="tag-row">
+        <span class="tag tag-orange">DIY Thermal Cam</span>
+        <span class="tag tag-blue">ILI9341</span>
+        <span class="tag tag-green">PSRAM</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🌐 Browser Thermal View ด้วย ESP32 Web Server</h3>
+      <p>
+        ส่ง Thermal data ผ่าน WebSocket จาก ESP32 ไปยัง Browser แล้วแสดงเป็น Heatmap ด้วย
+        JavaScript Canvas + Color Interpolation ทำให้ดูได้จากโทรศัพท์โดยไม่ต้องมีจอ TFT
+      </p>
+      <div class="code-block">
+<span class="c">// ESP32 ส่ง JSON array ผ่าน WebSocket</span>
+ws.send(JSON.stringify({
+  <span class="s">"temps"</span>: [float_array_768],
+  <span class="s">"min"</span>: 20.5, <span class="s">"max"</span>: 38.2
+}));
+<span class="c">// Browser วาด Canvas 32×24 แล้ว Scale ขยาย</span></div>
+      <div class="tag-row">
+        <span class="tag tag-blue">WebSocket</span>
+        <span class="tag tag-violet">Canvas API</span>
+        <span class="tag tag-green">Real-time</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="project-box">
+    <h4>🛠 ไอเดียโปรเจกต์ Thermal Camera</h4>
+    <ul>
+      <li>ตรวจ Hotspot วงจรไฟฟ้า / PCB ก่อน Magic Smoke</li>
+      <li>Smart Building: ตรวจการรั่วความร้อนในผนัง</li>
+      <li>ระบบตรวจวัดไข้ก่อนเข้าอาคาร (Non-contact)</li>
+      <li>People Counter ในห้อง / Office Occupancy</li>
+      <li>Smart Fridge Monitor — เห็น Heat Pattern</li>
+      <li>ตรวจสอบ Solar Panel Degradation</li>
+    </ul>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ===== SECTION 4: OTA Updates ===== -->
+  <div class="section-title" id="ota">
+    <div class="icon icon-green">🔄</div>
+    <h2>ESP32 OTA Firmware Update — อัปเดตโค้ดไร้สาย</h2>
+  </div>
+  <p class="section-desc">
+    OTA (Over-The-Air) Update คือฟีเจอร์สำคัญสำหรับ IoT Deployment จริง ช่วยให้อัปเดต Firmware
+    โดยไม่ต้องเดินสายหรือถอดอุปกรณ์ ESP32 รองรับ OTA หลายรูปแบบ ตั้งแต่ Development บน LAN
+    ไปจนถึง Production Fleet Management
+  </p>
+
+  <div class="card-wide">
+    <h3>⚖️ เปรียบเทียบวิธี OTA บน ESP32 — เลือกให้เหมาะกับงาน</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>วิธี</th><th>ระยะ</th><th>ความปลอดภัย</th><th>เหมาะกับ</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ArduinoOTA (mDNS/UDP)</td>
+            <td>LAN เท่านั้น</td>
+            <td>Password ธรรมดา</td>
+            <td>Development, Debug เร็ว</td>
+          </tr>
+          <tr>
+            <td>ElegantOTA</td>
+            <td>LAN / Web UI</td>
+            <td>Basic Auth</td>
+            <td>Home Automation, Maker Project</td>
+          </tr>
+          <tr>
+            <td>HTTP/HTTPS OTA (HTTPUpdate)</td>
+            <td>Internet</td>
+            <td>HTTPS + CA Cert</td>
+            <td>Production Deployment</td>
+          </tr>
+          <tr>
+            <td>MQTT-triggered OTA</td>
+            <td>Internet</td>
+            <td>MQTT Auth + TLS</td>
+            <td>Large Fleet Management</td>
+          </tr>
+          <tr>
+            <td>Mongoose OS / ESP-IDF native</td>
+            <td>Internet</td>
+            <td>Code Signing + Rollback</td>
+            <td>Enterprise / Critical System</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>🚀 ArduinoOTA — เริ่มต้นง่ายใน 10 บรรทัด</h3>
+      <p>ใช้สำหรับ Development — อัปโหลดจาก Arduino IDE / PlatformIO ผ่าน WiFi แทน USB</p>
+      <div class="code-block">
+<span class="k">#include</span> &lt;ArduinoOTA.h&gt;
+<span class="k">void</span> <span class="n">setup</span>() {
+  WiFi.begin(ssid, pass);
+  ArduinoOTA.setPassword(<span class="s">"mypassword"</span>);
+  ArduinoOTA.begin();
+}
+<span class="k">void</span> <span class="n">loop</span>() {
+  ArduinoOTA.handle(); <span class="c">// ต้องเรียกทุก loop!</span>
+  <span class="c">// ... โค้ดหลัก</span>
+}</div>
+      <div class="warn-box">
+        <strong>⚠️ ข้อควรระวัง:</strong> ถ้า loop() block นาน OTA จะ Timeout ใช้ Async หรือ FreeRTOS Task แยก
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-green">ArduinoOTA</span>
+        <span class="tag tag-blue">mDNS</span>
+        <span class="tag tag-violet">Development</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>☁️ HTTPS OTA — Production-grade Update</h3>
+      <p>
+        ESP32 Poll เซิร์ฟเวอร์เพื่อเช็ค Version ใหม่ ถ้ามี ดาวน์โหลดและติดตั้งอัตโนมัติ
+        ใช้ HTTPS พร้อม Root CA Certificate เพื่อความปลอดภัย
+      </p>
+      <div class="code-block">
+<span class="k">#include</span> &lt;HTTPUpdate.h&gt;
+<span class="k">#include</span> &lt;WiFiClientSecure.h&gt;
+
+WiFiClientSecure client;
+client.setCACert(root_ca);  <span class="c">// Pin CA cert</span>
+httpUpdate.update(client,
+  <span class="s">"https://myserver.com/firmware.bin"</span>);</div>
+      <div class="tag-row">
+        <span class="tag tag-blue">HTTPUpdate</span>
+        <span class="tag tag-orange">HTTPS</span>
+        <span class="tag tag-green">CA Certificate</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🛡 Security Best Practices สำหรับ OTA</h3>
+      <p>OTA ที่ไม่ปลอดภัยเท่ากับเปิดช่องให้โจมตีอุปกรณ์จากระยะไกล</p>
+      <ol class="step-list">
+        <li><strong>ใช้ HTTPS เสมอ</strong> — Pin Root CA Certificate ใน Firmware</li>
+        <li><strong>Verify Firmware Hash</strong> — SHA256 ก่อน Apply</li>
+        <li><strong>Version Check</strong> — ป้องกัน Downgrade Attack</li>
+        <li><strong>Rollback Partition</strong> — ถ้า Boot ใหม่ไม่ผ่าน กลับ Version เก่า</li>
+        <li><strong>อย่า Hardcode Password</strong> — เก็บใน NVS หรือ SPIFFS</li>
+      </ol>
+      <div class="tag-row">
+        <span class="tag tag-pink">Security</span>
+        <span class="tag tag-orange">Rollback</span>
+        <span class="tag tag-blue">SHA256</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>💎 ElegantOTA — Web UI สวยงาม ใช้ง่าย</h3>
+      <p>
+        ElegantOTA เป็น Library ที่เพิ่ม Web Interface สวยงามสำหรับ OTA Update
+        รองรับทั้ง ESP32 และ ESP8266 พร้อม Authentication และ Progress Bar
+        ติดตั้งผ่าน Arduino Library Manager หรือ PlatformIO
+      </p>
+      <div class="code-block">
+<span class="k">#include</span> &lt;ElegantOTA.h&gt;
+<span class="c">// เพิ่มแค่ 2 บรรทัดใน setup():</span>
+ElegantOTA.begin(&amp;server);
+<span class="c">// แล้วเปิด http://[ip]/update</span></div>
+      <div class="tag-row">
+        <span class="tag tag-violet">ElegantOTA</span>
+        <span class="tag tag-blue">Web UI</span>
+        <span class="tag tag-green">Easy Setup</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ===== SECTION 5: NFC/RFID ===== -->
+  <div class="section-title" id="nfc">
+    <div class="icon icon-pink">🏷</div>
+    <h2>ESP32 + NFC/RFID ด้วย PN532 — ระบบ Access Control และ Smart Tag</h2>
+  </div>
+  <p class="section-desc">
+    NFC และ RFID เป็นเทคโนโลยี Contactless ที่ใช้กันแพร่หลายในบัตรเข้าออก, ระบบชำระเงิน,
+    และ Smart Label PN532 คือ NFC Controller ยอดนิยมที่เชื่อมต่อกับ ESP32 ได้ง่าย
+    รองรับ MIFARE, ISO 14443 Type A/B, FeliCa และ Peer-to-Peer Mode
+  </p>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>🔌 PN532 กับ ESP32 — เชื่อมต่ออย่างไร</h3>
+      <p>PN532 รองรับ 3 interface: I²C, SPI, UART โดย I²C ง่ายที่สุด แต่บน ESP32 บางบอร์ดอาจมีปัญหา
+      SPI เสถียรที่สุด แนะนำใช้ Elechouse library แทน Adafruit PN532 สำหรับ ESP32</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>PN532 Pin</th><th>ESP32 Pin</th><th>หมายเหตุ</th></tr></thead>
+          <tbody>
+            <tr><td>VCC</td><td>3.3V</td><td>ใช้ 3.3V (ไม่ใช่ 5V!)</td></tr>
+            <tr><td>GND</td><td>GND</td><td>—</td></tr>
+            <tr><td>SDA/MOSI</td><td>GPIO 23</td><td>SPI mode</td></tr>
+            <tr><td>SCL/SCK</td><td>GPIO 18</td><td>SPI mode</td></tr>
+            <tr><td>IRQ/MISO</td><td>GPIO 19</td><td>SPI mode</td></tr>
+            <tr><td>RSTO/SS</td><td>GPIO 5</td><td>Chip Select</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-pink">PN532</span>
+        <span class="tag tag-blue">SPI</span>
+        <span class="tag tag-violet">3.3V</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🚪 Smart Door Lock — RFID Access Control</h3>
+      <p>
+        ระบบ Access Control ด้วย PN532 + ESP32-S3 + Relay + NeoPixel LED แสดงสถานะ
+        เก็บ UID ที่อนุญาตใน SPIFFS/NVS พร้อมระบบเพิ่ม/ลบบัตรผ่าน Web Interface
+      </p>
+      <ol class="step-list">
+        <li><strong>Scan Card</strong> — อ่าน UID จากบัตร MIFARE หรือ Tag NFC</li>
+        <li><strong>Lookup Database</strong> — เช็ค UID ใน Whitelist ที่เก็บใน Flash</li>
+        <li><strong>Relay Control</strong> — เปิด/ปิดล็อคประตูและ LED แสดงสถานะ</li>
+        <li><strong>Log Event</strong> — บันทึกเวลาและ UID ไปยัง MQTT หรือ SD Card</li>
+        <li><strong>Web Admin</strong> — เพิ่ม/ลบบัตรผ่าน Web Interface ง่ายๆ</li>
+      </ol>
+      <div class="tag-row">
+        <span class="tag tag-pink">Access Control</span>
+        <span class="tag tag-orange">Relay</span>
+        <span class="tag tag-blue">Web Admin</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📦 RFID Asset Tracker + MQTT</h3>
+      <p>
+        ระบบติดตาม Asset ในโรงงานหรือคลังสินค้าด้วย RFID Scan แล้วส่งข้อมูลผ่าน MQTT
+        ไปยัง Dashboard แบบ Real-time รู้ว่าอุปกรณ์อยู่ที่จุดไหน ออกหรือเข้าสต็อกเมื่อไหร่
+      </p>
+      <div class="code-block">
+<span class="c">// ส่ง Asset Event ผ่าน MQTT</span>
+String payload = <span class="s">"{\"uid\":\""</span> + uid + <span class="s">"\","</span>
+  + <span class="s">"\"timestamp\":"</span> + millis() + <span class="s">","</span>
+  + <span class="s">"\"location\":\"Gate-A\"}"</span>;
+mqttClient.publish(<span class="s">"factory/rfid"</span>, payload.c_str());</div>
+      <div class="tag-row">
+        <span class="tag tag-violet">Asset Tracking</span>
+        <span class="tag tag-blue">MQTT</span>
+        <span class="tag tag-green">Dashboard</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📝 NFC Tag — Write &amp; Read Smart Data</h3>
+      <p>
+        นอกจากอ่าน UID PN532 ยังเขียน NDEF Records ลง Tag ได้ เช่น เขียน URL, Text,
+        vCard หรือ WiFi Credentials ลง NFC Sticker แล้วแตะโทรศัพท์เชื่อมต่อ WiFi ได้เลย
+      </p>
+      <div class="highlight-box">
+        <strong>NDEF WiFi Record:</strong> เขียน SSID + Password ลง NFC Tag
+        โทรศัพท์แตะ Tag แล้วเชื่อม WiFi อัตโนมัติโดยไม่ต้องพิมพ์ Password
+      </div>
+      <div class="tag-row">
+        <span class="tag tag-pink">NDEF</span>
+        <span class="tag tag-blue">WiFi Credential</span>
+        <span class="tag tag-green">Smart Tag</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="project-box">
+    <h4>🛠 ไอเดียโปรเจกต์ NFC/RFID</h4>
+    <ul>
+      <li>Smart Attendance System — เช็คชื่อด้วยบัตรนักศึกษา</li>
+      <li>Library Book Tracker — ยืม/คืนหนังสือด้วย RFID</li>
+      <li>NFC Smart Toy Box — แตะตุ๊กตาเล่น Playlist</li>
+      <li>Medication Reminder — แตะกล่องยาบันทึกการทานยา</li>
+      <li>NFC Business Card — แตะโทรศัพท์ดูข้อมูลติดต่อ</li>
+      <li>Bike Lock System — ล็อค/ปลดล็อคจักรยานด้วย NFC Ring</li>
+    </ul>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ===== RESOURCES ===== -->
+  <div class="section-title" id="resources">
+    <div class="icon icon-blue">🔗</div>
+    <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+  </div>
+  <p class="section-desc">แหล่งข้อมูลที่ใช้ประกอบการเขียนบทความวันที่ 1 พฤศจิกายน 2026</p>
+
+  <div class="res-grid">
+    <div class="res-card">
+      <div class="res-src">SparkFun / Hardware</div>
+      <a href="https://www.sparkfun.com/news/3512" target="_blank" rel="noopener">SparkFun NEO-M9N GPS Breakout</a>
+      <p>ข้อมูล NEO-M9N 92-channel u-blox GNSS Module</p>
+    </div>
+    <div class="res-card">
+      <div class="res-src">MicrocontrollersLab</div>
+      <a href="https://microcontrollerslab.com/?p=26065" target="_blank" rel="noopener">ESP32 GPS Tracker Guide</a>
+      <p>บทความ Vehicle Tracking ด้วย ESP32 + GPS + Blynk</p>
+    </div>
+    <div class="res-card">
+      <div class="res-src">LILYGO Wiki</div>
+      <a href="https://wiki.lilygo.cc/products/t-sim-series/sim7600e/quick-start.html" target="_blank" rel="noopener">LILYGO SIM7600E Quick Start</a>
+      <p>คู่มือเริ่มต้น T-SIM7600E ด้วย TinyGSM</p>
+    </div>
+    <div class="res-card">
+      <div class="res-src">Hackster.io</div>
+      <a href="https://hackster.io/hanguyen92205/esp32-sim7600-4g-lte-with-arduino-4a820a" target="_blank" rel="noopener">ESP32 + SIM7600 4G LTE</a>
+      <p>โปรเจกต์ SMS + Data ผ่าน AT Commands</p>
+    </div>
+    <div class="res-card">
+      <div class="res-src">CircuitDigest</div>
+      <a href="https://circuitdigest.com/microcontroller-projects/diy-thermal-camera-using-esp32-wrover-module-and-mlx90640-sensor" target="_blank" rel="noopener">DIY Thermal Camera ESP32 + MLX90640</a>
+      <p>บทความสร้าง Thermal Camera แบบ DIY ครบวงจร</p>
+    </div>
+    <div class="res-card">
+      <div class="res-src">AllPCB</div>
+      <a href="https://www.allpcb.com/allelectrohub/diy-infrared-thermal-camera-using-esp32" target="_blank" rel="noopener">DIY Infrared Thermal Camera 2026</a>
+      <p>โปรเจกต์พร้อม KiCad Design Files และ BOM</p>
+    </div>
+    <div class="res-card">
+      <div class="res-src">SunFounder</div>
+      <a href="https://www.sunfounder.com/blogs/news/esp32-ota-updates-a-complete-guide-to-arduinoota-and-elegantota-firmware-upgrades" target="_blank" rel="noopener">ESP32 OTA Complete Guide</a>
+      <p>คู่มือ ArduinoOTA และ ElegantOTA ครบถ้วน</p>
+    </div>
+    <div class="res-card">
+      <div class="res-src">DigiKey Maker</div>
+      <a href="https://www.digikey.com/en/maker/tutorials/2026/arduino-ota-updates-without-an-arduino-cloud-account" target="_blank" rel="noopener">Arduino OTA Without Cloud 2026</a>
+      <p>OTA Update โดยไม่ต้องพึ่ง Arduino Cloud</p>
+    </div>
+    <div class="res-card">
+      <div class="res-src">MakerWorld</div>
+      <a href="https://makerworld.com/models/3045758" target="_blank" rel="noopener">ESP32 Handheld Thermal Camera (3D Print)</a>
+      <p>ไฟล์ 3D Print เคสสำหรับ ESP32 Thermal Camera</p>
+    </div>
+    <div class="res-card">
+      <div class="res-src">GitHub / Elechouse</div>
+      <a href="https://backiee.wasmer.app/http_github_com/topics/pn532-rfid-module" target="_blank" rel="noopener">PN532 Library Collection</a>
+      <p>รวม Library และโปรเจกต์ PN532 บน GitHub</p>
+    </div>
+  </div>
+
+  <!-- Summary box -->
+  <div class="card-wide" style="margin-top:2rem; border-color: rgba(52,211,153,0.3); background: linear-gradient(135deg, rgba(52,211,153,0.05), rgba(56,189,248,0.04));">
+    <h3 style="color:var(--accent3)">📋 สรุปเนื้อหาวันที่ 1 พฤศจิกายน 2026</h3>
+    <p style="font-size:0.87rem;color:var(--text-muted);margin-top:0.5rem;line-height:1.8;">
+      วันนี้ครอบคลุม 5 หัวข้อหลัก ได้แก่ (1) <strong style="color:var(--accent1)">GPS/GNSS Tracking</strong> — เปรียบโมดูล NEO-6M ถึง NEO-M9N, TinyGPS++ library, และโปรเจกต์ Vehicle Tracker + Telegram;
+      (2) <strong style="color:var(--accent2)">Cellular 4G LTE</strong> — SIM7600G vs NB-IoT vs LTE-M, TinyGSM library, การเลือก Module ให้เหมาะกับงาน;
+      (3) <strong style="color:var(--accent4)">Thermal Camera</strong> — MLX90640 32×24px vs AMG8833 8×8px, DIY Handheld Thermal Cam, Browser Thermal View ผ่าน WebSocket;
+      (4) <strong style="color:var(--accent3)">OTA Firmware Update</strong> — ArduinoOTA, ElegantOTA, HTTPS OTA, Security Best Practices และ Rollback;
+      (5) <strong style="color:var(--accent5)">NFC/RFID PN532</strong> — Smart Door Lock, Asset Tracker, NDEF Writing, และ WiFi Credential Tag
+    </p>
+  </div>
+
+</main>
+
+<footer>
+  <p>สร้างโดย <strong>AI Researcher</strong> | วันที่ 1 พฤศจิกายน 2026</p>
+  <p style="margin-top:0.4rem;">ESP32 &amp; IoT Research — อัปเดตทุกวัน | ข้อมูลจาก Hackster.io, CircuitDigest, SparkFun, DigiKey Maker, LILYGO Wiki</p>
+</footer>
+
+</body>
+</html>
