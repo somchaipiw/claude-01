@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 2 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0b1120;
+    --bg-secondary: #111827;
+    --bg-card: #1a2235;
+    --bg-card-hover: #1e293b;
+    --accent1: #3b82f6;
+    --accent2: #10b981;
+    --accent3: #f59e0b;
+    --accent4: #ec4899;
+    --accent5: #8b5cf6;
+    --accent6: #06b6d4;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #1e293b;
+    --code-bg: #0d1117;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.85;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0b1120 0%, #0f1e3d 50%, #0b1120 100%);
+    border-bottom: 1px solid #1e3a5f;
+    padding: 2.5rem 1rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(59,130,246,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.4);
+    color: var(--accent1);
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+  }
+  header h1 span {
+    background: linear-gradient(90deg, var(--accent1), var(--accent5));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-meta {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  .header-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 0.35rem 0.9rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+  .header-chip strong { color: var(--text-primary); }
+
+  /* Nav */
+  nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 1rem 1.2rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  nav a:hover { color: var(--text-primary); border-bottom-color: var(--accent1); }
+
+  /* Layout */
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+
+  /* Section */
+  section { margin-bottom: 3.5rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: rgba(59,130,246,0.15); }
+  .icon-green { background: rgba(16,185,129,0.15); }
+  .icon-purple { background: rgba(139,92,246,0.15); }
+  .icon-amber { background: rgba(245,158,11,0.15); }
+  .section-title h2 { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); }
+  .section-title p { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.15rem; }
+
+  /* Cards */
+  .grid { display: grid; gap: 1.25rem; }
+  .grid-2 { grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  @media (max-width: 600px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.2s;
+  }
+  .card:hover { background: var(--bg-card-hover); border-color: rgba(59,130,246,0.3); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+
+  .card-tag {
+    display: inline-block;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  .tag-blue { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+  .tag-green { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+  .tag-purple { background: rgba(139,92,246,0.15); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.3); }
+  .tag-amber { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+  .tag-pink { background: rgba(236,72,153,0.15); color: #f9a8d4; border: 1px solid rgba(236,72,153,0.3); }
+  .tag-cyan { background: rgba(6,182,212,0.15); color: #67e8f9; border: 1px solid rgba(6,182,212,0.3); }
+
+  .card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.6rem; color: var(--text-primary); }
+  .card p { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.75rem; }
+  .card ul { list-style: none; padding: 0; }
+  .card ul li { font-size: 0.88rem; color: var(--text-secondary); padding: 0.3rem 0; padding-left: 1.2rem; position: relative; }
+  .card ul li::before { content: '▹'; position: absolute; left: 0; color: var(--accent1); font-size: 0.7rem; top: 0.45rem; }
+
+  /* Code block */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid #2d3748;
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #a8b2c1;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+    line-height: 1.7;
+    white-space: pre;
+  }
+  .code-block .c-kw { color: #c792ea; }
+  .code-block .c-fn { color: #82aaff; }
+  .code-block .c-str { color: #c3e88d; }
+  .code-block .c-num { color: #f78c6c; }
+  .code-block .c-cm { color: #546e7a; font-style: italic; }
+
+  /* Spec table */
+  .spec-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 0.75rem 0; }
+  .spec-table th { background: rgba(255,255,255,0.04); color: var(--text-muted); font-weight: 600; text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .spec-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--text-secondary); }
+  .spec-table tr:last-child td { border-bottom: none; }
+  .spec-table td:first-child { color: var(--text-primary); font-weight: 600; }
+
+  /* Highlight box */
+  .highlight-box {
+    padding: 1rem 1.2rem;
+    border-radius: 10px;
+    margin: 0.75rem 0;
+    font-size: 0.88rem;
+  }
+  .hb-blue { background: rgba(59,130,246,0.08); border-left: 3px solid var(--accent1); color: #bfdbfe; }
+  .hb-green { background: rgba(16,185,129,0.08); border-left: 3px solid var(--accent2); color: #a7f3d0; }
+  .hb-amber { background: rgba(245,158,11,0.08); border-left: 3px solid var(--accent3); color: #fde68a; }
+  .hb-purple { background: rgba(139,92,246,0.08); border-left: 3px solid var(--accent5); color: #ddd6fe; }
+
+  /* Step list */
+  .step-list { counter-reset: steps; list-style: none; padding: 0; }
+  .step-list li { counter-increment: steps; padding: 0.6rem 0 0.6rem 2.5rem; position: relative; font-size: 0.88rem; color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .step-list li:last-child { border-bottom: none; }
+  .step-list li::before { content: counter(steps); position: absolute; left: 0; top: 0.5rem; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: rgba(59,130,246,0.2); color: var(--accent1); font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+
+  /* Resource link */
+  .resource-link {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+    margin-bottom: 0.75rem;
+  }
+  .resource-link:hover { border-color: rgba(59,130,246,0.4); background: var(--bg-card-hover); }
+  .resource-icon { font-size: 1.5rem; flex-shrink: 0; padding-top: 0.1rem; }
+  .resource-info { flex: 1; }
+  .resource-info strong { display: block; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.25rem; }
+  .resource-info span { font-size: 0.82rem; color: var(--text-secondary); }
+  .resource-arrow { color: var(--text-muted); font-size: 1.2rem; align-self: center; }
+
+  /* Summary card */
+  .summary-card {
+    background: linear-gradient(135deg, rgba(59,130,246,0.08) 0%, rgba(139,92,246,0.08) 100%);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 16px;
+    padding: 1.75rem;
+    margin-top: 2.5rem;
+  }
+  .summary-card h3 { color: var(--accent1); font-size: 1.1rem; margin-bottom: 1rem; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; }
+  .summary-item { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 0.75rem 1rem; text-align: center; }
+  .summary-item .num { font-size: 2rem; font-weight: 700; color: var(--accent1); line-height: 1; }
+  .summary-item .lbl { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+  /* Footer */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1rem;
+    text-align: center;
+  }
+  footer p { font-size: 0.82rem; color: var(--text-muted); line-height: 2; }
+  footer strong { color: var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily ESP32 Research · Issue #130</div>
+  <h1>ESP32 &amp; Sensor <span>Innovations</span></h1>
+  <p style="color:var(--text-secondary);font-size:0.95rem;margin-top:0.5rem;">
+    วันจันทร์ที่ 2 พฤศจิกายน 2026 · หัวข้อ: Display GUI, UWB Positioning, Industrial Modbus &amp; Spectral Sensors
+  </p>
+  <div class="header-meta">
+    <div class="header-chip">🎯 <strong>4</strong> นวัตกรรมใหม่</div>
+    <div class="header-chip">🔧 <strong>5</strong> ไอเดียโปรเจกต์</div>
+    <div class="header-chip">🔬 <strong>3</strong> Sensors น่าสนใจ</div>
+    <div class="header-chip">📚 <strong>5</strong> แหล่งข้อมูล</div>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations">🚀 นวัตกรรม</a>
+  <a href="#projects">🔧 โปรเจกต์</a>
+  <a href="#sensors">🔬 Sensors</a>
+  <a href="#resources">📚 แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+<!-- ====== SECTION 1: INNOVATIONS ====== -->
+<section id="innovations">
+  <div class="section-header">
+    <div class="section-icon icon-blue">🚀</div>
+    <div class="section-title">
+      <h2>นวัตกรรมและเทคโนโลยีใหม่</h2>
+      <p>ESP32-P4, UWB Positioning, LVGL 9.x และ Modbus TCP/RTU</p>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+
+    <div class="card">
+      <span class="card-tag tag-blue">ESP32-P4 · New Chip</span>
+      <h3>🎬 ESP32-P4 — Video Processing &amp; Dual-Camera Pipeline</h3>
+      <p>Espressif เปิดตัว ESP32-P4 อย่างเป็นทางการ เป็น flagship chip ที่ทรงพลังที่สุดในตระกูล ESP32 ณ ปัจจุบัน เหมาะกับงาน Edge AI, Video Streaming และ Industrial HMI</p>
+      <table class="spec-table">
+        <tr><th>คุณสมบัติ</th><th>ESP32-P4</th><th>ESP32-S3</th></tr>
+        <tr><td>CPU</td><td>Dual-core 400 MHz RISC-V</td><td>Dual-core 240 MHz Xtensa</td></tr>
+        <tr><td>RAM</td><td>32 MB PSRAM ในตัว</td><td>512 KB + ภายนอก</td></tr>
+        <tr><td>Camera</td><td>Dual-camera ISP (H.264)</td><td>ไม่มี ISP ในตัว</td></tr>
+        <tr><td>Display</td><td>MIPI DSI/CSI 2-lane</td><td>ไม่รองรับ MIPI</td></tr>
+        <tr><td>USB</td><td>USB 2.0 High-Speed (480 Mbps)</td><td>USB 2.0 Full-Speed</td></tr>
+        <tr><td>AI Accelerator</td><td>HP-ISP + PIE</td><td>AI Extensions</td></tr>
+      </table>
+      <div class="highlight-box hb-blue">
+        💡 <strong>จุดเด่น:</strong> รองรับ H.264 hardware encoding จาก dual camera ส่งผ่าน MIPI DSI ไปยัง display ความละเอียดสูง เหมาะสร้าง Smart Doorbell หรือ Industrial Vision System ราคาประหยัด
+      </div>
+      <ul>
+        <li>LP-CPU (Low Power Core) สำหรับ wake-on-event โดยไม่ปลุก main cores</li>
+        <li>รองรับ TrustZone security สำหรับ firmware signing</li>
+        <li>DevKit EV-BOX-ESP32-P4-FUNCTION-EV-V1.4 มี LCD 7 นิ้วในชุด</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="card-tag tag-purple">UWB · Indoor Positioning</span>
+      <h3>📍 Ultra-Wideband (UWB) + ESP32 — ระบุตำแหน่งแม่นยำ ±10 ซม.</h3>
+      <p>UWB (Ultra-Wideband) เป็นเทคโนโลยี radio ที่ใช้ Time of Flight (ToF) คำนวณระยะทาง ให้ความแม่นยำสูงกว่า Bluetooth/WiFi อย่างมาก เหมาะกับ indoor positioning และ asset tracking</p>
+      <ul>
+        <li><strong>DW3000 (Qorvo)</strong> — UWB chip รองรับ IEEE 802.15.4z, ทำงานกับ SPI</li>
+        <li><strong>Makerfabs MakerUWB</strong> — โมดูล ESP32-S3 + DW3000 ราคา ~$25</li>
+        <li><strong>Pozyx</strong> — UWB anchor system พร้อม library Arduino/ESP32</li>
+        <li>ความแม่นยำ: ±10 cm ในพื้นที่ 30×30 ม. ด้วย 4 anchors</li>
+      </ul>
+      <div class="code-block"><span class="c-cm">// UWB Two-Way Ranging ด้วย DW3000 + ESP32</span>
+<span class="c-kw">#include</span> <span class="c-str">"DW3000.h"</span>
+
+<span class="c-fn">void</span> <span class="c-fn">setup</span>() {
+  DW3000.<span class="c-fn">begin</span>(SS, RST, IRQ);   <span class="c-cm">// SPI pins</span>
+  DW3000.<span class="c-fn">setMode</span>(DW3000_TAG);
+  DW3000.<span class="c-fn">setChannel</span>(<span class="c-num">5</span>);          <span class="c-cm">// Channel 5 = 6.5 GHz</span>
+  DW3000.<span class="c-fn">setPreambleCode</span>(<span class="c-num">9</span>);
+}
+<span class="c-fn">void</span> <span class="c-fn">loop</span>() {
+  <span class="c-kw">float</span> dist = DW3000.<span class="c-fn">getDistance</span>(ANCHOR_ID);
+  Serial.<span class="c-fn">printf</span>(<span class="c-str">"Distance: %.2f m\n"</span>, dist);
+}</div>
+      <div class="highlight-box hb-purple">
+        🏗 ใช้ Trilateration (3 anchors ขึ้นไป) คำนวณ x,y position — ดูตัวอย่างใน library <strong>arduino-uwb</strong> บน GitHub
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="card-tag tag-green">LVGL 9.x · GUI Library</span>
+      <h3>🖥 LVGL 9.x บน ESP32 — GUI สวยงามโดยไม่ต้องใช้ OS</h3>
+      <p>LVGL (Light and Versatile Graphics Library) เวอร์ชัน 9.x เปิดตัวพร้อมฟีเจอร์ใหม่มากมาย ทำงานได้บน ESP32, ESP32-S3 และ ESP32-P4 กับ display หลายขนาด</p>
+      <div class="highlight-box hb-green">
+        🆕 <strong>สิ่งใหม่ใน LVGL 9:</strong> Vector graphics (SVG-like), ระบบ font แบบ scalable, Layer blending GPU, render thread แยกจาก app thread
+      </div>
+      <ul>
+        <li><strong>lv_conf.h</strong> — ปรับ LV_COLOR_DEPTH เป็น 16 หรือ 24 bit</li>
+        <li>รองรับ display driver: ILI9341, ST7789, GC9A01, SSD1306</li>
+        <li>Widget ใหม่: lv_scale, lv_imagebutton, lv_spinbox</li>
+        <li>SquareLine Studio — drag &amp; drop UI designer ออก .c ให้ทันที</li>
+      </ul>
+      <div class="code-block"><span class="c-cm">// LVGL 9 สร้าง Arc gauge + Label</span>
+lv_obj_t *arc = lv_arc_create(lv_screen_active());
+lv_arc_set_range(arc, <span class="c-num">0</span>, <span class="c-num">100</span>);
+lv_arc_set_value(arc, <span class="c-num">72</span>);          <span class="c-cm">// 72%</span>
+lv_obj_set_size(arc, <span class="c-num">150</span>, <span class="c-num">150</span>);
+lv_obj_center(arc);
+
+lv_obj_t *lbl = lv_label_create(lv_screen_active());
+lv_label_set_text_fmt(lbl, <span class="c-str">"%d%%"</span>, <span class="c-num">72</span>);
+lv_obj_align_to(lbl, arc, LV_ALIGN_CENTER, <span class="c-num">0</span>, <span class="c-num">0</span>);</div>
+    </div>
+
+    <div class="card">
+      <span class="card-tag tag-amber">Modbus · Industrial</span>
+      <h3>🏭 Modbus RTU/TCP Gateway ด้วย ESP32 — เชื่อม Industry 4.0</h3>
+      <p>Modbus เป็นโปรโตคอล industrial สุดคลาสสิกที่ยังใช้งานอยู่ทั่วโลก ESP32 สามารถทำหน้าที่เป็น <strong>Modbus RTU Master</strong> อ่านค่าจาก meter/PLC แล้วส่งขึ้น Cloud ผ่าน MQTT ได้</p>
+      <ul>
+        <li><strong>Modbus RTU</strong> — ผ่าน RS-485 (MAX485 transceiver + ESP32 UART2)</li>
+        <li><strong>Modbus TCP</strong> — ผ่าน Ethernet/WiFi โดยตรง</li>
+        <li><strong>Library:</strong> <code>ModbusMaster</code> (Arduino) หรือ <code>esp-modbus</code> (ESP-IDF)</li>
+        <li>อ่านค่าจาก: power meter, VFD, temperature controller, PLC</li>
+      </ul>
+      <div class="code-block"><span class="c-cm">// อ่าน Holding Register ด้วย ModbusMaster</span>
+<span class="c-kw">#include</span> <span class="c-str">"ModbusMaster.h"</span>
+ModbusMaster node;
+
+node.<span class="c-fn">begin</span>(<span class="c-num">1</span>, Serial2);          <span class="c-cm">// Slave ID=1</span>
+node.<span class="c-fn">readHoldingRegisters</span>(<span class="c-num">0x0000</span>, <span class="c-num">2</span>);
+<span class="c-kw">uint16_t</span> volt = node.<span class="c-fn">getResponseBuffer</span>(<span class="c-num">0</span>);
+<span class="c-kw">uint16_t</span> curr = node.<span class="c-fn">getResponseBuffer</span>(<span class="c-num">1</span>);
+Serial.<span class="c-fn">printf</span>(<span class="c-str">"%.1f V  %.2f A\n"</span>, volt/<span class="c-num">10.0</span>, curr/<span class="c-num">100.0</span>);</div>
+      <div class="highlight-box hb-amber">
+        ⚡ เชื่อม RS-485 ด้วย <strong>MAX485</strong> ราคา ~5 บาท: DE/RE ต่อกับ GPIO เดียวกัน, toggle ก่อน/หลังส่งข้อมูล
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ====== SECTION 2: PROJECTS ====== -->
+<section id="projects">
+  <div class="section-header">
+    <div class="section-icon icon-green">🔧</div>
+    <div class="section-title">
+      <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+      <p>โปรเจกต์ที่ผสาน display, positioning, industrial protocol และ sensors</p>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+
+    <div class="card">
+      <span class="card-tag tag-purple">LVGL + ESP32-S3</span>
+      <h3>🌡 Smart Room Dashboard — จอกลมพร้อม LVGL 9 + Sensor Hub</h3>
+      <p>สร้าง standalone smart display ด้วย ESP32-S3 + จอ GC9A01 (กลม 1.28 นิ้ว) แสดงข้อมูล sensor ด้วย LVGL 9 ดีไซน์ modern</p>
+      <ul>
+        <li>📦 <strong>Hardware:</strong> XIAO ESP32-S3 + GC9A01 round display + SHT41 + BH1750</li>
+        <li>🌡 แสดงอุณหภูมิ/ความชื้น/แสง ด้วย Arc gauge + animated needle</li>
+        <li>⏰ NTP time sync แสดงนาฬิกาแบบ analog dial บน LVGL</li>
+        <li>💤 deep sleep ระหว่างไม่ใช้งาน ปลุกด้วย PIR motion sensor</li>
+        <li>📡 MQTT publish ทุก 60 วินาที ส่งข้อมูลไป Home Assistant</li>
+      </ul>
+      <div class="highlight-box hb-purple">
+        💰 ราคาวัสดุรวม: XIAO ESP32-S3 (~280฿) + GC9A01 (~120฿) + sensors (~150฿) = ประมาณ <strong>550 บาท</strong>
+      </div>
+      <div class="highlight-box hb-blue">
+        🛠 Library ที่ใช้: <code>LVGL 9.2</code>, <code>Arduino_GFX</code> (display driver), <code>AHTX0</code> (temp/humidity)
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="card-tag tag-blue">UWB · Asset Tracker</span>
+      <h3>📦 UWB Asset Tracker ในโรงงาน — ติดตามของด้วยความแม่นยำ 10 ซม.</h3>
+      <p>ระบบ real-time asset tracking สำหรับโรงงาน ใช้ UWB anchors 4 จุดและ tag ติดกับอุปกรณ์ แสดงตำแหน่งบน web dashboard</p>
+      <ol class="step-list">
+        <li>ติดตั้ง UWB Anchor (DW3000 + ESP32) 4 มุมห้อง ขนาด 10×10 ม.</li>
+        <li>Tag (DW3000 + ESP32-C3) ส่ง ranging request ไปทุก anchor</li>
+        <li>ทำ Two-Way Ranging (TWR) วัดระยะทางไป 3–4 anchors</li>
+        <li>คำนวณ position ด้วย Trilateration algorithm บน ESP32</li>
+        <li>ส่ง x,y coordinate ผ่าน MQTT → Node-RED → Grafana</li>
+        <li>แสดง Floor Plan แบบ real-time ด้วย canvas JavaScript</li>
+      </ol>
+      <div class="highlight-box hb-blue">
+        📊 ความแม่นยำที่ทดสอบจริง: ±8–15 ซม. ใน LOS (Line of Sight), ±25–40 ซม. ผ่านผนัง
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="card-tag tag-amber">Industrial · Modbus</span>
+      <h3>⚡ ESP32 Modbus-to-MQTT Gateway — โรงงานขึ้น Cloud ง่ายๆ</h3>
+      <p>แปลง Modbus RTU (RS-485) เป็น MQTT เพื่อส่งข้อมูลจาก legacy equipment (power meter, VFD, PLC) ขึ้น cloud โดยไม่ต้องเปลี่ยน hardware เดิม</p>
+      <ul>
+        <li>🔌 ต่อ MAX3485 กับ UART2 ของ ESP32 (TX=17, RX=16, DE=4)</li>
+        <li>📊 อ่าน Eastron SDM120 power meter ทุก 10 วินาที</li>
+        <li>☁️ ส่งค่า voltage, current, power, energy ขึ้น AWS IoT Core</li>
+        <li>📱 แจ้งเตือน LINE Notify เมื่อ power เกิน threshold</li>
+        <li>💾 บันทึก CSV ลง SD card เป็น local backup</li>
+      </ul>
+      <div class="code-block"><span class="c-cm">// Modbus → MQTT payload (JSON)</span>
+<span class="c-fn">snprintf</span>(payload, <span class="c-kw">sizeof</span>(payload),
+  <span class="c-str">"{\"V\":%.1f,\"A\":%.3f,\"W\":%.1f,\"kWh\":%.3f}"</span>,
+  voltage, current, power, energy);
+mqtt.<span class="c-fn">publish</span>(<span class="c-str">"factory/meter/1"</span>, payload);</div>
+    </div>
+
+    <div class="card">
+      <span class="card-tag tag-green">ESP32-P4 · Vision</span>
+      <h3>📸 ESP32-P4 Dual-Camera Security System — H.264 Stream ราคาไม่แพง</h3>
+      <p>ใช้ ESP32-P4 EV Board กับ dual camera module สร้างระบบ security camera ที่ encode H.264 บน chip เอง ไม่ต้องใช้ SoC แยก</p>
+      <ul>
+        <li>📷 กล้องหน้า: OV5647 (5MP) ผ่าน MIPI-CSI 2-lane</li>
+        <li>🔒 กล้องหลัง: OV2640 (2MP) IR cut สำหรับ night vision</li>
+        <li>🎬 H.264 hardware encode ที่ 1080p/30fps ใช้ไฟน้อย</li>
+        <li>📡 RTSP stream ผ่าน WiFi 6 (802.11ax) ด้วย ESP32-C6 companion</li>
+        <li>🤖 Face detection บน HP-ISP ด้วย model YOLO-nano ใน firmware</li>
+      </ul>
+      <div class="highlight-box hb-green">
+        💡 ESP-IDF 5.3+ รองรับ ESP32-P4 อย่างเป็นทางการ — ดู example <code>esp-who</code> บน GitHub สำหรับ face recognition
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="card-tag tag-cyan">E-Paper · Dashboard</span>
+      <h3>🗒 E-Paper Modbus Dashboard — แสดงข้อมูลโรงงานโดยไม่ต้องมีไฟ</h3>
+      <p>ESP32 อ่านค่า Modbus แล้วแสดงบน E-Paper 4.2 นิ้ว (B/W/R) อัปเดตทุก 5 นาที ใช้ solar cell ขนาดเล็กเป็น power supply ไม่ต้องเดินสายไฟ</p>
+      <ul>
+        <li>📟 GDEY042T81 — E-Paper 4.2 นิ้ว 400×300 px SPI</li>
+        <li>🌡 แสดง: อุณหภูมิ, ความดัน, กำลังไฟฟ้า, สถานะ machine</li>
+        <li>⚡ deep sleep 5 นาที ตื่นมาอ่าน Modbus → อัป display → กลับนอน</li>
+        <li>🔋 ใช้พลังงาน: ~150 µA เฉลี่ย รัน AAA 2 ก้อน ได้หลายเดือน</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- ====== SECTION 3: SENSORS ====== -->
+<section id="sensors">
+  <div class="section-header">
+    <div class="section-icon icon-purple">🔬</div>
+    <div class="section-title">
+      <h2>Sensors น่าสนใจสำหรับโปรเจกต์ใหม่</h2>
+      <p>AS7341 Spectral, VL53L5CX Multi-Zone ToF, LTR-390 UV/ALS</p>
+    </div>
+  </div>
+
+  <div class="grid grid-3">
+
+    <div class="card">
+      <span class="card-tag tag-purple">Spectral · Color</span>
+      <h3>🌈 AS7341 — 11-Channel Spectral Color Sensor</h3>
+      <p>Sensor วัดสีที่แยก spectrum ได้ 11 ช่อง ตั้งแต่ 415–940 nm เหมาะกับงาน color matching, plant health monitoring และ food quality analysis</p>
+      <table class="spec-table">
+        <tr><th>พารามิเตอร์</th><th>ค่า</th></tr>
+        <tr><td>Interface</td><td>I2C (0x39)</td></tr>
+        <tr><td>Channels</td><td>F1–F8 + Clear + NIR + Flicker</td></tr>
+        <tr><td>Wavelength Range</td><td>415–940 nm</td></tr>
+        <tr><td>Supply Voltage</td><td>1.7–3.6V</td></tr>
+        <tr><td>ราคา (Breakout)</td><td>~$10–15 (Adafruit/SparkFun)</td></tr>
+      </table>
+      <div class="highlight-box hb-purple">
+        🌱 Use Case: ส่องแสงใส่ใบพืช วัด chlorophyll index จาก ratio ระหว่าง Red/NIR channel ตรวจสุขภาพต้นไม้โดยไม่ต้องทำลายตัวอย่าง
+      </div>
+      <ul>
+        <li>Library: <code>Adafruit_AS7341</code> ใช้ง่าย พร้อม example</li>
+        <li>มี LED driver ในตัว สำหรับ active illumination</li>
+        <li>Flicker detection: ตรวจ 50/60Hz flicker จากไฟ LED</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="card-tag tag-cyan">ToF · Depth</span>
+      <h3>📐 VL53L5CX — 8×8 Multi-Zone Time of Flight</h3>
+      <p>ST Microelectronics ผลิต ToF sensor ที่วัดระยะพร้อมกันได้ 64 โซน (8×8 grid) ในเฟรมเดียว เหมาะกับงาน people counting, gesture, presence detection</p>
+      <table class="spec-table">
+        <tr><th>พารามิเตอร์</th><th>ค่า</th></tr>
+        <tr><td>Interface</td><td>I2C / SPI</td></tr>
+        <tr><td>Zones</td><td>8×8 = 64 zones</td></tr>
+        <tr><td>Max Range</td><td>400 cm (standard mode)</td></tr>
+        <tr><td>FoV</td><td>65°</td></tr>
+        <tr><td>Frame Rate</td><td>ถึง 60 Hz (4×4 mode)</td></tr>
+        <tr><td>ราคา</td><td>~$15 (Pololu breakout)</td></tr>
+      </table>
+      <div class="highlight-box hb-blue">
+        👤 People Counting: เมาท์ไว้เพดาน ทางเข้า-ออก วิเคราะห์ depth map 8×8 แยกคนเข้า/ออก accuracy สูงกว่า PIR มาก
+      </div>
+      <ul>
+        <li>ต่อกับ ESP32-S3 ผ่าน I2C ที่ 400 kHz หรือ 1 MHz (Fast-mode+)</li>
+        <li>Library: <code>SparkFun_VL53L5CX</code> มี example people counting</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <span class="card-tag tag-green">UV · Light</span>
+      <h3>☀️ LTR-390-UV-01 — UV Index + Ambient Light Sensor</h3>
+      <p>Sensor รวม 2 ฟังก์ชันในชิปเดียว: วัด UV (280–430 nm) สำหรับคำนวณ UV Index และวัด Ambient Light เพื่อปรับ backlight อัตโนมัติ</p>
+      <table class="spec-table">
+        <tr><th>พารามิเตอร์</th><th>ค่า</th></tr>
+        <tr><td>Interface</td><td>I2C (0x53)</td></tr>
+        <tr><td>UV Range</td><td>280–430 nm</td></tr>
+        <tr><td>ALS Range</td><td>0.01–64000 lux</td></tr>
+        <tr><td>Resolution</td><td>ถึง 20 bit</td></tr>
+        <tr><td>Supply</td><td>1.7–3.6V</td></tr>
+        <tr><td>ราคา</td><td>~$5 (Adafruit breakout)</td></tr>
+      </table>
+      <div class="highlight-box hb-green">
+        🏖 Use Case: Wearable UV Monitor แจ้งเตือนเมื่อ UV Index เกิน 6 (High) ผ่าน haptic feedback หรือ buzzer ป้องกันผิวไหม้แดด
+      </div>
+      <ul>
+        <li>Library: <code>Adafruit_LTR390</code> — อ่านค่าทั้ง ALS และ UV ในไลน์เดียว</li>
+        <li>ใช้ร่วมกับ GPS แสดง UV forecast บน map ตาม location</li>
+        <li>สอบเทียบกับ WHO UV Index standard ผ่าน formula ใน datasheet</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- ====== SECTION 4: RESOURCES ====== -->
+<section id="resources">
+  <div class="section-header">
+    <div class="section-icon icon-amber">📚</div>
+    <div class="section-title">
+      <h2>แหล่งข้อมูลและเครื่องมือที่แนะนำ</h2>
+      <p>Documentation, tools และ community สำหรับหัวข้อวันนี้</p>
+    </div>
+  </div>
+
+  <a class="resource-link" href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32p4/" target="_blank" rel="noopener">
+    <div class="resource-icon">📘</div>
+    <div class="resource-info">
+      <strong>ESP32-P4 Technical Reference Manual — ESP-IDF Docs</strong>
+      <span>เอกสารอย่างเป็นทางการของ ESP32-P4 รวม peripheral registers, camera ISP pipeline, H.264 encoder API และ MIPI driver</span>
+    </div>
+    <div class="resource-arrow">→</div>
+  </a>
+
+  <a class="resource-link" href="https://lvgl.io/docs/9.2/" target="_blank" rel="noopener">
+    <div class="resource-icon">🖼</div>
+    <div class="resource-info">
+      <strong>LVGL 9.2 Official Documentation</strong>
+      <span>ครอบคลุม widget API ใหม่, porting guide สำหรับ ESP32, display driver setup, font &amp; image tools และ SquareLine Studio integration</span>
+    </div>
+    <div class="resource-arrow">→</div>
+  </a>
+
+  <a class="resource-link" href="https://github.com/espressif/esp-modbus" target="_blank" rel="noopener">
+    <div class="resource-icon">🏭</div>
+    <div class="resource-info">
+      <strong>esp-modbus — Official Modbus Library (ESP-IDF)</strong>
+      <span>Library อย่างเป็นทางการจาก Espressif สำหรับ Modbus RTU/TCP บน ESP32, มี Master/Slave mode และ example โครงการครบ</span>
+    </div>
+    <div class="resource-arrow">→</div>
+  </a>
+
+  <a class="resource-link" href="https://github.com/Decawave/dw3000-api" target="_blank" rel="noopener">
+    <div class="resource-icon">📡</div>
+    <div class="resource-info">
+      <strong>DW3000 API — Qorvo Ultra-Wideband Library</strong>
+      <span>API อย่างเป็นทางการสำหรับ DW3000 UWB chip มี example: DS-TWR, SS-TWR, PDoA positioning และ AoA angle measurement</span>
+    </div>
+    <div class="resource-arrow">→</div>
+  </a>
+
+  <a class="resource-link" href="https://github.com/adafruit/Adafruit_AS7341" target="_blank" rel="noopener">
+    <div class="resource-icon">🌈</div>
+    <div class="resource-info">
+      <strong>Adafruit AS7341 Library — Spectral Color Sensor</strong>
+      <span>Arduino/ESP32 library สำหรับ AS7341 พร้อม example: color reading, FLICKER detection, และ NIR ratio calculation สำหรับ plant health</span>
+    </div>
+    <div class="resource-arrow">→</div>
+  </a>
+
+  <!-- Summary card -->
+  <div class="summary-card">
+    <h3 style="color:var(--accent1)">📋 สรุปเนื้อหาวันที่ 2 พฤศจิกายน 2026</h3>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="num" style="color:var(--accent1)">4</div>
+        <div class="lbl">นวัตกรรม<br>ESP32-P4, UWB, LVGL 9, Modbus</div>
+      </div>
+      <div class="summary-item">
+        <div class="num" style="color:var(--accent2)">5</div>
+        <div class="lbl">ไอเดียโปรเจกต์<br>Room Dashboard, Asset Tracker ฯลฯ</div>
+      </div>
+      <div class="summary-item">
+        <div class="num" style="color:var(--accent5)">3</div>
+        <div class="lbl">Sensors ใหม่<br>AS7341, VL53L5CX, LTR-390</div>
+      </div>
+      <div class="summary-item">
+        <div class="num" style="color:var(--accent3)">5</div>
+        <div class="lbl">แหล่งข้อมูล<br>docs, libs, GitHub repos</div>
+      </div>
+    </div>
+    <p style="margin-top:1.25rem;font-size:0.85rem;color:var(--text-muted);">
+      🎯 <strong style="color:var(--text-secondary)">Theme วันนี้:</strong> Display &amp; GUI (LVGL 9), Precision Positioning (UWB DW3000), Industrial Protocol (Modbus RTU/TCP) และ Advanced Sensors (Spectral, Multi-Zone ToF, UV)
+    </p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <p>
+    <strong>ESP32 &amp; Sensor Daily Research</strong> · สร้างโดย AI Researcher อัตโนมัติ<br>
+    วันที่สร้าง: 2 พฤศจิกายน 2026 · ไม่ซ้ำกับ Issue ก่อนหน้า (GPS, Thermal, OTA, RFID, Matter, Edge ML, Zigbee, Energy, USB MIDI, mmWave, LoRa, Solar)<br>
+    แหล่งข้อมูล: Espressif Docs, LVGL.io, Qorvo DW3000 API, Adafruit Learn, SparkFun, GitHub
+  </p>
+</footer>
+
+</body>
+</html>
