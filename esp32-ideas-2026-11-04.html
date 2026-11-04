@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 4 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263348;
+    --border: #334155;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-lora: #f59e0b;
+    --accent-solar: #10b981;
+    --accent-ble: #818cf8;
+    --accent-sensor: #f472b6;
+    --gradient-lora: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    --gradient-solar: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --gradient-ble: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+    --gradient-sensor: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+    --gradient-header: linear-gradient(135deg, #1e3a5f 0%, #0f172a 50%, #1a1035 100%);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: var(--gradient-header);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(99,102,241,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.3);
+    color: #a5b4fc;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 20px rgba(99,102,241,0.3);
+  }
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.35rem 1rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .stat-pill span { font-weight: 600; color: var(--text-primary); }
+
+  /* Navigation */
+  nav {
+    background: rgba(30,41,59,0.95);
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 1rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+  nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: inline-block;
+    margin: 0.1rem;
+  }
+  nav a:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
+
+  /* Main layout */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem 3rem;
+  }
+
+  /* Section header */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .section-title { font-size: 1.3rem; font-weight: 700; }
+  .section-desc { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.1rem; }
+
+  section { margin-bottom: 3rem; }
+
+  /* Cards */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(255,255,255,0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+  .card.lora::before { background: var(--gradient-lora); }
+  .card.solar::before { background: var(--gradient-solar); }
+  .card.ble::before { background: var(--gradient-ble); }
+  .card.sensor::before { background: var(--gradient-sensor); }
+
+  .card-emoji { font-size: 1.8rem; margin-bottom: 0.6rem; display: block; }
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #f1f5f9;
+  }
+  .card p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Tags */
+  .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+  .tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    letter-spacing: 0.03em;
+  }
+  .tag.amber { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .tag.green { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+  .tag.indigo { background: rgba(129,140,248,0.15); color: #a5b4fc; border: 1px solid rgba(129,140,248,0.3); }
+  .tag.pink { background: rgba(244,114,182,0.15); color: #f9a8d4; border: 1px solid rgba(244,114,182,0.3); }
+  .tag.slate { background: rgba(100,116,139,0.15); color: #94a3b8; border: 1px solid rgba(100,116,139,0.3); }
+
+  /* Full-width cards */
+  .card-wide {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.6rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-wide::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .card-wide.lora::before { background: var(--gradient-lora); }
+  .card-wide.solar::before { background: var(--gradient-solar); }
+  .card-wide.ble::before { background: var(--gradient-ble); }
+  .card-wide h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; color: #f1f5f9; }
+  .card-wide p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.75; margin-bottom: 0.6rem; }
+
+  /* Code block */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #e6edf3;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+    line-height: 1.6;
+  }
+  .code-comment { color: #8b949e; }
+  .code-keyword { color: #ff7b72; }
+  .code-string { color: #a5d6ff; }
+  .code-number { color: #79c0ff; }
+  .code-func { color: #d2a8ff; }
+
+  /* Comparison table */
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 0.75rem 0; }
+  .compare-table th {
+    background: rgba(255,255,255,0.05);
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .compare-table td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    color: var(--text-secondary);
+  }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .compare-table td:first-child { color: var(--text-primary); font-weight: 600; }
+  .badge-good { color: #34d399; }
+  .badge-warn { color: #fbbf24; }
+  .badge-info { color: #60a5fa; }
+
+  /* Tip box */
+  .tip-box {
+    background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.25);
+    border-left: 3px solid #10b981;
+    border-radius: 8px;
+    padding: 0.9rem 1.1rem;
+    font-size: 0.88rem;
+    color: #a7f3d0;
+    margin: 0.75rem 0;
+  }
+  .tip-box.amber {
+    background: rgba(245,158,11,0.08);
+    border-color: rgba(245,158,11,0.25);
+    border-left-color: #f59e0b;
+    color: #fde68a;
+  }
+  .tip-box.indigo {
+    background: rgba(129,140,248,0.08);
+    border-color: rgba(129,140,248,0.25);
+    border-left-color: #818cf8;
+    color: #c7d2fe;
+  }
+
+  /* Sensor cards */
+  .sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    transition: transform 0.2s;
+  }
+  .sensor-card:hover { transform: translateY(-2px); }
+  .sensor-name { font-weight: 700; font-size: 1rem; margin-bottom: 0.3rem; }
+  .sensor-type { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-bottom: 0.6rem; }
+  .sensor-desc { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.7rem; }
+  .sensor-spec { font-size: 0.78rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.2rem; }
+  .sensor-spec span::before { content: '• '; }
+
+  /* Resources */
+  .resource-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.75rem; }
+  .resource-list li {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1rem;
+    font-size: 0.88rem;
+  }
+  .resource-list a {
+    color: #60a5fa;
+    text-decoration: none;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+  .resource-list a:hover { text-decoration: underline; }
+  .resource-list .rdesc { color: var(--text-muted); font-size: 0.8rem; }
+
+  /* Footer */
+  footer {
+    background: rgba(15,23,42,0.9);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 2rem 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  footer strong { color: var(--text-secondary); }
+
+  @media (max-width: 600px) {
+    .card-grid, .sensor-grid { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">ESP32 Research Daily</div>
+  <h1>🌐 ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">4 พฤศจิกายน 2026 — LoRa / Solar Power / BLE Mesh</p>
+  <div class="header-stats">
+    <div class="stat-pill">📡 <span>LoRa & LoRaWAN</span> การสื่อสารระยะไกล</div>
+    <div class="stat-pill">☀️ <span>Solar + Deep Sleep</span> พลังงานอิสระ</div>
+    <div class="stat-pill">🔵 <span>BLE Mesh</span> เครือข่าย self-healing</div>
+    <div class="stat-pill">🔬 <span>4 Sensors</span> ใหม่น่าสนใจ</div>
+  </div>
+</header>
+
+<nav>
+  <a href="#lora">📡 LoRa/LoRaWAN</a>
+  <a href="#solar">☀️ Solar Power</a>
+  <a href="#ble-mesh">🔵 BLE Mesh</a>
+  <a href="#sensors">🔬 Sensors</a>
+  <a href="#resources">🔗 แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- LoRa Section -->
+  <section id="lora">
+    <div class="section-header">
+      <div class="section-icon" style="background: rgba(245,158,11,0.15);">📡</div>
+      <div>
+        <div class="section-title" style="color: var(--accent-lora);">ESP32 + LoRa & LoRaWAN — การสื่อสารระยะไกลสำหรับ IoT</div>
+        <div class="section-desc">ส่งข้อมูลได้ไกลถึง 15 กม. ด้วยกำลังไฟน้อยกว่า 50 mA</div>
+      </div>
+    </div>
+
+    <div class="card-wide lora">
+      <h3>🌍 LoRa vs LoRaWAN คืออะไร แตกต่างกันอย่างไร?</h3>
+      <p><strong>LoRa (Long Range)</strong> คือเทคโนโลยีการมอดูเลตสัญญาณวิทยุ (Chirp Spread Spectrum) ที่พัฒนาโดย Semtech ช่วยให้ส่งข้อมูลได้ไกลในสภาพแวดล้อมที่มีสัญญาณรบกวน</p>
+      <p><strong>LoRaWAN</strong> คือ protocol มาตรฐาน MAC layer ที่ทำงานบน LoRa กำหนดวิธีจัดการ device หลายพันตัวบน network เดียวกัน ทำงานผ่าน Gateway → Network Server → Application Server</p>
+      <table class="compare-table">
+        <thead>
+          <tr><th>คุณสมบัติ</th><th>LoRa P2P</th><th>LoRaWAN</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>ระยะ</td><td class="badge-good">2–15 กม.</td><td class="badge-good">2–15 กม. ผ่าน Gateway</td></tr>
+          <tr><td>โครงสร้าง</td><td>Point-to-Point</td><td>Star-of-Stars (Gateway + Server)</td></tr>
+          <tr><td>จำนวน Device</td><td>จำกัด (ทำเอง)</td><td class="badge-good">หลายพันตัวต่อ Gateway</td></tr>
+          <tr><td>ความซับซ้อน</td><td class="badge-good">ง่าย เริ่มได้เร็ว</td><td>ต้องมี Network Server (ChirpStack/TTN)</td></tr>
+          <tr><td>เหมาะกับ</td><td>Prototype, Farm sensor</td><td>Smart City, Industrial scale</td></tr>
+          <tr><td>Module ยอดนิยม</td><td>RFM95W, SX1276</td><td>Seeed LoRa-E5, RAK811</td></tr>
+        </tbody>
+      </table>
+      <div class="tags">
+        <span class="tag amber">SX1276</span>
+        <span class="tag amber">RFM95W</span>
+        <span class="tag amber">LoRa-E5</span>
+        <span class="tag slate">868 MHz EU</span>
+        <span class="tag slate">915 MHz US/TH</span>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card lora">
+        <span class="card-emoji">🌱</span>
+        <h3>Smart Farm — LoRa Soil Sensor Node</h3>
+        <p>ส่งค่า ความชื้นดิน + อุณหภูมิ + ความชื้นอากาศ จากแปลงเกษตรไปยัง Gateway ที่บ้านทุก 10 นาที ทำงานด้วยแบตเตอรี่ 18650 นานกว่า 1 ปี</p>
+        <div class="code-block">
+<span class="code-comment">// LoRa P2P Sender — ตัวอย่างพื้นฐาน</span>
+<span class="code-keyword">#include</span> <span class="code-string">&lt;LoRa.h&gt;</span>
+
+<span class="code-keyword">void</span> <span class="code-func">loop</span>() {
+  <span class="code-func">LoRa.beginPacket</span>();
+  LoRa.<span class="code-func">print</span>(<span class="code-string">"soil:"</span> + soilVal);
+  LoRa.<span class="code-func">print</span>(<span class="code-string">",temp:"</span> + tempVal);
+  <span class="code-func">LoRa.endPacket</span>();
+  esp_deep_sleep(<span class="code-number">600e6</span>); <span class="code-comment">// 10 นาที</span>
+}
+        </div>
+        <div class="tags">
+          <span class="tag amber">LoRa P2P</span>
+          <span class="tag green">Agriculture</span>
+          <span class="tag green">Deep Sleep</span>
+        </div>
+      </div>
+
+      <div class="card lora">
+        <span class="card-emoji">🏙</span>
+        <h3>LoRaWAN + The Things Network (TTN)</h3>
+        <p>เชื่อม ESP32 + SX1276 เข้า TTN Community Network ที่มี Gateway ให้ใช้ฟรีทั่วโลก ส่งข้อมูลขึ้น Cloud โดยไม่ต้องตั้ง Server เอง ใช้ OTAA Authentication</p>
+        <div class="tip-box amber">
+          <strong>ข้อดี:</strong> TTN มี Gateway ครอบคลุม กทม. และเมืองใหญ่ในไทยแล้ว ใช้ฟรีสำหรับ dev และ community use
+        </div>
+        <div class="tags">
+          <span class="tag amber">TTN</span>
+          <span class="tag amber">OTAA</span>
+          <span class="tag slate">Free Tier</span>
+        </div>
+      </div>
+
+      <div class="card lora">
+        <span class="card-emoji">🌬</span>
+        <h3>CO₂ Monitor บน LoRaWAN ด้วย SCD30</h3>
+        <p>ใช้ Seeed E5 LoRa module + SCD30 (CO₂/Temp/Humidity) ส่งข้อมูลขึ้น The Things Network แล้วแสดงผลใน DataCake dashboard หรือ Home Assistant เหมาะสำหรับตรวจวัดคุณภาพอากาศในอาคาร</p>
+        <div class="tags">
+          <span class="tag amber">SCD30</span>
+          <span class="tag amber">CO₂</span>
+          <span class="tag indigo">DataCake</span>
+          <span class="tag indigo">Home Assistant</span>
+        </div>
+      </div>
+
+      <div class="card lora">
+        <span class="card-emoji">📦</span>
+        <h3>LoRaWAN + MQTT + ChirpStack Gateway ส่วนตัว</h3>
+        <p>ตั้ง ChirpStack v4 บน Raspberry Pi หรือ VPS เป็น Network Server ส่วนตัว รับข้อมูลจาก LoRaWAN device แล้วส่งต่อผ่าน MQTT ไป Node-RED หรือ InfluxDB + Grafana</p>
+        <div class="tip-box amber">
+          <strong>Stack:</strong> ESP32+SX1276 → LoRa Gateway → ChirpStack → MQTT → Node-RED → Grafana
+        </div>
+        <div class="tags">
+          <span class="tag amber">ChirpStack v4</span>
+          <span class="tag amber">MQTT</span>
+          <span class="tag indigo">Grafana</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Solar Power Section -->
+  <section id="solar">
+    <div class="section-header">
+      <div class="section-icon" style="background: rgba(16,185,129,0.15);">☀️</div>
+      <div>
+        <div class="section-title" style="color: var(--accent-solar);">Solar-Powered ESP32 — พลังงานอิสระด้วยแสงอาทิตย์</div>
+        <div class="section-desc">Deep Sleep + Solar Panel = Sensor Node ที่ทำงานได้โดยไม่ต้องชาร์จแบตเลยหลายปี</div>
+      </div>
+    </div>
+
+    <div class="card-wide solar">
+      <h3>⚡ การคำนวณพลังงานสำหรับ Solar ESP32 Node</h3>
+      <p>หัวใจของ Solar IoT คือการทำให้ค่าเฉลี่ยกระแสไฟต่อวัน <strong>น้อยกว่า</strong>พลังงานที่ Solar Panel ผลิตได้ในวันที่มีแดดน้อยที่สุด</p>
+      <table class="compare-table">
+        <thead>
+          <tr><th>โหมด</th><th>กระแสไฟ</th><th>ใช้เวลา</th><th>พลังงาน/วัน (10 min cycle)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Active (WiFi on)</td><td class="badge-warn">120–240 mA</td><td>2–5 วินาที</td><td class="badge-warn">~2.4 mAh</td></tr>
+          <tr><td>Deep Sleep</td><td class="badge-good">10–150 µA</td><td>~597 วินาที</td><td class="badge-good">~1.5 mAh</td></tr>
+          <tr><td>Hibernation</td><td class="badge-good">2.5 µA</td><td>~597 วินาที</td><td class="badge-good">~0.4 mAh</td></tr>
+          <tr><td><strong>รวมเฉลี่ย</strong></td><td colspan="2">—</td><td class="badge-good"><strong>~4–8 mAh/วัน</strong></td></tr>
+        </tbody>
+      </table>
+      <div class="tip-box">
+        <strong>ตัวอย่างการ size:</strong> Solar panel 6V 1W ผลิตพลังงานได้ประมาณ 800–1000 mAh/วัน (แดดดี 5 ชม.) เทียบกับ ESP32 node ที่ใช้ ~8 mAh/วัน = มีส่วนเกินมหาศาล แบตเตอรี่ 1000 mAh ก็เพียงพอสำหรับ backup หลายวัน
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card solar">
+        <span class="card-emoji">🔋</span>
+        <h3>เทคนิค Deep Sleep ที่ต้องรู้</h3>
+        <p>ESP32 ใช้เวลา 2–4 วินาทีในการ reconnect WiFi หลัง wake up ซึ่งกินไฟมาก เทคนิคสำคัญคือเก็บ WiFi credentials ไว้ใน RTC Memory เพื่อข้าม channel scan</p>
+        <div class="code-block">
+<span class="code-comment">// บันทึก BSSID + Channel ใน RTC</span>
+RTC_DATA_ATTR <span class="code-keyword">uint8_t</span> bssid[<span class="code-number">6</span>];
+RTC_DATA_ATTR <span class="code-keyword">int32_t</span> channel;
+
+WiFi.<span class="code-func">begin</span>(ssid, pass, channel,
+         bssid, <span class="code-number">true</span>); <span class="code-comment">// เร็วขึ้น ~1.5 วิ</span>
+        </div>
+        <div class="tags">
+          <span class="tag green">RTC Memory</span>
+          <span class="tag green">Fast Connect</span>
+        </div>
+      </div>
+
+      <div class="card solar">
+        <span class="card-emoji">🔌</span>
+        <h3>MOSFET Power Gating — ตัด Sensor ตอน Sleep</h3>
+        <p>Sensor อย่าง BME280, DS18B20 ยังดึงกระแสไฟแม้จะ sleep อยู่ วิธีแก้คือใช้ GPIO ควบคุม P-Channel MOSFET ตัดไฟ Sensor โดยสมบูรณ์ระหว่าง deep sleep</p>
+        <div class="code-block">
+<span class="code-comment">// เปิด/ปิด Sensor ด้วย GPIO</span>
+<span class="code-func">pinMode</span>(<span class="code-number">GPIO_SENSOR_PWR</span>, OUTPUT);
+<span class="code-func">digitalWrite</span>(<span class="code-number">GPIO_SENSOR_PWR</span>, HIGH); <span class="code-comment">// เปิด</span>
+<span class="code-func">delay</span>(<span class="code-number">100</span>); <span class="code-comment">// รอ sensor warm-up</span>
+<span class="code-comment">// ... อ่านค่า ...</span>
+<span class="code-func">digitalWrite</span>(<span class="code-number">GPIO_SENSOR_PWR</span>, LOW);  <span class="code-comment">// ปิด</span>
+        </div>
+        <div class="tags">
+          <span class="tag green">MOSFET</span>
+          <span class="tag green">Power Gate</span>
+        </div>
+      </div>
+
+      <div class="card solar">
+        <span class="card-emoji">📊</span>
+        <h3>Batch Sending — ส่งข้อมูลหลาย sample ต่อครั้ง</h3>
+        <p>แทนที่จะ wake up ทุก 10 นาทีแล้วส่ง 1 ค่า ให้เก็บค่าใน RTC memory ก่อน พอครบ 12 sample (2 ชั่วโมง) ค่อย wake up WiFi แล้วส่งทีเดียว ประหยัดพลังงานได้มาก</p>
+        <div class="tip-box">
+          <strong>ผล:</strong> ลดเวลา Active WiFi จาก 144 ครั้ง/วัน เหลือ 12 ครั้ง/วัน ประหยัดพลังงานไปกว่า 90%
+        </div>
+        <div class="tags">
+          <span class="tag green">Batch</span>
+          <span class="tag green">RTC Buffer</span>
+        </div>
+      </div>
+
+      <div class="card solar">
+        <span class="card-emoji">☀️</span>
+        <h3>Solar Harvesting Hardware ที่แนะนำ</h3>
+        <p>เลือก Solar Charger ที่มี MPPT (Maximum Power Point Tracking) สำหรับประสิทธิภาพสูงสุด IC ยอดนิยมได้แก่ CN3791, BQ24074 และ TP4056 (สำหรับโหลดเบา)</p>
+        <table class="compare-table" style="margin-top:0.5rem">
+          <tr><td>TP4056</td><td>ราคาถูก, ไม่มี MPPT, เหมาะ load เบา</td></tr>
+          <tr><td>CN3791</td><td>MPPT, ชาร์จ LiPo ได้ดี</td></tr>
+          <tr><td>BQ24074</td><td>Texas Instruments, เสถียร, มี USB fallback</td></tr>
+        </table>
+        <div class="tags">
+          <span class="tag green">MPPT</span>
+          <span class="tag green">LiPo</span>
+          <span class="tag slate">TP4056</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BLE Mesh Section -->
+  <section id="ble-mesh">
+    <div class="section-header">
+      <div class="section-icon" style="background: rgba(129,140,248,0.15);">🔵</div>
+      <div>
+        <div class="section-title" style="color: var(--accent-ble);">ESP32 BLE Mesh — เครือข่าย Self-Healing ไม่ต้องพึ่ง Router</div>
+        <div class="section-desc">BLE Mesh SIG Standard v1.0.1 รองรับ node หลายพันตัว พร้อม ESPHome 2026.8 BLE update</div>
+      </div>
+    </div>
+
+    <div class="card-wide ble">
+      <h3>🕸 BLE Mesh คืออะไร ทำงานอย่างไร?</h3>
+      <p>ESP-BLE-MESH คือ implementation ของ Bluetooth Mesh SIG Standard v1.0.1 บน ESP-IDF ทำให้ ESP32 กลายเป็น node ในเครือข่าย mesh ที่ส่งข้อมูลผ่านกันแบบ multi-hop ไม่ต้องพึ่ง WiFi Router และ self-heal เองเมื่อ node หนึ่งล้มเหลว</p>
+      <table class="compare-table">
+        <thead>
+          <tr><th>คุณสมบัติ</th><th>BLE Mesh</th><th>WiFi Mesh (ESP-MESH)</th><th>Zigbee</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>ระยะ node ต่อ node</td><td>~10–30 ม.</td><td>~50–100 ม.</td><td>~10–75 ม.</td></tr>
+          <tr><td>จำนวน node</td><td class="badge-good">หลายพัน</td><td>~1000</td><td class="badge-good">หลายพัน</td></tr>
+          <tr><td>กินไฟ</td><td class="badge-good">ต่ำมาก</td><td class="badge-warn">ปานกลาง</td><td class="badge-good">ต่ำมาก</td></tr>
+          <tr><td>Speed</td><td class="badge-warn">ช้า (1 Mbps)</td><td class="badge-good">เร็ว</td><td class="badge-warn">ช้า</td></tr>
+          <tr><td>Setup</td><td>Provision + Config</td><td>ESP-IDF setup</td><td class="badge-warn">ซับซ้อน</td></tr>
+          <tr><td>เหมาะกับ</td><td>Smart lighting, sensor</td><td>Video, large data</td><td>Smart home standard</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-grid">
+      <div class="card ble">
+        <span class="card-emoji">💡</span>
+        <h3>Smart Lighting Control ด้วย BLE Mesh</h3>
+        <p>ตัวอย่างคลาสสิก: ควบคุมหลอดไฟ LED หลายร้อยดวงในอาคารด้วย BLE Mesh ใช้ Generic OnOff Model และ Light Lightness Model ของ SIG Standard มาตรฐาน</p>
+        <div class="tip-box indigo">
+          <strong>Provisioner</strong> คือ ESP32 ตัวหนึ่งที่ทำหน้าที่ onboard device ใหม่เข้าสู่ network คล้าย "Network Admin" ในโลก BLE Mesh
+        </div>
+        <div class="tags">
+          <span class="tag indigo">Generic OnOff</span>
+          <span class="tag indigo">Provisioner</span>
+          <span class="tag indigo">SIG Model</span>
+        </div>
+      </div>
+
+      <div class="card ble">
+        <span class="card-emoji">📡</span>
+        <h3>BLE Mesh Gateway → AWS IoT / Firebase</h3>
+        <p>ใช้ ESP32 node หนึ่งตัวที่เปิดทั้ง BLE และ WiFi พร้อมกัน ทำหน้าที่เป็น Gateway รับข้อมูลจาก BLE Mesh แล้วส่งต่อผ่าน MQTT ขึ้น AWS IoT Core หรือ Firebase Realtime DB</p>
+        <div class="code-block">
+<span class="code-comment">// Gateway Node: BLE Mesh + WiFi + MQTT</span>
+<span class="code-comment">// รับข้อมูล sensor จาก mesh</span>
+esp_ble_mesh_<span class="code-func">register_callback</span>(mesh_cb);
+<span class="code-comment">// แล้วส่งต่อผ่าน MQTT</span>
+mqtt.<span class="code-func">publish</span>(<span class="code-string">"iot/sensors"</span>, payload);
+        </div>
+        <div class="tags">
+          <span class="tag indigo">Gateway</span>
+          <span class="tag indigo">AWS IoT</span>
+          <span class="tag amber">MQTT</span>
+        </div>
+      </div>
+
+      <div class="card ble">
+        <span class="card-emoji">🏠</span>
+        <h3>ESPHome 2026.8 — BLE บน Chip มากขึ้น</h3>
+        <p>ESPHome เวอร์ชัน 2026.8.0 เพิ่ม platform-neutral BLE layer ทำให้ BLE sensor และ Bluetooth Proxy ไม่ต้องพึ่งแค่ ESP32 อีกต่อไป ย้าย BLE sensor platforms ทั้ง 39 ออกจาก ESP32-only foundation รองรับ chip ใหม่ๆ ได้มากขึ้น</p>
+        <div class="tags">
+          <span class="tag indigo">ESPHome 2026.8</span>
+          <span class="tag indigo">BLE Proxy</span>
+          <span class="tag indigo">Home Assistant</span>
+        </div>
+      </div>
+
+      <div class="card ble">
+        <span class="card-emoji">🔧</span>
+        <h3>เริ่มต้นกับ ESP-BLE-MESH ด้วย ESP-IDF</h3>
+        <p>ESP-BLE-MESH มาพร้อม ESP-IDF v4.x+ มี example โค้ดพร้อมใช้ใน <code>examples/bluetooth/esp_ble_mesh/</code> แนะนำเริ่มจาก onoff_server ก่อนเพื่อเข้าใจ provisioning flow</p>
+        <div class="tip-box indigo">
+          <strong>Tools ที่ต้องใช้:</strong> nRF Mesh app (iOS/Android) สำหรับ provision ESP32 node เข้า BLE Mesh network ครั้งแรก
+        </div>
+        <div class="tags">
+          <span class="tag indigo">ESP-IDF</span>
+          <span class="tag indigo">nRF Mesh App</span>
+          <span class="tag slate">onoff_server</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sensors Section -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon" style="background: rgba(244,114,182,0.15);">🔬</div>
+      <div>
+        <div class="section-title" style="color: var(--accent-sensor);">Sensors น่าสนใจสำหรับโปรเจกต์ใหม่</div>
+        <div class="section-desc">เหมาะสำหรับใช้คู่กับ LoRa, Solar Power และ BLE Mesh</div>
+      </div>
+    </div>
+
+    <div class="sensor-grid">
+
+      <div class="sensor-card">
+        <div class="sensor-name">SX1276 / RFM95W</div>
+        <div class="sensor-type" style="color: var(--accent-lora);">LoRa Transceiver Module</div>
+        <div class="sensor-desc">ตัว LoRa เอง! Semtech SX1276 chip ที่อยู่ในโมดูล RFM95W ส่งข้อมูลได้ 2–15 กม. กินไฟแค่ 20–40 mA ตอน Tx และ ~12 mA ตอน Rx</div>
+        <div class="sensor-spec">
+          <span>Frequency: 433/868/915 MHz</span>
+          <span>Tx Power: สูงสุด +20 dBm</span>
+          <span>Rx Sensitivity: -148 dBm</span>
+          <span>Interface: SPI</span>
+          <span>Library: arduino-LoRa, RadioLib</span>
+        </div>
+        <div class="tags" style="margin-top:0.6rem">
+          <span class="tag amber">SPI</span>
+          <span class="tag amber">LoRa</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">INA226 / INA219</div>
+        <div class="sensor-type" style="color: var(--accent-solar);">Power Monitor IC</div>
+        <div class="sensor-desc">วัดแรงดัน กระแส และกำลังไฟแบบ real-time ผ่าน I²C เหมาะสำหรับ monitor solar charging และ battery health ใน Solar ESP32 node</div>
+        <div class="sensor-spec">
+          <span>INA219: 0–26V, ±3.2A, 12-bit</span>
+          <span>INA226: 0–36V, สูงกว่า accuracy</span>
+          <span>Interface: I²C (addr 0x40–0x4F)</span>
+          <span>Library: Adafruit INA219</span>
+          <span>Price: ~25–45 บาท</span>
+        </div>
+        <div class="tags" style="margin-top:0.6rem">
+          <span class="tag green">I2C</span>
+          <span class="tag green">Power Monitor</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">MQ-135</div>
+        <div class="sensor-type" style="color: var(--accent-sensor);">Air Quality Gas Sensor</div>
+        <div class="sensor-desc">ตรวจวัดคุณภาพอากาศ: NH₃, NOₓ, Alcohol, Benzene, CO₂ ประมาณค่า PPM ได้ใช้ค่า resistance ratio เหมาะสำหรับส่งผ่าน LoRa จากสถานีตรวจอากาศนอกอาคาร</div>
+        <div class="sensor-spec">
+          <span>Output: Analog + Digital (threshold)</span>
+          <span>Heater: 5V / ~150 mA (warm-up 20 วิ)</span>
+          <span>Detect: CO₂, NH₃, Benzene, Smoke</span>
+          <span>Price: ~35–60 บาท</span>
+          <span>ข้อควรระวัง: ต้อง calibrate ก่อนใช้</span>
+        </div>
+        <div class="tags" style="margin-top:0.6rem">
+          <span class="tag pink">Analog</span>
+          <span class="tag pink">CO₂</span>
+          <span class="tag pink">Air Quality</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">SCD30 (Sensirion)</div>
+        <div class="sensor-type" style="color: var(--accent-sensor);">CO₂ / Temp / Humidity — High Accuracy</div>
+        <div class="sensor-desc">CO₂ sensor ระดับ professional ใช้ NDIR (Non-Dispersive Infrared) วัด CO₂ ได้แม่นยำ ±30 ppm เหมาะมากสำหรับ LoRaWAN Air Quality Node ในอาคารสำนักงานหรือโรงเรือน</div>
+        <div class="sensor-spec">
+          <span>CO₂ Range: 400–10,000 ppm (±30 ppm)</span>
+          <span>Temp: -40 to +70°C (±0.3°C)</span>
+          <span>Humidity: 0–100% RH (±3%)</span>
+          <span>Interface: I²C / UART</span>
+          <span>Price: ~700–900 บาท</span>
+        </div>
+        <div class="tags" style="margin-top:0.6rem">
+          <span class="tag pink">NDIR CO₂</span>
+          <span class="tag pink">I2C/UART</span>
+          <span class="tag amber">LoRaWAN</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Resources Section -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon" style="background: rgba(99,102,241,0.15);">🔗</div>
+      <div>
+        <div class="section-title" style="color: #a5b4fc;">แหล่งข้อมูลและลิงก์อ้างอิง</div>
+        <div class="section-desc">เอกสาร, บทเรียน และชุมชนสำหรับ LoRa, Solar IoT และ BLE Mesh</div>
+      </div>
+    </div>
+    <ul class="resource-list">
+      <li>
+        <a href="https://randomnerdtutorials.com/esp32-lora-rfm95-transceiver-arduino-ide/" target="_blank">Random Nerd: ESP32 LoRa RFM95</a>
+        <div class="rdesc">Tutorial เชื่อม ESP32 กับ RFM95W ทีละขั้นตอน ใช้ arduino-LoRa library</div>
+      </li>
+      <li>
+        <a href="https://www.hivemq.com/blog/integrating-esp32-lorawan-hivemq-mqtt-broker-advanced-iot/" target="_blank">HiveMQ: ESP32 + LoRaWAN + MQTT</a>
+        <div class="rdesc">Lab ครบวงจร: ChirpStack, DHT11, MQTT Transformation, PostgreSQL</div>
+      </li>
+      <li>
+        <a href="https://zbotic.in/solar-powered-iot-sensor-node-esp32-with-deep-sleep/" target="_blank">Zbotic: Solar IoT Sensor Node</a>
+        <div class="rdesc">วิธีสร้าง Solar-powered ESP32 node พร้อมคำนวณพลังงาน</div>
+      </li>
+      <li>
+        <a href="https://zbotic.in/bluetooth-mesh-networking-with-esp32-scalable-iot-systems/" target="_blank">Zbotic: BLE Mesh Networking</a>
+        <div class="rdesc">อธิบาย ESP-BLE-MESH architecture และ provisioning flow</div>
+      </li>
+      <li>
+        <a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/esp-ble-mesh/ble-mesh-index.html" target="_blank">Espressif: ESP-BLE-MESH Docs</a>
+        <div class="rdesc">เอกสารทางการ ESP-BLE-MESH API พร้อม architecture diagram</div>
+      </li>
+      <li>
+        <a href="https://community.home-assistant.io/t/esphome-2026-8-0-bluetooth-on-more-chips-than-ever-esphome-smart-home-made-simple/1021985" target="_blank">ESPHome 2026.8: BLE on More Chips</a>
+        <div class="rdesc">Release notes ESPHome 2026.8 — platform-neutral BLE layer</div>
+      </li>
+      <li>
+        <a href="https://www.elektormagazine.com/amp/news/unlock-the-power-of-lorawan-learn-to-build-your-own-iot-network" target="_blank">Elektor: LoRaWAN CO₂ Sensor Node</a>
+        <div class="rdesc">วิดีโอ tutorial สร้าง LoRaWAN CO₂ monitor ด้วย ESP32-C3 + SCD30</div>
+      </li>
+      <li>
+        <a href="https://learn.sparkfun.com/tutorials/esp32-lora-1-ch-gateway-lorawan-and-the-things-network/all" target="_blank">SparkFun: ESP32 LoRa Gateway + TTN</a>
+        <div class="rdesc">สร้าง single-channel LoRaWAN gateway ด้วย ESP32 เชื่อม The Things Network</div>
+      </li>
+    </ul>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างเมื่อ <strong>4 พฤศจิกายน 2026</strong> โดย AI Research Bot</p>
+  <p style="margin-top:0.4rem">หัวข้อวันนี้: ESP32 + LoRa/LoRaWAN · Solar Power & Deep Sleep · BLE Mesh Networking · Sensors (SX1276, INA226, MQ-135, SCD30)</p>
+  <p style="margin-top:0.6rem; font-size:0.75rem">แหล่งอ้างอิง: Random Nerd Tutorials · HiveMQ Blog · Espressif Docs · ESPHome Community · Zbotic · Elektor · SparkFun</p>
+</footer>
+
+</body>
+</html>
