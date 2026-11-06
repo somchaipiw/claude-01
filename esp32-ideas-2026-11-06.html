@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 6 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.8; }
+
+  header {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #0c1a2e 100%);
+    border-bottom: 1px solid #334155;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(14,165,233,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 50%, rgba(99,102,241,0.10) 0%, transparent 60%);
+  }
+  header .meta-badge {
+    display: inline-block;
+    background: rgba(14,165,233,0.15);
+    border: 1px solid rgba(14,165,233,0.3);
+    color: #38bdf8;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+  }
+  header .subtitle {
+    color: #94a3b8;
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    position: relative;
+  }
+  header .stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    position: relative;
+    flex-wrap: wrap;
+  }
+  header .stat-item {
+    text-align: center;
+  }
+  header .stat-num {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #38bdf8;
+  }
+  header .stat-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  nav {
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    padding: 0.75rem 2rem;
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  nav a {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  nav a:hover {
+    color: #e2e8f0;
+    background: #334155;
+    border-color: #475569;
+  }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #334155;
+  }
+  .section-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: rgba(14,165,233,0.15); border: 1px solid rgba(14,165,233,0.25); }
+  .icon-purple { background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.25); }
+  .icon-green { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.25); }
+  .icon-orange { background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.25); }
+
+  .section-header h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+  .section-header p {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-top: 0.1rem;
+  }
+
+  section { margin-bottom: 3rem; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.4rem;
+    transition: border-color 0.25s, transform 0.2s;
+  }
+  .card:hover {
+    border-color: #475569;
+    transform: translateY(-2px);
+  }
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem;
+  }
+  .chip-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+  .badge-cyan { background: rgba(6,182,212,0.2); color: #22d3ee; border: 1px solid rgba(6,182,212,0.3); }
+  .badge-violet { background: rgba(139,92,246,0.2); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3); }
+  .badge-emerald { background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+  .badge-amber { background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .badge-rose { background: rgba(244,63,94,0.2); color: #fb7185; border: 1px solid rgba(244,63,94,0.3); }
+  .badge-indigo { background: rgba(99,102,241,0.2); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+  .card p {
+    font-size: 0.88rem;
+    color: #94a3b8;
+    margin-bottom: 0.9rem;
+  }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .tag {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    background: #334155;
+    color: #94a3b8;
+    border: 1px solid #475569;
+  }
+
+  .difficulty {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-top: 0.6rem;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot-easy { background: #22c55e; }
+  .dot-medium { background: #f59e0b; }
+  .dot-hard { background: #ef4444; }
+
+  /* Protocol diagram */
+  .protocol-stack {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .protocol-stack h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 1rem;
+  }
+  .protocol-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .proto-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #f1f5f9;
+    min-width: 120px;
+  }
+  .proto-bar {
+    flex: 1;
+    height: 10px;
+    border-radius: 5px;
+    min-width: 60px;
+  }
+  .proto-note {
+    font-size: 0.8rem;
+    color: #64748b;
+    min-width: 160px;
+  }
+
+  /* Code block */
+  .code-block {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #93c5fd;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+    line-height: 1.6;
+  }
+  .code-block .c-comment { color: #4ade80; }
+  .code-block .c-keyword { color: #c084fc; }
+  .code-block .c-string { color: #fbbf24; }
+  .code-block .c-num { color: #fb923c; }
+
+  /* Comparison table */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .compare-table th {
+    background: #1e293b;
+    color: #94a3b8;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 2px solid #334155;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .compare-table td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid #1e293b;
+    color: #cbd5e1;
+  }
+  .compare-table tr:nth-child(even) td { background: #1a2435; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .check { color: #22c55e; font-weight: 700; }
+  .cross { color: #ef4444; }
+
+  /* Highlight box */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(14,165,233,0.08), rgba(139,92,246,0.08));
+    border: 1px solid rgba(14,165,233,0.2);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .highlight-box h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #38bdf8;
+    margin-bottom: 0.5rem;
+  }
+  .highlight-box p {
+    font-size: 0.88rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  /* Resource list */
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+  .resource-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 1.1rem 1.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .resource-card .res-type {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+  }
+  .resource-card .res-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #e2e8f0;
+  }
+  .resource-card .res-desc {
+    font-size: 0.82rem;
+    color: #64748b;
+  }
+  .resource-card a {
+    color: #38bdf8;
+    font-size: 0.8rem;
+    text-decoration: none;
+    margin-top: auto;
+  }
+  .resource-card a:hover { text-decoration: underline; }
+
+  footer {
+    background: #1e293b;
+    border-top: 1px solid #334155;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: #475569;
+    font-size: 0.82rem;
+  }
+  footer strong { color: #64748b; }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #334155, transparent);
+    margin: 2.5rem 0;
+  }
+
+  @media (max-width: 600px) {
+    main { padding: 1.5rem 1rem; }
+    .cards { grid-template-columns: 1fr; }
+    header .stats { gap: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="meta-badge">🔬 ESP32 Daily Research — AI · IoT · Sensors</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">6 พฤศจิกายน 2026 · อัปเดตล่าสุดจากชุมชน ESP32 ทั่วโลก</p>
+  <div class="stats">
+    <div class="stat-item"><div class="stat-num">3</div><div class="stat-label">หัวข้อหลัก</div></div>
+    <div class="stat-item"><div class="stat-num">12</div><div class="stat-label">ไอเดียโปรเจกต์</div></div>
+    <div class="stat-item"><div class="stat-num">8</div><div class="stat-label">แหล่งอ้างอิง</div></div>
+  </div>
+</header>
+
+<nav>
+  <a href="#matter">Matter/Zigbee/Thread</a>
+  <a href="#p4vision">ESP32-P4 Vision AI</a>
+  <a href="#industrial">Industrial IoT</a>
+  <a href="#sensors">Sensors แนะนำ</a>
+  <a href="#resources">แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- SECTION 1: Matter Protocol -->
+  <section id="matter">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🏠</div>
+      <div>
+        <h2>Matter Protocol, Thread & Zigbee กับ ESP32</h2>
+        <p>โปรโตคอลบ้านอัจฉริยะรุ่นใหม่บน ESP32-C6 และ H21</p>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <h4>ข่าวสำคัญ: Matter 1.6 เปิดตัว มิถุนายน 2026</h4>
+      <p>Matter 1.6 เพิ่มการรองรับ <strong>กล้อง, เซ็นเซอร์ดิน, ระบบปิดประตู</strong> และความสามารถด้านพลังงานที่ครบวงจร — ESP32-C6 รองรับได้ผ่าน esp-matter SDK บน ESP-IDF v6.0.2+</p>
+    </div>
+
+    <div style="overflow-x:auto; margin-bottom:1.5rem;">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>ชิป</th>
+            <th>Wi-Fi 6</th>
+            <th>BLE 5</th>
+            <th>802.15.4 (Thread/Zigbee)</th>
+            <th>Matter over Wi-Fi</th>
+            <th>เหมาะสำหรับ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>ESP32-C6</strong></td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td>Smart Home Hub / Router</td>
+          </tr>
+          <tr>
+            <td><strong>ESP32-H2</strong></td>
+            <td class="cross">✗</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="cross">✗</td>
+            <td>Endpoint ประหยัดพลังงาน</td>
+          </tr>
+          <tr>
+            <td><strong>ESP32-H21</strong> <span class="chip-badge badge-rose">ใหม่</span></td>
+            <td class="cross">✗</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="cross">✗</td>
+            <td>H2 รุ่นใหม่ low-power node</td>
+          </tr>
+          <tr>
+            <td><strong>ESP32-S3</strong></td>
+            <td class="cross">✗</td>
+            <td class="check">✓</td>
+            <td class="cross">✗</td>
+            <td class="check">✓ (Wi-Fi only)</td>
+            <td>Smart device ที่ต้องประมวลผล</td>
+          </tr>
+          <tr>
+            <td><strong>ESP32 Classic</strong></td>
+            <td class="cross">✗</td>
+            <td class="check">✓</td>
+            <td class="cross">✗</td>
+            <td class="check">✓ (Wi-Fi only)</td>
+            <td>โปรเจกต์เก่า / ราคาถูก</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top">
+          <span class="chip-badge badge-cyan">ESP32-C6</span>
+          <h3>Matter Smart Switch พร้อม Thread Border Router</h3>
+        </div>
+        <p>สร้าง light switch อัจฉริยะที่เป็นทั้ง Matter device และ Thread Border Router ในตัวเดียว ทำให้ H2 nodes ในบ้านเชื่อมต่อ internet ได้ผ่านตัวเดียว</p>
+        <div class="code-block">
+<span class="c-comment">// ESP-IDF + esp-matter SDK</span>
+<span class="c-keyword">#include</span> <span class="c-string">"esp_matter.h"</span>
+<span class="c-keyword">#include</span> <span class="c-string">"esp_openthread.h"</span>
+
+<span class="c-comment">// สร้าง Matter endpoint สำหรับ switch</span>
+endpoint::on_off_light::create(node, &amp;config,
+    ENDPOINT_FLAG_NONE, NULL);
+
+<span class="c-comment">// เปิด Thread Border Router</span>
+esp_openthread_launch_mainloop(NULL);
+        </div>
+        <div class="tags">
+          <span class="tag">Matter 1.6</span>
+          <span class="tag">Thread</span>
+          <span class="tag">Border Router</span>
+          <span class="tag">ESP-IDF v6</span>
+        </div>
+        <div class="difficulty"><span class="dot dot-hard"></span>ระดับ: สูง</div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="chip-badge badge-violet">ESP32-H21</span>
+          <h3>Zigbee Temperature/Humidity Node ใช้ถ่าน 2 ปี</h3>
+        </div>
+        <p>ESP32-H21 ใช้กระแสต่ำมากขณะ sleep (~15µA) เหมาะทำ Zigbee sensor node วัดอุณหภูมิ-ความชื้นด้วย SHT41 ส่งข้อมูลทุก 10 นาที อายุถ่าน CR2032 นานกว่า 2 ปี</p>
+        <div class="code-block">
+<span class="c-comment">// Deep sleep + Zigbee report</span>
+esp_zb_sleep_enable(<span class="c-keyword">true</span>);
+esp_zb_set_sleep_threshold(<span class="c-num">1000</span>); <span class="c-comment">// ms</span>
+
+<span class="c-comment">// วัดแล้ว report ผ่าน Zigbee</span>
+sht41_read(&amp;temp, &amp;hum);
+esp_zb_zcl_report_attr_cmd_req(&amp;report);
+
+<span class="c-comment">// กลับไป sleep</span>
+esp_zb_sleep_now();
+        </div>
+        <div class="tags">
+          <span class="tag">Zigbee</span>
+          <span class="tag">SHT41</span>
+          <span class="tag">Ultra Low Power</span>
+          <span class="tag">CR2032</span>
+        </div>
+        <div class="difficulty"><span class="dot dot-medium"></span>ระดับ: กลาง</div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="chip-badge badge-emerald">ESP32-C6</span>
+          <h3>Matter Bridge สำหรับอุปกรณ์ Zigbee เก่า</h3>
+        </div>
+        <p>เปลี่ยนอุปกรณ์ Zigbee เก่า (หลอดไฟ, ปลั๊ก) ให้กลายเป็น Matter devices โดยใช้ ESP32-C6 เป็น bridge ทำงานร่วมกับ Apple Home, Google Home และ Amazon Alexa ได้ทันที</p>
+        <p>Matter bridges ช่วยให้อุปกรณ์ Zigbee, Z-Wave ทุกยี่ห้อปรากฏเป็น Matter device — รวมถึงอุปกรณ์ IKEA ที่กำลังย้ายไปใช้ Thread</p>
+        <div class="tags">
+          <span class="tag">Zigbee Bridge</span>
+          <span class="tag">Apple Home</span>
+          <span class="tag">Google Home</span>
+          <span class="tag">Alexa</span>
+        </div>
+        <div class="difficulty"><span class="dot dot-hard"></span>ระดับ: สูง</div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="chip-badge badge-amber">ESP32-C6</span>
+          <h3>Energy Monitor ตาม Matter 1.6 Spec</h3>
+        </div>
+        <p>Matter 1.6 เพิ่มความสามารถ Energy Management เต็มรูปแบบ สร้าง smart plug วัดกำลังไฟฟ้า, ประวัติการใช้พลังงาน และสั่งปิดเมื่อใช้เกินกำหนดได้ผ่าน Home app ทุกค่าย</p>
+        <div class="tags">
+          <span class="tag">Matter 1.6</span>
+          <span class="tag">Energy Metering</span>
+          <span class="tag">PZEM-004T</span>
+          <span class="tag">Smart Plug</span>
+        </div>
+        <div class="difficulty"><span class="dot dot-medium"></span>ระดับ: กลาง</div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 2: ESP32-P4 Vision AI -->
+  <section id="p4vision">
+    <div class="section-header">
+      <div class="section-icon icon-purple">👁️</div>
+      <div>
+        <h2>ESP32-P4 กับ AI Vision — Edge AI รุ่นใหม่</h2>
+        <p>โปรเจกต์ computer vision บน ESP32-P4 ที่กำลังเป็นที่นิยมในปี 2026</p>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <h4>ESP32-P4 คืออะไร?</h4>
+      <p>ESP32-P4 มี dual-core RISC-V 400MHz + AI accelerator รองรับ MIPI CSI camera, USB 2.0 HS และหน่วยความจำ PSRAM 32MB ในตัว เหมาะสำหรับงาน edge AI และ computer vision โดยเฉพาะ — แต่ใช้พลังงานมากกว่าชิปอื่นในตระกูล ESP32</p>
+    </div>
+
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top">
+          <span class="chip-badge badge-violet">ESP32-P4</span>
+          <h3>AI Water Meter Reader อ่านมิเตอร์น้ำอัตโนมัติ</h3>
+        </div>
+        <p>ใช้กล้อง 2MP autofocus ถ่ายรูปหน้าปัดมิเตอร์น้ำ ประมวลผลด้วย model ที่ train มาเองผ่าน esp-dl แล้วส่งค่าขึ้น Home Assistant โดยไม่ต้องเชื่อม cloud ภายนอก</p>
+        <p><em>แหล่งอ้างอิง: Instructables Sept 2026</em></p>
+        <div class="tags">
+          <span class="tag">Computer Vision</span>
+          <span class="tag">OCR</span>
+          <span class="tag">esp-dl</span>
+          <span class="tag">Home Assistant</span>
+        </div>
+        <div class="difficulty"><span class="dot dot-hard"></span>ระดับ: สูง</div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="chip-badge badge-violet">ESP32-P4</span>
+          <h3>ประตูอัตโนมัติจาก Smile Detection</h3>
+        </div>
+        <p>HuskyLens 2 ตรวจจับรอยยิ้ม แล้วส่งสัญญาณให้ ESP32-P4 (FireBeetle 2) ขับ servo เปิดประตู เหมาะสำหรับทำ smart door lock บ้าน หรือ photo booth โปรเจกต์สนุกๆ</p>
+        <p>ประยุกต์ใช้ร่วมกับ RFID หรือ fingerprint ทำ multi-factor access control ได้</p>
+        <div class="tags">
+          <span class="tag">Face Detection</span>
+          <span class="tag">HuskyLens 2</span>
+          <span class="tag">Servo</span>
+          <span class="tag">Access Control</span>
+        </div>
+        <div class="difficulty"><span class="dot dot-medium"></span>ระดับ: กลาง</div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="chip-badge badge-violet">ESP32-P4</span>
+          <h3>Pedestrian & Object Detection ด้วย YOLO11n</h3>
+        </div>
+        <p>Espressif Developer Portal ให้ตัวอย่าง ready-made models บน P4 รวมถึง YOLO11n สำหรับ COCO object detection, hand gesture recognition และ pedestrian detection ผ่าน esp-dl inference framework</p>
+        <div class="code-block">
+<span class="c-comment">// esp-dl inference บน ESP32-P4</span>
+dl::recognition::YOLO11n detect;
+detect.set_confidence(<span class="c-num">0.5f</span>);
+
+camera_fb_t *fb = esp_camera_fb_get();
+<span class="c-keyword">auto</span> results = detect.infer(fb-&gt;buf,
+    fb-&gt;width, fb-&gt;height);
+
+<span class="c-keyword">for</span> (<span class="c-keyword">auto</span>&amp; obj : results) {
+    printf(<span class="c-string">"%s: %.2f\n"</span>,
+        obj.label, obj.score);
+}
+        </div>
+        <div class="tags">
+          <span class="tag">YOLO11n</span>
+          <span class="tag">esp-dl</span>
+          <span class="tag">COCO</span>
+          <span class="tag">On-device AI</span>
+        </div>
+        <div class="difficulty"><span class="dot dot-medium"></span>ระดับ: กลาง</div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="chip-badge badge-violet">ESP32-P4</span>
+          <h3>Camera Web Server + MJPEG Streaming</h3>
+        </div>
+        <p>ESP32-P4 กับ Raspberry Pi Zero 2W สร้าง web server สตรีม MJPEG ความละเอียดสูงผ่าน USB 2.0 HS ซึ่งเร็วกว่า ESP32-S3 มาก เหมาะทำ IP camera ราคาถูก หรือ inspection camera ในงานอุตสาหกรรม</p>
+        <div class="tags">
+          <span class="tag">MJPEG</span>
+          <span class="tag">USB 2.0 HS</span>
+          <span class="tag">IP Camera</span>
+          <span class="tag">Raspberry Pi</span>
+        </div>
+        <div class="difficulty"><span class="dot dot-easy"></span>ระดับ: ง่าย-กลาง</div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 3: Industrial IoT -->
+  <section id="industrial">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🏭</div>
+      <div>
+        <h2>Industrial IoT — Modbus, 4-20mA &amp; Vibration Monitoring</h2>
+        <p>ESP32 เชื่อมต่อกับ sensor อุตสาหกรรมผ่าน RS485 และ current loop</p>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <h4>ทำไมต้องใช้ Modbus RTU กับ ESP32?</h4>
+      <p>โปรโตคอล Modbus RTU ผ่าน RS485 เป็นมาตรฐานอุตสาหกรรมที่ใช้กันมาหลายสิบปี เซ็นเซอร์อุณหภูมิ ความชื้น กระแส แรงดัน และการสั่นสะเทือนส่วนใหญ่มี Modbus output — ESP32-C5 กับ RS485 transceiver เชื่อมต่อได้ทันที แล้วส่งข้อมูลขึ้น cloud ผ่าน MQTT หรือ HTTPS</p>
+    </div>
+
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top">
+          <span class="chip-badge badge-amber">ESP32-C5</span>
+          <h3>Modbus RTU Gateway รวม Sensor หลายตัว</h3>
+        </div>
+        <p>ใช้ ESP32-C5 กับ MAX485 transceiver สร้าง Modbus master ดึงข้อมูลจาก sensor วัดอุณหภูมิ ความชื้น กระแสไฟ และ energy meter ส่งขึ้น MQTT broker ทุก 30 วินาที</p>
+        <div class="code-block">
+<span class="c-comment">// Modbus RTU บน ESP32</span>
+<span class="c-keyword">#include</span> <span class="c-string">"ModbusRTU.h"</span>
+
+ModbusRTU mb;
+mb.begin(&amp;Serial2, <span class="c-num">9600</span>, RE_DE_PIN);
+
+<span class="c-comment">// อ่าน holding register จาก slave 1</span>
+<span class="c-keyword">uint16_t</span> regs[<span class="c-num">4</span>];
+mb.readHreg(<span class="c-num">1</span>, <span class="c-num">0x0000</span>, regs, <span class="c-num">4</span>, cbOnRead);
+
+<span class="c-comment">// ส่งขึ้น MQTT</span>
+mqtt.publish(<span class="c-string">"factory/sensor1"</span>, jsonPayload);
+        </div>
+        <div class="tags">
+          <span class="tag">Modbus RTU</span>
+          <span class="tag">RS485</span>
+          <span class="tag">MQTT</span>
+          <span class="tag">MAX485</span>
+        </div>
+        <div class="difficulty"><span class="dot dot-medium"></span>ระดับ: กลาง</div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="chip-badge badge-indigo">ESP32</span>
+          <h3>4-20mA Industrial Sensor Interface</h3>
+        </div>
+        <p>เชื่อม sensor อุตสาหกรรมที่ output 4-20mA (pressure, flow, level) เข้ากับ ESP32 ADC ผ่าน precision shunt resistor 250Ω — 4mA = 0%, 20mA = 100% — เพิ่ม optocoupler isolation ป้องกัน noise และ surge</p>
+        <div class="code-block">
+<span class="c-comment">// 4-20mA to ESP32 ADC</span>
+<span class="c-comment">// V_shunt = I × 250Ω (1V-5V range)</span>
+<span class="c-comment">// ต้องใช้ voltage divider ลดเป็น 0-3.3V</span>
+
+<span class="c-keyword">float</span> raw = analogRead(ADC_PIN);
+<span class="c-keyword">float</span> voltage = raw * (<span class="c-num">3.3f</span> / <span class="c-num">4095.0f</span>);
+<span class="c-keyword">float</span> current_mA = (voltage / <span class="c-num">0.165f</span>) + <span class="c-num">4.0f</span>;
+<span class="c-keyword">float</span> percent = (current_mA - <span class="c-num">4.0f</span>) / <span class="c-num">16.0f</span> * <span class="c-num">100</span>;
+        </div>
+        <div class="tags">
+          <span class="tag">4-20mA</span>
+          <span class="tag">ADC</span>
+          <span class="tag">Pressure Sensor</span>
+          <span class="tag">Flow Meter</span>
+        </div>
+        <div class="difficulty"><span class="dot dot-medium"></span>ระดับ: กลาง</div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="chip-badge badge-rose">ESP32-S3</span>
+          <h3>Predictive Maintenance ด้วย Vibration Analysis</h3>
+        </div>
+        <p>ใช้ ADXL345 accelerometer วัด vibration ของมอเตอร์ คำนวณ RMS velocity ตามมาตรฐาน ISO 10816 แล้วแจ้งเตือนผ่าน LINE Notify เมื่อค่าเกิน threshold — ป้องกันเครื่องจักรพัง</p>
+        <p><strong>หมายเหตุ:</strong> ADXL345 เหมาะสำหรับ trending เท่านั้น สำหรับงานอุตสาหกรรมจริงควรใช้ Modbus vibration transmitter (Renke/Banner) ที่ได้มาตรฐาน</p>
+        <div class="code-block">
+<span class="c-comment">// คำนวณ RMS velocity (ISO 10816)</span>
+<span class="c-keyword">float</span> sum_sq = <span class="c-num">0</span>;
+<span class="c-keyword">for</span> (<span class="c-keyword">int</span> i = <span class="c-num">0</span>; i &lt; N; i++) {
+    sum_sq += accel[i] * accel[i];
+}
+<span class="c-keyword">float</span> rms = sqrt(sum_sq / N);
+
+<span class="c-comment">// ISO 10816 Zone A: &lt;0.71 mm/s (ใหม่)</span>
+<span class="c-comment">// Zone D: &gt;7.1 mm/s (อันตราย)</span>
+<span class="c-keyword">if</span> (rms &gt; THRESHOLD_D) alertLine();
+        </div>
+        <div class="tags">
+          <span class="tag">Vibration</span>
+          <span class="tag">ADXL345</span>
+          <span class="tag">ISO 10816</span>
+          <span class="tag">LINE Notify</span>
+          <span class="tag">Predictive Maintenance</span>
+        </div>
+        <div class="difficulty"><span class="dot dot-hard"></span>ระดับ: สูง</div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="chip-badge badge-emerald">ESP32-C5</span>
+          <h3>Machine Health Dashboard แบบ Real-Time</h3>
+        </div>
+        <p>เชื่อม vibration transmitter Modbus RTU กับ ESP32 ส่งข้อมูลขึ้น Grafana + InfluxDB แสดงกราฟ trend RMS velocity, peak acceleration และ temperature ของมอเตอร์แต่ละตัวแบบ real-time ผ่านเบราว์เซอร์</p>
+        <div class="tags">
+          <span class="tag">Grafana</span>
+          <span class="tag">InfluxDB</span>
+          <span class="tag">Real-time</span>
+          <span class="tag">Dashboard</span>
+          <span class="tag">Modbus</span>
+        </div>
+        <div class="difficulty"><span class="dot dot-hard"></span>ระดับ: สูง</div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 4: Sensors แนะนำ -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">🔌</div>
+      <div>
+        <h2>Sensors ที่น่าสนใจสำหรับโปรเจกต์ ESP32</h2>
+        <p>เซ็นเซอร์ที่เข้ากันกับ Matter, Industrial IoT และ Vision AI</p>
+      </div>
+    </div>
+
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top">
+          <span class="chip-badge badge-cyan">Environmental</span>
+          <h3>SHT41 — ความชื้น/อุณหภูมิ ความแม่นยำสูง</h3>
+        </div>
+        <p>Sensirion SHT41 ให้ค่า ±1.8% RH และ ±0.2°C ติดต่อผ่าน I2C เหมาะสำหรับ Zigbee/Matter sensor node ที่ต้องการความแม่นยำ รองรับ self-heating correction สำหรับการวัดในสภาพแวดล้อมจริง</p>
+        <div class="tags">
+          <span class="tag">I2C</span>
+          <span class="tag">±1.8% RH</span>
+          <span class="tag">Zigbee Node</span>
+          <span class="tag">1.08–3.6V</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="chip-badge badge-amber">Industrial</span>
+          <h3>PZEM-004T — วัดพลังงานไฟฟ้า AC</h3>
+        </div>
+        <p>วัดแรงดัน กระแส กำลัง และพลังงานสะสมของระบบ AC ผ่าน UART เหมาะทำ smart plug หรือ energy monitor ตาม Matter 1.6 spec ราคาต่ำ ใช้ง่าย ตรวจวัดได้ถึง 100A</p>
+        <div class="tags">
+          <span class="tag">UART</span>
+          <span class="tag">Energy Meter</span>
+          <span class="tag">Matter 1.6</span>
+          <span class="tag">100A max</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="chip-badge badge-violet">Motion</span>
+          <h3>ADXL355 — Accelerometer อุตสาหกรรม</h3>
+        </div>
+        <p>Low-noise, low-drift accelerometer จาก Analog Devices เหมาะงาน vibration analysis จริงมากกว่า ADXL345 มี noise density ต่ำถึง 25µg/√Hz รองรับ SPI/I2C อุณหภูมิ -40°C ถึง +125°C</p>
+        <div class="tags">
+          <span class="tag">SPI/I2C</span>
+          <span class="tag">25µg/√Hz</span>
+          <span class="tag">Vibration Analysis</span>
+          <span class="tag">Industrial Grade</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="chip-badge badge-rose">Soil</span>
+          <h3>Capacitive Soil Sensor v2.0 — ทนต่อการกัดกร่อน</h3>
+        </div>
+        <p>เซ็นเซอร์วัดความชื้นดินแบบ capacitive (ไม่ใช่ resistive) ทนทานกว่า ให้ผล analog output ต่อกับ ADC ของ ESP32 ตรงๆ Matter 1.5 เพิ่ม soil sensor cluster ทำให้ report ค่าเข้า ecosystem ได้มาตรฐาน</p>
+        <div class="tags">
+          <span class="tag">Analog</span>
+          <span class="tag">Capacitive</span>
+          <span class="tag">Matter 1.5</span>
+          <span class="tag">Agriculture</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SECTION 5: Resources -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-blue">📚</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+        <p>แหล่งเรียนรู้สำหรับ Matter, ESP32-P4 Vision และ Industrial IoT</p>
+      </div>
+    </div>
+
+    <div class="resource-grid">
+
+      <div class="resource-card">
+        <div class="res-type">🏠 Protocol Guide</div>
+        <div class="res-title">Best ESP32 for Matter, Thread &amp; Zigbee</div>
+        <div class="res-desc">เปรียบเทียบ C6 vs H2 vs H21 vs C5 สำหรับงาน smart home พร้อม spec sheet</div>
+        <a href="https://esp32.co.uk/best-esp32-matter-thread-zigbee-c6-h2-h21-h4-c5/" target="_blank">→ esp32.co.uk</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-type">📱 Starter Guide</div>
+        <div class="res-title">ESP32-C6 Smart Home Starter (XDA)</div>
+        <div class="res-desc">ทำไม C6 ถึงเป็นตัวเลือกที่ดีที่สุดสำหรับ Matter smart home ในปี 2026</div>
+        <a href="https://www.xda-developers.com/if-you-want-a-matter-smart-home-start-your-esp32-journey-with-the-c6/" target="_blank">→ xda-developers.com</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-type">👁️ Tutorial</div>
+        <div class="res-title">AI Water Meter Reader — ESP32-P4</div>
+        <div class="res-desc">Train และ deploy model อ่านมิเตอร์น้ำบน ESP32-P4 แบบ step-by-step</div>
+        <a href="https://www.instructables.com/Train-and-Deploy-an-AI-Water-Meter-Reader-With-ESP" target="_blank">→ Instructables</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-type">🏭 Industrial</div>
+        <div class="res-title">Industrial Vibration Sensor Guide</div>
+        <div class="res-desc">แนวทาง predictive maintenance ด้วย vibration sensor ตาม ISO 10816</div>
+        <a href="https://zbotic.in/industrial-vibration-sensor-predictive-maintenance-guide/" target="_blank">→ zbotic.in</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-type">🔧 Dev Kit</div>
+        <div class="res-title">ESP32-P4X-EYE Getting Started</div>
+        <div class="res-desc">บอร์ด dev kit สำหรับ AI vision พร้อม face/pedestrian detection demo</div>
+        <a href="https://circuitdigest.com/review/getting-started-with-esp32-p4x-eye" target="_blank">→ circuitdigest.com</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-type">📊 Research</div>
+        <div class="res-title">ESP32 Vibration Monitor (MDPI 2025)</div>
+        <div class="res-desc">งานวิจัย low-cost IoT predictive maintenance ด้วย vibration sensor บน ESP32</div>
+        <a href="https://www.mdpi.com/1424-8220/25/21/6610" target="_blank">→ mdpi.com</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-type">🏠 Protocol</div>
+        <div class="res-title">Zigbee vs Matter vs Thread Guide 2026</div>
+        <div class="res-desc">เปรียบเทียบโปรโตคอล smart home ทั้งหมด พร้อมแนะนำการเลือกใช้</div>
+        <a href="https://zbotic.in/zigbee-vs-matter-vs-thread-smart-home-protocol-2026-guide/" target="_blank">→ zbotic.in</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-type">🤖 AI Dev</div>
+        <div class="res-title">Espressif Developer Portal — Edge AI</div>
+        <div class="res-desc">Workshop Edge AI กับ ESP32-S3 และตัวอย่าง ready-made models บน P4</div>
+        <a href="https://developer.espressif.com/workshops/edge-ai-with-esp32-s3/" target="_blank">→ developer.espressif.com</a>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Researcher อัตโนมัติ &bull; <strong>6 พฤศจิกายน 2026</strong></p>
+  <p style="margin-top:0.4rem;">ข้อมูลจาก: Espressif Developer Portal, Instructables, Hackster.io, XDA Developers, zbotic.in, CircuitDigest, MDPI Sensors Journal</p>
+  <p style="margin-top:0.4rem; font-size:0.75rem; color:#334155;">เนื้อหาฉบับนี้มุ่งเน้น: Matter/Thread/Zigbee Protocol · ESP32-P4 Vision AI · Industrial IoT Monitoring</p>
+</footer>
+
+</body>
+</html>
