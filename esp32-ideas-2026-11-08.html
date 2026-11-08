@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 8 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263047;
+    --accent-primary: #38bdf8;
+    --accent-secondary: #818cf8;
+    --accent-green: #34d399;
+    --accent-pink: #f472b6;
+    --accent-orange: #fb923c;
+    --accent-yellow: #fbbf24;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --gradient-audio: linear-gradient(135deg, #1e3a5f, #0f172a);
+    --gradient-energy: linear-gradient(135deg, #1a3a1a, #0f172a);
+    --gradient-mesh: linear-gradient(135deg, #2d1b4e, #0f172a);
+    --gradient-health: linear-gradient(135deg, #3b1a2a, #0f172a);
+    --gradient-usb: linear-gradient(135deg, #2a2000, #0f172a);
+    --gradient-sensors: linear-gradient(135deg, #1a2a3a, #0f172a);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f2a4a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(56, 189, 248, 0.08) 0%, transparent 60%),
+                radial-gradient(circle at 70% 50%, rgba(129, 140, 248, 0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: var(--accent-primary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.3rem 0.9rem;
+    border-radius: 999px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .stat-chip strong {
+    color: var(--accent-primary);
+    font-weight: 700;
+  }
+
+  /* ===== TOPIC FOCUS BANNER ===== */
+  .topic-focus {
+    background: linear-gradient(135deg, rgba(56,189,248,0.1), rgba(129,140,248,0.1));
+    border: 1px solid rgba(129,140,248,0.3);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem auto;
+    max-width: 900px;
+    text-align: center;
+  }
+
+  .topic-focus .focus-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent-secondary);
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
+
+  .topic-focus h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    background: none;
+  }
+
+  /* ===== MAIN CONTAINER ===== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  /* ===== SECTION ===== */
+  section {
+    margin-bottom: 3.5rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+
+  .section-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    background: none;
+    -webkit-text-fill-color: unset;
+  }
+
+  .section-header .count {
+    margin-left: auto;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.2rem 0.7rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* ===== CARD GRID ===== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .card-grid.two-col {
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  }
+
+  /* ===== CARD ===== */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(56,189,248,0.4);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    background: var(--bg-card-hover);
+  }
+
+  .card-accent-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+
+  .card-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    display: inline-block;
+    margin-bottom: 0.8rem;
+  }
+
+  .card-title {
+    font-size: 1.0rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+  }
+
+  .card-desc {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.8rem;
+  }
+
+  .tag {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  /* ===== HIGHLIGHT BOX ===== */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(129,140,248,0.08));
+    border: 1px solid rgba(56,189,248,0.25);
+    border-left: 4px solid var(--accent-primary);
+    border-radius: 10px;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .highlight-box .hl-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .highlight-box p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  /* ===== SPEC TABLE ===== */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-top: 0.6rem;
+  }
+
+  .spec-table td {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .spec-table td:first-child {
+    color: var(--text-muted);
+    width: 40%;
+    font-size: 0.8rem;
+  }
+
+  .spec-table td:last-child {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  /* ===== CODE SNIPPET ===== */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: #a8d8ea;
+    overflow-x: auto;
+    margin-top: 0.8rem;
+    line-height: 1.6;
+  }
+
+  .code-block .comment { color: #6a9955; }
+  .code-block .keyword { color: #569cd6; }
+  .code-block .string { color: #ce9178; }
+  .code-block .number { color: #b5cea8; }
+  .code-block .func { color: #dcdcaa; }
+
+  /* ===== WIDE CARD ===== */
+  .wide-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .wide-card:hover {
+    border-color: rgba(56,189,248,0.3);
+  }
+
+  .wide-card-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  /* ===== STEPS LIST ===== */
+  .steps {
+    list-style: none;
+    counter-reset: step-counter;
+  }
+
+  .steps li {
+    counter-increment: step-counter;
+    padding: 0.5rem 0 0.5rem 2.5rem;
+    position: relative;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .steps li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 0;
+    top: 0.55rem;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(56,189,248,0.2);
+    border: 1px solid rgba(56,189,248,0.4);
+    color: var(--accent-primary);
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ===== RESOURCES GRID ===== */
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    transition: border-color 0.2s;
+  }
+
+  .resource-card:hover { border-color: rgba(56,189,248,0.4); }
+
+  .resource-card .rc-type {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+  }
+
+  .resource-card a {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  .resource-card a:hover { text-decoration: underline; }
+
+  .resource-card .rc-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+    line-height: 1.5;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1rem;
+    text-align: center;
+  }
+
+  footer p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+  }
+
+  footer .footer-tags {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.8rem;
+  }
+
+  footer .ftag {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-muted);
+  }
+
+  /* ===== COLOR UTILITIES ===== */
+  .c-blue { color: var(--accent-primary); }
+  .c-purple { color: var(--accent-secondary); }
+  .c-green { color: var(--accent-green); }
+  .c-pink { color: var(--accent-pink); }
+  .c-orange { color: var(--accent-orange); }
+  .c-yellow { color: var(--accent-yellow); }
+
+  .bg-blue { background: rgba(56,189,248,0.12); border-color: rgba(56,189,248,0.3); color: var(--accent-primary); }
+  .bg-purple { background: rgba(129,140,248,0.12); border-color: rgba(129,140,248,0.3); color: var(--accent-secondary); }
+  .bg-green { background: rgba(52,211,153,0.12); border-color: rgba(52,211,153,0.3); color: var(--accent-green); }
+  .bg-pink { background: rgba(244,114,182,0.12); border-color: rgba(244,114,182,0.3); color: var(--accent-pink); }
+  .bg-orange { background: rgba(251,146,60,0.12); border-color: rgba(251,146,60,0.3); color: var(--accent-orange); }
+  .bg-yellow { background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.3); color: var(--accent-yellow); }
+
+  .accent-blue { background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); }
+  .accent-green { background: linear-gradient(90deg, var(--accent-green), #0d9488); }
+  .accent-pink { background: linear-gradient(90deg, var(--accent-pink), #a855f7); }
+  .accent-orange { background: linear-gradient(90deg, var(--accent-orange), var(--accent-yellow)); }
+  .accent-purple { background: linear-gradient(90deg, var(--accent-secondary), #a78bfa); }
+  .accent-teal { background: linear-gradient(90deg, #2dd4bf, var(--accent-green)); }
+
+  @media (max-width: 640px) {
+    .card-grid.two-col { grid-template-columns: 1fr; }
+    .wide-card-inner { grid-template-columns: 1fr; }
+    .header-stats { gap: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-badge">Daily ESP32 Research · 8 พฤศจิกายน 2026</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">Audio DSP · Energy Harvesting · Mesh Networks · Health Wearables · USB HID · Environmental Sensors</p>
+  <div class="header-stats">
+    <div class="stat-chip">ไอเดียทั้งหมด <strong>24 ไอเดีย</strong></div>
+    <div class="stat-chip">หมวดหมู่ <strong>6 หมวด</strong></div>
+    <div class="stat-chip">แหล่งข้อมูล <strong>12+ แหล่ง</strong></div>
+    <div class="stat-chip">อัพเดทล่าสุด <strong>พ.ย. 2026</strong></div>
+  </div>
+</header>
+
+<!-- ===== TOPIC FOCUS ===== -->
+<div style="max-width:1100px;margin:0 auto;padding:0 1rem;">
+  <div class="topic-focus">
+    <div class="focus-label">🎯 Theme ประจำวันนี้</div>
+    <h2>ESP32 กับ Interactive Devices & Personal Health Tech — ยุคใหม่ของ Maker ที่สัมผัสได้จริง</h2>
+  </div>
+</div>
+
+<main>
+
+  <!-- ===== SECTION 1: AUDIO DSP ===== -->
+  <section id="audio">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(56,189,248,0.15);color:var(--accent-primary)">🎵</div>
+      <h2>Audio DSP Processing บน ESP32-S3</h2>
+      <span class="count">4 ไอเดีย</span>
+    </div>
+
+    <div class="highlight-box">
+      <div class="hl-title">🔑 ไอเดียเด่นประจำวัน: ESP32-S3 Real-Time Audio Pipeline</div>
+      <p>ESP32-S3 มี SIMD instructions ที่เร่งการประมวลผล 16-bit signal ได้อย่างมีนัยสำคัญ รวมกับ I2S interface และ DMA ทำให้สามารถสร้าง real-time audio pipeline ที่รองรับ noise reduction, FFT analysis, และ voice command detection ได้ในอุปกรณ์ราคาต่ำกว่า $5</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-accent-line accent-blue"></div>
+        <div class="card-label bg-blue">🎤 Microphone</div>
+        <div class="card-title">INMP441 I2S MEMS Mic + Noise Reduction</div>
+        <div class="card-desc">
+          สร้าง voice capture node ด้วย INMP441 MEMS microphone ผ่าน I2S interface บน ESP32-S3 ตั้งค่า sampling rate 16kHz, 16-bit mono จากนั้นประยุกต์ใช้ Spectral Subtraction ผ่าน FFT เพื่อลด background noise ก่อนส่งไปยัง cloud หรือ local AI inference
+        </div>
+        <div class="code-block">
+<span class="comment">// I2S MEMS Mic Config (INMP441)</span>
+<span class="keyword">i2s_config_t</span> cfg = {
+  .mode = I2S_MODE_MASTER | I2S_MODE_RX,
+  .sample_rate = <span class="number">16000</span>,
+  .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
+  .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
+  .communication_format = I2S_COMM_FORMAT_I2S,
+  .dma_buf_count = <span class="number">8</span>,
+  .dma_buf_len = <span class="number">512</span>,
+};</div>
+        <div class="card-tags">
+          <span class="tag">I2S</span>
+          <span class="tag">INMP441</span>
+          <span class="tag">16kHz</span>
+          <span class="tag">Noise Reduction</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-blue"></div>
+        <div class="card-label bg-blue">🔊 Speaker</div>
+        <div class="card-title">MAX98357A Class-D Amp — เสียงคุณภาพสูง ไม่ต้องใช้ DAC แยก</div>
+        <div class="card-desc">
+          MAX98357A เป็น Class-D amplifier ที่รับ I2S ตรงจาก ESP32-S3 โดยไม่ต้องผ่าน DAC ภายนอก ให้กำลังสูงสุด 3.2W ที่ 4Ω speaker เหมาะสำหรับ smart speaker, doorbell ที่ประกาศข้อความ, หรือระบบ intercom ราคาถูก
+        </div>
+        <table class="spec-table">
+          <tr><td>กำลังขับ</td><td>3.2W @ 4Ω</td></tr>
+          <tr><td>ราคา</td><td>~$2.5 (module)</td></tr>
+          <tr><td>Interface</td><td>I2S (3 สาย)</td></tr>
+          <tr><td>ไฟเลี้ยง</td><td>2.5V – 5.5V</td></tr>
+        </table>
+        <div class="card-tags">
+          <span class="tag">MAX98357A</span>
+          <span class="tag">Class-D</span>
+          <span class="tag">Smart Speaker</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-blue"></div>
+        <div class="card-label bg-blue">📊 DSP</div>
+        <div class="card-title">ESP-DSP Library — FFT Real-Time บน S3</div>
+        <div class="card-desc">
+          Espressif ESP-DSP library มี FFT, FIR, IIR filters ที่ optimize สำหรับ Xtensa DSP extensions บน ESP32-S3 สามารถรัน 1024-point FFT ที่ &lt;1ms ใช้สำหรับ spectrum analyzer, voice activity detection (VAD), หรือ beat detection ใน music visualizer
+        </div>
+        <div class="card-tags">
+          <span class="tag">ESP-DSP</span>
+          <span class="tag">FFT</span>
+          <span class="tag">VAD</span>
+          <span class="tag">SIMD</span>
+          <span class="tag">FIR Filter</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-blue"></div>
+        <div class="card-label bg-blue">🎙️ โปรเจกต์</div>
+        <div class="card-title">Two-Board Voice Link — เครื่องรับ-ส่งเสียงผ่าน WiFi</div>
+        <div class="card-desc">
+          สร้าง walkie-talkie ด้วย ESP32-S3 2 บอร์ด บอร์ดแรกรับเสียงจาก INMP441 → FFT noise reduction → G.711 μ-law compression → UDP packet บอร์ดสองรับ UDP → decompress → MAX98357A เสียง latency ต่ำกว่า 150ms ใช้ WiFi 2.4GHz
+        </div>
+        <div class="card-tags">
+          <span class="tag">UDP Audio</span>
+          <span class="tag">G.711</span>
+          <span class="tag">WiFi</span>
+          <span class="tag">Low Latency</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: ENERGY HARVESTING ===== -->
+  <section id="energy">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,0.15);color:var(--accent-green)">☀️</div>
+      <h2>Energy Harvesting — Sensor Nodes ที่ไม่ต้องชาร์จ</h2>
+      <span class="count">4 ไอเดีย</span>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-accent-line accent-green"></div>
+        <div class="card-label bg-green">🌟 Product</div>
+        <div class="card-title">SN1 Solar Node — ESP32-C3 + IP67 + ESPHome</div>
+        <div class="card-desc">
+          บอร์ด SN1 Solar Node (เปิดตัวเม.ย. 2026) ใช้ ESP32-C3 พร้อมช่อง 18650 แบตเตอรี่ 1–2 ก้อน + solar charging ตัว enclosure เป็น IP67 กันน้ำสมบูรณ์ รัน ESPHome firmware เชื่อมกับ Home Assistant ได้ทันที เหมาะสำหรับ outdoor temperature, humidity, motion, door sensors
+        </div>
+        <table class="spec-table">
+          <tr><td>MCU</td><td>ESP32-C3</td></tr>
+          <tr><td>Battery</td><td>1–2x 18650</td></tr>
+          <tr><td>Enclosure</td><td>IP67</td></tr>
+          <tr><td>Firmware</td><td>ESPHome</td></tr>
+        </table>
+        <div class="card-tags">
+          <span class="tag">Solar</span>
+          <span class="tag">IP67</span>
+          <span class="tag">ESPHome</span>
+          <span class="tag">Outdoor</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-green"></div>
+        <div class="card-label bg-green">⚡ Open Source</div>
+        <div class="card-title">S-NODE-1 — ESP32-C6 + SPV1050 Harvester</div>
+        <div class="card-desc">
+          โปรเจกต์ open-source บน GitHub ใช้ ESP32-C6 ร่วมกับ SPV1050 Ultra-Low Power Energy Harvester chip มี firmware และ hardware files ครบ ตัว SPV1050 มี MPPT (Maximum Power Point Tracking) ในตัว เหมาะกับ solar panel ขนาดเล็ก 20–100mA
+        </div>
+        <div class="card-tags">
+          <span class="tag">ESP32-C6</span>
+          <span class="tag">SPV1050</span>
+          <span class="tag">MPPT</span>
+          <span class="tag">Open Source</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-green"></div>
+        <div class="card-label bg-green">💤 Deep Sleep</div>
+        <div class="card-title">Power Budget Design — ชีวิต 2 ปีด้วยถ่าน AA</div>
+        <div class="card-desc">
+          สูตรคำนวณ: บอร์ด ESP32 ใช้ไฟ ~240mA ขณะ WiFi active, ~8mA ขณะ idle, ~10μA ขณะ deep sleep ถ้าตื่น 1 วินาทีทุก 10 นาที → current เฉลี่ย &lt;50μA → ถ่าน AA 2500mAh อยู่ได้นานกว่า 2000 ชั่วโมง (&gt;83 วัน) ใช้ ESP-NOW หรือ LoRa ส่งข้อมูลเพื่อลด WiFi time
+        </div>
+        <div class="card-tags">
+          <span class="tag">Deep Sleep</span>
+          <span class="tag">10μA</span>
+          <span class="tag">Power Budget</span>
+          <span class="tag">Battery Life</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-green"></div>
+        <div class="card-label bg-green">🌊 Piezo</div>
+        <div class="card-title">Vibration Harvesting — ไม่ต้องแบตเตอรี่สำหรับ Machinery</div>
+        <div class="card-desc">
+          ใช้ piezoelectric transducer เก็บพลังงานจากการสั่นสะเทือนของเครื่องจักร (เช่น motor, pump, conveyor) ผ่าน rectifier + supercapacitor ไปยัง ESP32 ที่ตื่นสั้น ๆ วัด vibration + อุณหภูมิ แล้วส่ง LoRa หรือ BLE ก่อนหลับต่อ เหมาะกับ predictive maintenance ในโรงงาน
+        </div>
+        <div class="card-tags">
+          <span class="tag">Piezo</span>
+          <span class="tag">Supercapacitor</span>
+          <span class="tag">Vibration</span>
+          <span class="tag">Maintenance</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: MESH NETWORKS ===== -->
+  <section id="mesh">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(129,140,248,0.15);color:var(--accent-secondary)">🕸️</div>
+      <h2>ESP-NOW Mesh & BLE Mesh Networks</h2>
+      <span class="count">4 ไอเดีย</span>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-accent-line accent-purple"></div>
+        <div class="card-label bg-purple">📡 Library</div>
+        <div class="card-title">mesh_now — ESP-NOW + Multi-hop Routing</div>
+        <div class="card-desc">
+          mesh_now เป็น ESP-IDF component บน Espressif Registry (v1.0.2) ที่เพิ่ม automatic peer discovery, multi-hop routing, message queuing, และ optional encryption ให้กับ ESP-NOW รองรับ ESP32, S2, S3, C3, C6 สร้าง mesh ได้โดยไม่ต้องมี WiFi router
+        </div>
+        <div class="card-tags">
+          <span class="tag">mesh_now</span>
+          <span class="tag">Multi-hop</span>
+          <span class="tag">ESP-NOW</span>
+          <span class="tag">Encryption</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-purple"></div>
+        <div class="card-label bg-purple">🏠 ESPHome</div>
+        <div class="card-title">ESPHome 2025.8 ESP-NOW Component</div>
+        <div class="card-desc">
+          ESPHome เวอร์ชัน 2025.8.0 เพิ่ม ESP-NOW component อย่างเป็นทางการ ทำให้ device-to-device communication ไม่ต้องพึ่ง WiFi infrastructure ใช้พลังงานต่ำมาก เหมาะกับ sensor nodes ที่ห่างไกลจาก router แต่ยังต้องการรายงานข้อมูลไปยัง Home Assistant
+        </div>
+        <div class="card-tags">
+          <span class="tag">ESPHome</span>
+          <span class="tag">ESP-NOW</span>
+          <span class="tag">Home Assistant</span>
+          <span class="tag">No Router</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-purple"></div>
+        <div class="card-label bg-purple">🔵 BLE Mesh</div>
+        <div class="card-title">ESP-BLE-MESH — Managed Flooding สำหรับ Lighting</div>
+        <div class="card-desc">
+          ESP-BLE-MESH ใน ESP-IDF สร้าง managed flooding mesh ที่ใช้บอร์ดหนึ่งเป็น provisioner onboard nodes อื่น ๆ รองรับ scenario อย่าง smart lighting ที่ควบคุมหลอดไฟหลายร้อยดวงพร้อมกัน หรือ industrial sensor network ที่ต้องการ redundancy สูง
+        </div>
+        <div class="card-tags">
+          <span class="tag">BLE Mesh</span>
+          <span class="tag">Provisioner</span>
+          <span class="tag">Smart Lighting</span>
+          <span class="tag">Flooding</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-purple"></div>
+        <div class="card-label bg-purple">🔗 Thread</div>
+        <div class="card-title">ESP-NOW vs Thread vs BLE Mesh — เลือกอะไรดี?</div>
+        <div class="card-desc">
+          <strong style="color:#f1f5f9">ESP-NOW:</strong> range &lt;150m (stable) / 300m (open air), ใช้ง่าย, ไม่มี IP<br>
+          <strong style="color:#f1f5f9">Thread:</strong> IPv6-based, เหมาะงาน TCP-style, Matter ready<br>
+          <strong style="color:#f1f5f9">BLE Mesh:</strong> ครอบคลุมมาก, รองรับ node หลายร้อยตัว, Bluetooth standard
+        </div>
+        <div class="card-tags">
+          <span class="tag">Comparison</span>
+          <span class="tag">Thread</span>
+          <span class="tag">IPv6</span>
+          <span class="tag">Matter</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: HEALTH WEARABLES ===== -->
+  <section id="health">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(244,114,182,0.15);color:var(--accent-pink)">❤️</div>
+      <h2>Health Wearables & Biometric Sensors</h2>
+      <span class="count">5 ไอเดีย</span>
+    </div>
+
+    <div class="highlight-box" style="border-left-color:var(--accent-pink);background:linear-gradient(135deg,rgba(244,114,182,0.08),rgba(168,85,247,0.08))">
+      <div class="hl-title" style="color:var(--accent-pink)">⚠️ หมายเหตุสำคัญ</div>
+      <p>โปรเจกต์เหล่านี้เป็น hobbyist/research เท่านั้น ไม่ได้รับ medical certification อย่าใช้แทนอุปกรณ์ทางการแพทย์จริง</p>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-accent-line accent-pink"></div>
+        <div class="card-label bg-pink">❤️ Sensor</div>
+        <div class="card-title">MAX30102 — Heart Rate & SpO2 ราคา $3</div>
+        <div class="card-desc">
+          MAX30102 optical sensor ใช้ LED สองสี (Red + IR) และ photodetector วัด heart rate และ SpO2 ผ่าน I2C ราคาต่ำกว่า $3 ผลการทดสอบ DIY: ค่า HR ห่างจากอุปกรณ์มาตรฐาน &lt;5 BPM, SpO2 ≈99% เมื่อนิ้วนิ่ง เหมาะสำหรับ fatigue monitoring ระยะยาว
+        </div>
+        <table class="spec-table">
+          <tr><td>Interface</td><td>I2C</td></tr>
+          <tr><td>ราคา</td><td>~$3</td></tr>
+          <tr><td>วัดได้</td><td>HR, SpO2</td></tr>
+          <tr><td>ไฟเลี้ยง</td><td>1.8V / 3.3V</td></tr>
+        </table>
+        <div class="card-tags">
+          <span class="tag">MAX30102</span>
+          <span class="tag">Heart Rate</span>
+          <span class="tag">SpO2</span>
+          <span class="tag">I2C</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-pink"></div>
+        <div class="card-label bg-pink">🏃 Wearable</div>
+        <div class="card-title">EdgeCare ESP32-C6 — Multi-Sensor Wearable</div>
+        <div class="card-desc">
+          โปรเจกต์ EdgeCare (element14, ต.ค. 2026) สร้าง wearable ด้วย ESP32-C6 + MAX30102 (optical) + clinical temp sensor + dry electrodes สำหรับ skin impedance/hydration monitoring ส่งข้อมูลผ่าน BLE เหมาะสำหรับ metabolic monitoring ระหว่างออกกำลังกาย
+        </div>
+        <div class="card-tags">
+          <span class="tag">ESP32-C6</span>
+          <span class="tag">Metabolic</span>
+          <span class="tag">Hydration</span>
+          <span class="tag">BLE</span>
+          <span class="tag">element14</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-pink"></div>
+        <div class="card-label bg-pink">☀️ Outdoor</div>
+        <div class="card-title">Solar Vital Monitor — สำหรับพนักงานกลางแจ้ง</div>
+        <div class="card-desc">
+          โปรเจกต์ Circuit Digest (ม.ค. 2026) ใช้ MAXREFDES117 optical module + solar charging ตรวจจับ fatigue, dehydration risk, heat stress จาก HR + SpO2 + skin temp เหมาะสำหรับตำรวจจราจร, คนงานก่อสร้าง, เกษตรกร แจ้งเตือนผ่าน buzzer และ Blynk app
+        </div>
+        <div class="card-tags">
+          <span class="tag">Solar</span>
+          <span class="tag">Fatigue</span>
+          <span class="tag">Heat Stress</span>
+          <span class="tag">Blynk</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-pink"></div>
+        <div class="card-label bg-pink">😴 Sleep</div>
+        <div class="card-title">Smart Life Band — Sleep + Motion + Stress Tracking</div>
+        <div class="card-desc">
+          สร้าง DIY Smart Band ด้วย ESP32 + MAX30102 + MPU6050 (accelerometer) + OLED display วัด HR, SpO2, steps, sleep quality, stress index (HRV) บันทึกข้อมูลลง Firebase Cloud อ่านผ่าน mobile app แบตเตอรี่ 300mAh อยู่ได้ 24–48 ชั่วโมง
+        </div>
+        <div class="card-tags">
+          <span class="tag">Sleep Tracking</span>
+          <span class="tag">HRV</span>
+          <span class="tag">MPU6050</span>
+          <span class="tag">Firebase</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-pink"></div>
+        <div class="card-label bg-pink">🏥 Medical</div>
+        <div class="card-title">Smart Ward Assistant — Patient Monitoring</div>
+        <div class="card-desc">
+          สร้าง low-cost patient monitoring ด้วย ESP32 DevKit V1 + MAX30102 ส่งข้อมูลผ่าน MQTT ไปยัง Raspberry Pi gateway แสดงผลแบบ real-time บน dashboard ทำ alert เมื่อ HR &lt;50 หรือ &gt;120 BPM หรือ SpO2 &lt;95% ต้นทุนต่อ node ประมาณ $15
+        </div>
+        <div class="card-tags">
+          <span class="tag">MQTT</span>
+          <span class="tag">Patient Monitor</span>
+          <span class="tag">Alert</span>
+          <span class="tag">$15</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 5: USB HID ===== -->
+  <section id="usb">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,0.15);color:var(--accent-yellow)">🖥️</div>
+      <h2>USB HID — ESP32-S3 เป็น Keyboard / Mouse / Gamepad</h2>
+      <span class="count">4 ไอเดีย</span>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-accent-line accent-orange"></div>
+        <div class="card-label bg-orange">🎮 Product</div>
+        <div class="card-title">DexoPad — BLE Keyboard+Mouse ไม่ต้องติด Driver</div>
+        <div class="card-desc">
+          DexoPad (Kickstarter, พ.ค. 2026) เป็น USB-C dongle ที่ใช้ ESP32-S3 + BLE ทำงานเป็น composite HID device (keyboard + mouse พร้อมกัน) ไม่ต้องติด driver ใดๆ เสียบปุ๊บใช้ได้เลย เชื่อม phone หรือ tablet เป็น wireless keyboard/mouse สำหรับ PC
+        </div>
+        <div class="card-tags">
+          <span class="tag">DexoPad</span>
+          <span class="tag">USB-C</span>
+          <span class="tag">Composite HID</span>
+          <span class="tag">No Driver</span>
+          <span class="tag">Kickstarter</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-orange"></div>
+        <div class="card-label bg-orange">⌨️ Firmware</div>
+        <div class="card-title">KeSp Firmware — Mechanical Keyboard บน ESP32-S3</div>
+        <div class="card-desc">
+          KeSp เป็น keyboard firmware framework สำหรับ ESP32-S3 mechanical keyboards ที่รองรับทั้ง USB HID (ผ่าน TinyUSB) และ BLE HID โดยใช้ BLE เป็น fallback เมื่อถอดสาย รองรับ custom key mapping, macros, QMK-like layers (อัปเดตล่าสุด เม.ย. 2026)
+        </div>
+        <div class="card-tags">
+          <span class="tag">KeSp</span>
+          <span class="tag">TinyUSB</span>
+          <span class="tag">Mechanical KB</span>
+          <span class="tag">BLE Fallback</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-orange"></div>
+        <div class="card-label bg-orange">🖱️ Accessibility</div>
+        <div class="card-title">Head-Tracking Mouse — Assistive Technology</div>
+        <div class="card-desc">
+          ใช้ ESP32-S3 + IMU (MPU6050 หรือ ICM-42688-P) ทำ head-tracking mouse สำหรับผู้พิการที่ใช้มือไม่ได้ ESP32-S3 แสดงตนเป็น USB HID Mouse ต่อ PC โดยตรง movement จาก IMU → USB mouse cursor movement ต้นทุน &lt;$10 มี tutorial มี.ค. 2026
+        </div>
+        <div class="card-tags">
+          <span class="tag">Head Tracking</span>
+          <span class="tag">IMU</span>
+          <span class="tag">Accessibility</span>
+          <span class="tag">HID Mouse</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-orange"></div>
+        <div class="card-label bg-orange">🕹️ Macro Pad</div>
+        <div class="card-title">USB Macro Pad + Keyboard Passthrough</div>
+        <div class="card-desc">
+          สร้าง macro pad 6–12 ปุ่มด้วย ESP32-S3 แสดงตนเป็น HID Keyboard ต่อ PC กดปุ่มได้ส่ง key combo ที่ซับซ้อน เช่น Ctrl+Shift+F5 หรือ macro ยาว ๆ ต่อยอดเป็น USB passthrough ด้วย ESP32-S3 2 ตัว ตัวแรกเป็น USB host อ่าน keyboard จริง ส่งผ่าน SPI ตัวที่สองแทรก macro ก่อนส่ง PC
+        </div>
+        <div class="card-tags">
+          <span class="tag">Macro Pad</span>
+          <span class="tag">USB Host</span>
+          <span class="tag">Passthrough</span>
+          <span class="tag">SPI</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 6: ENVIRONMENTAL SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(45,212,191,0.15);color:#2dd4bf">🌍</div>
+      <h2>Environmental Sensors ใหม่ 2026</h2>
+      <span class="count">4 ไอเดีย</span>
+    </div>
+
+    <div class="card-grid two-col">
+      <div class="card">
+        <div class="card-accent-line accent-teal"></div>
+        <div class="card-label" style="background:rgba(45,212,191,0.12);border:1px solid rgba(45,212,191,0.3);color:#2dd4bf">🌬️ Air Quality</div>
+        <div class="card-title">Sensirion SEN66 — All-in-One Air Quality Module</div>
+        <div class="card-desc">
+          SEN66 รวมการวัดหลายอย่างในโมดูลเดียว: PM1.0/PM2.5/PM4/PM10, NOx, VOC, CO₂, temperature, humidity ผ่าน I2C interface เหมาะสำหรับ indoor air quality monitor บน ESP32 ที่ต้องการ sensor ตัวเดียวแต่ได้ข้อมูลครบ มีตัวอย่างบน Espressif component registry แล้ว
+        </div>
+        <div class="card-tags">
+          <span class="tag">SEN66</span>
+          <span class="tag">PM2.5</span>
+          <span class="tag">CO₂</span>
+          <span class="tag">VOC</span>
+          <span class="tag">NOx</span>
+          <span class="tag">All-in-One</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-teal"></div>
+        <div class="card-label" style="background:rgba(45,212,191,0.12);border:1px solid rgba(45,212,191,0.3);color:#2dd4bf">🏠 Product</div>
+        <div class="card-title">MoreSense MS-07 — ESP32-S3 + SEN66 + Home Assistant</div>
+        <div class="card-desc">
+          MoreSense MS-07 (รายงานโดย Pulse.bot 2026) เป็น indoor air quality monitor ที่ใช้ ESP32-S3 + Sensirion SEN66 multisensor พร้อมรองรับ Home Assistant ทันที enclosure สวยงาม เหมาะสำหรับ room-by-room monitoring ในบ้านหรือสำนักงาน
+        </div>
+        <div class="card-tags">
+          <span class="tag">MoreSense MS-07</span>
+          <span class="tag">ESP32-S3</span>
+          <span class="tag">Home Assistant</span>
+          <span class="tag">Indoor AQI</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-teal"></div>
+        <div class="card-label" style="background:rgba(45,212,191,0.12);border:1px solid rgba(45,212,191,0.3);color:#2dd4bf">💧 Water</div>
+        <div class="card-title">Aquasense IoT — Water Quality สำหรับฟาร์มปลา</div>
+        <div class="card-desc">
+          Aquasense โดย Aqsen Innovations เป็น IoT platform ตรวจวัดคุณภาพน้ำ (pH, DO, TDS, temperature, turbidity) ทดสอบจริงที่ฟาร์มปลาในยูกันดาและอินเดีย แนวทาง DIY: ใช้ ESP32 + analog pH sensor + DS18B20 + TDS meter → MQTT → Grafana dashboard ต้นทุน &lt;$30/node
+        </div>
+        <div class="card-tags">
+          <span class="tag">Water Quality</span>
+          <span class="tag">pH</span>
+          <span class="tag">DO</span>
+          <span class="tag">Fish Farm</span>
+          <span class="tag">Grafana</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-line accent-teal"></div>
+        <div class="card-label" style="background:rgba(45,212,191,0.12);border:1px solid rgba(45,212,191,0.3);color:#2dd4bf">🧤 Wearable Env</div>
+        <div class="card-title">Wearable Hazard Patch — ตรวจก๊าซและโลหะหนัก</div>
+        <div class="card-desc">
+          งานวิจัย (ส.ค. 2026) สร้าง wearable patch ที่ตรวจจับก๊าซอันตราย เช่น CO, H₂S และโลหะหนักในน้ำ แจ้งเตือนผู้สวมใส่ผ่านการสั่นสะเทือน DIY version: ใช้ ESP32-C3 + MQ-7 (CO) + MQ-135 (VOC) + vibration motor ใส่ใน armband สำหรับคนงานโรงงาน
+        </div>
+        <div class="card-tags">
+          <span class="tag">Wearable</span>
+          <span class="tag">CO Sensor</span>
+          <span class="tag">MQ-7</span>
+          <span class="tag">Haptic Alert</span>
+          <span class="tag">Worker Safety</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 7: RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,146,60,0.15);color:var(--accent-orange)">🔗</div>
+      <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+      <span class="count">12 แหล่ง</span>
+    </div>
+
+    <div class="resources-grid">
+      <div class="resource-card">
+        <div class="rc-type">📖 Tutorial</div>
+        <a href="https://dronebotworkshop.com/esp32-i2s">DroneBot Workshop — I2S INMP441</a>
+        <div class="rc-desc">คู่มือใช้ INMP441 I2S microphone กับ ESP32 แบบครบถ้วน</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-type">📦 Library</div>
+        <a href="https://components.espressif.com">Espressif Component Registry</a>
+        <div class="rc-desc">แหล่งรวม ESP-IDF components รวมถึง mesh_now, SEN66, USB HID</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-type">🏠 Firmware</div>
+        <a href="https://esphome.io/blog/2025/08/20/esphome-2025-8/">ESPHome 2025.8 — ESP-NOW Support</a>
+        <div class="rc-desc">บทความประกาศ ESP-NOW component ใน ESPHome อย่างเป็นทางการ</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-type">🛒 Hardware</div>
+        <a href="https://www.pulse.bot/hardware/news/sn1-solar-node-an-esp32-c3-based-board-with-ip67-enclosure-solar-charging-esphome-firmware-0c5c529c-9a80-4906-8ada-90fbfe2b2668/">SN1 Solar Node — Pulse.bot Review</a>
+        <div class="rc-desc">รีวิวบอร์ด SN1 Solar Node พร้อมสเปคครบถ้วน</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-type">🎵 Book</div>
+        <a href="https://issuu.com/eimworld/docs/audio-dsp-projects-with-esp32-extract">Practical Audio DSP Projects with ESP32</a>
+        <div class="rc-desc">หนังสือครอบคลุม I2S, FFT, FIR/IIR filters บน ESP32</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-type">❤️ Tutorial</div>
+        <a href="https://structables.lunar.icu/Build-a-Multi-Sensor-Health-Analyzer-With-ESP32-Te">Multi-Sensor Health Analyzer (Instructables)</a>
+        <div class="rc-desc">คู่มือสร้าง HR + SpO2 + Temperature monitor ด้วย ESP32</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-type">⌨️ Firmware</div>
+        <a href="https://awesome.ecosyste.ms/projects/github.com%2Fmornepousse%2Fkesp_firmware">KeSp Firmware — GitHub</a>
+        <div class="rc-desc">Keyboard firmware framework สำหรับ ESP32-S3 พร้อม BLE + USB HID</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-type">🌬️ Sensor</div>
+        <a href="https://www.pulse.bot/hardware/news/moresense-ms-07-an-esp32-s3-indoor-air-quality-monitor-with-sen66-multisensor-and-home-assistant-sup-3eb30943-4226-4ec8-8265-0f8f8a90b596/">MoreSense MS-07 — ESP32-S3 + SEN66</a>
+        <div class="rc-desc">Indoor air quality monitor ด้วย Sensirion SEN66 multisensor</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-type">📡 Docs</div>
+        <a href="https://docs.espressif.com/projects/esp-techpedia/en/latest/esp-friends/solution-introduction/mesh/mesh-comparison.html">Espressif Mesh Comparison Guide</a>
+        <div class="rc-desc">เปรียบเทียบ BLE Mesh, Thread, Zigbee, ESP-NOW อย่างครบถ้วน</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-type">☀️ Project</div>
+        <a href="https://zbotic.in/?p=612745">Zbotic — Solar ESP32 Sensor Design</a>
+        <div class="rc-desc">คู่มือออกแบบ solar-powered ESP32 sensor node และการคำนวณ power budget</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-type">🏥 Project</div>
+        <a href="https://community.element14.com/challenges-projects/design-challenges/smart-home-healthcare-challenge/b/projects/posts/edgecare---a-multi-sensor-wearable-platform-for-metabolic-monitoring">EdgeCare — element14 Community</a>
+        <div class="rc-desc">Multi-sensor wearable platform ด้วย ESP32-C6 สำหรับ metabolic monitoring</div>
+      </div>
+
+      <div class="resource-card">
+        <div class="rc-type">🔌 Tutorial</div>
+        <a href="https://blog.arfevrier.fr/usb-passthrough-for-keyboard-and-mouse-using-two-esp32/">USB Passthrough with Two ESP32-S3</a>
+        <div class="rc-desc">สร้าง keyboard/mouse passthrough + macro injection ด้วย ESP32-S3 2 ตัว</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p><strong style="color:var(--accent-primary)">ESP32 & Sensor Daily Research</strong></p>
+  <p>สร้างโดย AI Researcher อัตโนมัติ · วันที่ 8 พฤศจิกายน 2026</p>
+  <p style="margin-top:0.5rem">ข้อมูลรวบรวมจาก: Espressif Forums, Hackster.io, Circuit Digest, element14 Community, Pulse.bot, Zbotic, ESPHome Blog</p>
+  <div class="footer-tags">
+    <span class="ftag">ESP32-S3</span>
+    <span class="ftag">ESP32-C6</span>
+    <span class="ftag">I2S Audio</span>
+    <span class="ftag">Energy Harvesting</span>
+    <span class="ftag">ESP-NOW Mesh</span>
+    <span class="ftag">BLE Mesh</span>
+    <span class="ftag">MAX30102</span>
+    <span class="ftag">USB HID</span>
+    <span class="ftag">SEN66</span>
+    <span class="ftag">Solar Node</span>
+    <span class="ftag">Wearable Health</span>
+    <span class="ftag">TinyUSB</span>
+  </div>
+</footer>
+
+</body>
+</html>
