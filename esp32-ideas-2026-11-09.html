@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 9 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0a0f1e;
+    --bg-secondary: #111827;
+    --bg-card: #1a2235;
+    --bg-card-hover: #1e2a3f;
+    --accent-blue: #3b82f6;
+    --accent-cyan: #06b6d4;
+    --accent-purple: #a855f7;
+    --accent-green: #22c55e;
+    --accent-orange: #f97316;
+    --accent-pink: #ec4899;
+    --accent-yellow: #eab308;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #1e3a5f;
+    --shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: linear-gradient(135deg, #0d1b3e 0%, #0d2d4a 50%, #0d1b3e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,130,246,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.4);
+    color: #93c5fd;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.5rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #93c5fd, #67e8f9, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .header-sub {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1.2rem;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+  .stat-pill strong { color: var(--text-primary); }
+
+  /* ─── LAYOUT ─── */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem 3rem;
+  }
+
+  /* ─── SECTION ─── */
+  .section {
+    margin-bottom: 3rem;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 2.5rem; height: 2.5rem;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-blue   { background: rgba(59,130,246,0.2);  border: 1px solid rgba(59,130,246,0.4); }
+  .icon-cyan   { background: rgba(6,182,212,0.2);   border: 1px solid rgba(6,182,212,0.4); }
+  .icon-purple { background: rgba(168,85,247,0.2);  border: 1px solid rgba(168,85,247,0.4); }
+  .icon-green  { background: rgba(34,197,94,0.2);   border: 1px solid rgba(34,197,94,0.4); }
+  .icon-orange { background: rgba(249,115,22,0.2);  border: 1px solid rgba(249,115,22,0.4); }
+
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-title span { font-size: 0.8rem; font-weight: 400; color: var(--text-muted); margin-left: 0.5rem; }
+
+  /* ─── GRID ─── */
+  .grid { display: grid; gap: 1.25rem; }
+  .grid-2 { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(59,130,246,0.4);
+    box-shadow: 0 8px 32px rgba(59,130,246,0.1);
+  }
+  .card-accent-top {
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+  .accent-blue   { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
+  .accent-purple { background: linear-gradient(90deg, #a855f7, #ec4899); }
+  .accent-green  { background: linear-gradient(90deg, #22c55e, #06b6d4); }
+  .accent-orange { background: linear-gradient(90deg, #f97316, #eab308); }
+  .accent-pink   { background: linear-gradient(90deg, #ec4899, #a855f7); }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .card-emoji { font-size: 1.5rem; line-height: 1; flex-shrink: 0; margin-top: 0.1rem; }
+  .card-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); line-height: 1.4; }
+  .card-subtitle { font-size: 0.8rem; color: var(--accent-cyan); font-weight: 600; margin-top: 0.1rem; }
+  .card p { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.6rem; }
+
+  .tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .tag {
+    font-size: 0.72rem; font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+  }
+  .tag-blue   { background: rgba(59,130,246,0.15);  color: #93c5fd;  border: 1px solid rgba(59,130,246,0.3); }
+  .tag-cyan   { background: rgba(6,182,212,0.15);   color: #67e8f9;  border: 1px solid rgba(6,182,212,0.3); }
+  .tag-purple { background: rgba(168,85,247,0.15);  color: #d8b4fe;  border: 1px solid rgba(168,85,247,0.3); }
+  .tag-green  { background: rgba(34,197,94,0.15);   color: #86efac;  border: 1px solid rgba(34,197,94,0.3); }
+  .tag-orange { background: rgba(249,115,22,0.15);  color: #fdba74;  border: 1px solid rgba(249,115,22,0.3); }
+  .tag-pink   { background: rgba(236,72,153,0.15);  color: #f9a8d4;  border: 1px solid rgba(236,72,153,0.3); }
+  .tag-yellow { background: rgba(234,179,8,0.15);   color: #fde047;  border: 1px solid rgba(234,179,8,0.3); }
+
+  /* ─── FEATURED CARD ─── */
+  .card-featured {
+    background: linear-gradient(135deg, #0f2044 0%, #1a1040 100%);
+    border: 1px solid rgba(99,102,241,0.4);
+    border-radius: 14px;
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-featured::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #6366f1, #a855f7, #06b6d4);
+  }
+  .card-featured .featured-label {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
+    color: #a5b4fc; background: rgba(99,102,241,0.2);
+    border: 1px solid rgba(99,102,241,0.4);
+    padding: 0.2rem 0.7rem; border-radius: 999px;
+    display: inline-block; margin-bottom: 0.75rem;
+  }
+  .card-featured h3 { font-size: 1.15rem; font-weight: 700; color: #e0e7ff; margin-bottom: 0.5rem; }
+  .card-featured p { font-size: 0.9rem; color: #94a3b8; }
+
+  /* ─── SPEC TABLE ─── */
+  .spec-list { margin-top: 0.75rem; }
+  .spec-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.85rem;
+  }
+  .spec-item:last-child { border-bottom: none; }
+  .spec-key { color: var(--text-muted); }
+  .spec-val { color: var(--text-primary); font-weight: 600; text-align: right; }
+
+  /* ─── SENSOR CARD ─── */
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .sensor-name { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+  .sensor-type { font-size: 0.78rem; font-weight: 600; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.06em; }
+  .sensor-desc { font-size: 0.87rem; color: var(--text-secondary); }
+  .sensor-spec { font-size: 0.8rem; color: var(--text-muted); }
+  .sensor-use  { font-size: 0.8rem; color: #86efac; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); border-radius: 8px; padding: 0.4rem 0.6rem; margin-top: 0.25rem; }
+
+  /* ─── RESOURCE CARD ─── */
+  .resource-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem;
+    display: flex; flex-direction: column; gap: 0.4rem;
+  }
+  .resource-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+  .resource-desc  { font-size: 0.83rem; color: var(--text-secondary); }
+  .resource-url   { font-size: 0.78rem; color: #60a5fa; word-break: break-all; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  footer strong { color: var(--text-secondary); }
+
+  /* ─── PROGRESS BAR ─── */
+  .progress-row { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem; }
+  .progress-label { font-size: 0.8rem; color: var(--text-muted); min-width: 80px; }
+  .progress-bar { flex: 1; height: 6px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 999px; }
+  .progress-val { font-size: 0.8rem; color: var(--text-secondary); min-width: 36px; text-align: right; }
+
+  @media (max-width: 600px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.5rem; }
+    .header-stats { gap: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════════ -->
+<header>
+  <div class="header-badge">ESP32 Research Lab · Daily Brief</div>
+  <h1>Long-Range IoT &amp; Voice Intelligence</h1>
+  <p class="header-sub">LoRa Mesh · ESP-SR 2.6 · WiFi 6 C6 · Energy Harvesting · 9 พฤศจิกายน 2026</p>
+  <div class="header-stats">
+    <div class="stat-pill">📡 <strong>4</strong> หัวข้อหลัก</div>
+    <div class="stat-pill">💡 <strong>12</strong> ไอเดียโปรเจกต์</div>
+    <div class="stat-pill">🔬 <strong>5</strong> Sensors ใหม่</div>
+    <div class="stat-pill">📚 <strong>8</strong> แหล่งข้อมูล</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 1 — นวัตกรรมและชิปใหม่
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🚀</div>
+      <div>
+        <div class="section-title">นวัตกรรมและชิปที่น่าสนใจ <span>อัพเดทล่าสุด</span></div>
+      </div>
+    </div>
+
+    <!-- Featured -->
+    <div class="card-featured">
+      <div class="featured-label">⭐ ไฮไลท์ประจำวัน</div>
+      <h3>Meshtastic 2.8 — LoRa Mesh พร้อม Packet Signing &amp; Voice ด้วย Codec2</h3>
+      <p>เวอร์ชัน 2.8 ที่กำลังพัฒนาเพิ่ม XEdDSA packet signing ทำให้ข้อความที่รับรองความถูกต้องจาก node ที่รู้จักกันจะมีเครื่องหมายยืนยันในแอปฯ — ป้องกัน impersonation ได้จริง นอกจากนี้ยังมี Codec2 voice messaging บน 2.4 GHz radio (พ.ค. 2026), native Ethernet รองรับ ESP32, และ firmware 2.7.x ล่าสุดรองรับ Heltec V4 (ESP32-S3) พร้อม SX1262 กำลังส่ง 28 dBm</p>
+      <div class="tag-row">
+        <span class="tag tag-blue">Meshtastic 2.8</span>
+        <span class="tag tag-purple">XEdDSA Signing</span>
+        <span class="tag tag-cyan">Codec2 Voice</span>
+        <span class="tag tag-green">ESP32-S3</span>
+        <span class="tag tag-orange">28 dBm TX</span>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-accent-top accent-blue"></div>
+        <div class="card-header">
+          <span class="card-emoji">📶</span>
+          <div>
+            <div class="card-title">ESP32-C6 — WiFi 6 + BLE 5.3 + 802.15.4</div>
+            <div class="card-subtitle">ชิปประหยัดไฟสำหรับ Smart Home 2026</div>
+          </div>
+        </div>
+        <p>ESP32-C6 เป็นชิปแรกของ Espressif ที่รวม WiFi 6 (802.11ax), Bluetooth 5.3 LE, และ 802.15.4 (Thread/Zigbee/Matter) ไว้ในตัวเดียว — เหมาะสุดสำหรับ Smart Home ปี 2026</p>
+        <div class="spec-list">
+          <div class="spec-item"><span class="spec-key">CPU</span><span class="spec-val">RISC-V 160 MHz HP + 20 MHz LP</span></div>
+          <div class="spec-item"><span class="spec-key">WiFi</span><span class="spec-val">802.11ax (WiFi 6) 2.4 GHz</span></div>
+          <div class="spec-item"><span class="spec-key">BLE</span><span class="spec-val">Bluetooth 5.3 LE</span></div>
+          <div class="spec-item"><span class="spec-key">Radio 3</span><span class="spec-val">802.15.4 (Matter/Thread/Zigbee)</span></div>
+          <div class="spec-item"><span class="spec-key">Variants</span><span class="spec-val">C6 / C61 (ไม่มี 802.15.4) / C5 (5GHz)</span></div>
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-blue">WiFi 6</span>
+          <span class="tag tag-cyan">Matter</span>
+          <span class="tag tag-purple">Thread</span>
+          <span class="tag tag-green">Zigbee</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-top accent-purple"></div>
+        <div class="card-header">
+          <span class="card-emoji">🎙️</span>
+          <div>
+            <div class="card-title">ESP-SR v2.6.x — Speech Recognition ใหม่ล่าสุด</div>
+            <div class="card-subtitle">Offline Voice Command บน ESP32 ทุกรุ่น</div>
+          </div>
+        </div>
+        <p>ESP-SR 2.6.0 ปล่อย WakeNet10s ที่รันได้บน ESP32 ต้นฉบับโดยไม่ต้องใช้ PIE/SIMD รองรับ ESP32-C3, C5, C6 ด้วย ส่วน MultiNet รองรับ custom commands ได้ถึง 200 คำสั่ง และ AEC (Acoustic Echo Cancellation) ปรับปรุงสำหรับ full-duplex</p>
+        <div class="spec-list">
+          <div class="spec-item"><span class="spec-key">WakeNet10s</span><span class="spec-val">ไม่ต้องใช้ PIE instruction</span></div>
+          <div class="spec-item"><span class="spec-key">MultiNet</span><span class="spec-val">สูงสุด 200 custom commands</span></div>
+          <div class="spec-item"><span class="spec-key">ภาษา</span><span class="spec-val">ไทย/EN (S3), จีน (ESP32)</span></div>
+          <div class="spec-item"><span class="spec-key">AEC ใหม่</span><span class="spec-val">Full-duplex เม.ย. 2026</span></div>
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-purple">ESP-SR</span>
+          <span class="tag tag-cyan">Wake Word</span>
+          <span class="tag tag-green">Offline AI</span>
+          <span class="tag tag-orange">AEC</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-top accent-green"></div>
+        <div class="card-header">
+          <span class="card-emoji">☀️</span>
+          <div>
+            <div class="card-title">SN1 Solar Node — ESP32-C3 + IP67 + ESPHome</div>
+            <div class="card-subtitle">Sensor Node ไร้ไฟฟ้า ใช้งานกลางแจ้งได้จริง</div>
+          </div>
+        </div>
+        <p>SN1 คือบอร์ด open-hardware ที่รวม ESP32-C3, solar charging, กล่อง IP67, และ ESPHome firmware ไว้ด้วยกัน — วางได้ทันทีในสวน, ไร่นา, หรือสถานีตรวจวัดสิ่งแวดล้อมโดยไม่ต้องลากสายไฟ ใช้ CN3791 MPPT charger รองรับโซลาร์ขนาดเล็ก 5–10W</p>
+        <div class="spec-list">
+          <div class="spec-item"><span class="spec-key">MCU</span><span class="spec-val">ESP32-C3 RISC-V</span></div>
+          <div class="spec-item"><span class="spec-key">Enclosure</span><span class="spec-val">IP67 กันน้ำ กันฝุ่น</span></div>
+          <div class="spec-item"><span class="spec-key">Charger</span><span class="spec-val">CN3791 MPPT Solar</span></div>
+          <div class="spec-item"><span class="spec-key">Firmware</span><span class="spec-val">ESPHome พร้อมใช้</span></div>
+          <div class="spec-item"><span class="spec-key">Deep Sleep</span><span class="spec-val">~5–10 µA</span></div>
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-green">Solar</span>
+          <span class="tag tag-blue">ESPHome</span>
+          <span class="tag tag-cyan">IP67</span>
+          <span class="tag tag-orange">MPPT</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-top accent-orange"></div>
+        <div class="card-header">
+          <span class="card-emoji">🌐</span>
+          <div>
+            <div class="card-title">Trail Mate — ESP32 Handheld ใช้ Meshtastic + MeshCore</div>
+            <div class="card-subtitle">Off-grid messaging พร้อม GPS map display</div>
+          </div>
+        </div>
+        <p>Trail Mate (เม.ย. 2026) คือ firmware โอเพนซอร์สสำหรับ ESP32 handheld device ที่ใช้ทั้ง Meshtastic และ MeshCore protocol พร้อมกัน รองรับ text messaging แบบ off-grid และแสดงแผนที่ GPS บนหน้าจอ — เหมาะสำหรับ hiking, camping, และงาน disaster response</p>
+        <div class="tag-row">
+          <span class="tag tag-blue">Meshtastic</span>
+          <span class="tag tag-cyan">MeshCore</span>
+          <span class="tag tag-green">GPS Map</span>
+          <span class="tag tag-purple">Off-grid</span>
+          <span class="tag tag-orange">Open Source</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 2 — ไอเดียโปรเจกต์
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-purple">💡</div>
+      <div>
+        <div class="section-title">ไอเดียโปรเจกต์ที่น่าสร้าง <span>Long-Range &amp; Voice</span></div>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+
+      <div class="card">
+        <div class="card-accent-top accent-blue"></div>
+        <div class="card-header">
+          <span class="card-emoji">🌾</span>
+          <div>
+            <div class="card-title">LoRa Smart Farm Monitor ครอบคลุม 10 กม.</div>
+            <div class="card-subtitle">ไอเดียเด่นประจำวัน</div>
+          </div>
+        </div>
+        <p>ใช้ ESP32 + SX1276 (RFM95) เป็น node ตรวจวัดดิน/อากาศ ส่งข้อมูลผ่าน LoRa ไปยัง gateway ESP32 ที่เชื่อมต่อ WiFi แล้วส่งต่อไป The Things Network หรือ MQTT broker — ไม่ต้องพึ่ง cellular SIM ครอบคลุมระยะไกล 5–15 กม.</p>
+        <p><strong style="color:#93c5fd;">ส่วนประกอบ:</strong> ESP32 + RFM95W + BME280 + Capacitive Soil Moisture + 18650 + โซลาร์ 6W</p>
+        <div class="tag-row">
+          <span class="tag tag-blue">LoRa 915MHz</span>
+          <span class="tag tag-green">Smart Farm</span>
+          <span class="tag tag-orange">Solar</span>
+          <span class="tag tag-cyan">TTN</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-top accent-purple"></div>
+        <div class="card-header">
+          <span class="card-emoji">🎙️</span>
+          <div>
+            <div class="card-title">ESP32-S3 Voice Assistant ออฟไลน์ด้วย ESP-SR</div>
+          </div>
+        </div>
+        <p>สร้าง voice assistant ที่ตอบสนองต่อ wake word "Hey ESP!" แล้วรับคำสั่งควบคุม smart home ผ่าน MQTT — ทำงานได้ทั้งออฟไลน์ด้วย ESP-SR MultiNet (200 คำสั่ง) และออนไลน์ผ่าน Groq Whisper API เมื่อต้องการ NLP ที่ซับซ้อน</p>
+        <p><strong style="color:#d8b4fe;">อุปกรณ์:</strong> ESP32-S3 + INMP441 I²S Mic + MAX98357A DAC + 3W Speaker</p>
+        <div class="tag-row">
+          <span class="tag tag-purple">ESP-SR 2.6</span>
+          <span class="tag tag-cyan">Wake Word</span>
+          <span class="tag tag-blue">MQTT</span>
+          <span class="tag tag-green">Offline AI</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-top accent-cyan"></div>
+        <div class="card-header">
+          <span class="card-emoji">📡</span>
+          <div>
+            <div class="card-title">ESP32-C6 Multi-Protocol Smart Switch</div>
+          </div>
+        </div>
+        <p>ใช้ ESP32-C6 สร้าง smart switch ที่รองรับ WiFi 6 (ตอบสนองเร็ว), Thread สำหรับ Matter ecosystem, และ Zigbee เพื่อ backward compatibility กับอุปกรณ์เก่า — ชิปตัวเดียวทำได้ทุกอย่าง ไม่ต้อง hub แยก</p>
+        <p><strong style="color:#67e8f9;">ใช้ SDK:</strong> ESP-IDF + esp-matter + esp-zigbee-sdk</p>
+        <div class="tag-row">
+          <span class="tag tag-cyan">ESP32-C6</span>
+          <span class="tag tag-blue">Matter 1.4+</span>
+          <span class="tag tag-purple">Thread</span>
+          <span class="tag tag-yellow">Zigbee</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-top accent-green"></div>
+        <div class="card-header">
+          <span class="card-emoji">🔋</span>
+          <div>
+            <div class="card-title">Hybrid Energy Harvesting — Solar + RF</div>
+          </div>
+        </div>
+        <p>ระบบ ESP32 data logger ที่เก็บพลังงานจาก 2 แหล่ง: โซลาร์เป็นหลัก (CN3791 MPPT) และ RF harvesting เป็นสำรองเมื่อแสงแดดน้อย — วิธีนี้ช่วยให้ node ทำงานต่อเนื่องได้แม้ในร่มหรือช่วงกลางคืน ตรรกะ power management ต้องจัดลำดับ priority อย่างระมัดระวัง</p>
+        <p><strong style="color:#86efac;">ใช้กับ:</strong> ESP32-C3 deep sleep ~5µA, ส่งข้อมูลทุก 5–30 นาที</p>
+        <div class="tag-row">
+          <span class="tag tag-green">Solar MPPT</span>
+          <span class="tag tag-yellow">RF Harvest</span>
+          <span class="tag tag-orange">Deep Sleep</span>
+          <span class="tag tag-cyan">5 µA</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-top accent-pink"></div>
+        <div class="card-header">
+          <span class="card-emoji">🏕️</span>
+          <div>
+            <div class="card-title">Personal Meshtastic Node สำหรับ Outdoor Thailand</div>
+          </div>
+        </div>
+        <p>สร้าง node Meshtastic บน Heltec V4 (ESP32-S3 + SX1262) กำลังส่ง 28 dBm — ใช้สำหรับการสื่อสารในพื้นที่ห่างไกลบนดอย, ถ้ำ, หรือทะเล ที่ไม่มีสัญญาณ cellular รองรับ GPS tracking และ text messaging พร้อมลายน้ำ XEdDSA signing</p>
+        <div class="tag-row">
+          <span class="tag tag-pink">Heltec V4</span>
+          <span class="tag tag-blue">SX1262</span>
+          <span class="tag tag-green">28 dBm</span>
+          <span class="tag tag-purple">GPS Track</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent-top accent-orange"></div>
+        <div class="card-header">
+          <span class="card-emoji">🌍</span>
+          <div>
+            <div class="card-title">LoRaWAN Gateway DIY บน ESP32 → TTN</div>
+          </div>
+        </div>
+        <p>แปลง ESP32 + SX1276 เป็น single-channel LoRaWAN gateway ที่ forward packet ไปยัง The Things Network ผ่าน WiFi — ใช้เป็น gateway ส่วนตัวสำหรับฟาร์ม, โกดัง, หรือหมู่บ้านที่ไม่มี gateway TTN ครอบคลุม</p>
+        <p><strong style="color:#fdba74;">Note:</strong> single-channel gateway — เหมาะทดสอบ ไม่แนะนำสำหรับ production</p>
+        <div class="tag-row">
+          <span class="tag tag-orange">LoRaWAN</span>
+          <span class="tag tag-blue">TTN v3</span>
+          <span class="tag tag-cyan">SX1276</span>
+          <span class="tag tag-green">DIY Gateway</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 3 — Sensors น่าสนใจ
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-cyan">🔬</div>
+      <div>
+        <div class="section-title">Sensors สำหรับโปรเจกต์ Long-Range IoT <span>แนะนำสำหรับ node ประหยัดไฟ</span></div>
+      </div>
+    </div>
+
+    <div class="grid grid-3">
+
+      <div class="sensor-card">
+        <div class="sensor-name">SHT45</div>
+        <div class="sensor-type">Temperature &amp; Humidity</div>
+        <div class="sensor-desc">รุ่นใหม่ที่สุดจาก Sensirion แม่นยำสูงมาก ±1% RH, ±0.1°C พร้อม PTFE filter ป้องกันฝุ่นและน้ำ</div>
+        <div class="sensor-spec">Interface: I²C | Supply: 1.08–3.6V | Current: 0.4µA standby</div>
+        <div class="sensor-use">✅ LoRa weather node, solar-powered outdoor station</div>
+        <div class="tag-row">
+          <span class="tag tag-blue">I²C</span>
+          <span class="tag tag-green">Ultra-low power</span>
+          <span class="tag tag-cyan">IP67 compatible</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">SCD41</div>
+        <div class="sensor-type">CO₂ + Temp + Humidity</div>
+        <div class="sensor-desc">CO₂ sensor จาก Sensirion ใช้ PAS (Photoacoustic) technology กินไฟน้อยกว่า NDIR แบบเก่า รองรับ periodic measurement ทุก 5 วินาที และ low-power mode ทุก 30 วินาที</div>
+        <div class="sensor-spec">Range: 400–5000 ppm | Accuracy: ±40ppm ±5% | 3.3V</div>
+        <div class="sensor-use">✅ Indoor air quality node ส่งข้อมูลผ่าน LoRa, Matter, Zigbee</div>
+        <div class="tag-row">
+          <span class="tag tag-purple">PAS CO₂</span>
+          <span class="tag tag-blue">I²C</span>
+          <span class="tag tag-orange">Low Power</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">INMP441</div>
+        <div class="sensor-type">I²S MEMS Microphone</div>
+        <div class="sensor-desc">ไมโครโฟน MEMS I²S ที่นิยมใช้กับ ESP32-S3 สำหรับ voice recognition รองรับ 24-bit audio ที่ 44.1kHz SNR สูงถึง 61 dB</div>
+        <div class="sensor-spec">Interface: I²S | Supply: 1.8–3.3V | SNR: 61 dB | 24-bit</div>
+        <div class="sensor-use">✅ ESP-SR wake word, Edge Impulse voice model, Groq STT</div>
+        <div class="tag-row">
+          <span class="tag tag-pink">I²S</span>
+          <span class="tag tag-purple">24-bit</span>
+          <span class="tag tag-cyan">ESP-SR</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">AS7341</div>
+        <div class="sensor-type">11-Channel Spectral Sensor</div>
+        <div class="sensor-desc">วัดแสงแบบ spectroscopy 11 ช่อง (F1–F8, Clear, NIR, Flicker) ใช้ประเมินคุณภาพแสง, UV index, และ chlorophyll ในใบไม้ เชื่อมต่อผ่าน I²C</div>
+        <div class="sensor-spec">Range: 350–1000nm | Interface: I²C | 3.3V | TAOS package</div>
+        <div class="sensor-use">✅ Smart greenhouse: วัด PPFD, ประเมินสุขภาพพืชด้วย NIR</div>
+        <div class="tag-row">
+          <span class="tag tag-green">Spectral</span>
+          <span class="tag tag-yellow">NIR</span>
+          <span class="tag tag-blue">I²C</span>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">DS18B20 (Waterproof)</div>
+        <div class="sensor-type">Water Temperature Sensor</div>
+        <div class="sensor-desc">เซนเซอร์อุณหภูมิ 1-Wire แบบกันน้ำสำหรับวัดอุณหภูมิน้ำ บ่อปลา, บ่อกุ้ง, ระบบน้ำร้อน สามารถต่อพ่วงได้หลายตัวบนสาย 1 เส้น ทนทาน ราคาถูก</div>
+        <div class="sensor-spec">Range: -55 to +125°C | Accuracy: ±0.5°C | 1-Wire, 3V–5.5V</div>
+        <div class="sensor-use">✅ LoRa aquaculture node — บ่อปลา/กุ้ง ส่งข้อมูลทุก 10 นาที</div>
+        <div class="tag-row">
+          <span class="tag tag-cyan">1-Wire</span>
+          <span class="tag tag-blue">Multi-drop</span>
+          <span class="tag tag-green">Waterproof</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Power consumption comparison -->
+    <div class="card" style="margin-top: 1.25rem;">
+      <div class="card-accent-top accent-green"></div>
+      <div class="card-header">
+        <span class="card-emoji">⚡</span>
+        <div>
+          <div class="card-title">ESP32 Power Budget สำหรับ Solar-Powered Node</div>
+          <div class="card-subtitle">เปรียบเทียบกระแสไฟในแต่ละ state</div>
+        </div>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">WiFi Active</span>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%; background: linear-gradient(90deg,#ef4444,#f97316);"></div></div>
+        <span class="progress-val">~230 mA</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Active (no WiFi)</span>
+        <div class="progress-bar"><div class="progress-fill" style="width:40%; background: linear-gradient(90deg,#f97316,#eab308);"></div></div>
+        <span class="progress-val">~45 mA</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Light Sleep</span>
+        <div class="progress-bar"><div class="progress-fill" style="width:3.5%; background: linear-gradient(90deg,#3b82f6,#06b6d4);"></div></div>
+        <span class="progress-val">~0.8 mA</span>
+      </div>
+      <div class="progress-row">
+        <span class="progress-label">Deep Sleep</span>
+        <div class="progress-bar"><div class="progress-fill" style="width:0.5%; background: linear-gradient(90deg,#22c55e,#06b6d4);"></div></div>
+        <span class="progress-val">5–10 µA</span>
+      </div>
+      <p style="margin-top:0.75rem; font-size:0.82rem; color: var(--text-muted);">💡 สำหรับ LoRa node ที่ส่งข้อมูลทุก 10 นาที — ใช้เวลา active ~2 วิ แล้ว deep sleep ที่เหลือ ต้องการ solar panel ขนาด 1–2W เท่านั้น</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 4 — แหล่งข้อมูลและลิงก์
+  ══════════════════════════════════════════════ -->
+  <section class="section" id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">📚</div>
+      <div>
+        <div class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง</div>
+      </div>
+    </div>
+
+    <div class="resource-grid">
+      <div class="resource-card">
+        <div class="resource-title">Meshtastic 2.6 Preview</div>
+        <div class="resource-desc">รายละเอียด feature ใหม่ใน firmware 2.6/2.7/2.8 จาก Official blog รวม Codec2 voice, XEdDSA signing</div>
+        <div class="resource-url">meshtastic.org/blog/meshtastic-2-6-preview</div>
+        <div class="tag-row"><span class="tag tag-blue">Official</span><span class="tag tag-cyan">Firmware</span></div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-title">Trail Mate Open-Source Firmware</div>
+        <div class="resource-desc">ESP32 off-grid handheld ใช้ Meshtastic + MeshCore พร้อม GPS map display เปิดตัว เม.ย. 2026</div>
+        <div class="resource-url">cnx-software.com — Trail Mate ESP32 handheld</div>
+        <div class="tag-row"><span class="tag tag-purple">Open Source</span><span class="tag tag-green">GPS</span></div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-title">ESP-SR Component Registry</div>
+        <div class="resource-desc">หน้า official ของ ESP-SR สำหรับ download, changelog ล่าสุด v2.6.1 และเอกสาร WakeNet / MultiNet</div>
+        <div class="resource-url">components.espressif.com/components/espressif/esp-sr</div>
+        <div class="tag-row"><span class="tag tag-blue">Official</span><span class="tag tag-orange">v2.6.1</span></div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-title">SN1 Solar Node Hardware</div>
+        <div class="resource-desc">ESP32-C3 open-hardware solar sensor node กล่อง IP67 พร้อม ESPHome firmware พร้อมใช้งาน</div>
+        <div class="resource-url">pulse.bot — SN1 Solar Node ESP32-C3</div>
+        <div class="tag-row"><span class="tag tag-green">Solar</span><span class="tag tag-cyan">ESPHome</span></div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-title">ESP32-C6 Product Page</div>
+        <div class="resource-desc">หน้าทางการ Espressif ข้อมูล datasheet, comparison C6 / C61 / C5 และ variant ทั้งหมด</div>
+        <div class="resource-url">espressif.com/products/socs/esp32-C6</div>
+        <div class="tag-row"><span class="tag tag-blue">Official</span><span class="tag tag-yellow">WiFi 6</span></div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-title">Random Nerd Tutorials — ESP32 LoRa</div>
+        <div class="resource-desc">Tutorial เชื่อมต่อ ESP32 กับ RFM95 transceiver ใน Arduino IDE — เริ่มต้น LoRa ที่ดีที่สุด</div>
+        <div class="resource-url">randomnerdtutorials.com/esp32-lora-rfm95-transceiver-arduino-ide</div>
+        <div class="tag-row"><span class="tag tag-orange">Tutorial</span><span class="tag tag-cyan">Arduino</span></div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-title">Zbotic — ESP32 LoRa Gateway → TTN</div>
+        <div class="resource-desc">คู่มือสร้าง ESP32 LoRa gateway ส่ง packet ไปยัง The Things Network ครบวงจร</div>
+        <div class="resource-url">zbotic.in/esp32-lora-gateway-packet-forwarding-to-the-things-network</div>
+        <div class="tag-row"><span class="tag tag-blue">LoRaWAN</span><span class="tag tag-purple">TTN</span></div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-title">DEV Community — Why ESP32-C6 for Smart Home 2026</div>
+        <div class="resource-desc">บทความอธิบายว่า ESP32-C6 ครองตลาด smart home ในปี 2026 ด้วย WiFi 6 + BLE + 802.15.4</div>
+        <div class="resource-url">dev.to/bittobuild/why-esp32-c6-is-the-go-to-chip-for-smart-home-projects-in-2026</div>
+        <div class="tag-row"><span class="tag tag-cyan">C6</span><span class="tag tag-green">Smart Home</span></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══════════════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════════════ -->
+<footer>
+  <p><strong>ESP32 &amp; Sensor Innovations</strong> — สร้างโดย AI Researcher อัตโนมัติ</p>
+  <p style="margin-top:0.4rem;">วันที่สร้าง: 9 พฤศจิกายน 2026 · หัวข้อ: Long-Range IoT &amp; Voice Intelligence</p>
+  <p style="margin-top:0.75rem; font-size:0.78rem;">แหล่งข้อมูล: meshtastic.org · espressif.com · randomnerdtutorials.com · cnx-software.com · components.espressif.com · zbotic.in · dev.to · pulse.bot</p>
+</footer>
+
+</body>
+</html>
