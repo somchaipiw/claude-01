@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 10 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #080f1f;
+    --bg-secondary: #0d1a2e;
+    --bg-card: #111f35;
+    --bg-card-hover: #172843;
+    --accent-blue: #3b82f6;
+    --accent-cyan: #22d3ee;
+    --accent-purple: #a78bfa;
+    --accent-green: #4ade80;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --accent-yellow: #fbbf24;
+    --accent-teal: #2dd4bf;
+    --text-primary: #f0f6ff;
+    --text-secondary: #94a3b8;
+    --text-muted: #4b6080;
+    --border: #1b3050;
+    --border-bright: #2d4a70;
+    --shadow: 0 6px 30px rgba(0,0,0,0.6);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: linear-gradient(135deg, #060d1e 0%, #0a1933 40%, #061225 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.8rem 1rem 2.2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 20% 50%, rgba(59,130,246,0.12) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 40% at 80% 50%, rgba(167,139,250,0.10) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(59,130,246,0.14);
+    border: 1px solid rgba(59,130,246,0.38);
+    color: #93c5fd;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.28rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4.5vw, 2.6rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #93c5fd 0%, #67e8f9 40%, #c084fc 80%, #f472b6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .header-sub {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1.4rem;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.4rem 1rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+  .stat-pill strong { color: var(--text-primary); font-weight: 600; }
+
+  /* ─── LAYOUT ─── */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem 1.2rem 4rem;
+  }
+
+  /* ─── SECTION ─── */
+  .section { margin-bottom: 3.5rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-bottom: 1.6rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 2.6rem; height: 2.6rem;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .icon-blue   { background: rgba(59,130,246,0.18); border: 1px solid rgba(59,130,246,0.3); }
+  .icon-purple { background: rgba(167,139,250,0.18); border: 1px solid rgba(167,139,250,0.3); }
+  .icon-green  { background: rgba(74,222,128,0.18);  border: 1px solid rgba(74,222,128,0.3); }
+  .icon-orange { background: rgba(251,146,60,0.18);  border: 1px solid rgba(251,146,60,0.3); }
+
+  .section-title-text h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+  .section-title-text p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+  }
+
+  /* ─── GRID ─── */
+  .grid { display: grid; gap: 1.2rem; }
+  .grid-2 { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+
+  /* ─── FEATURED CARD ─── */
+  .featured-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.6rem 1.8rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .featured-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    border-radius: 14px 14px 0 0;
+    background: var(--card-accent, linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)));
+  }
+  .featured-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-bright);
+    box-shadow: var(--shadow);
+  }
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    margin-bottom: 1rem;
+  }
+  .chip-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 0.22rem 0.6rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+  .chip-p4    { background: rgba(251,146,60,0.2);  color: #fb923c; border: 1px solid rgba(251,146,60,0.35); }
+  .chip-h2    { background: rgba(167,139,250,0.2); color: #a78bfa; border: 1px solid rgba(167,139,250,0.35); }
+  .chip-c6    { background: rgba(34,211,238,0.2);  color: #22d3ee; border: 1px solid rgba(34,211,238,0.35); }
+  .chip-s3    { background: rgba(74,222,128,0.2);  color: #4ade80; border: 1px solid rgba(74,222,128,0.35); }
+  .chip-esp32 { background: rgba(59,130,246,0.2);  color: #60a5fa; border: 1px solid rgba(59,130,246,0.35); }
+  .chip-ai    { background: rgba(244,114,182,0.2); color: #f472b6; border: 1px solid rgba(244,114,182,0.35); }
+
+  .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+  .card-body {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+  }
+  .card-body p + p { margin-top: 0.6rem; }
+
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 1rem;
+  }
+  .tag {
+    font-size: 0.72rem;
+    padding: 0.18rem 0.55rem;
+    border-radius: 5px;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  /* ─── SPEC TABLE ─── */
+  .spec-box {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    margin-top: 0.9rem;
+  }
+  .spec-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.82rem;
+    padding: 0.22rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .spec-row:last-child { border-bottom: none; }
+  .spec-key { color: var(--text-muted); }
+  .spec-val { color: var(--text-primary); font-weight: 600; text-align: right; }
+
+  /* ─── SENSOR CARDS ─── */
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.3rem 1.4rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .sensor-card:hover {
+    border-color: var(--border-bright);
+    transform: translateY(-2px);
+  }
+  .sensor-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+  }
+  .sensor-type {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.18rem 0.55rem;
+    border-radius: 5px;
+    display: inline-block;
+    margin-bottom: 0.7rem;
+  }
+  .type-vib    { background: rgba(251,146,60,0.18); color: #fb923c; }
+  .type-camera { background: rgba(34,211,238,0.18); color: #22d3ee; }
+  .type-env    { background: rgba(74,222,128,0.18);  color: #4ade80; }
+  .type-motion { background: rgba(167,139,250,0.18); color: #a78bfa; }
+  .type-gas    { background: rgba(244,114,182,0.18); color: #f472b6; }
+
+  .sensor-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+
+  /* ─── HIGHLIGHT BOX ─── */
+  .highlight {
+    background: rgba(59,130,246,0.08);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 10px;
+    padding: 1.2rem 1.4rem;
+    margin-top: 1rem;
+    font-size: 0.87rem;
+    color: #bfdbfe;
+    line-height: 1.7;
+  }
+  .highlight-orange {
+    background: rgba(251,146,60,0.08);
+    border-color: rgba(251,146,60,0.25);
+    color: #fed7aa;
+  }
+  .highlight-green {
+    background: rgba(74,222,128,0.08);
+    border-color: rgba(74,222,128,0.25);
+    color: #bbf7d0;
+  }
+  .highlight-purple {
+    background: rgba(167,139,250,0.08);
+    border-color: rgba(167,139,250,0.25);
+    color: #ddd6fe;
+  }
+  .hl-title {
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.4rem;
+    opacity: 0.8;
+  }
+
+  /* ─── RESOURCE LINKS ─── */
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.9rem; }
+  .resource-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    transition: border-color 0.2s;
+  }
+  .resource-item:hover { border-color: var(--border-bright); }
+  .res-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+  .res-name { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem; }
+  .res-desc { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; }
+  .res-link { display: inline-block; margin-top: 0.5rem; font-size: 0.78rem; color: var(--accent-blue); text-decoration: none; }
+  .res-link:hover { text-decoration: underline; }
+
+  /* ─── STEP LIST ─── */
+  .steps { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.9rem; }
+  .step {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    font-size: 0.87rem;
+    color: var(--text-secondary);
+  }
+  .step-num {
+    min-width: 1.5rem; height: 1.5rem;
+    background: rgba(59,130,246,0.2);
+    border: 1px solid rgba(59,130,246,0.35);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #93c5fd;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  /* ─── CODE BLOCK ─── */
+  .code-block {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    margin-top: 0.9rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #a5f3fc;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+  .code-block .c-comment { color: #4b6080; }
+  .code-block .c-keyword { color: #818cf8; }
+  .code-block .c-string  { color: #86efac; }
+  .code-block .c-num     { color: #fbbf24; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+  }
+  .footer-inner { max-width: 900px; margin: 0 auto; }
+  .footer-title { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.6rem; }
+  .footer-meta  { font-size: 0.8rem; color: var(--text-muted); line-height: 1.8; }
+  .footer-refs  { margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+  .ref-link {
+    font-size: 0.75rem;
+    color: var(--accent-blue);
+    text-decoration: none;
+    background: rgba(59,130,246,0.1);
+    padding: 0.2rem 0.6rem;
+    border-radius: 5px;
+    border: 1px solid rgba(59,130,246,0.2);
+  }
+  .ref-link:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .header-stats { gap: 0.8rem; }
+    .spec-row { flex-direction: column; gap: 0; }
+    .spec-val { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">ESP32 Research Daily</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="header-sub">10 พฤศจิกายน 2026 · ESP32-P4 HMI · Zigbee/Matter · TinyML · Industrial IoT</p>
+  <div class="header-stats">
+    <div class="stat-pill"><strong>4</strong> หัวข้อหลัก</div>
+    <div class="stat-pill"><strong>12+</strong> ไอเดียโปรเจกต์</div>
+    <div class="stat-pill"><strong>6</strong> Sensor ใหม่</div>
+    <div class="stat-pill"><strong>5</strong> แหล่งข้อมูล</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 1: นวัตกรรมและชิปใหม่
+       ══════════════════════════════════════════════ -->
+  <section class="section" id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔬</div>
+      <div class="section-title-text">
+        <h2>นวัตกรรมชิปและอัพเดทใหม่ล่าสุด</h2>
+        <p>ESP32-P4 v3.x · ESP32-H2 Zigbee/Thread · ESP32-C6 ในฐานะ Coordinator</p>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+
+      <!-- ESP32-P4 v3.x -->
+      <div class="featured-card" style="--card-accent: linear-gradient(90deg, #fb923c, #fbbf24);">
+        <div class="card-top">
+          <span class="chip-badge chip-p4">ESP32-P4</span>
+          <div class="card-title">ESP32-P4 Chip Revision v3.x — 400 MHz + AES DPA + ECC P-384</div>
+        </div>
+        <div class="card-body">
+          <p>Espressif ประกาศ <strong>Chip Revision v3.x</strong> (พฤษภาคม 2026) สำหรับ ESP32-P4 ซึ่งเป็นอัพเดทครั้งใหญ่ที่สุดในปีนี้ ด้วย dual-core RISC-V 400 MHz ที่เสถียรกว่าเดิม และ Pixel Processing Accelerator (PPA) รองรับบล็อก 32x32 พร้อมฟอร์แมต YUV422/YUV420</p>
+          <p>ด้านความปลอดภัย AES accelerator ได้รับการป้องกัน <strong>DPA (Differential Power Analysis)</strong> และ ECC เพิ่ม <strong>P-384 support</strong> พร้อม RNG module แยก ทำให้เหมาะกับงาน secure IoT ระดับสูง</p>
+          <p>หมายเหตุ: ชิปไม่มี Wi-Fi/Bluetooth ในตัว ต้องใช้ ESP32-C6 หรือ ESP32-H2 เป็น companion module</p>
+        </div>
+        <div class="spec-box">
+          <div class="spec-row"><span class="spec-key">CPU</span><span class="spec-val">Dual-core RISC-V @ 400 MHz</span></div>
+          <div class="spec-row"><span class="spec-key">RAM</span><span class="spec-val">768 KB SRAM + 32 MB PSRAM option</span></div>
+          <div class="spec-row"><span class="spec-key">Display</span><span class="spec-val">MIPI-DSI 2-lane (up to 1080p 60Hz)</span></div>
+          <div class="spec-row"><span class="spec-key">Camera</span><span class="spec-val">MIPI-CSI 2-lane</span></div>
+          <div class="spec-row"><span class="spec-key">USB</span><span class="spec-val">USB 2.0 OTG High-Speed</span></div>
+          <div class="spec-row"><span class="spec-key">IDF Version</span><span class="spec-val">ESP-IDF v5.3+</span></div>
+        </div>
+        <div class="tag-row">
+          <span class="tag">MIPI-DSI</span><span class="tag">MIPI-CSI</span><span class="tag">PPA</span>
+          <span class="tag">AES-DPA</span><span class="tag">ECC P-384</span><span class="tag">400MHz</span>
+        </div>
+      </div>
+
+      <!-- ESP32-H2 Zigbee/Thread/Matter -->
+      <div class="featured-card" style="--card-accent: linear-gradient(90deg, #a78bfa, #818cf8);">
+        <div class="card-top">
+          <span class="chip-badge chip-h2">ESP32-H2</span>
+          <div class="card-title">ESP32-H2 — Zigbee + Thread 1.3 + Matter Certified รุ่นแรกของ Espressif</div>
+        </div>
+        <div class="card-body">
+          <p>ESP32-H2 ได้รับการรับรองเป็น <strong>Zigbee-Compliant Platform</strong> และ <strong>Thread-Certified 1.3.0 Component</strong> อย่างเป็นทางการ เป็นชิป RISC-V single-core ที่รวม IEEE 802.15.4 และ Bluetooth 5 (LE) มาในตัว</p>
+          <p>รองรับ <strong>Matter over Thread</strong> ทำให้สามารถสร้าง end-point device ที่ทำงานร่วมกับ Apple HomeKit, Google Home, Amazon Alexa ได้โดยตรง โดยไม่ต้องพึ่ง Wi-Fi gateway หากใช้ Thread border router</p>
+          <p>M5Stack <strong>NanoH2</strong> เป็น development board ขนาดเล็กมากสำหรับ ESP32-H2 พร้อม Thread 1.4 support บน firmware ล่าสุด</p>
+        </div>
+        <div class="spec-box">
+          <div class="spec-row"><span class="spec-key">CPU</span><span class="spec-val">Single-core RISC-V @ 96 MHz</span></div>
+          <div class="spec-row"><span class="spec-key">SRAM</span><span class="spec-val">320 KB SRAM + 128 KB ROM</span></div>
+          <div class="spec-row"><span class="spec-key">Radio</span><span class="spec-val">IEEE 802.15.4 + BT 5 LE</span></div>
+          <div class="spec-row"><span class="spec-key">Zigbee</span><span class="spec-val">Zigbee 3.0 (Coordinator/Router/End)</span></div>
+          <div class="spec-row"><span class="spec-key">Thread</span><span class="spec-val">Thread 1.3.0 (certified)</span></div>
+          <div class="spec-row"><span class="spec-key">Matter</span><span class="spec-val">Matter over Thread (endpoint)</span></div>
+        </div>
+        <div class="tag-row">
+          <span class="tag">Zigbee 3.0</span><span class="tag">Thread</span><span class="tag">Matter</span>
+          <span class="tag">802.15.4</span><span class="tag">Low Power</span>
+        </div>
+      </div>
+
+      <!-- ESP32-C6 Zigbee Coordinator -->
+      <div class="featured-card" style="--card-accent: linear-gradient(90deg, #22d3ee, #38bdf8);">
+        <div class="card-top">
+          <span class="chip-badge chip-c6">ESP32-C6</span>
+          <div class="card-title">ESP32-C6 ในฐานะ Zigbee Coordinator — Wi-Fi 6 + Zigbee ในตัวเดียว</div>
+        </div>
+        <div class="card-body">
+          <p>ESP32-C6 มีจุดเด่นพิเศษคือรวม <strong>Wi-Fi 6 (802.11ax)</strong>, <strong>BLE 5.3</strong>, และ <strong>IEEE 802.15.4</strong> ไว้ในชิปเดียว ทำให้สามารถทำหน้าที่เป็น <strong>Zigbee Coordinator</strong> หรือ <strong>Thread Border Router</strong> ได้โดยไม่ต้องใช้ dongle เพิ่ม</p>
+          <p>Espressif's <strong>ESP-Zigbee-SDK</strong> รองรับการสร้าง coordinator, router, และ end device ด้วย Arduino และ ESP-IDF พร้อม Zigbee2MQTT compatibility สำหรับเชื่อมกับ Home Assistant</p>
+        </div>
+        <div class="highlight highlight-purple">
+          <div class="hl-title">Use Case</div>
+          ใช้ ESP32-C6 ตัวเดียวเป็นทั้ง Zigbee Coordinator และ Wi-Fi MQTT gateway ไม่ต้องซื้อ Sonoff Zigbee Dongle แยก ประหยัดทั้งเงินและ USB port
+        </div>
+        <div class="tag-row">
+          <span class="tag">Wi-Fi 6</span><span class="tag">Zigbee 3.0</span><span class="tag">BLE 5.3</span>
+          <span class="tag">Home Assistant</span><span class="tag">Zigbee2MQTT</span>
+        </div>
+      </div>
+
+      <!-- P4 v3.x อัพเดทสำคัญ -->
+      <div class="featured-card" style="--card-accent: linear-gradient(90deg, #f472b6, #fb923c);">
+        <div class="card-top">
+          <span class="chip-badge chip-p4">ESP32-P4</span>
+          <div class="card-title">Waveshare ESP32-P4 HMI Series — 7", 8", 10.1" พร้อม 5MP Camera</div>
+        </div>
+        <div class="card-body">
+          <p>Waveshare เปิดตัวชุด HMI display บน ESP32-P4 ขนาด <strong>7", 8" และ 10.1"</strong> ที่ใช้ MIPI-DSI เชื่อมจอ และ 5MP MIPI-CSI camera ในตัว พร้อม ESP32-C6 companion สำหรับ Wi-Fi 6 และ Bluetooth</p>
+          <p>Adafruit Metro ESP32-P4 Hydra ราคา <strong>$35</strong> เน้นความยืดหยุ่นสำหรับ developer Espressif ESP32-P4X-EYE เหมาะสำหรับโปรเจกต์ computer vision DFRobot FireBeetle 2 ESP32-P4 เน้น AI Vision ด้วย ESP-DL</p>
+        </div>
+        <div class="highlight highlight-orange">
+          <div class="hl-title">ข้อควรระวัง</div>
+          ตัวอย่าง Arduino สำหรับบอร์ด P4 ยังมีจำกัด แนะนำใช้ ESP-IDF v5.3+ หรือ LVGL สำหรับ GUI development เพื่อความเสถียรสูงสุด
+        </div>
+        <div class="tag-row">
+          <span class="tag">LVGL</span><span class="tag">MIPI-DSI</span><span class="tag">5MP Camera</span>
+          <span class="tag">$33–$35</span><span class="tag">Touch Screen</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 2: ไอเดียโปรเจกต์
+       ══════════════════════════════════════════════ -->
+  <section class="section" id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-blue">💡</div>
+      <div class="section-title-text">
+        <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+        <p>HMI Panel · Zigbee Smart Home · TinyML Edge AI · Industrial Predictive Maintenance</p>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+
+      <!-- Project 1: HMI Control Panel -->
+      <div class="featured-card" style="--card-accent: linear-gradient(90deg, #fb923c, #fbbf24);">
+        <div class="card-top">
+          <span class="chip-badge chip-p4">ESP32-P4</span>
+          <div class="card-title">Smart Home Control Panel ด้วย ESP32-P4 + LVGL</div>
+        </div>
+        <div class="card-body">
+          <p>สร้าง HMI panel ควบคุมบ้านอัจฉริยะด้วย ESP32-P4 + จอ 7" MIPI-DSI แสดง dashboard อุณหภูมิ ไฟ กล้อง และสถานะ Zigbee device ต่างๆ ใช้ LVGL สำหรับ UI สวยงาม</p>
+          <p>เพิ่ม ESP32-C6 module ทำหน้าที่ Wi-Fi 6 + BLE + Zigbee Coordinator รับข้อมูลจาก sensor ทั้งบ้านมาแสดงบน P4 panel</p>
+        </div>
+        <div class="steps">
+          <div class="step"><span class="step-num">1</span>ติดตั้ง Waveshare 7" ESP32-P4 HMI board ($33.99)</div>
+          <div class="step"><span class="step-num">2</span>ใช้ ESP-IDF v5.3 + LVGL v9 สร้าง dashboard UI</div>
+          <div class="step"><span class="step-num">3</span>เพิ่ม ESP32-C6 module เป็น Zigbee coordinator ผ่าน UART</div>
+          <div class="step"><span class="step-num">4</span>เชื่อม Home Assistant ผ่าน Zigbee2MQTT + MQTT</div>
+          <div class="step"><span class="step-num">5</span>ใช้ 5MP camera สำหรับ real-time doorbell display</div>
+        </div>
+        <div class="tag-row">
+          <span class="tag">LVGL v9</span><span class="tag">ESP-IDF v5.3</span><span class="tag">Home Assistant</span>
+          <span class="tag">Zigbee</span><span class="tag">MQTT</span>
+        </div>
+      </div>
+
+      <!-- Project 2: Zigbee Coordinator DIY -->
+      <div class="featured-card" style="--card-accent: linear-gradient(90deg, #a78bfa, #22d3ee);">
+        <div class="card-top">
+          <span class="chip-badge chip-c6">ESP32-C6</span>
+          <div class="card-title">DIY Zigbee Coordinator + Wi-Fi Gateway ราคาต่ำกว่า $5</div>
+        </div>
+        <div class="card-body">
+          <p>ใช้ ESP32-C6 (RISC-V ราคา ~$3–5) สร้าง Zigbee coordinator ที่ทำงานร่วมกับ Zigbee2MQTT และ Home Assistant ได้เลยโดยไม่ต้องใช้ dongle แยก ลดต้นทุนจาก ~$20–30 เหลือ ~$5</p>
+          <p>Espressif's ESP-Zigbee-SDK รองรับการทำ coordinator mode บน C6 ตรง ส่วน Thread border router ทำได้เช่นกันหากต้องการ Matter over Thread</p>
+        </div>
+        <div class="code-block">
+<span class="c-comment">// ESP-IDF: สร้าง Zigbee Coordinator</span>
+<span class="c-keyword">#include</span> <span class="c-string">"esp_zigbee_core.h"</span>
+
+<span class="c-keyword">void</span> esp_zb_task(<span class="c-keyword">void</span> *pvParameters) {
+  esp_zb_cfg_t zb_nwk_cfg = ESP_ZB_ZC_CONFIG();
+  esp_zb_init(&amp;zb_nwk_cfg);
+  esp_zb_start(<span class="c-keyword">false</span>);  <span class="c-comment">// coordinator mode</span>
+  esp_zb_main_loop_iteration();
+}
+        </div>
+        <div class="highlight highlight-green">
+          <div class="hl-title">ข้อดี</div>
+          ไม่ต้องซื้อ SONOFF Zigbee Dongle Plus (~$20) หรือ ConBee II (~$40) — ESP32-C6 ราคา $3–5 ทำได้เลย พร้อม Wi-Fi 6 ในตัว
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESP-Zigbee-SDK</span><span class="tag">Zigbee2MQTT</span><span class="tag">$5 DIY</span>
+          <span class="tag">Wi-Fi 6</span>
+        </div>
+      </div>
+
+      <!-- Project 3: TinyML Home Security -->
+      <div class="featured-card" style="--card-accent: linear-gradient(90deg, #4ade80, #22d3ee);">
+        <div class="card-top">
+          <span class="chip-badge chip-s3">ESP32-S3</span>
+          <span class="chip-badge chip-ai">TinyML</span>
+          <div class="card-title">ระบบ Home Security แบบ Offline ด้วย ESP32-S3 + TinyML</div>
+        </div>
+        <div class="card-body">
+          <p>สร้างระบบความปลอดภัยที่ประมวลผลทุกอย่างบนบอร์ด ไม่ส่งข้อมูลขึ้น Cloud ใช้ ESP32-S3 ที่มี vector instructions พิเศษ รัน model ตรวจจับการเคลื่อนไหว keyword spotting และ anomaly detection ผ่าน Edge Impulse</p>
+          <p>งานวิจัย arXiv:2604.23012 (เมษายน 2026) พิสูจน์ว่า ESP32-S3 ทำ on-device vision training + inference ได้จริง พร้อม source code MIT license บน GitHub</p>
+        </div>
+        <div class="spec-box">
+          <div class="spec-row"><span class="spec-key">Framework</span><span class="spec-val">Edge Impulse / TF Lite Micro</span></div>
+          <div class="spec-row"><span class="spec-key">RAM available</span><span class="spec-val">512 KB SRAM + 8 MB PSRAM</span></div>
+          <div class="spec-row"><span class="spec-key">Use case</span><span class="spec-val">Keyword spotting, image classify</span></div>
+          <div class="spec-row"><span class="spec-key">Latency</span><span class="spec-val">ขึ้นกับ model (ตรวจสอบ benchmark)</span></div>
+        </div>
+        <div class="tag-row">
+          <span class="tag">Edge Impulse</span><span class="tag">TF Lite Micro</span><span class="tag">ESP-DL</span>
+          <span class="tag">Offline AI</span><span class="tag">PSRAM 8MB</span>
+        </div>
+      </div>
+
+      <!-- Project 4: Industrial Predictive Maintenance -->
+      <div class="featured-card" style="--card-accent: linear-gradient(90deg, #f472b6, #fb923c);">
+        <div class="card-top">
+          <span class="chip-badge chip-s3">ESP32-S3</span>
+          <span class="chip-badge chip-ai">AI</span>
+          <div class="card-title">VibroSense — Predictive Maintenance ด้วย TinyML + MPU-6050</div>
+        </div>
+        <div class="card-body">
+          <p>โปรเจกต์ VibroSense (มิถุนายน 2026 บน ElectronicWings) ใช้ ESP32-S3 + MPU-6050 รัน anomaly detection model แบบ real-time โดยไม่ต้องใช้ cloud ตรวจจับความผิดปกติของเครื่องจักรจาก vibration pattern</p>
+          <p>งานวิจัย Applied Sciences (พฤษภาคม 2026) พัฒนาระบบ predictive maintenance แบบ hybrid edge-cloud บน ESP32-S3 ใช้ quantized inference + explainable AI สำหรับ industrial motor monitoring</p>
+        </div>
+        <div class="steps">
+          <div class="step"><span class="step-num">1</span>ติดตั้ง MPU-6050 บนเครื่องจักรด้วย rigid mount</div>
+          <div class="step"><span class="step-num">2</span>เก็บ vibration data ด้วย sampling rate 1 kHz</div>
+          <div class="step"><span class="step-num">3</span>เทรน anomaly detection model บน Edge Impulse</div>
+          <div class="step"><span class="step-num">4</span>deploy model บน ESP32-S3 (512 KB SRAM)</div>
+          <div class="step"><span class="step-num">5</span>ตั้ง threshold ตาม ISO 10816 vibration severity</div>
+        </div>
+        <div class="tag-row">
+          <span class="tag">MPU-6050</span><span class="tag">ISO 10816</span><span class="tag">Anomaly Detection</span>
+          <span class="tag">No Cloud</span><span class="tag">1 kHz sampling</span>
+        </div>
+      </div>
+
+      <!-- Project 5: Matter Smart Plug -->
+      <div class="featured-card" style="--card-accent: linear-gradient(90deg, #818cf8, #c084fc);">
+        <div class="card-top">
+          <span class="chip-badge chip-h2">ESP32-H2</span>
+          <div class="card-title">Matter Smart Plug ด้วย ESP32-H2 — ทำงานกับทุก Ecosystem</div>
+        </div>
+        <div class="card-body">
+          <p>สร้าง smart plug ที่ใช้ Matter over Thread ทำงานร่วมกับ Apple HomeKit, Google Home และ Amazon Alexa ได้ในตัวเดียว โดยใช้ ESP32-H2 เป็น Thread end device เชื่อมผ่าน Thread Border Router</p>
+          <p>Espressif มี matter-examples ใน ESP-IDF พร้อมตัวอย่าง on/off plug, dimmable light, temperature sensor สามารถ commission ผ่าน Apple Home app หรือ Google Home ได้โดยตรง</p>
+        </div>
+        <div class="highlight highlight-purple">
+          <div class="hl-title">ทำไมต้อง Matter?</div>
+          ไม่ต้องกลัว vendor lock-in — Matter device ทำงานกับทุกระบบ ไม่ว่าจะ Apple, Google, Amazon หรือ Samsung SmartThings รุ่น 2026+ ทั้งหมด
+        </div>
+        <div class="tag-row">
+          <span class="tag">Matter</span><span class="tag">Thread</span><span class="tag">HomeKit</span>
+          <span class="tag">Google Home</span><span class="tag">Alexa</span>
+        </div>
+      </div>
+
+      <!-- Project 6: Gesture Recognition -->
+      <div class="featured-card" style="--card-accent: linear-gradient(90deg, #22d3ee, #4ade80);">
+        <div class="card-top">
+          <span class="chip-badge chip-s3">ESP32-S3</span>
+          <span class="chip-badge chip-ai">ESP-DL</span>
+          <div class="card-title">Gesture Recognition ด้วย ESP-DL Framework — ไม่ต้อง Cloud</div>
+        </div>
+        <div class="card-body">
+          <p>Espressif Engineer Ali Hassan Shah เผยแพร่ tutorial (Hackster.io) วิธีใช้ <strong>ESP-DL</strong> framework deploy gesture recognition model บน ESP32-S3 ตรง โดย ESP-DL เป็น on-chip inference framework ที่ใช้ vector instructions ของ S3 ให้ประสิทธิภาพสูงกว่า TF Lite Micro</p>
+          <p>รองรับ CNN model, keyword spotting, image classification, sensor anomaly detection บน S3 ที่มี PSRAM ขยายได้ถึง 8 MB</p>
+        </div>
+        <div class="spec-box">
+          <div class="spec-row"><span class="spec-key">Framework</span><span class="spec-val">ESP-DL (Espressif native)</span></div>
+          <div class="spec-row"><span class="spec-key">ดีกว่า TF Lite</span><span class="spec-val">ใช้ S3 vector instructions</span></div>
+          <div class="spec-row"><span class="spec-key">Use cases</span><span class="spec-val">Gesture, keyword, classify</span></div>
+          <div class="spec-row"><span class="spec-key">Tutorial</span><span class="spec-val">Hackster.io (Espressif official)</span></div>
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESP-DL</span><span class="tag">CNN</span><span class="tag">Vector Instructions</span>
+          <span class="tag">Gesture Control</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 3: Sensors ที่น่าสนใจ
+       ══════════════════════════════════════════════ -->
+  <section class="section" id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">📡</div>
+      <div class="section-title-text">
+        <h2>Sensors ที่น่าใช้ในโปรเจกต์</h2>
+        <p>Vibration · Camera · Motion · Gas สำหรับ Industrial IoT, TinyML และ HMI</p>
+      </div>
+    </div>
+
+    <div class="grid grid-3">
+
+      <div class="sensor-card">
+        <div class="sensor-name">ADXL355</div>
+        <span class="sensor-type type-vib">Vibration / Accelerometer</span>
+        <p class="sensor-desc">Analog Devices ADXL355 เป็น low-noise, low-drift MEMS accelerometer ที่เหมาะกับงาน predictive maintenance มี noise floor ต่ำกว่า ADXL345/MPU-6050 มาก รองรับ frequency response ถึง 3 kHz ใช้ SPI เชื่อมกับ ESP32 ใดก็ได้</p>
+        <div class="spec-box" style="margin-top:0.7rem;">
+          <div class="spec-row"><span class="spec-key">Range</span><span class="spec-val">±2g / ±4g / ±8g</span></div>
+          <div class="spec-row"><span class="spec-key">Noise</span><span class="spec-val">22 µg/√Hz</span></div>
+          <div class="spec-row"><span class="spec-key">Interface</span><span class="spec-val">SPI / I²C</span></div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">MPU-6050 / MPU-6500</div>
+        <span class="sensor-type type-motion">6-DOF IMU (ราคาประหยัด)</span>
+        <p class="sensor-desc">ตัวเลือกยอดนิยมสำหรับ TinyML vibration analysis ราคาต่ำกว่า $1 มี accelerometer + gyroscope ใน IC เดียว ใช้ I²C เชื่อมกับ ESP32 ได้ทันที MPU-6500 ปรับปรุง noise performance จาก 6050 รองรับ 1 kHz ODR</p>
+        <div class="spec-box" style="margin-top:0.7rem;">
+          <div class="spec-row"><span class="spec-key">ราคา</span><span class="spec-val">&lt; $1 USD</span></div>
+          <div class="spec-row"><span class="spec-key">ODR</span><span class="spec-val">สูงสุด 1 kHz</span></div>
+          <div class="spec-row"><span class="spec-key">Interface</span><span class="spec-val">I²C / SPI</span></div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">OV5640 / GC2145</div>
+        <span class="sensor-type type-camera">MIPI-CSI Camera (ESP32-P4)</span>
+        <p class="sensor-desc">กล้อง MIPI-CSI ที่ใช้คู่กับ ESP32-P4 OV5640 (5MP) เป็นกล้องเริ่มต้นบนบอร์ด Waveshare และ Espressif ESP32-P4X-EYE รองรับ YUV422/YUV420 output ผ่าน PPA ของ P4 เหมาะกับ real-time video processing</p>
+        <div class="spec-box" style="margin-top:0.7rem;">
+          <div class="spec-row"><span class="spec-key">ความละเอียด</span><span class="spec-val">5MP (2592×1944)</span></div>
+          <div class="spec-row"><span class="spec-key">Video</span><span class="spec-val">1080p @ 30fps</span></div>
+          <div class="spec-row"><span class="spec-key">Interface</span><span class="spec-val">MIPI-CSI 2-lane</span></div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">SCD41 (Sensirion)</div>
+        <span class="sensor-type type-env">CO₂ + Temp + Humidity</span>
+        <p class="sensor-desc">sensor CO₂ แบบ photoacoustic ราคาประหยัดจาก Sensirion วัด CO₂ ด้วยวิธี PAS (Photoacoustic Spectroscopy) แม่นยำ ±40 ppm รองรับ I²C ใช้ไฟ 3.3V ใช้คู่กับ ESP32-C6 สำหรับ indoor air quality monitoring ที่สื่อสารผ่าน Zigbee/Matter</p>
+        <div class="spec-box" style="margin-top:0.7rem;">
+          <div class="spec-row"><span class="spec-key">CO₂ Range</span><span class="spec-val">400–5000 ppm</span></div>
+          <div class="spec-row"><span class="spec-key">Accuracy</span><span class="spec-val">±40 ppm</span></div>
+          <div class="spec-row"><span class="spec-key">ราคา</span><span class="spec-val">~$10–15</span></div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">MQ-135 / MiCS-6814</div>
+        <span class="sensor-type type-gas">Multi-Gas Sensor</span>
+        <p class="sensor-desc">สำหรับงาน industrial air quality MQ-135 ตรวจ NH₃, NOₓ, alcohol ราคาถูก (ใช้ ADC ของ ESP32) ส่วน MiCS-6814 ตรวจ CO, NH₃, NO₂ พร้อมกัน เหมาะกับ wearable hazard patch หรือ factory safety monitor</p>
+        <div class="spec-box" style="margin-top:0.7rem;">
+          <div class="spec-row"><span class="spec-key">MQ-135 ราคา</span><span class="spec-val">&lt; $1</span></div>
+          <div class="spec-row"><span class="spec-key">MiCS-6814</span><span class="spec-val">3 gas ใน 1 ตัว</span></div>
+          <div class="spec-row"><span class="spec-key">Interface</span><span class="spec-val">Analog / I²C</span></div>
+        </div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">LD2420 (HLK)</div>
+        <span class="sensor-type type-motion">mmWave Radar (Presence)</span>
+        <p class="sensor-desc">HLK-LD2420 เป็น 24GHz mmWave radar ตรวจจับคนแม้กระทั้งนิ่งสนิท (breathing detection) ใช้ UART เชื่อมกับ ESP32 ESPHome มี component รองรับตรง ราคา ~$6–8 เหมาะกับ smart home presence sensor ที่แม่นยำกว่า PIR มาก</p>
+        <div class="spec-box" style="margin-top:0.7rem;">
+          <div class="spec-row"><span class="spec-key">ความถี่</span><span class="spec-val">24 GHz mmWave</span></div>
+          <div class="spec-row"><span class="spec-key">ระยะ</span><span class="spec-val">สูงสุด 20 เมตร</span></div>
+          <div class="spec-row"><span class="spec-key">ราคา</span><span class="spec-val">~$6–8</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 4: แหล่งข้อมูลและลิงก์อ้างอิง
+       ══════════════════════════════════════════════ -->
+  <section class="section" id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-purple">🔗</div>
+      <div class="section-title-text">
+        <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+        <p>เอกสาร SDK, บทความวิจัย, tutorial ที่น่าศึกษาสำหรับวันนี้</p>
+      </div>
+    </div>
+
+    <div class="resource-grid">
+
+      <div class="resource-item">
+        <div class="res-label">Official SDK</div>
+        <div class="res-name">ESP-Zigbee-SDK</div>
+        <p class="res-desc">Espressif SDK อย่างเป็นทางการสำหรับ Zigbee บน ESP32-H2 และ ESP32-C6 รองรับ coordinator, router, end device</p>
+        <a class="res-link" href="https://github.com/espressif/esp-zigbee-sdk" target="_blank" rel="noopener">github.com/espressif/esp-zigbee-sdk →</a>
+      </div>
+
+      <div class="resource-item">
+        <div class="res-label">Official SDK</div>
+        <div class="res-name">ESP-DL Framework</div>
+        <p class="res-desc">Espressif Deep Learning framework สำหรับ inference บน ESP32-S3 และ ESP32-P4 ใช้ vector instructions เพิ่มประสิทธิภาพ</p>
+        <a class="res-link" href="https://github.com/espressif/esp-dl" target="_blank" rel="noopener">github.com/espressif/esp-dl →</a>
+      </div>
+
+      <div class="resource-item">
+        <div class="res-label">Research Paper</div>
+        <div class="res-name">On-Device Vision on ESP32-S3</div>
+        <p class="res-desc">arXiv:2604.23012 (เมษายน 2026) — Training + deployment + inference บน microcontroller พร้อม MIT license source code</p>
+        <a class="res-link" href="https://arxiv.org/abs/2604.23012" target="_blank" rel="noopener">arxiv.org/abs/2604.23012 →</a>
+      </div>
+
+      <div class="resource-item">
+        <div class="res-label">Official Doc</div>
+        <div class="res-name">ESP32-P4 Chip Revision v3.x</div>
+        <p class="res-desc">เอกสาร official จาก Espressif เกี่ยวกับการเปลี่ยนแปลงใน chip revision v3.x พร้อม migration guide สำหรับ hardware</p>
+        <a class="res-link" href="https://www.espressif.com/en/news/ESP32_P4_v3.x_Upgrade" target="_blank" rel="noopener">espressif.com →</a>
+      </div>
+
+      <div class="resource-item">
+        <div class="res-label">Tutorial</div>
+        <div class="res-name">ESP32-C6 Zigbee Coordinator</div>
+        <p class="res-desc">บทความ Medium โดย AndroidCrypto อธิบายการใช้ ESP32-C6 เป็น Zigbee coordinator หรือ end device พร้อมตัวอย่าง code</p>
+        <a class="res-link" href="https://medium.com/@androidcrypto/how-to-use-an-esp32-c6-as-zigbee-coordinator-or-end-device-overview-e70cfa7f45f9" target="_blank" rel="noopener">medium.com →</a>
+      </div>
+
+      <div class="resource-item">
+        <div class="res-label">Project</div>
+        <div class="res-name">VibroSense — TinyML Anomaly</div>
+        <p class="res-desc">โปรเจกต์ real-time machine anomaly detection บน ESP32 ด้วย MPU-6050 และ TinyML ไม่ต้อง cloud บน ElectronicWings</p>
+        <a class="res-link" href="https://www.electronicwings.com/users/JEEVITHT/projects/6655/vibrosense-real-time-machine-anomaly-detection-using-tinyml-on-esp32" target="_blank" rel="noopener">electronicwings.com →</a>
+      </div>
+
+      <div class="resource-item">
+        <div class="res-label">Board Review</div>
+        <div class="res-name">ESP32-P4X-EYE Vision Board</div>
+        <p class="res-desc">รีวิวโดยละเอียดบน CircuitDigest สำหรับ Espressif's ESP32-P4X-EYE development kit พร้อม MIPI-CSI camera และ ESP32-C6</p>
+        <a class="res-link" href="https://circuitdigest.com/review/getting-started-with-esp32-p4x-eye" target="_blank" rel="noopener">circuitdigest.com →</a>
+      </div>
+
+      <div class="resource-item">
+        <div class="res-label">News</div>
+        <div class="res-name">Waveshare P4 HMI 7"/10.1"</div>
+        <p class="res-desc">รายละเอียด Waveshare ESP32-P4 HMI board series ขนาด 7, 8 และ 10.1 นิ้ว พร้อม 5MP camera และ Wi-Fi 6</p>
+        <a class="res-link" href="https://www.cnx-software.com/2026/01/17/tablet-like-esp32-p4-based-7-8-and-10-1-inch-hmi-displays-integrate-wi-fi-6-connectivity-5mp-camera/" target="_blank" rel="noopener">cnx-software.com →</a>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-title">ESP32 & Sensor Innovations Daily</div>
+    <div class="footer-meta">
+      สร้างโดย AI Researcher อัตโนมัติ · 10 พฤศจิกายน 2026<br>
+      หัวข้อวันนี้: ESP32-P4 HMI/Vision · Zigbee/Matter/Thread · TinyML Edge AI · Industrial Predictive Maintenance
+    </div>
+    <div class="footer-refs">
+      <a class="ref-link" href="https://www.espressif.com/en/news/ESP32_P4_v3.x_Upgrade" target="_blank" rel="noopener">Espressif P4 v3.x</a>
+      <a class="ref-link" href="https://www.espressif.com/en/news/ESP32-H2_Thread_and_Zigbee_certified" target="_blank" rel="noopener">H2 Thread Certified</a>
+      <a class="ref-link" href="https://arxiv.org/abs/2604.23012" target="_blank" rel="noopener">arXiv Vision on MCU</a>
+      <a class="ref-link" href="https://www.cnx-software.com/2026/01/17/tablet-like-esp32-p4-based-7-8-and-10-1-inch-hmi-displays-integrate-wi-fi-6-connectivity-5mp-camera/" target="_blank" rel="noopener">CNX P4 HMI</a>
+      <a class="ref-link" href="https://www.electronicwings.com/users/JEEVITHT/projects/6655/vibrosense-real-time-machine-anomaly-detection-using-tinyml-on-esp32" target="_blank" rel="noopener">VibroSense</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
