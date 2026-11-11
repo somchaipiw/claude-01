@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 11 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263348;
+    --bg-section: #162032;
+    --accent-blue: #38bdf8;
+    --accent-green: #34d399;
+    --accent-purple: #a78bfa;
+    --accent-orange: #fb923c;
+    --accent-red: #f87171;
+    --accent-yellow: #fbbf24;
+    --text-primary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-light: #cbd5e1;
+    --border: rgba(148,163,184,0.12);
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: var(--bg-primary); color: var(--text-primary); line-height: 1.8; }
+  a { color: var(--accent-blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #a21caf 100%);
+    padding: 3rem 1.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 80px);
+  }
+  .header-inner { position: relative; max-width: 900px; margin: 0 auto; }
+  .header-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    color: #fff;
+  }
+  header h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 700; color: #fff; margin-bottom: 0.5rem; }
+  header p  { font-size: 1rem; color: rgba(255,255,255,0.8); }
+  .stats-row {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 0.4rem 1.1rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* Layout */
+  main { max-width: 960px; margin: 0 auto; padding: 2rem 1rem 3rem; }
+
+  /* Section */
+  .section { margin-bottom: 3rem; }
+  .section-header {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 2.6rem; height: 2.6rem;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; flex-shrink: 0;
+  }
+  .icon-blue   { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); }
+  .icon-green  { background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.3); }
+  .icon-purple { background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.3); }
+  .icon-orange { background: rgba(251,146,60,0.15);  border: 1px solid rgba(251,146,60,0.3);  }
+
+  .section-title-text h2 { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+  .section-title-text p  { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.1rem; }
+
+  /* Grid */
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.1rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+
+  /* Card */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.2rem;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .card-top { display: flex; align-items: flex-start; gap: 0.8rem; margin-bottom: 0.6rem; }
+  .card-emoji { font-size: 1.5rem; line-height: 1; flex-shrink: 0; margin-top: 2px; }
+  .card-title { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); line-height: 1.4; }
+  .card-desc  { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+  .card-tags  { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .tag {
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .tag-blue   { background: rgba(56,189,248,0.15);  color: #38bdf8;  border: 1px solid rgba(56,189,248,0.3); }
+  .tag-green  { background: rgba(52,211,153,0.15);  color: #34d399;  border: 1px solid rgba(52,211,153,0.3); }
+  .tag-purple { background: rgba(167,139,250,0.15); color: #a78bfa;  border: 1px solid rgba(167,139,250,0.3); }
+  .tag-orange { background: rgba(251,146,60,0.15);  color: #fb923c;  border: 1px solid rgba(251,146,60,0.3); }
+  .tag-yellow { background: rgba(251,191,36,0.15);  color: #fbbf24;  border: 1px solid rgba(251,191,36,0.3); }
+  .tag-red    { background: rgba(248,113,113,0.15); color: #f87171;  border: 1px solid rgba(248,113,113,0.3); }
+
+  /* Featured card */
+  .card-featured {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, rgba(14,165,233,0.12) 0%, rgba(99,102,241,0.12) 100%);
+    border-color: rgba(99,102,241,0.3);
+  }
+  .card-featured .card-title { font-size: 1.05rem; }
+
+  /* Code snippet */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid rgba(148,163,184,0.15);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    margin-top: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.78rem;
+    color: #a5f3fc;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+  .code-comment { color: #6b7280; }
+  .code-keyword { color: #c084fc; }
+  .code-string  { color: #86efac; }
+  .code-num     { color: #fbbf24; }
+
+  /* Highlight box */
+  .highlight-box {
+    background: rgba(52,211,153,0.07);
+    border: 1px solid rgba(52,211,153,0.25);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+  .highlight-box strong { color: #34d399; }
+
+  /* Table */
+  .compare-table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.82rem; }
+  .compare-table th {
+    background: rgba(99,102,241,0.2);
+    color: #a78bfa;
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    font-weight: 700;
+  }
+  .compare-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); color: var(--text-light); }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+  /* Step list */
+  .step-list { list-style: none; counter-reset: step; }
+  .step-list li {
+    counter-increment: step;
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem; color: var(--text-light);
+  }
+  .step-list li:last-child { border-bottom: none; }
+  .step-list li::before {
+    content: counter(step);
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: #fff; font-weight: 700; font-size: 0.75rem;
+    min-width: 1.6rem; height: 1.6rem;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 2px;
+  }
+
+  /* Resources */
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.9rem; }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    transition: background 0.2s;
+  }
+  .resource-card:hover { background: var(--bg-card-hover); }
+  .resource-icon {
+    width: 2.2rem; height: 2.2rem; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+    background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.2);
+  }
+  .resource-name { font-size: 0.88rem; font-weight: 700; color: var(--text-primary); }
+  .resource-desc { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.1rem; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    max-width: 960px; margin: 0 auto;
+  }
+  footer strong { color: var(--text-light); }
+
+  @media (max-width: 600px) {
+    header { padding: 2rem 1rem 1.5rem; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .card-featured { grid-column: auto; }
+    .resource-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-badge">🔬 Daily Research — 11 พฤศจิกายน 2026</div>
+    <h1>ESP32 &amp; Sensor Innovations</h1>
+    <p>Industry 4.0 · Smart Agriculture · Edge AI รุ่นใหม่ · mmWave Radar</p>
+    <div class="stats-row">
+      <span class="stat-pill">🏭 Industrial IoT</span>
+      <span class="stat-pill">🌾 Smart Farm</span>
+      <span class="stat-pill">🧠 TinyML ขั้นสูง</span>
+      <span class="stat-pill">📡 mmWave Sensor</span>
+      <span class="stat-pill">30+ ไอเดีย</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <section class="section" id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔬</div>
+      <div class="section-title-text">
+        <h2>นวัตกรรมและชิปที่น่าสนใจ — Industry 4.0 Edition</h2>
+        <p>อัพเดทล่าสุดสำหรับงานอุตสาหกรรม, Smart Farm และ Edge AI</p>
+      </div>
+    </div>
+    <div class="grid-2">
+
+      <div class="card card-featured">
+        <div class="card-top">
+          <span class="card-emoji">⚙️</span>
+          <div>
+            <div class="card-title">Arduino-ESP32 Release 3.3.12 — ESP-IDF v5.5.5 (ล่าสุด กย. 2026)</div>
+            <div class="card-desc">เวอร์ชันใหม่ที่ stable ที่สุด รองรับ ESP32-C6, S3, H2 ครบ แก้บัค PSRAM บน S3 และเพิ่ม sleep mode accuracy สำหรับ deep sleep ระยะยาว นอกจากนี้ยังรองรับ USB CDC On Boot ที่เสถียรกว่าเดิมบน S3</div>
+            <div class="code-block">
+              <span class="code-comment">// ติดตั้งผ่าน Arduino IDE Board Manager</span><br>
+              <span class="code-string">"esp32"</span> by Espressif Systems v<span class="code-num">3.3.12</span><br>
+              <span class="code-comment">// หรือ ESP-IDF v5.5.5 สำหรับ production</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-blue">Arduino Core</span>
+          <span class="tag tag-green">ESP-IDF v5.5.5</span>
+          <span class="tag tag-purple">Sep 2026</span>
+          <span class="tag tag-orange">Stable</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🏭</span>
+          <div>
+            <div class="card-title">ESP32-S3 SCADA Gateway — open62541 OPC UA Stack</div>
+            <div class="card-desc">คอมไพล์ open62541 บน ESP-IDF ได้แล้ว ทำให้ ESP32-S3 คุยโดยตรงกับ SCADA Server ไม่ต้องผ่าน PLC กลาง ประหยัดค่า gateway license ได้มาก เหมาะงาน brownfield</div>
+          </div>
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-orange">OPC UA</span>
+          <span class="tag tag-blue">SCADA</span>
+          <span class="tag tag-green">ESP32-S3</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">📡</span>
+          <div>
+            <div class="card-title">DFRobot C4002 mmWave Radar — ตรวจจับคนแบบ Passive</div>
+            <div class="card-desc">Sensor mmWave ราคาต่ำ ใช้คลื่น 24GHz ตรวจ motion + static presence ได้ ไม่ต้องใช้กล้อง เหมาะ Home Automation ห้องน้ำ, ที่จอดรถ และ Industrial Safety Zone</div>
+          </div>
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-blue">mmWave 24GHz</span>
+          <span class="tag tag-purple">Presence</span>
+          <span class="tag tag-yellow">$8</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🌱</span>
+          <div>
+            <div class="card-title">SHT45 — Temperature &amp; Humidity Sensor รุ่นใหม่จาก Sensirion</div>
+            <div class="card-desc">ความแม่นยำ ±0.1°C และ ±1% RH เชื่อมต่อ I2C รองรับ low-power mode กินไฟ &lt;0.1 µW ในโหมด Sleep เหมาะ Smart Agriculture และ Cold Chain Monitoring</div>
+          </div>
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-green">I2C</span>
+          <span class="tag tag-blue">±0.1°C</span>
+          <span class="tag tag-orange">Ultra-Low Power</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">💧</span>
+          <div>
+            <div class="card-title">Capacitive Soil Moisture v2.0 — ไม่เกิดสนิม</div>
+            <div class="card-desc">รุ่นปรับปรุงจากเซ็นเซอร์ชื้นดินเดิม ใช้หลัก capacitive วัดได้แม้น้ำมีแร่ธาตุสูง อ่านค่า ADC โดยตรงบน ESP32 ราคา &lt;$3 เหมาะ Smart Farm ทดแทน resistive รุ่นเก่า</div>
+          </div>
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-green">Soil Moisture</span>
+          <span class="tag tag-blue">Capacitive</span>
+          <span class="tag tag-yellow">$3</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🔌</span>
+          <div>
+            <div class="card-title">Modbus-to-X Gateway — open source ESP32 บน GitHub</div>
+            <div class="card-desc">โปรเจกต์ esp-modbus-mqtt บน GitHub แปลง Modbus RTU/RS-485 เป็น MQTT และ Modbus TCP ได้พร้อมกัน ตั้งค่าผ่าน Web UI ไม่ต้องแก้ firmware รองรับ Home Assistant และ Node-RED</div>
+          </div>
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-orange">Modbus RTU</span>
+          <span class="tag tag-blue">MQTT</span>
+          <span class="tag tag-purple">Open Source</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <section class="section" id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-green">💡</div>
+      <div class="section-title-text">
+        <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+        <p>Industry 4.0, Smart Agriculture และ Edge AI ที่ทำได้จริงวันนี้</p>
+      </div>
+    </div>
+    <div class="grid-2">
+
+      <!-- Project 1: Industrial Monitor -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🏭</span>
+          <div>
+            <div class="card-title">ESP32 Modbus RTU→MQTT Industrial Monitor</div>
+          </div>
+        </div>
+        <div class="card-desc">ระบบ monitor เครื่องจักรโรงงานเก่าด้วย ESP32 อ่านค่าจาก PLC/inverter ผ่าน RS-485 Modbus RTU ส่งขึ้น MQTT → Node-RED → Grafana Dashboard ไม่ต้องซื้อ SCADA ใหม่ ประหยัดได้หลักแสน</div>
+        <div class="highlight-box">
+          <strong>Stack:</strong> ESP32 + RS-485 Module → esp-modbus-mqtt library → MQTT Broker → Node-RED → InfluxDB → Grafana
+        </div>
+        <div class="code-block">
+          <span class="code-comment">// อ่าน Modbus register จาก VFD/Inverter</span><br>
+          <span class="code-keyword">#include</span> <span class="code-string">&lt;ModbusMaster.h&gt;</span><br>
+          ModbusMaster node;<br>
+          node.begin(<span class="code-num">1</span>, Serial2); <span class="code-comment">// slave ID 1</span><br>
+          uint8_t result = node.readHoldingRegisters(<span class="code-num">0x2000</span>, <span class="code-num">2</span>);
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-orange">Modbus RTU</span>
+          <span class="tag tag-blue">RS-485</span>
+          <span class="tag tag-green">Grafana</span>
+          <span class="tag tag-purple">Node-RED</span>
+        </div>
+      </div>
+
+      <!-- Project 2: Smart Farm -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🌾</span>
+          <div>
+            <div class="card-title">Smart Farm Node — ดิน, น้ำ, อากาศ ครบในบอร์ดเดียว</div>
+          </div>
+        </div>
+        <div class="card-desc">Solar-powered ESP32-C6 node สำหรับแปลงเกษตร วัดชื้นดิน + อุณหภูมิดิน + EC + pH + อุณหภูมิอากาศ + ฝน ส่งข้อมูลผ่าน MQTT ทุก 15 นาที Deep sleep ระหว่างนั้น ชีวิตแบตเตอรี่ 1 ปีหากมีแสงแดด</div>
+        <div class="highlight-box">
+          <strong>Sensors:</strong> Capacitive Soil Moisture + DS18B20 + EC Probe + pH Electrode + SHT45 + Rain Gauge<br>
+          <strong>Comms:</strong> WiFi 6 (C6) → MQTT → Home Assistant / Blynk
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-green">Smart Farm</span>
+          <span class="tag tag-blue">ESP32-C6</span>
+          <span class="tag tag-yellow">Solar</span>
+          <span class="tag tag-orange">pH + EC</span>
+        </div>
+      </div>
+
+      <!-- Project 3: OPC UA Gateway -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🔗</span>
+          <div>
+            <div class="card-title">ESP32-S3 OPC UA PubSub Gateway สำหรับงาน Brownfield</div>
+          </div>
+        </div>
+        <div class="card-desc">ใช้ open62541 library คอมไพล์บน ESP-IDF v5.5.5 ทำให้ ESP32-S3 ส่งข้อมูล sensor ตรงสู่ SCADA ด้วย OPC UA protocol มาตรฐาน IEC 62541 ไม่ต้องซื้อ industrial gateway ราคาหลักพัน ค่าฮาร์ดแวร์ &lt;$10</div>
+        <div class="card-tags">
+          <span class="tag tag-orange">OPC UA</span>
+          <span class="tag tag-blue">IEC 62541</span>
+          <span class="tag tag-green">ESP32-S3</span>
+          <span class="tag tag-purple">Industry 4.0</span>
+        </div>
+      </div>
+
+      <!-- Project 4: mmWave Presence -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">📡</span>
+          <div>
+            <div class="card-title">PresenceGuard — ห้องน้ำ Smart Building ด้วย mmWave</div>
+          </div>
+        </div>
+        <div class="card-desc">ESP32-C3 + DFRobot C4002 ตรวจจับคนในห้องน้ำ/ห้องประชุม ไม่ใช้กล้อง ไม่ละเมิด privacy ส่งสถานะ MQTT → Home Assistant เปิด-ปิดไฟอัตโนมัติ รักษาน้ำหนัก zone ไว้หาก motion หยุดแต่ยังมีคนอยู่</div>
+        <div class="card-tags">
+          <span class="tag tag-blue">mmWave</span>
+          <span class="tag tag-green">Privacy-Safe</span>
+          <span class="tag tag-purple">HA Integration</span>
+        </div>
+      </div>
+
+      <!-- Project 5: TinyML Vibration -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🧠</span>
+          <div>
+            <div class="card-title">VibroAI Pro — Predictive Maintenance ด้วย Edge Impulse + ESP32-S3</div>
+          </div>
+        </div>
+        <div class="card-desc">เก็บข้อมูล vibration จาก MPU-6050 (500Hz sample) train model บน Edge Impulse ด้วย FFT feature extraction + neural network classifier บน ESP32-S3 ตรวจจับ bearing wear ล่วงหน้าได้ 2-4 สัปดาห์ก่อนพัง</div>
+        <div class="code-block">
+          <span class="code-comment">// Edge Impulse Inferencing</span><br>
+          <span class="code-keyword">#include</span> <span class="code-string">"model_inferencing.h"</span><br>
+          signal_t signal;<br>
+          ei_impulse_result_t result;<br>
+          run_classifier(&amp;signal, &amp;result, <span class="code-num">false</span>);<br>
+          <span class="code-comment">// result.classification[0] = "normal"</span><br>
+          <span class="code-comment">// result.classification[1] = "bearing_fault"</span>
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-purple">Edge Impulse</span>
+          <span class="tag tag-blue">TinyML</span>
+          <span class="tag tag-orange">Predictive Maint.</span>
+          <span class="tag tag-green">MPU-6050</span>
+        </div>
+      </div>
+
+      <!-- Project 6: Smart Irrigation -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🚿</span>
+          <div>
+            <div class="card-title">AutoIrrigate AI — รดน้ำอัจฉริยะด้วย ML + ข้อมูลอากาศ</div>
+          </div>
+        </div>
+        <div class="card-desc">ESP32-C6 + Soil Moisture Sensor + DHT22 ดึงข้อมูลพยากรณ์อากาศ 48h ผ่าน OpenWeather API ตัดสินใจรดน้ำด้วย rule-based logic + ML model ประหยัดน้ำได้ 30-40% เทียบ timer ปกติ ทำงานออฟไลน์ได้หาก WiFi ขาด</div>
+        <div class="card-tags">
+          <span class="tag tag-green">Smart Irrigation</span>
+          <span class="tag tag-blue">Weather API</span>
+          <span class="tag tag-yellow">ประหยัดน้ำ 40%</span>
+        </div>
+      </div>
+
+      <!-- Project 7: Cold Chain -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">❄️</span>
+          <div>
+            <div class="card-title">ColdChain Logger — ติดตาม Cold Storage ด้วย BLE Beacon</div>
+          </div>
+        </div>
+        <div class="card-desc">ESP32-S3 scanner ติดผนัง + SHT45 BLE Beacons ที่สินค้าทุกกล่อง track อุณหภูมิ-ความชื้นแต่ละชิ้น log ผ่าน MQTT ตรวจจับ temperature excursion real-time ส่ง alert LINE Notify เหมาะ logistics อาหารและยา</div>
+        <div class="card-tags">
+          <span class="tag tag-blue">BLE Scanner</span>
+          <span class="tag tag-purple">SHT45</span>
+          <span class="tag tag-orange">Cold Chain</span>
+          <span class="tag tag-green">LINE Notify</span>
+        </div>
+      </div>
+
+      <!-- Project 8: Water Quality -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🐠</span>
+          <div>
+            <div class="card-title">AquaGuard Pro — ระบบตรวจน้ำฟาร์มกุ้ง/ปลาแบบ 24/7</div>
+          </div>
+        </div>
+        <div class="card-desc">ESP32-S3 + Atlas Scientific sensors (pH, DO, Conductivity, Temp) วัดทุก 5 นาที ส่งข้อมูลผ่าน LoRa ไปยัง gateway กลาง dashboard บน Grafana แจ้งเตือนทาง LINE หาก DO ต่ำ หรือ pH ผิดปกติ ตาม profile ของสัตว์น้ำแต่ละชนิด</div>
+        <div class="card-tags">
+          <span class="tag tag-blue">Atlas Scientific</span>
+          <span class="tag tag-green">pH + DO</span>
+          <span class="tag tag-orange">LoRa</span>
+          <span class="tag tag-yellow">Aquaculture</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <section class="section" id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-purple">📡</div>
+      <div class="section-title-text">
+        <h2>Sensors แนะนำสำหรับ Industry 4.0 &amp; Smart Agriculture</h2>
+        <p>เซ็นเซอร์เฉพาะทางที่ใช้ร่วมกับ ESP32 ได้ทันที</p>
+      </div>
+    </div>
+    <div class="grid-3">
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🌡️</span>
+          <div><div class="card-title">SHT45 — Temp + Humidity Ultra-High Accuracy</div></div>
+        </div>
+        <div class="card-desc">Sensirion รุ่นล่าสุด ±0.1°C, ±1% RH, I2C, low-power &lt;0.1µW sleep เหมาะ cold chain, greenhouse, food storage</div>
+        <div class="card-tags"><span class="tag tag-green">I2C</span><span class="tag tag-blue">±0.1°C</span><span class="tag tag-yellow">$5</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">💧</span>
+          <div><div class="card-title">Atlas Scientific pH EZO — pH อุตสาหกรรม</div></div>
+        </div>
+        <div class="card-desc">Module pH UART/I2C calibrate ง่าย เหมาะน้ำบาดาล, บ่อเพาะเลี้ยง, ชลประทาน ต้านทาน EMI ในโรงงาน ราคา ~$40</div>
+        <div class="card-tags"><span class="tag tag-blue">UART/I2C</span><span class="tag tag-orange">Atlas Scientific</span><span class="tag tag-yellow">$40</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">📡</span>
+          <div><div class="card-title">DFRobot C4002 — mmWave Presence Sensor</div></div>
+        </div>
+        <div class="card-desc">24GHz FMCW radar ตรวจ motion + static presence ระยะ 0.5–6m UART output ง่าย ไม่มีกล้อง ราคา ~$8</div>
+        <div class="card-tags"><span class="tag tag-purple">24GHz</span><span class="tag tag-blue">UART</span><span class="tag tag-yellow">$8</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">⚡</span>
+          <div><div class="card-title">INA228 — High-Side Current/Power Monitor</div></div>
+        </div>
+        <div class="card-desc">Texas Instruments 20-bit ADC วัดกระแส + แรงดัน + กำลังไฟแบบ real-time ผ่าน I2C รองรับสูงสุด 85V เหมาะ energy monitoring ในโรงงานและ solar system</div>
+        <div class="card-tags"><span class="tag tag-orange">I2C</span><span class="tag tag-blue">20-bit ADC</span><span class="tag tag-green">Energy Monitor</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🌍</span>
+          <div><div class="card-title">SDS011 — Fine Particle PM2.5/PM10 UART</div></div>
+        </div>
+        <div class="card-desc">Sensor ฝุ่นละออง laser scattering ราคา ~$15 UART interface ใช้ง่าย เหมาะ Air Quality Station กลางแจ้งหรือในโรงงาน calibrate กับ SPS30 ได้</div>
+        <div class="card-tags"><span class="tag tag-red">PM2.5</span><span class="tag tag-blue">UART</span><span class="tag tag-yellow">$15</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🌿</span>
+          <div><div class="card-title">Soil EC Probe — วัดความเค็มดินสำหรับ Precision Ag</div></div>
+        </div>
+        <div class="card-desc">วัด Electrical Conductivity (EC) ในดิน ตรวจสอบความเค็ม/ปุ๋ยในดิน RS-485 output แม่นยำกว่า capacitive probe ราคา $10–20 เหมาะ Smart Farm ข้าวโพด, มันสำปะหลัง</div>
+        <div class="card-tags"><span class="tag tag-green">Soil EC</span><span class="tag tag-orange">RS-485</span><span class="tag tag-blue">Precision Ag</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🔧</span>
+          <div><div class="card-title">MPU-6050 / ICM-42688 — Vibration สำหรับ Machinery</div></div>
+        </div>
+        <div class="card-desc">ICM-42688 รุ่นใหม่กว่า ความแม่นยำสูงกว่า, noise ต่ำกว่า เหมาะ predictive maintenance เก็บ vibration signature ของมอเตอร์/ปั๊ม 500–2000 Hz</div>
+        <div class="card-tags"><span class="tag tag-purple">Vibration</span><span class="tag tag-blue">I2C/SPI</span><span class="tag tag-orange">ICM-42688</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">💨</span>
+          <div><div class="card-title">MHZ-19C — CO2 NDIR Sensor สำหรับ Greenhouse</div></div>
+        </div>
+        <div class="card-desc">Non-Dispersive Infrared CO2 0–5000ppm UART/PWM ใช้ง่าย เหมาะโรงเรือนพืช, ระบบ HVAC อัจฉริยะ ราคา $20 self-calibrate อัตโนมัติ</div>
+        <div class="card-tags"><span class="tag tag-green">CO2 NDIR</span><span class="tag tag-blue">0-5000ppm</span><span class="tag tag-yellow">$20</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">☀️</span>
+          <div><div class="card-title">AS7265x — Spectral Sensor วิเคราะห์ Crop Health</div></div>
+        </div>
+        <div class="card-desc">18-channel spectral sensor 410–940nm ตรวจสุขภาพพืชด้วย NIR + NDVI index I2C output ใช้ร่วม ESP32-S3 วิเคราะห์สี/ใบพืช เหมาะ precision agriculture</div>
+        <div class="card-tags"><span class="tag tag-yellow">Spectral</span><span class="tag tag-green">NDVI</span><span class="tag tag-blue">I2C</span></div>
+      </div>
+
+    </div>
+
+    <!-- Industrial Protocol Comparison Table -->
+    <div style="margin-top: 2rem;">
+      <div class="section-header" style="margin-bottom: 1rem;">
+        <div class="section-icon icon-orange">🔌</div>
+        <div class="section-title-text">
+          <h2>เปรียบเทียบ Industrial Protocols บน ESP32</h2>
+          <p>เลือก protocol ให้ถูกกับงาน</p>
+        </div>
+      </div>
+      <div class="card" style="overflow-x: auto;">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Protocol</th>
+              <th>ใช้งาน</th>
+              <th>Latency</th>
+              <th>ESP32 Support</th>
+              <th>เหมาะกับ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Modbus RTU</strong></td>
+              <td>RS-485 wired</td>
+              <td>~10ms</td>
+              <td>✅ Library พร้อม</td>
+              <td>PLC, VFD, เครื่องจักรเก่า</td>
+            </tr>
+            <tr>
+              <td><strong>Modbus TCP</strong></td>
+              <td>Ethernet/WiFi</td>
+              <td>~5ms</td>
+              <td>✅ Library พร้อม</td>
+              <td>SCADA เชื่อมผ่าน LAN</td>
+            </tr>
+            <tr>
+              <td><strong>MQTT</strong></td>
+              <td>WiFi/Ethernet</td>
+              <td>~50ms</td>
+              <td>✅ PubSubClient</td>
+              <td>IoT Cloud, Node-RED, HA</td>
+            </tr>
+            <tr>
+              <td><strong>OPC UA</strong></td>
+              <td>Ethernet</td>
+              <td>~20ms</td>
+              <td>⚠️ open62541 (ESP-IDF)</td>
+              <td>SCADA มาตรฐาน IEC</td>
+            </tr>
+            <tr>
+              <td><strong>ESP-NOW</strong></td>
+              <td>WiFi radio</td>
+              <td>&lt;1ms</td>
+              <td>✅ built-in</td>
+              <td>Sensor mesh, low-latency</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Step guide: Smart Farm Setup -->
+    <div style="margin-top: 2rem;">
+      <div class="section-header" style="margin-bottom: 1rem;">
+        <div class="section-icon icon-green">🌾</div>
+        <div class="section-title-text">
+          <h2>Quick Start: Smart Farm Node ใน 7 ขั้นตอน</h2>
+          <p>ESP32-C6 + Soil Moisture + SHT45 → Home Assistant</p>
+        </div>
+      </div>
+      <div class="card">
+        <ol class="step-list">
+          <li>เตรียม ESP32-C6 DevKit + Capacitive Soil Moisture Sensor + SHT45 (I2C)</li>
+          <li>ติดตั้ง Arduino-ESP32 v3.3.12 ผ่าน Board Manager</li>
+          <li>ติดตั้ง libraries: <code>SensirionI2cSht4x</code> + <code>PubSubClient</code> + <code>ArduinoJson</code></li>
+          <li>เขียน code อ่านค่า soil moisture (ADC) + SHT45 (I2C) แล้วส่ง JSON ผ่าน MQTT</li>
+          <li>ตั้งค่า deep sleep 15 นาที เพื่อประหยัดพลังงาน ใช้ RTC memory เก็บค่าล่าสุด</li>
+          <li>เพิ่ม MQTT discovery ใน Home Assistant เพื่อ auto-detect sensor</li>
+          <li>สร้าง Automation ใน HA: หาก soil moisture &lt; 30% → เปิด relay รดน้ำ 5 นาที</li>
+        </ol>
+        <div class="code-block">
+          <span class="code-comment">// Deep sleep 15 นาที</span><br>
+          esp_sleep_enable_timer_wakeup(<span class="code-num">15</span> * <span class="code-num">60</span> * <span class="code-num">1000000ULL</span>);<br>
+          esp_deep_sleep_start();<br>
+          <span class="code-comment">// จะ wake up อีกครั้งใน 15 นาที</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: RESOURCES ===== -->
+  <section class="section" id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-orange">🔗</div>
+      <div class="section-title-text">
+        <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+        <p>เอกสาร, โปรเจกต์ และชุมชนที่มีประโยชน์</p>
+      </div>
+    </div>
+    <div class="resource-grid">
+
+      <div class="resource-card">
+        <div class="resource-icon">📦</div>
+        <div>
+          <div class="resource-name">arduino-esp32 GitHub Releases</div>
+          <div class="resource-desc">Release notes v3.3.12 (Sep 2026) — changelog อย่างเป็นทางการ</div>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🏭</div>
+        <div>
+          <div class="resource-name">IndustrialShields — Modbus to OPC UA Guide</div>
+          <div class="resource-desc">แนวทาง Layer protocols: Modbus RTU → TCP → OPC UA → Cloud</div>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">📡</div>
+        <div>
+          <div class="resource-name">CNX Software — ESP32 Modbus MQTT Gateway</div>
+          <div class="resource-desc">ตัวอย่าง ESP32 gateway RTU+TCP+MQTT อย่างละเอียด (Aug 2025)</div>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🧠</div>
+        <div>
+          <div class="resource-name">Edge Impulse Studio</div>
+          <div class="resource-desc">แพลตฟอร์ม TinyML สำหรับ ESP32-S3 ตั้งแต่ collect data ถึง deploy</div>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🌾</div>
+        <div>
+          <div class="resource-name">Zbotic — 10 ESP32 IoT Projects for Agriculture</div>
+          <div class="resource-desc">รวมโปรเจกต์ Smart Farm ปี 2026 พร้อม code และ wiring diagram</div>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">💧</div>
+        <div>
+          <div class="resource-name">Atlas Scientific Docs</div>
+          <div class="resource-desc">เอกสาร pH EZO, DO EZO, EC EZO สำหรับ water quality monitoring</div>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🔗</div>
+        <div>
+          <div class="resource-name">GitHub: esp-modbus-mqtt</div>
+          <div class="resource-desc">open source Modbus RTU → MQTT bridge บน ESP32 พร้อม Web Config UI</div>
+        </div>
+      </div>
+
+      <div class="resource-card">
+        <div class="resource-icon">🏗️</div>
+        <div>
+          <div class="resource-name">Mojostudio — TinyML & Embedded AI 2026</div>
+          <div class="resource-desc">ภาพรวม TinyML ecosystem ปี 2026: TFLM, Edge Impulse, ESP-DL</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Researcher อัตโนมัติ | <strong>11 พฤศจิกายน 2026</strong></p>
+  <p style="margin-top: 0.5rem; font-size: 0.75rem;">
+    แหล่งข้อมูล: Espressif Developer Portal · GitHub arduino-esp32 · IndustrialShields · CNX Software · Edge Impulse · Zbotic · DFRobot · Sensirion
+  </p>
+</footer>
+
+</body>
+</html>
