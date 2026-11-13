@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 13 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263348;
+    --accent-green: #10b981;
+    --accent-blue: #38bdf8;
+    --accent-purple: #a78bfa;
+    --accent-pink: #f472b6;
+    --accent-orange: #fb923c;
+    --accent-teal: #2dd4bf;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: rgba(148,163,184,0.12);
+    --glow-green: rgba(16,185,129,0.15);
+    --glow-blue: rgba(56,189,248,0.15);
+    --glow-purple: rgba(167,139,250,0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ─── Header ─── */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1a1035 50%, #0d1f38 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(16,185,129,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.4);
+    color: var(--accent-green);
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stats-row {
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 1.5rem;
+    position: relative;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-num { font-size: 1.5rem; font-weight: 700; color: var(--accent-green); }
+  .stat-label { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.04em; }
+
+  /* ─── Layout ─── */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem 3rem;
+  }
+
+  /* ─── Section Headers ─── */
+  .section-header {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 2.5rem; height: 2.5rem;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 0.75rem;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-green { background: var(--glow-green); border: 1px solid rgba(16,185,129,0.3); }
+  .icon-blue  { background: var(--glow-blue);  border: 1px solid rgba(56,189,248,0.3); }
+  .icon-purple{ background: var(--glow-purple); border: 1px solid rgba(167,139,250,0.3); }
+  .icon-teal  { background: rgba(45,212,191,0.12); border: 1px solid rgba(45,212,191,0.3); }
+  .section-header h2 {
+    font-size: 1.25rem; font-weight: 700; color: var(--text-primary); line-height: 1.3;
+  }
+  .section-header .section-label {
+    font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase;
+  }
+
+  section { margin-bottom: 3rem; }
+
+  /* ─── Cards ─── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 1.4rem;
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    background: var(--bg-card-hover);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+  .card-top {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .card h3 { font-size: 1rem; font-weight: 700; color: var(--text-primary); line-height: 1.4; }
+  .chip-badge {
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 0.04em;
+    padding: 0.2rem 0.6rem; border-radius: 999px;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .chip-c6     { background: rgba(16,185,129,0.2);  color: #10b981;  border: 1px solid rgba(16,185,129,0.4); }
+  .chip-s3     { background: rgba(56,189,248,0.2);  color: #38bdf8;  border: 1px solid rgba(56,189,248,0.4); }
+  .chip-h2     { background: rgba(167,139,250,0.2); color: #a78bfa;  border: 1px solid rgba(167,139,250,0.4); }
+  .chip-p4     { background: rgba(251,146,60,0.2);  color: #fb923c;  border: 1px solid rgba(251,146,60,0.4); }
+  .chip-generic{ background: rgba(45,212,191,0.2);  color: #2dd4bf;  border: 1px solid rgba(45,212,191,0.4); }
+
+  .card p { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.75rem; }
+
+  .tag-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .tag {
+    font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 999px;
+    background: rgba(148,163,184,0.1); color: var(--text-muted);
+    border: 1px solid rgba(148,163,184,0.15);
+  }
+
+  /* ─── Featured Card ─── */
+  .featured-card {
+    background: linear-gradient(135deg, #1e293b 0%, #162032 100%);
+    border: 1px solid rgba(16,185,129,0.25);
+    border-radius: 1rem;
+    padding: 1.75rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .featured-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));
+  }
+  .featured-card h3 {
+    font-size: 1.1rem; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 0.6rem;
+  }
+  .featured-card p { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.75rem; }
+
+  /* ─── Sensor Table ─── */
+  .sensor-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  .sensor-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .sensor-table td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid rgba(148,163,184,0.06);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  .sensor-table tr:hover td { background: rgba(255,255,255,0.025); }
+  .sensor-name { color: var(--text-primary); font-weight: 600; }
+  .sensor-type {
+    display: inline-block;
+    font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px;
+    background: rgba(56,189,248,0.1); color: #38bdf8;
+    border: 1px solid rgba(56,189,248,0.2);
+    margin-top: 0.2rem;
+  }
+
+  /* ─── Resources ─── */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1.1rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .resource-card:hover {
+    border-color: rgba(56,189,248,0.4);
+    background: var(--bg-card-hover);
+  }
+  .resource-card .res-icon {
+    font-size: 1.4rem; margin-bottom: 0.5rem;
+  }
+  .resource-card .res-title {
+    font-size: 0.9rem; font-weight: 700; color: var(--text-primary);
+    margin-bottom: 0.3rem;
+  }
+  .resource-card .res-desc {
+    font-size: 0.8rem; color: var(--text-muted); line-height: 1.6;
+  }
+  .resource-card a {
+    display: inline-block; margin-top: 0.6rem;
+    font-size: 0.78rem; color: var(--accent-blue);
+    text-decoration: none;
+  }
+  .resource-card a:hover { text-decoration: underline; }
+
+  /* ─── Alert Box ─── */
+  .alert-box {
+    background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.25);
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+  }
+  .alert-box strong { color: var(--accent-green); }
+
+  /* ─── Code block ─── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid rgba(148,163,184,0.1);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #a3e635;
+    overflow-x: auto;
+    margin-top: 0.75rem;
+    line-height: 1.6;
+  }
+  .code-comment { color: #4b5563; }
+  .code-keyword { color: #38bdf8; }
+  .code-string  { color: #f472b6; }
+
+  /* ─── Footer ─── */
+  footer {
+    background: #0a1020;
+    border-top: 1px solid var(--border);
+    padding: 1.75rem 1rem;
+    text-align: center;
+  }
+  footer .footer-date { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+  footer .footer-sources {
+    font-size: 0.78rem; color: var(--text-muted); line-height: 2;
+  }
+  footer .footer-sources a { color: var(--accent-blue); text-decoration: none; }
+  footer .footer-sources a:hover { text-decoration: underline; }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 600px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .resource-grid { grid-template-columns: 1fr; }
+    .sensor-table { display: block; overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">🏥 Healthcare & Connectivity Edition</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">13 พฤศจิกายน 2026 — Wearable Health, Smart Connectivity & mmWave Sensing</p>
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-num">4</div>
+      <div class="stat-label">นวัตกรรมใหม่</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">5</div>
+      <div class="stat-label">ไอเดียโปรเจกต์</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">6</div>
+      <div class="stat-label">Sensors แนะนำ</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">8</div>
+      <div class="stat-label">แหล่งข้อมูล</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ══════════════════════════════════════
+       Section 1: นวัตกรรม
+  ══════════════════════════════════════ -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-green">🚀</div>
+      <div>
+        <div class="section-label">Latest News</div>
+        <h2>นวัตกรรมและชิปที่น่าสนใจ — Healthcare & Connectivity Edition</h2>
+      </div>
+    </div>
+
+    <div class="alert-box">
+      <strong>ไฮไลต์วันนี้:</strong> ESP32-C6 รองรับ Amazon Alexa Connect Kit SDK for Matter อย่างเป็นทางการ (เมษายน 2026) พร้อมกับการพัฒนา EdgeCare — แพลตฟอร์ม Wearable เพื่อการติดตามสุขภาพเมตาบอลิซึมแบบ Multi-sensor ที่ทำงานบน ESP32-C6
+    </div>
+
+    <div class="featured-card">
+      <div class="card-top">
+        <h3>ESP32-C6 + Amazon Alexa Connect Kit SDK for Matter</h3>
+        <span class="chip-badge chip-c6">ESP32-C6</span>
+      </div>
+      <p>Espressif ประกาศอย่างเป็นทางการว่า ESP32-C6 รองรับ Alexa Connect Kit (ACK) SDK for Matter แล้ว ทำให้ผู้พัฒนาสามารถสร้างอุปกรณ์ Smart Home ที่ทำงานร่วมกับ Alexa ผ่านโปรโตคอล Matter over Thread ได้โดยตรง โดยไม่ต้องใช้ Hub เพิ่มเติม</p>
+      <p>ESP32-C6 มีความโดดเด่นด้วย Wi-Fi 6, Bluetooth 5, และวิทยุ IEEE 802.15.4 (Thread/Zigbee) ในชิปเดียว ทำให้เป็น single-chip solution ที่สมบูรณ์แบบสำหรับอุปกรณ์ Matter ยุคใหม่</p>
+      <div class="tag-list">
+        <span class="tag">Wi-Fi 6</span>
+        <span class="tag">Thread</span>
+        <span class="tag">Matter</span>
+        <span class="tag">Alexa</span>
+        <span class="tag">IEEE 802.15.4</span>
+        <span class="tag">Home Assistant</span>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-top">
+          <h3>EdgeCare — Multi-Sensor Metabolic Wearable Platform</h3>
+          <span class="chip-badge chip-c6">ESP32-C6</span>
+        </div>
+        <p>แพลตฟอร์ม Wearable เพื่อวัดค่า Metabolic ที่ใช้ ESP32-C6 เป็นหัวใจหลัก ร่วมกับ MAX30100/MAX30102 (Heart Rate / SpO2), MAX30208 (อุณหภูมิทางคลินิก) และ Dry-electrode interface สำหรับวัดค่า Skin Impedance เพื่อประเมินภาวะขาดน้ำ (Hydration Assessment)</p>
+        <p>โครงการนี้จาก Element14 Community ชนะการประกวด Smart Home/Healthcare Challenge ในเดือนตุลาคม 2026</p>
+        <div class="tag-list">
+          <span class="tag">Wearable</span>
+          <span class="tag">MAX30102</span>
+          <span class="tag">MAX30208</span>
+          <span class="tag">Hydration</span>
+          <span class="tag">BioImpedance</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <h3>ESPHome + OpenThread บน ESP32-C6 / H2</h3>
+          <span class="chip-badge chip-h2">ESP32-H2</span>
+        </div>
+        <p>ESPHome เวอร์ชั่น 2025.6 เพิ่มการรองรับ OpenThread อย่างเต็มรูปแบบบน ESP32-H2 และ C6 ทำให้สามารถใช้บอร์ดเหล่านี้เป็น Thread End Device หรือ Thread Border Router ได้จาก Home Assistant UI โดยไม่ต้องเขียนโค้ดแม้แต่บรรทัดเดียว</p>
+        <div class="tag-list">
+          <span class="tag">ESPHome</span>
+          <span class="tag">OpenThread</span>
+          <span class="tag">Home Assistant</span>
+          <span class="tag">No-Code</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <h3>Seeed XIAO ESP32C6 — Matter-Ready บอร์ดจิ๋ว</h3>
+          <span class="chip-badge chip-c6">ESP32-C6</span>
+        </div>
+        <p>Seeed Studio เปิดตัว XIAO ESP32C6 ซึ่งเป็นบอร์ดขนาดจิ๋ว (21×17.5mm) ที่ออกแบบมาสำหรับงาน Matter/Thread Smart Home โดยเฉพาะ รองรับการทำงานร่วมกับ Apple HomeKit, Google Home และ Amazon Alexa ผ่านมาตรฐาน Matter โดยตรง เหมาะสำหรับฝังในอุปกรณ์ขนาดเล็ก</p>
+        <div class="tag-list">
+          <span class="tag">XIAO</span>
+          <span class="tag">Matter</span>
+          <span class="tag">21x17.5mm</span>
+          <span class="tag">HomeKit</span>
+          <span class="tag">Google Home</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       Section 2: ไอเดียโปรเจกต์
+  ══════════════════════════════════════ -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-blue">💡</div>
+      <div>
+        <div class="section-label">Project Ideas</div>
+        <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-top">
+          <h3>Smart Life Band — สายรัดข้อมือตรวจสุขภาพ DIY</h3>
+          <span class="chip-badge chip-generic">ESP32</span>
+        </div>
+        <p>สายรัดข้อมือ DIY ที่วัด Heart Rate, SpO2, การเคลื่อนไหว, ระดับ Stress และสถานะการนอนหลับแบบ Continuous ด้วย MAX30105 + MPU6050 แสดงผลบน OLED และอัปโหลดข้อมูลขึ้น Firebase Realtime Database ทุก 10 วินาที</p>
+        <div class="code-block"><span class="code-comment">// Firebase upload ทุก 10 วินาที</span>
+<span class="code-keyword">if</span> (millis() - lastUpload > <span class="code-string">10000</span>) {
+  firebaseData.setFloat(<span class="code-string">"/health/spo2"</span>, spo2Val);
+  firebaseData.setFloat(<span class="code-string">"/health/bpm"</span>, heartRate);
+  lastUpload = millis();
+}</div>
+        <div class="tag-list">
+          <span class="tag">MAX30105</span>
+          <span class="tag">MPU6050</span>
+          <span class="tag">Firebase</span>
+          <span class="tag">OLED</span>
+          <span class="tag">Sleep Tracking</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <h3>mmWave Occupancy Sensor — ตรวจจับคนแบบ Privacy-First</h3>
+          <span class="chip-badge chip-s3">ESP32-S3</span>
+        </div>
+        <p>ระบบตรวจจับการมีคนอยู่ในห้องโดยใช้ Radar Sensor (LD2410 หรือ HLK-LD2402) + ESP32 ส่งข้อมูลผ่าน MQTT ไป Home Assistant เพื่อควบคุมไฟและแอร์อัตโนมัติ โดยไม่ต้องใช้กล้อง ไม่มีความเป็นส่วนตัว ตรวจจับได้แม้คนนิ่ง (ตรวจ Breathing)</p>
+        <div class="tag-list">
+          <span class="tag">LD2410</span>
+          <span class="tag">mmWave Radar</span>
+          <span class="tag">MQTT</span>
+          <span class="tag">Home Assistant</span>
+          <span class="tag">Privacy-Safe</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <h3>Smart Ward Assistant — Patient Monitoring ต้นทุนต่ำ</h3>
+          <span class="chip-badge chip-generic">ESP32</span>
+        </div>
+        <p>ระบบติดตามผู้ป่วยต้นทุนต่ำสำหรับห้องพยาบาล วัด Heart Rate + SpO2 + อุณหภูมิร่างกาย แสดงผลบน Dashboard และส่ง Alert ผ่าน LINE Notify หรือ Telegram เมื่อค่าผิดปกติ เหมาะสำหรับคลินิกและห้องพักฟื้นขนาดเล็ก</p>
+        <div class="tag-list">
+          <span class="tag">Medical IoT</span>
+          <span class="tag">Telegram Alert</span>
+          <span class="tag">Dashboard</span>
+          <span class="tag">Low Cost</span>
+          <span class="tag">DS18B20</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <h3>Water Leak Guardian — ป้องกันน้ำท่วมบ้าน</h3>
+          <span class="chip-badge chip-c6">ESP32-C6</span>
+        </div>
+        <p>เซ็นเซอร์ตรวจจับน้ำรั่วใต้อ่างล้างจาน ตู้เย็น และเครื่องซักผ้า ใช้ Water Leak Sensor Module ราคาถูก + ESP32 ส่ง Notification ผ่าน Home Assistant Matter สามารถตัดวาล์วน้ำอัตโนมัติผ่าน Servo Motor เมื่อตรวจพบการรั่วซึม</p>
+        <div class="tag-list">
+          <span class="tag">Water Sensor</span>
+          <span class="tag">Matter</span>
+          <span class="tag">Auto Valve</span>
+          <span class="tag">Servo</span>
+          <span class="tag">Notification</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <h3>Solar Health Station — Monitor สุขภาพพลังงานแสงอาทิตย์</h3>
+          <span class="chip-badge chip-s3">ESP32-S3</span>
+        </div>
+        <p>สถานีตรวจสุขภาพพนักงานกลางแจ้งพลังงานแสงอาทิตย์ วัด Heart Rate + SpO2 + อุณหภูมิผิวหนัง + ความชื้น ใช้โมดูล MAXREFDES117 ตรวจจับสัญญาณเตือนอาการหัวใจวาย ความเครียดจากความร้อน และภาวะขาดน้ำ เหมาะสำหรับ Site Engineer, ตำรวจจราจร, คนงานไร่</p>
+        <div class="tag-list">
+          <span class="tag">Solar Powered</span>
+          <span class="tag">MAXREFDES117</span>
+          <span class="tag">Heat Stress</span>
+          <span class="tag">Outdoor</span>
+          <span class="tag">LiPo</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       Section 3: Sensors แนะนำ
+  ══════════════════════════════════════ -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-purple">🔬</div>
+      <div>
+        <div class="section-label">Component Guide</div>
+        <h2>Sensors แนะนำสำหรับ Healthcare & Smart Connectivity</h2>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 0; overflow: hidden; margin-bottom: 1.25rem;">
+      <table class="sensor-table">
+        <thead>
+          <tr>
+            <th>Sensor / Module</th>
+            <th>วัดอะไร</th>
+            <th>Interface</th>
+            <th>ราคาโดยประมาณ</th>
+            <th>หมายเหตุ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="sensor-name">MAX30102</div>
+              <span class="sensor-type">Biometric</span>
+            </td>
+            <td>Heart Rate, SpO2</td>
+            <td>I2C</td>
+            <td>~80–120 บาท</td>
+            <td>Sensor ยอดนิยมที่สุดสำหรับโปรเจกต์ Wearable ต้องใช้ Library จาก Sparkfun</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="sensor-name">MAX30208</div>
+              <span class="sensor-type">Temperature</span>
+            </td>
+            <td>Body Temperature (±0.1°C)</td>
+            <td>I2C</td>
+            <td>~150–200 บาท</td>
+            <td>ความแม่นยำระดับทางคลินิก เหมาะสำหรับ Wearable ทางการแพทย์</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="sensor-name">LD2410 / HLK-LD2402</div>
+              <span class="sensor-type">Radar</span>
+            </td>
+            <td>Human Presence (mmWave 24GHz)</td>
+            <td>UART</td>
+            <td>~200–400 บาท</td>
+            <td>ตรวจจับได้แม้คนนิ่ง (Breathing Detection) ไม่ต้องใช้กล้อง</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="sensor-name">MPU6050</div>
+              <span class="sensor-type">IMU</span>
+            </td>
+            <td>Accelerometer + Gyroscope (6-axis)</td>
+            <td>I2C</td>
+            <td>~40–80 บาท</td>
+            <td>ใช้คู่กับ MAX30102 สำหรับ Wearable เพื่อตรวจจับการเคลื่อนไหวและ Sleep Stage</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="sensor-name">LIS3DH</div>
+              <span class="sensor-type">Accelerometer</span>
+            </td>
+            <td>3-axis Accelerometer + Fall Detection</td>
+            <td>I2C / SPI</td>
+            <td>~50–100 บาท</td>
+            <td>Interrupt-based Fall Detection ใช้พลังงานต่ำมาก เหมาะสำหรับ Patient Monitoring</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="sensor-name">Water Leak Module</div>
+              <span class="sensor-type">Environment</span>
+            </td>
+            <td>Water Detection</td>
+            <td>Digital/Analog</td>
+            <td>~30–60 บาท</td>
+            <td>Sensor ราคาถูกที่สุด เหมาะสำหรับป้องกันน้ำท่วมบ้านและการรั่วซึม</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <h3 style="margin-bottom: 0.5rem; font-size: 0.95rem;">💊 แนวทาง Wearable Health Stack ที่แนะนำ</h3>
+        <p style="font-size: 0.85rem;">สำหรับโปรเจกต์ Health Wearable ให้ใช้ <strong style="color: var(--accent-green);">MAX30102 + MPU6050 + ESP32</strong> เป็น core stack เพิ่ม MAX30208 ถ้าต้องการอุณหภูมิแม่นยำ และ LIS3DH สำหรับ Fall Detection ในผู้สูงอายุ</p>
+        <div class="tag-list">
+          <span class="tag">I2C Bus</span>
+          <span class="tag">3.3V Logic</span>
+          <span class="tag">Deep Sleep</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom: 0.5rem; font-size: 0.95rem;">📡 แนวทาง Connectivity ที่แนะนำ</h3>
+        <p style="font-size: 0.85rem;">สำหรับ Smart Home ใหม่ใช้ <strong style="color: var(--accent-blue);">ESP32-C6</strong> เพื่อรองรับ Matter/Thread ในอนาคต สำหรับโปรเจกต์เก่าที่ต้องการ Wi-Fi เร็วใช้ <strong style="color: var(--accent-blue);">ESP32-S3</strong> สำหรับ Mesh Network ใช้ ESP-NOW หรือ ESP-MESH</p>
+        <div class="tag-list">
+          <span class="tag">Matter</span>
+          <span class="tag">ESP-NOW</span>
+          <span class="tag">Wi-Fi 6</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       Section 4: Resources
+  ══════════════════════════════════════ -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-teal">📚</div>
+      <div>
+        <div class="section-label">References</div>
+        <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+      </div>
+    </div>
+
+    <div class="resource-grid">
+      <div class="resource-card">
+        <div class="res-icon">🛒</div>
+        <div class="res-title">Espressif — ESP32-C6 Product Page</div>
+        <div class="res-desc">ข้อมูล Datasheet, Development Kit และ ESP-IDF สำหรับ ESP32-C6 อย่างเป็นทางการ</div>
+        <a href="https://www.espressif.com/en/products/socs/esp32-c6" target="_blank">espressif.com →</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-icon">🏠</div>
+        <div class="res-title">Seeed Studio — XIAO ESP32C6</div>
+        <div class="res-desc">บอร์ด XIAO ESP32C6 ขนาดจิ๋ว Matter-Ready พร้อม Wiki และ Tutorial</div>
+        <a href="https://www.notebookcheck.net/Seeed-Studio-launches-Matter-enabled-Xiao-ESP32C6-poised-for-Smart-Home-applications.941450.0.html" target="_blank">notebookcheck.net →</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-icon">❤️</div>
+        <div class="res-title">CircuitDigest — Smart Life Band</div>
+        <div class="res-desc">Tutorial สายรัดข้อมือ DIY ครบวงจร MAX30105 + MPU6050 + Firebase</div>
+        <a href="https://circuitdigest.com/microcontroller-projects/smart-life-band-an-iot-based-health-sleep-and-safety-monitoring-wearable" target="_blank">circuitdigest.com →</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-icon">🏥</div>
+        <div class="res-title">Element14 — EdgeCare Project</div>
+        <div class="res-desc">โปรเจกต์ EdgeCare Multi-sensor Wearable Platform บน ESP32-C6 ที่ชนะการประกวด</div>
+        <a href="https://community.element14.com/challenges-projects/design-challenges/smart-home-healthcare-challenge/b/projects/posts/edgecare---a-multi-sensor-wearable-platform-for-metabolic-monitoring" target="_blank">element14.com →</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-icon">🌞</div>
+        <div class="res-title">CircuitDigest — Solar Vital Monitor</div>
+        <div class="res-desc">Monitor สุขภาพพลังงานแสงอาทิตย์ MAXREFDES117 สำหรับคนงานกลางแจ้ง</div>
+        <a href="https://circuitdigest.com/microcontroller-projects/solarpowered-vital-monitoring-for-traffic-police-outdoor-workers-maxrefdes117-biosensor-from-analog-devices" target="_blank">circuitdigest.com →</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-icon">🔊</div>
+        <div class="res-title">Amazon Dev Blog — ESP32-C6 + Alexa</div>
+        <div class="res-desc">ประกาศ Alexa Connect Kit SDK for Matter รองรับ ESP32-C6 (มีนาคม 2026)</div>
+        <a href="https://developer.amazon.com/en-US/blogs/alexa/device-makers/2026/03/enhanced-device-development-capabilities" target="_blank">developer.amazon.com →</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-icon">🏠</div>
+        <div class="res-title">ESPHome — OpenThread Docs</div>
+        <div class="res-desc">วิธีตั้งค่า OpenThread บน ESP32-C6 / H2 ผ่าน ESPHome สำหรับ Home Assistant</div>
+        <a href="https://www.matteralpha.com/news/esphome-2025-6-adds-openthread-support" target="_blank">matteralpha.com →</a>
+      </div>
+
+      <div class="resource-card">
+        <div class="res-icon">📡</div>
+        <div class="res-title">IoTWebPlanet — ESP32 + MAX30100</div>
+        <div class="res-desc">Tutorial การเชื่อมต่อ MAX30100 Heart Rate Sensor กับ ESP32 ทีละขั้นตอน</div>
+        <a href="https://iotwebplanet.com/esp32-with-max30100-heart-sensor" target="_blank">iotwebplanet.com →</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p class="footer-date">สร้างเมื่อ: 13 พฤศจิกายน 2026 | Auto-generated by Claude AI Research Assistant</p>
+  <div class="footer-sources">
+    แหล่งอ้างอิง:
+    <a href="https://www.espressif.com" target="_blank">Espressif Systems</a> ·
+    <a href="https://circuitdigest.com" target="_blank">CircuitDigest</a> ·
+    <a href="https://community.element14.com" target="_blank">Element14 Community</a> ·
+    <a href="https://developer.amazon.com" target="_blank">Amazon Developer</a> ·
+    <a href="https://www.notebookcheck.net" target="_blank">NotebookCheck</a> ·
+    <a href="https://iotwebplanet.com" target="_blank">IoTWebPlanet</a>
+  </div>
+</footer>
+
+</body>
+</html>
