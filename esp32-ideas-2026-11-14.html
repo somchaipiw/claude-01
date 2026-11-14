@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 14 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263348;
+    --accent-green: #22d3ee;
+    --accent-blue: #818cf8;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --accent-yellow: #fbbf24;
+    --accent-teal: #2dd4bf;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --tag-bg: #1e3a5f;
+    --tag-text: #93c5fd;
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(129,140,248,0.15) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(129,140,248,0.15);
+    border: 1px solid rgba(129,140,248,0.4);
+    color: var(--accent-blue);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent-blue) 0%, var(--accent-green) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.4rem;
+  }
+  .header-sub {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1.2rem;
+  }
+  .stats-row {
+    display: flex;
+    gap: 1.2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+  .stat-chip span { color: var(--accent-green); font-weight: 700; }
+
+  /* Nav */
+  nav {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 1rem;
+    background: rgba(15,23,42,0.8);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+  }
+  nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+  }
+  nav a:hover {
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+    background: rgba(129,140,248,0.1);
+  }
+
+  /* Layout */
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+
+  section { margin-bottom: 3.5rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 2rem; height: 2rem;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .icon-blue   { background: rgba(129,140,248,0.2); }
+  .icon-green  { background: rgba(34,211,238,0.2);  }
+  .icon-orange { background: rgba(251,146,60,0.2);  }
+  .icon-teal   { background: rgba(45,212,191,0.2);  }
+  .section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-header .count {
+    margin-left: auto;
+    font-size: 0.78rem;
+    background: rgba(255,255,255,0.06);
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  /* Cards */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.4rem;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(129,140,248,0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  }
+  .card-accent {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 12px 12px 0 0;
+  }
+  .accent-blue   { background: linear-gradient(90deg, var(--accent-blue), var(--accent-green)); }
+  .accent-orange { background: linear-gradient(90deg, var(--accent-orange), var(--accent-yellow)); }
+  .accent-pink   { background: linear-gradient(90deg, var(--accent-pink), var(--accent-orange)); }
+  .accent-teal   { background: linear-gradient(90deg, var(--accent-teal), var(--accent-green)); }
+  .accent-green  { background: linear-gradient(90deg, var(--accent-green), var(--accent-blue)); }
+
+  .card-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 0.8rem;
+  }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+  .tag {
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    font-size: 0.72rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .tag-orange { background: rgba(251,146,60,0.15); color: #fed7aa; }
+  .tag-green  { background: rgba(34,211,238,0.12); color: #a5f3fc; }
+  .tag-pink   { background: rgba(244,114,182,0.15); color: #fbcfe8; }
+  .tag-teal   { background: rgba(45,212,191,0.12); color: #99f6e4; }
+  .tag-yellow { background: rgba(251,191,36,0.15);  color: #fef3c7; }
+
+  .highlight-box {
+    background: rgba(129,140,248,0.08);
+    border: 1px solid rgba(129,140,248,0.25);
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.82rem;
+    color: #c7d2fe;
+    margin-top: 0.6rem;
+  }
+  .highlight-box strong { color: var(--accent-blue); }
+
+  /* Sensor Table */
+  .sensor-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .sensor-table th {
+    background: rgba(255,255,255,0.06);
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-align: left;
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .sensor-table td {
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  .sensor-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .sensor-name { color: var(--text-primary); font-weight: 600; }
+  .sensor-spec { color: var(--accent-green); font-size: 0.78rem; }
+
+  /* Tip blocks */
+  .tip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+  .tip-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    transition: border-color 0.2s;
+  }
+  .tip-card:hover { border-color: rgba(45,212,191,0.4); }
+  .tip-step {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 1.6rem; height: 1.6rem;
+    border-radius: 50%;
+    background: var(--accent-teal);
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 0.75rem;
+    margin-bottom: 0.6rem;
+  }
+  .tip-card h4 { font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.4rem; }
+  .tip-card p  { font-size: 0.83rem; color: var(--text-secondary); line-height: 1.6; }
+
+  /* Resource list */
+  .resource-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+  .resource-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    transition: border-color 0.2s;
+  }
+  .resource-item:hover { border-color: rgba(34,211,238,0.4); }
+  .resource-item a { color: var(--accent-green); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+  .resource-item a:hover { text-decoration: underline; }
+  .resource-item p { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+  /* Code block */
+  .code-block {
+    background: #0d1b2a;
+    border: 1px solid #1e3a5f;
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #93c5fd;
+    overflow-x: auto;
+    margin-top: 0.75rem;
+    line-height: 1.6;
+    white-space: pre;
+  }
+  .code-comment { color: #4b6584; }
+  .code-keyword { color: #a78bfa; }
+  .code-string  { color: #86efac; }
+
+  /* Footer */
+  footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1rem;
+    text-align: center;
+  }
+  .footer-inner { max-width: 700px; margin: 0 auto; }
+  footer p { color: var(--text-muted); font-size: 0.82rem; line-height: 1.8; }
+  footer strong { color: var(--text-secondary); }
+
+  @media (max-width: 600px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .tip-grid  { grid-template-columns: 1fr; }
+    .resource-list { grid-template-columns: 1fr; }
+    .sensor-table { font-size: 0.78rem; }
+    .sensor-table th, .sensor-table td { padding: 0.5rem 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily ESP32 Research</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="header-sub">14 พฤศจิกายน 2026 — Energy Harvesting, ESP32-P4 v3.x & Printed Sensors</p>
+  <div class="stats-row">
+    <div class="stat-chip"><span>4</span> หัวข้อหลัก</div>
+    <div class="stat-chip"><span>12</span> ไอเดียโปรเจกต์</div>
+    <div class="stat-chip"><span>8</span> sensors ใหม่</div>
+    <div class="stat-chip"><span>6</span> แหล่งอ้างอิง</div>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations">🔬 นวัตกรรม</a>
+  <a href="#projects">💡 โปรเจกต์</a>
+  <a href="#sensors">📡 Sensors</a>
+  <a href="#guide">🛠️ คู่มือ</a>
+  <a href="#resources">🔗 แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- ===== INNOVATIONS ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔬</div>
+      <h2>นวัตกรรมและชิปที่น่าสนใจ — Energy & Performance Edition</h2>
+      <span class="count">4 ข่าว</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-accent accent-blue"></div>
+        <div class="card-label" style="color:var(--accent-blue)">⚡ Chip Upgrade</div>
+        <h3>ESP32-P4 v3.x — 400 MHz Stable + ISP ใหม่</h3>
+        <p>Espressif ออก revision v3.x ของ ESP32-P4 พร้อม clock 400 MHz เสถียร, ISP ที่ได้รับการอัปเกรด (Black Level Correction, Dead Pixel Correction, White Balance Gain), และ Zb bit-manipulation instructions สำหรับ RISC-V</p>
+        <div class="highlight-box">
+          <strong>สำคัญ:</strong> แก้ bug MSPI wake-up และ secure boot ที่มีใน V1.3 — ทำให้ production deployment ปลอดภัยขึ้น
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESP32-P4</span>
+          <span class="tag tag-green">400MHz</span>
+          <span class="tag tag-teal">ISP v3.x</span>
+          <span class="tag tag-orange">RISC-V</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-orange"></div>
+        <div class="card-label" style="color:var(--accent-orange)">🖥️ Open Source</div>
+        <h3>ESP-KVM — IP KVM บน ESP32-P4 แบบ Open Source</h3>
+        <p>โปรเจกต์ ESP-KVM ใช้ ESP32-P4 กับ TC358743 HDMI-to-CSI Adapter ทำ IP KVM รองรับ MJPEG และ H.264 encoding ควบคุมคอมพิวเตอร์ระยะไกลผ่านเครือข่าย ใช้ Waveshare ESP32-P4-WIFI6-POE-ETH Board</p>
+        <div class="highlight-box">
+          <strong>เคล็ดลับ:</strong> V3.x silicon ไม่ต้องทำ color-space conversion เพิ่มเติมแล้ว ประหยัด CPU bandwidth
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESP-KVM</span>
+          <span class="tag tag-orange">HDMI</span>
+          <span class="tag tag-green">H.264</span>
+          <span class="tag tag-teal">PoE</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-teal"></div>
+        <div class="card-label" style="color:var(--accent-teal)">☀️ Energy Harvesting</div>
+        <h3>SN1 Solar Node — ESP32-C3 ใน IP67 พร้อม Solar</h3>
+        <p>บอร์ด SN1 Solar Node บน ESP32-C3 มาพร้อมกล่อง IP67 กันน้ำ, ชาร์จพลังงานแสงอาทิตย์ในตัว, รองรับแบตเตอรี่ 18650 สองก้อน และรัน ESPHome firmware พร้อมใช้งานกับ Home Assistant ทันที</p>
+        <div class="highlight-box">
+          <strong>ใช้สำหรับ:</strong> sensor node กลางสวน, monitoring ห่างไกล, weather station แบบ off-grid
+        </div>
+        <div class="tag-row">
+          <span class="tag">ESP32-C3</span>
+          <span class="tag tag-teal">Solar</span>
+          <span class="tag tag-green">IP67</span>
+          <span class="tag tag-orange">ESPHome</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-pink"></div>
+        <div class="card-label" style="color:var(--accent-pink)">🧪 Materials Science</div>
+        <h3>Printed Sensors — กราฟีน & Biodegradable Substrate</h3>
+        <p>วัสดุใหม่ปี 2026 เปิดทางสำหรับ printed sensors ที่สามารถพิมพ์ลงบน substrate ชีวภาพ (กระดาษ, ไหม, แป้ง) วัด air quality, น้ำ, ดิน, และสภาพอากาศ — ใช้ร่วมกับ ESP32 ผ่าน analog GPIO</p>
+        <div class="highlight-box">
+          <strong>วัสดุหลัก:</strong> กราฟีน, Conductive Polymers (PEDOT:PSS), Biodegradable Substrates — ต้นทุน mfg ต่ำมาก
+        </div>
+        <div class="tag-row">
+          <span class="tag">Graphene</span>
+          <span class="tag tag-pink">Printed</span>
+          <span class="tag tag-teal">Biodegradable</span>
+          <span class="tag tag-yellow">Analog</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== PROJECTS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-orange">💡</div>
+      <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+      <span class="count">12 ไอเดีย</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-accent accent-teal"></div>
+        <div class="card-label" style="color:var(--accent-teal)">🌱 Smart Agriculture</div>
+        <h3>Solar-Powered Farm Sensor Node แบบ Off-Grid</h3>
+        <p>ใช้ ESP32-C3 + SN1 Solar Node design ติดตามค่า pH ดิน, อุณหภูมิ, ความชื้น ส่งข้อมูลผ่าน MQTT ทุก 15 นาที ใช้ deep sleep ระหว่างนั้น — รันได้ตลอดปีด้วยแผงโซลาร์ 5W</p>
+        <div class="tag-row">
+          <span class="tag">ESP32-C3</span>
+          <span class="tag tag-teal">Solar</span>
+          <span class="tag tag-green">pH Sensor</span>
+          <span class="tag tag-orange">Deep Sleep</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-blue"></div>
+        <div class="card-label" style="color:var(--accent-blue)">🖥️ Home Lab</div>
+        <h3>DIY IP-KVM ด้วย ESP32-P4 + TC358743</h3>
+        <p>ทำ KVM over IP สำหรับ home server ด้วย ESP32-P4 Waveshare board, HDMI capture chip TC358743, และ web interface แบบ low-latency รองรับ H.264 stream — ราคาต่ำกว่า commercial KVM หลายเท่า</p>
+        <div class="tag-row">
+          <span class="tag">ESP32-P4</span>
+          <span class="tag tag-blue">KVM</span>
+          <span class="tag tag-green">HDMI</span>
+          <span class="tag tag-teal">PoE</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-orange"></div>
+        <div class="card-label" style="color:var(--accent-orange)">💧 Water Quality</div>
+        <h3>IoT Water Quality Monitor บ่อเลี้ยงปลา/กุ้ง</h3>
+        <p>ESP32 + sensors pH, EC (Electrical Conductivity), Dissolved Oxygen, Turbidity วัดคุณภาพน้ำแบบ real-time ส่ง alert เมื่อค่าผิดปกติ แสดงผลบน dashboard ผ่าน Grafana + InfluxDB</p>
+        <div class="tag-row">
+          <span class="tag">ESP32</span>
+          <span class="tag tag-teal">pH</span>
+          <span class="tag tag-blue">DO</span>
+          <span class="tag tag-green">Turbidity</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-pink"></div>
+        <div class="card-label" style="color:var(--accent-pink)">🌬️ Air Lab</div>
+        <h3>Portable Air Quality Monitor + E-Paper Display</h3>
+        <p>ESP32-S3 + SCD41 (CO₂), SPS30 (PM2.5/PM10), BME688 (VOC/ก๊าซ) แสดงผล e-paper 2.9" อ่านง่าย ใช้แบต 18650 นานหลายวัน — inspired by Networked Artifacts Air Lab</p>
+        <div class="tag-row">
+          <span class="tag">ESP32-S3</span>
+          <span class="tag tag-pink">CO₂</span>
+          <span class="tag tag-orange">PM2.5</span>
+          <span class="tag tag-teal">e-Paper</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-green"></div>
+        <div class="card-label" style="color:var(--accent-green)">⚡ Energy</div>
+        <h3>Supercapacitor Solar Node ไม่ใช้แบตเตอรี่</h3>
+        <p>แทนแบต 18650 ด้วย supercapacitor ขนาด 25-50F ชาร์จด้วยแผงโซลาร์ขนาดเล็ก ส่งข้อมูลเป็น burst ทุก 30 นาที — ไม่มีปัญหา battery degradation ทำงานได้หลายปี</p>
+        <div class="tag-row">
+          <span class="tag">ESP32-C3</span>
+          <span class="tag tag-yellow">Supercap</span>
+          <span class="tag tag-teal">Solar</span>
+          <span class="tag tag-green">CN3791</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-blue"></div>
+        <div class="card-label" style="color:var(--accent-blue)">🎮 Multimedia</div>
+        <h3>Retro Gaming Console ด้วย ESP32-P4 + MIPI DSI</h3>
+        <p>ESP32-P4 กับ MIPI DSI display 4.3" resolution 800×480 รัน emulator เกม retro ด้วยประสิทธิภาพ 400MHz dual-core RISC-V ใช้ I2S audio และ DMA transfer สำหรับ framebuffer</p>
+        <div class="tag-row">
+          <span class="tag">ESP32-P4</span>
+          <span class="tag tag-blue">MIPI DSI</span>
+          <span class="tag tag-pink">Gaming</span>
+          <span class="tag tag-teal">I2S Audio</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-teal"></div>
+        <div class="card-label" style="color:var(--accent-teal)">🌾 Agriculture</div>
+        <h3>Smart Irrigation Controller แบบ Predictive</h3>
+        <p>ESP32-C6 + soil moisture sensors + LoRa + open-weather API ทำระบบรดน้ำอัตโนมัติที่ predict ความต้องการน้ำล่วงหน้า 24h โดยดูจากพยากรณ์อากาศและค่าดิน ประหยัดน้ำ 30-40%</p>
+        <div class="tag-row">
+          <span class="tag">ESP32-C6</span>
+          <span class="tag tag-teal">LoRa</span>
+          <span class="tag tag-green">Soil Sensor</span>
+          <span class="tag tag-orange">Weather API</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent accent-orange"></div>
+        <div class="card-label" style="color:var(--accent-orange)">🏭 Industrial</div>
+        <h3>RF + Solar Hybrid Energy Logger สำหรับ Factory</h3>
+        <p>ESP32 ที่ harvest พลังงานจากทั้งแผงโซลาร์ (CN3791 MPPT) และ RF harvesting (จาก WiFi/4G) บันทึก temperature, vibration, power quality — ไม่ต้องเดินสายไฟในโรงงาน</p>
+        <div class="tag-row">
+          <span class="tag">ESP32</span>
+          <span class="tag tag-orange">RF Harvest</span>
+          <span class="tag tag-teal">MPPT</span>
+          <span class="tag tag-yellow">Industrial</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">📡</div>
+      <h2>Sensors ที่น่าสนใจ — Water & Agriculture Edition</h2>
+      <span class="count">8 sensors</span>
+    </div>
+    <div style="overflow-x:auto; border-radius:12px; border:1px solid var(--border);">
+      <table class="sensor-table">
+        <thead>
+          <tr>
+            <th>Sensor / Module</th>
+            <th>วัดอะไร</th>
+            <th>Interface</th>
+            <th>ใช้กับ ESP32</th>
+            <th>หมายเหตุ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="sensor-name">SCD41</span><br><span class="sensor-spec">Sensirion</span></td>
+            <td>CO₂ (400–5000ppm), Temp, RH</td>
+            <td>I2C</td>
+            <td>✅ Arduino / ESP-IDF</td>
+            <td>Photoacoustic NDIR ขนาดเล็ก</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">SPS30</span><br><span class="sensor-spec">Sensirion</span></td>
+            <td>PM1.0 / PM2.5 / PM4 / PM10</td>
+            <td>UART / I2C</td>
+            <td>✅ Library พร้อมใช้</td>
+            <td>Particle concentration &amp; size</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">Atlas Scientific pH</span><br><span class="sensor-spec">EZO circuit</span></td>
+            <td>pH 0–14</td>
+            <td>UART / I2C</td>
+            <td>✅ UART mode ง่ายสุด</td>
+            <td>ต้องการ calibration ด้วย buffer</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">Atlas Scientific DO</span><br><span class="sensor-spec">EZO-DO</span></td>
+            <td>Dissolved Oxygen (mg/L)</td>
+            <td>UART / I2C</td>
+            <td>✅ EZO สำหรับ aquaculture</td>
+            <td>สำคัญมากสำหรับบ่อปลา/กุ้ง</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">DFRobot Turbidity</span><br><span class="sensor-spec">SEN0189</span></td>
+            <td>ความขุ่นของน้ำ (NTU)</td>
+            <td>Analog / Digital</td>
+            <td>✅ ADC ESP32</td>
+            <td>ราคาถูก ~$10 ใช้กับ ADC</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">Capacitive Soil v2.0</span><br><span class="sensor-spec">DFRobot</span></td>
+            <td>Soil Moisture (%)</td>
+            <td>Analog</td>
+            <td>✅ ต่อ ADC ตรงได้</td>
+            <td>ไม่เกิด corrosion ต่างจาก resistive</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">DS18B20</span><br><span class="sensor-spec">Maxim/Dallas</span></td>
+            <td>อุณหภูมิน้ำ / ดิน (-55°C–125°C)</td>
+            <td>1-Wire</td>
+            <td>✅ Library OneWire</td>
+            <td>ต่อหลายตัวบน bus เดียวได้</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">CN3791 MPPT IC</span><br><span class="sensor-spec">CN Micro</span></td>
+            <td>Solar charge management</td>
+            <td>Analog (control)</td>
+            <td>✅ ใช้ร่วมกับ ESP32 power</td>
+            <td>MPPT + overcharge protection in 1 IC</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== GUIDE ===== -->
+  <section id="guide">
+    <div class="section-header">
+      <div class="section-icon icon-teal">🛠️</div>
+      <h2>Quick Start: Solar ESP32 Sensor Node ใน 6 ขั้นตอน</h2>
+      <span class="count">พร้อมใช้งาน</span>
+    </div>
+    <div class="tip-grid">
+      <div class="tip-card">
+        <div class="tip-step">1</div>
+        <h4>เลือก Board & Chip</h4>
+        <p>ใช้ ESP32-C3 หรือ C6 เพราะกินไฟน้อย (10–20mA active), deep sleep ~5µA, Wi-Fi 6 บน C6 ให้ throughput ดีขึ้นต่อ watt</p>
+      </div>
+      <div class="tip-card">
+        <div class="tip-step">2</div>
+        <h4>วงจร Solar Charging</h4>
+        <p>CN3791 MPPT IC ต่อกับแผง 5V solar → Li-ion 18650 × 2 ใส่ diode ป้องกัน reverse และ TP4056 สำหรับ cell balancing</p>
+      </div>
+      <div class="tip-card">
+        <div class="tip-step">3</div>
+        <h4>ต่อ Sensors</h4>
+        <p>Capacitive soil moisture (ADC), DS18B20 (1-Wire), DHT22 (humidity) หรือเพิ่ม pH/DO sensor ผ่าน UART Atlas EZO circuit</p>
+      </div>
+      <div class="tip-card">
+        <div class="tip-step">4</div>
+        <h4>Firmware Deep Sleep</h4>
+        <p>ตื่น → อ่าน sensor → ส่ง MQTT → กลับ sleep ทุก 15 นาที ปิด BT ด้วย <code>btStop()</code> เมื่อไม่ใช้ ประหยัด ~10mA</p>
+      </div>
+      <div class="tip-card">
+        <div class="tip-step">5</div>
+        <h4>กล่อง IP67</h4>
+        <p>ใส่ใน junction box IP67 เจาะรูยางกันน้ำ (cable gland) สำหรับ sensor probe ทดสอบ seal ด้วยน้ำก่อน deploy จริง</p>
+      </div>
+      <div class="tip-card">
+        <div class="tip-step">6</div>
+        <h4>Dashboard & Alert</h4>
+        <p>ส่ง JSON → MQTT Broker → Telegraf → InfluxDB → Grafana dashboard ตั้ง alert email/Line เมื่อค่า pH หรือ DO ผิดปกติ</p>
+      </div>
+    </div>
+
+    <div style="margin-top:1.5rem;">
+      <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:0.75rem;">ตัวอย่าง firmware skeleton (Arduino / ESP-IDF):</p>
+      <div class="code-block"><span class="code-comment">// Solar ESP32 Sensor Node — Deep Sleep Pattern</span>
+<span class="code-keyword">#include</span> <span class="code-string">"esp_sleep.h"</span>
+<span class="code-keyword">#include</span> <span class="code-string">"WiFi.h"</span>
+<span class="code-keyword">#include</span> <span class="code-string">"PubSubClient.h"</span>
+
+<span class="code-keyword">#define</span> SLEEP_MIN  15           <span class="code-comment">// ตื่นทุก 15 นาที</span>
+<span class="code-keyword">#define</span> uS_PER_MIN 60000000ULL
+
+<span class="code-keyword">void</span> setup() {
+  btStop();                       <span class="code-comment">// ปิด BT ประหยัด ~10mA</span>
+  readSensors();
+  connectWiFi();
+  publishMQTT();
+  WiFi.disconnect(<span class="code-keyword">true</span>);
+  esp_sleep_enable_timer_wakeup(SLEEP_MIN * uS_PER_MIN);
+  esp_deep_sleep_start();
+}
+<span class="code-keyword">void</span> loop() {}                   <span class="code-comment">// ไม่ถึงที่นี่</span></div>
+    </div>
+  </section>
+
+  <!-- ===== RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔗</div>
+      <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+      <span class="count">6 แหล่ง</span>
+    </div>
+    <div class="resource-list">
+      <div class="resource-item">
+        <a href="https://www.espressif.com/en/news/ESP32_P4_v3.x_Upgrade" target="_blank" rel="noopener">ESP32-P4 v3.x Upgrade News</a>
+        <p>Espressif official — รายละเอียด chip revision v3.x ที่เสถียร 400MHz และ ISP ใหม่</p>
+      </div>
+      <div class="resource-item">
+        <a href="https://www.cnx-software.com/2026/07/30/esp-kvm-an-open-source-ip-kvm-solution-based-on-esp32-p4-risc-v-mcu/" target="_blank" rel="noopener">ESP-KVM — CNX Software</a>
+        <p>รีวิว ESP-KVM open source IP KVM บน ESP32-P4 พร้อม HDMI capture</p>
+      </div>
+      <div class="resource-item">
+        <a href="https://www.pulse.bot/hardware/news/sn1-solar-node-an-esp32-c3-based-board-with-ip67-enclosure-solar-charging-esphome-firmware-0c5c529c-9a80-4906-8ada-90fbfe2b2668/" target="_blank" rel="noopener">SN1 Solar Node — Pulse.bot</a>
+        <p>ESP32-C3 + IP67 + Solar charging + ESPHome firmware พร้อมใช้</p>
+      </div>
+      <div class="resource-item">
+        <a href="https://hackaday.io/project/205577-supercapacitor-solar-iot-for-high-power-actuation" target="_blank" rel="noopener">Supercapacitor Solar IoT — Hackaday</a>
+        <p>โปรเจกต์ใช้ supercap แทน battery สำหรับ IoT solar node</p>
+      </div>
+      <div class="resource-item">
+        <a href="https://zbotic.in/solar-powered-iot-sensor-node-esp32-with-deep-sleep/" target="_blank" rel="noopener">Solar ESP32 Deep Sleep Guide — Zbotic</a>
+        <p>คู่มือ solar-powered sensor node ด้วย ESP32 + deep sleep firmware</p>
+      </div>
+      <div class="resource-item">
+        <a href="https://semiengineering.com/environmental-sensors-catch-more-data-for-a-greener-world/" target="_blank" rel="noopener">Printed Sensors — SemiEngineering</a>
+        <p>บทความ Environmental sensors ด้วยวัสดุใหม่ graphene และ biodegradable substrates</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <p><strong>ESP32 & Sensor Innovations</strong> — สร้างโดย AI Researcher อัตโนมัติ</p>
+    <p>วันที่สร้าง: 14 พฤศจิกายน 2026 | ธีมวันนี้: <strong>Energy Harvesting, ESP32-P4 v3.x, Printed Sensors & Water Quality</strong></p>
+    <p style="margin-top:0.5rem; font-size:0.75rem;">แหล่งข้อมูล: Espressif Systems, CNX-Software, Hackaday.io, Zbotic, SemiEngineering, Pulse.bot</p>
+  </div>
+</footer>
+
+</body>
+</html>
