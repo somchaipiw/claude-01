@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 15 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.8; }
+
+  header {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #0c1a2e 100%);
+    border-bottom: 1px solid #1e3a5f;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header .subtitle {
+    color: #94a3b8;
+    font-size: 1rem;
+  }
+  header .meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+  header .meta-badge {
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 999px;
+    padding: 0.25rem 1rem;
+    font-size: 0.85rem;
+    color: #38bdf8;
+  }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  section { margin-bottom: 3rem; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .section-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); }
+  .icon-orange { background: rgba(251, 146, 60, 0.15); border: 1px solid rgba(251, 146, 60, 0.3); }
+  .icon-green { background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3); }
+  .icon-purple { background: rgba(192, 132, 252, 0.15); border: 1px solid rgba(192, 132, 252, 0.3); }
+  .icon-teal { background: rgba(45, 212, 191, 0.15); border: 1px solid rgba(45, 212, 191, 0.3); }
+
+  .section-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+  .section-title small {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: #64748b;
+    margin-left: 0.5rem;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: #1e293b;
+    border: 1px solid #2d3f55;
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover {
+    border-color: #38bdf8;
+    transform: translateY(-2px);
+  }
+  .card-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    margin-bottom: 0.6rem;
+  }
+  .tag-blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+  .tag-orange { background: rgba(251, 146, 60, 0.15); color: #fb923c; }
+  .tag-green { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+  .tag-purple { background: rgba(192, 132, 252, 0.15); color: #c084fc; }
+  .tag-red { background: rgba(248, 113, 113, 0.15); color: #f87171; }
+  .tag-teal { background: rgba(45, 212, 191, 0.15); color: #2dd4bf; }
+  .tag-yellow { background: rgba(250, 204, 21, 0.15); color: #facc15; }
+
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    line-height: 1.7;
+  }
+  .card .detail-list {
+    margin-top: 0.75rem;
+    padding-left: 0;
+    list-style: none;
+  }
+  .card .detail-list li {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    padding: 0.2rem 0;
+    padding-left: 1.2rem;
+    position: relative;
+  }
+  .card .detail-list li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: #38bdf8;
+  }
+
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), rgba(129, 140, 248, 0.08));
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 14px;
+    padding: 1.4rem;
+    margin-bottom: 1.25rem;
+  }
+  .highlight-box h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #38bdf8;
+    margin-bottom: 0.5rem;
+  }
+  .highlight-box p {
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    line-height: 1.7;
+  }
+  .chip-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  .chip-spec {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.78rem;
+    color: #94a3b8;
+  }
+  .chip-spec strong { color: #e2e8f0; }
+
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .resource-link {
+    background: #1e293b;
+    border: 1px solid #2d3f55;
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    text-decoration: none;
+    transition: border-color 0.2s;
+  }
+  .resource-link:hover { border-color: #38bdf8; }
+  .resource-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .resource-info h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin-bottom: 0.25rem;
+  }
+  .resource-info p {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.5;
+  }
+
+  .code-block {
+    background: #0d1b2e;
+    border: 1px solid #1e3a5f;
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    color: #93c5fd;
+    overflow-x: auto;
+    margin-top: 0.75rem;
+    line-height: 1.6;
+  }
+  .code-comment { color: #4b6e8f; }
+  .code-keyword { color: #c084fc; }
+  .code-string { color: #34d399; }
+  .code-number { color: #fb923c; }
+
+  footer {
+    background: #1e293b;
+    border-top: 1px solid #2d3f55;
+    padding: 2rem;
+    text-align: center;
+    margin-top: 3rem;
+  }
+  footer p {
+    color: #64748b;
+    font-size: 0.85rem;
+    line-height: 1.8;
+  }
+  footer a { color: #38bdf8; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.5rem; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .resources-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">รายงานความคืบหน้าและนวัตกรรมล่าสุดในโลก ESP32 และ IoT</p>
+  <div class="meta-row">
+    <span class="meta-badge">📅 15 พฤศจิกายน 2026</span>
+    <span class="meta-badge">🔬 4 หัวข้อหลัก</span>
+    <span class="meta-badge">💡 12+ ไอเดียใหม่</span>
+    <span class="meta-badge">🌐 ข้อมูลล่าสุด</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- =================== SECTION 1: INNOVATIONS =================== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔬</div>
+      <div>
+        <h2 class="section-title">นวัตกรรม ESP32 ล่าสุด <small>November 2026</small></h2>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <h3>🚀 ESP32-P4 v3.x — ชิปรุ่นใหม่ประสิทธิภาพสูงสุด</h3>
+      <p>Espressif ออก ESP32-P4 chip revision v3.x อย่างเป็นทางการ โดยเพิ่มความเร็วสัญญาณนาฬิกาสูงสุดเป็น <strong>400 MHz</strong> (stable) พร้อมอัปเกรด Image Signal Processor (ISP) ครั้งใหญ่ รองรับการประมวลผลภาพระดับ professional บน microcontroller</p>
+      <div class="chip-specs">
+        <span class="chip-spec"><strong>Clock:</strong> 400 MHz (stable)</span>
+        <span class="chip-spec"><strong>ISP:</strong> BLC, DPC, WBG, CROP</span>
+        <span class="chip-spec"><strong>Zb Extension:</strong> Bit-manipulation</span>
+        <span class="chip-spec"><strong>PIE:</strong> Accelerated SIMD</span>
+        <span class="chip-spec"><strong>Security:</strong> Secure Boot v3.x fix</span>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <span class="card-tag tag-blue">ESP32-P4</span>
+        <h3>MIPI DSI Display + Multimedia Hub</h3>
+        <p>ESP32-P4 รองรับ MIPI DSI ทำให้สามารถต่อจอ LCD/OLED ความละเอียดสูงได้โดยตรง ชุมชนนักพัฒนาสร้าง smart home panel และ gaming console บน P4 โดยใช้ไลบรารี LVGL</p>
+        <ul class="detail-list">
+          <li>MIPI DSI 2-lane สำหรับจอ Full HD</li>
+          <li>RetroESP32-P4 gaming project (open source)</li>
+          <li>AES67 Audio-over-IP บน P4</li>
+          <li>ESP-IDF v5.5.1 รองรับครบแล้ว</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-purple">ESP32-P4</span>
+        <h3>4G LTE Connectivity บน Olimex P4-PC</h3>
+        <p>Olimex เพิ่ม demo ใหม่สำหรับ ESP32-P4-PC รองรับการเชื่อมต่อผ่าน USB LTE modem โดยมี level shifter จัดการ 1.8V / 3.3V logic mismatch ทำให้ P4 กลายเป็น IoT gateway ครบวงจร</p>
+        <ul class="detail-list">
+          <li>EXT1 header: 1.8V logic (modem UART)</li>
+          <li>UEXT: 3.3V logic (ต้องใช้ level shifter)</li>
+          <li>เหมาะสำหรับ remote monitoring ในพื้นที่ไม่มี Wi-Fi</li>
+          <li>โค้ดตัวอย่างบน GitHub (Olimex)</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-green">ESP32-C6</span>
+        <h3>Matter over Thread — Arduino รองรับแล้ว</h3>
+        <p>Arduino-ESP32 core อัปเดตรองรับ Matter-over-Thread สำหรับ ESP32-C6 แล้ว ไม่ต้องพึ่ง ESP-IDF อีกต่อไป ทำให้นักพัฒนาที่คุ้นเคยกับ Arduino สามารถสร้าง smart home device ได้ง่ายขึ้นมาก</p>
+        <ul class="detail-list">
+          <li>Wi-Fi 6 + BLE + Thread 1.3 + Zigbee 3.0</li>
+          <li>Amazon ACK SDK for Matter รองรับ C6 (มี.ค. 2026)</li>
+          <li>Thread Border Router ด้วย C6-WROOM ราคา ~€5</li>
+          <li>รองรับ Home Assistant ผ่าน OpenThread RCP</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-orange">ESP32-C6</span>
+        <h3>Rust + smoltcp TCP/IP Stack</h3>
+        <p>นักพัฒนาสาย Rust ทดสอบ smoltcp TCP/IP stack บน ESP32-P4 สำเร็จแล้ว เปิดทางให้เขียน firmware ที่ memory-safe และ type-safe บน microcontroller ได้อย่างเต็มรูปแบบ</p>
+        <ul class="detail-list">
+          <li>Rust embedded-hal สนับสนุน ESP32 family</li>
+          <li>smoltcp: lightweight TCP/IP no_std stack</li>
+          <li>เหมาะกับ industrial IoT ที่ต้องการ safety</li>
+          <li>ชุมชน esp-rs มี template project พร้อมใช้</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== SECTION 2: PROJECTS =================== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-orange">💡</div>
+      <div>
+        <h2 class="section-title">ไอเดียโปรเจกต์น่าสร้าง <small>DIY &amp; Open Source</small></h2>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <span class="card-tag tag-teal">Smart Home</span>
+        <h3>Thread Border Router ราคาประหยัด</h3>
+        <p>ใช้ ESP32-C6-WROOM สร้าง Thread Border Router เองในราคาไม่ถึง 200 บาท เชื่อมต่อกับ Home Assistant บน Docker ผ่าน OpenThread RCP firmware ทดแทนอุปกรณ์เชิงพาณิชย์ที่ราคาแพง</p>
+        <ul class="detail-list">
+          <li>Flash OpenThread RCP firmware บน C6</li>
+          <li>ต่อผ่าน USB กับ Raspberry Pi / Linux server</li>
+          <li>เพิ่ม Thread devices (sensors, smart plugs) ได้ทันที</li>
+          <li>คู่มือ: derekmolloy.ie</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-blue">Air Quality</span>
+        <h3>Indoor Air Monitor ด้วย ESP32-S3 + SEN66</h3>
+        <p>สร้างเครื่องวัดคุณภาพอากาศในบ้านแบบ All-in-One โดยใช้ ESP32-S3 + Sensirion SEN66 ที่วัดได้ทั้ง PM1.0, PM2.5, PM4.0, PM10, CO2, VOC, NOx, อุณหภูมิ และความชื้น ในชิปเดียว</p>
+        <ul class="detail-list">
+          <li>SEN66: 9 พารามิเตอร์ในชิปเดียว (I2C)</li>
+          <li>ต่อกับ Home Assistant ผ่าน ESPHome</li>
+          <li>โปรเจกต์ต้นแบบ: MoreSense MS-07</li>
+          <li>เพิ่ม e-ink display สำหรับแสดงผล real-time</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-purple">Gaming</span>
+        <h3>RetroESP32-P4 Gaming Console</h3>
+        <p>โปรเจกต์ open source ที่ใช้ ESP32-P4 สร้าง handheld gaming console รองรับเกม retro ได้ด้วยความสามารถของ P4 ที่มี dual-core RISC-V 400 MHz และ hardware accelerators</p>
+        <ul class="detail-list">
+          <li>จอ MIPI DSI TFT ความละเอียดสูง</li>
+          <li>เสียง I2S + amplifier ในตัว</li>
+          <li>รองรับ NES, GB, GBC emulation</li>
+          <li>แบตเตอรี่ LiPo + charging ในตัว</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-yellow">Industrial IoT</span>
+        <h3>EnviroScope — AI-powered Environmental Monitor</h3>
+        <p>โปรเจกต์บน Hackster.io ที่รวม ESP32 กับ AI cloud เพื่อวิเคราะห์สภาพแวดล้อมอัจฉริยะ ตรวจจับรูปแบบ (pattern) ที่ผิดปกติและแจ้งเตือนล่วงหน้าก่อนเกิดปัญหา</p>
+        <ul class="detail-list">
+          <li>ส่งข้อมูล sensor ขึ้น cloud ทุก 1 นาที</li>
+          <li>ใช้ ML model วิเคราะห์ anomaly detection</li>
+          <li>Dashboard แบบ real-time บน web browser</li>
+          <li>แจ้งเตือนผ่าน LINE / Telegram</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-orange">Multimedia</span>
+        <h3>AES67 Audio-over-IP บน ESP32-P4</h3>
+        <p>ทดลองสตรีม audio ผ่าน Ethernet โดยใช้ AES67 protocol บน ESP32-P4 เหมาะสำหรับระบบเสียงมืออาชีพราคาประหยัด สามารถรับ-ส่งสัญญาณเสียง multitrack ผ่าน IP network</p>
+        <ul class="detail-list">
+          <li>รองรับ PCM 24-bit, 48 kHz / 96 kHz</li>
+          <li>Latency ต่ำกว่า 1 ms บน local network</li>
+          <li>เข้ากันได้กับ Dante, Ravenna devices</li>
+          <li>เหมาะสำหรับ studio และ live sound</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-red">Education</span>
+        <h3>Weather Station ESP32 สำหรับโรงเรียน</h3>
+        <p>สถานีตรวจวัดสภาพอากาศที่ออกแบบมาสำหรับการศึกษา ใช้งานง่าย ราคาต่ำ รองรับ sensor หลากหลายชนิด และส่งข้อมูลขึ้น dashboard กลางได้หลายสถานีพร้อมกัน</p>
+        <ul class="detail-list">
+          <li>BME280: อุณหภูมิ ความชื้น ความดันบรรยากาศ</li>
+          <li>BH1750: ความเข้มแสง (ลักซ์)</li>
+          <li>Rain gauge sensor วัดปริมาณน้ำฝน</li>
+          <li>ส่งข้อมูลผ่าน MQTT ไปยัง Grafana</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== SECTION 3: SENSORS =================== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">📡</div>
+      <div>
+        <h2 class="section-title">Sensors &amp; Hardware ที่น่าสนใจ <small>2026</small></h2>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <span class="card-tag tag-blue">Multi-Sensor</span>
+        <h3>Sensirion SEN66 — All-in-One Air Quality</h3>
+        <p>sensor ตัวเดียวที่วัดได้ทั้ง PM, CO2, VOC, NOx, อุณหภูมิ และความชื้น ผ่าน I2C interface เดียว ลดความซับซ้อนของวงจรอย่างมาก เหมาะกับโปรเจกต์ indoor air quality monitoring</p>
+        <div class="code-block"><span class="code-comment">// SEN66 I2C address: 0x6B</span>
+#include &lt;SensirionI2CSen6x.h&gt;
+SensirionI2CSen6x sen6x;
+<span class="code-keyword">void</span> loop() {
+  sen6x.readMeasuredValues(pm1, pm25, pm4,
+    pm10, humidity, temp, voc, nox, co2);
+}</div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-green">Environmental</span>
+        <h3>Blackiot Polverine — mikroBUS Sensor Board</h3>
+        <p>บอร์ด ESP32-S3 แบบ compact ที่รองรับ Bosch sensors ผ่าน mikroBUS connector วัด air quality, temperature, humidity, และ atmospheric pressure ในแพ็กเกจขนาดเล็ก</p>
+        <ul class="detail-list">
+          <li>Bosch BME688: AI-powered gas sensor</li>
+          <li>mikroBUS: เปลี่ยน sensor ได้ไม่ต้องบัดกรี</li>
+          <li>ESP32-S3: Wi-Fi + BLE ในตัว</li>
+          <li>ใช้ BSEC library ของ Bosch</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-purple">Modular</span>
+        <h3>Sensy32 — Platform 6-in-1 Sensor</h3>
+        <p>บอร์ด ESP32-S3 ที่รองรับ sensor ได้ถึง 6 ตัวพร้อมกัน สำหรับ environmental monitoring แบบ comprehensive ออกแบบมาสำหรับ research และ industrial applications</p>
+        <ul class="detail-list">
+          <li>6 sensor slots (I2C + SPI + UART)</li>
+          <li>Qwiic / STEMMA QT connector</li>
+          <li>แบตเตอรี่ในตัว + solar charging</li>
+          <li>เหมาะกับ long-term deployment</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-orange">Gas Detection</span>
+        <h3>MQ-Series + ESP32 ระบบแจ้งเตือนก๊าซ</h3>
+        <p>การใช้ MQ-135 และ MQ-9 ร่วมกับ ESP32-C6 สร้าง indoor air quality monitor แบบ DIY ราคาประหยัด วัด CO, CO2, NH3, NOx, Alcohol, Benzene, Smoke ได้ครบในงบจำกัด</p>
+        <ul class="detail-list">
+          <li>MQ-135: Air quality (NH3, NOx, CO2)</li>
+          <li>MQ-9: CO + Flammable gases</li>
+          <li>GP2Y1010AU0F: Dust/PM sensor</li>
+          <li>KY-038: Noise level sensor</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-teal">Sensirion</span>
+        <h3>UPT Modular IoT Sensor Node</h3>
+        <p>Sensirion เปิดตัว Unified Prototyping Toolkit (UPT) — บอร์ด ESP32-S3 กับ sensor module แบบสวม ต่อ เปลี่ยนได้ง่าย เหมาะสำหรับ rapid prototyping ในงาน research</p>
+        <ul class="detail-list">
+          <li>Modular connector: ไม่ต้องบัดกรี</li>
+          <li>รองรับ SEN5x, SEN6x, SCD4x</li>
+          <li>ESP-IDF + ESPHome support</li>
+          <li>Cloud connector สำหรับ Sensirion Dashboard</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-red">Display</span>
+        <h3>Waveshare 4.3" Smart Display Wi-Fi 6</h3>
+        <p>จอแสดงผลอัจฉริยะขนาด 4.3 นิ้ว พร้อม ESP32-P4 ในตัว รองรับ Wi-Fi 6 (802.11ax) และ touchscreen พร้อม camera module 5MP เหมาะสำหรับ HMI และ smart home panel</p>
+        <ul class="detail-list">
+          <li>Resolution: 800×480 capacitive touch</li>
+          <li>Wi-Fi 6 (802.11ax) บน ESP32-P4</li>
+          <li>Camera: optional 5MP MIPI CSI</li>
+          <li>เขียนโค้ดด้วย LVGL ได้ทันที</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== SECTION 4: CODE GUIDE =================== -->
+  <section id="guide">
+    <div class="section-header">
+      <div class="section-icon icon-teal">🛠️</div>
+      <div>
+        <h2 class="section-title">Code Guide &amp; Tips <small>สำหรับมือใหม่และมืออาชีพ</small></h2>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <span class="card-tag tag-green">ESP32-C6</span>
+        <h3>Thread Border Router ใน 10 ขั้นตอน</h3>
+        <p>ตั้งค่า ESP32-C6 เป็น Thread Border Router สำหรับ Home Assistant</p>
+        <div class="code-block"><span class="code-comment"># 1. Flash OpenThread RCP firmware</span>
+esptool.py -p /dev/ttyUSB0 write_flash 0x0 \
+  ot-rcp-esp32c6.bin
+
+<span class="code-comment"># 2. เพิ่มใน Home Assistant configuration.yaml</span>
+thread:
+otbr_url: <span class="code-string">"http://localhost:8080"</span>
+
+<span class="code-comment"># 3. เปิด OTBR ผ่าน Add-on Store</span>
+<span class="code-comment"># ค้นหา "OpenThread Border Router"</span></div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-blue">ESP32-S3</span>
+        <h3>ESPHome + SEN66 ใน 5 นาที</h3>
+        <p>Config ESPHome สำหรับ Sensirion SEN66 ต่อกับ Home Assistant</p>
+        <div class="code-block">sensor:
+  - platform: sen6x
+    <span class="code-comment">i2c_id: bus_a</span>
+    pm_1_0:
+      name: <span class="code-string">"PM1.0"</span>
+    pm_2_5:
+      name: <span class="code-string">"PM2.5"</span>
+    co2:
+      name: <span class="code-string">"CO2"</span>
+    temperature:
+      name: <span class="code-string">"Temperature"</span>
+    humidity:
+      name: <span class="code-string">"Humidity"</span></div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-purple">ESP32-P4</span>
+        <h3>LVGL + MIPI DSI Display Setup</h3>
+        <p>เริ่มต้นใช้ LVGL กับ ESP32-P4 สำหรับสร้าง GUI อาชีพ</p>
+        <div class="code-block"><span class="code-comment">// CMakeLists.txt</span>
+idf_component_register(
+  SRCS <span class="code-string">"main.c"</span>
+  REQUIRES lvgl esp_lcd)
+
+<span class="code-comment">// main.c</span>
+<span class="code-keyword">#include</span> <span class="code-string">"lvgl.h"</span>
+<span class="code-keyword">#include</span> <span class="code-string">"esp_lcd_panel_ops.h"</span>
+
+lv_obj_t *screen = lv_scr_act();
+lv_obj_t *label = lv_label_create(screen);
+lv_label_set_text(label, <span class="code-string">"Hello ESP32-P4!"</span>);</div>
+      </div>
+
+      <div class="card">
+        <span class="card-tag tag-orange">Tips</span>
+        <h3>เลือก ESP32 ชิปให้ถูกต้อง 2026</h3>
+        <p>ตารางเปรียบเทียบเพื่อช่วยตัดสินใจ</p>
+        <ul class="detail-list">
+          <li><strong>P4:</strong> multimedia, display, camera, AI — ไม่มี Wi-Fi ในตัว ต้องใช้ C6/S3 เสริม</li>
+          <li><strong>S3:</strong> AI/ML edge, camera, USB OTG — ดีสุดสำหรับ vision</li>
+          <li><strong>C6:</strong> Matter/Thread/Zigbee, IoT node — ประหยัดพลังงาน</li>
+          <li><strong>H2:</strong> Thread/Zigbee only, ไม่มี Wi-Fi — sensor node ราคาต่ำ</li>
+          <li><strong>C3:</strong> Wi-Fi+BLE ราคาถูกสุด — general purpose</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== SECTION 5: RESOURCES =================== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔗</div>
+      <div>
+        <h2 class="section-title">แหล่งข้อมูลและลิงก์ <small>อ้างอิง</small></h2>
+      </div>
+    </div>
+
+    <div class="resources-grid">
+      <a class="resource-link" href="https://www.espressif.com/en/news/ESP32_P4_v3.x_Upgrade" target="_blank" rel="noopener">
+        <div class="resource-icon">🏭</div>
+        <div class="resource-info">
+          <h4>ESP32-P4 v3.x Official Announcement</h4>
+          <p>espressif.com — ประกาศอัปเกรด chip revision ใหม่ล่าสุด</p>
+        </div>
+      </a>
+
+      <a class="resource-link" href="https://developer.espressif.com/tags/esp32-p4/" target="_blank" rel="noopener">
+        <div class="resource-icon">📚</div>
+        <div class="resource-info">
+          <h4>ESP32-P4 Developer Portal</h4>
+          <p>developer.espressif.com — tutorial และ example projects ทั้งหมด</p>
+        </div>
+      </a>
+
+      <a class="resource-link" href="https://derekmolloy.ie/a-low-cost-thread-border-router-esp32-c6-wroom-as-an-openthread-rcp-for-home-assistant-in-docker/" target="_blank" rel="noopener">
+        <div class="resource-icon">🏠</div>
+        <div class="resource-info">
+          <h4>ESP32-C6 Thread Border Router Guide</h4>
+          <p>derekmolloy.ie — คู่มือตั้งค่า Thread border router แบบ step-by-step</p>
+        </div>
+      </a>
+
+      <a class="resource-link" href="https://www.cnx-software.com/2026/04/29/moresense-ms-07-an-esp32-s3-indoor-air-quality-monitor-with-sen66-multisensor-and-home-assistant-support/" target="_blank" rel="noopener">
+        <div class="resource-icon">🌬️</div>
+        <div class="resource-info">
+          <h4>MoreSense MS-07 ESP32-S3 Air Monitor</h4>
+          <p>cnx-software.com — รีวิว air quality monitor + SEN66 บน ESP32-S3</p>
+        </div>
+      </a>
+
+      <a class="resource-link" href="https://olimex.wordpress.com/2026/10/20/esp32-p4-pc-got-two-new-software-demos-gsm-lte-connectivity-and-full-hardware-features-check/" target="_blank" rel="noopener">
+        <div class="resource-icon">📡</div>
+        <div class="resource-info">
+          <h4>Olimex ESP32-P4-PC 4G LTE Demo</h4>
+          <p>olimex.wordpress.com — demo ใหม่ GSM/LTE connectivity สำหรับ P4</p>
+        </div>
+      </a>
+
+      <a class="resource-link" href="https://dev.to/bittobuild/why-esp32-c6-is-the-go-to-chip-for-smart-home-projects-in-2026-13pd" target="_blank" rel="noopener">
+        <div class="resource-icon">💡</div>
+        <div class="resource-info">
+          <h4>Why ESP32-C6 for Smart Home 2026</h4>
+          <p>dev.to — บทความวิเคราะห์ว่าทำไม C6 ถึงดีที่สุดสำหรับ smart home</p>
+        </div>
+      </a>
+
+      <a class="resource-link" href="https://developer.sensirion.com/company/news/press-releases-and-news/article/all-in-one-air-quality-monitor-using-the-sen66" target="_blank" rel="noopener">
+        <div class="resource-icon">🔬</div>
+        <div class="resource-info">
+          <h4>Sensirion SEN66 Air Quality Monitor</h4>
+          <p>sensirion.com — ข่าวและ tutorial สำหรับ SEN66 all-in-one sensor</p>
+        </div>
+      </a>
+
+      <a class="resource-link" href="https://openelab.io/blogs/learn/matter-vs-zigbee-vs-thread-home-assistant" target="_blank" rel="noopener">
+        <div class="resource-icon">⚡</div>
+        <div class="resource-info">
+          <h4>Matter vs Zigbee vs Thread 2026 Guide</h4>
+          <p>openelab.io — เปรียบเทียบ protocol สำหรับ Home Assistant 2026</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดยอัตโนมัติเมื่อ <strong>15 พฤศจิกายน 2026</strong> | ESP32 &amp; Sensor Innovations Daily Report</p>
+  <p style="margin-top:0.5rem;">
+    แหล่งอ้างอิง:
+    <a href="https://www.espressif.com" target="_blank">Espressif Systems</a> ·
+    <a href="https://developer.sensirion.com" target="_blank">Sensirion</a> ·
+    <a href="https://www.cnx-software.com" target="_blank">CNX Software</a> ·
+    <a href="https://www.hackster.io" target="_blank">Hackster.io</a> ·
+    <a href="https://dev.to" target="_blank">DEV Community</a>
+  </p>
+</footer>
+
+</body>
+</html>
