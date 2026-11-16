@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 16 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.8; min-height: 100vh; }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1a1035 100%);
+    border-bottom: 1px solid #334155;
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(99,102,241,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 50%, rgba(16,185,129,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, #c7d2fe, #a5f3fc, #6ee7b7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .header-meta {
+    color: #94a3b8;
+    font-size: 0.95rem;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #a5b4fc;
+    display: block;
+  }
+  .stat-label {
+    font-size: 0.78rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Layout */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  /* Section header */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #1e293b;
+  }
+  .section-icon {
+    width: 2.6rem; height: 2.6rem;
+    border-radius: 0.6rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .icon-indigo { background: rgba(99,102,241,0.18); }
+  .icon-orange { background: rgba(249,115,22,0.18); }
+  .icon-green  { background: rgba(16,185,129,0.18); }
+  .icon-teal   { background: rgba(20,184,166,0.18); }
+  .icon-pink   { background: rgba(236,72,153,0.18); }
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+  .section-title small {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: #64748b;
+    margin-left: 0.6rem;
+  }
+
+  /* Cards grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 0.9rem;
+    padding: 1.4rem 1.5rem;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    border-color: #6366f1;
+    transform: translateY(-2px);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-accent, linear-gradient(90deg, #6366f1, #8b5cf6));
+    border-radius: 0.9rem 0.9rem 0 0;
+  }
+  .card-accent-blue   { --card-accent: linear-gradient(90deg, #6366f1, #60a5fa); }
+  .card-accent-orange { --card-accent: linear-gradient(90deg, #f97316, #fbbf24); }
+  .card-accent-green  { --card-accent: linear-gradient(90deg, #10b981, #34d399); }
+  .card-accent-teal   { --card-accent: linear-gradient(90deg, #14b8a6, #22d3ee); }
+  .card-accent-pink   { --card-accent: linear-gradient(90deg, #ec4899, #f472b6); }
+  .card-accent-purple { --card-accent: linear-gradient(90deg, #8b5cf6, #c084fc); }
+
+  .card h3 {
+    font-size: 1.0rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 0.6rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.88rem;
+    color: #94a3b8;
+    line-height: 1.7;
+  }
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.9rem;
+  }
+  .tag {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: #94a3b8;
+  }
+  .tag-new {
+    background: rgba(99,102,241,0.15);
+    border-color: #6366f1;
+    color: #a5b4fc;
+  }
+
+  /* Highlight box */
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(16,185,129,0.06));
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 0.75rem;
+    padding: 1.2rem 1.5rem;
+    margin-top: 1rem;
+  }
+  .highlight-box p {
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    line-height: 1.75;
+  }
+  .highlight-box strong { color: #a5b4fc; }
+
+  /* Code snippet */
+  .code-block {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 0.6rem;
+    padding: 1rem 1.25rem;
+    margin-top: 0.8rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    color: #86efac;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+
+  /* Wide card */
+  .card-wide {
+    grid-column: 1 / -1;
+  }
+
+  /* Step list */
+  .steps {
+    list-style: none;
+    counter-reset: step;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    margin-top: 0.6rem;
+  }
+  .steps li {
+    counter-increment: step;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: #94a3b8;
+  }
+  .steps li::before {
+    content: counter(step);
+    background: rgba(99,102,241,0.2);
+    color: #a5b4fc;
+    font-weight: 700;
+    font-size: 0.75rem;
+    min-width: 1.5rem; height: 1.5rem;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  /* Links */
+  a { color: #818cf8; text-decoration: none; }
+  a:hover { color: #a5b4fc; text-decoration: underline; }
+
+  /* Resources table */
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .resource-item {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 0.7rem;
+    padding: 1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .resource-item .r-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+  }
+  .resource-item .r-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+  .resource-item .r-desc {
+    font-size: 0.82rem;
+    color: #64748b;
+  }
+
+  /* Footer */
+  footer {
+    background: #0a0f1e;
+    border-top: 1px solid #1e293b;
+    padding: 1.5rem;
+    text-align: center;
+    color: #475569;
+    font-size: 0.82rem;
+  }
+  footer strong { color: #64748b; }
+
+  @media (max-width: 600px) {
+    .header-stats { gap: 1.2rem; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .resources-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">AI Research Daily</div>
+  <h1>⚡ ESP32 & IoT Innovations</h1>
+  <p class="header-meta">16 พฤศจิกายน 2026 · รวบรวมโดย AI Researcher</p>
+  <div class="header-stats">
+    <div class="stat-item">
+      <span class="stat-num">5</span>
+      <span class="stat-label">หมวดหมู่</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">22</span>
+      <span class="stat-label">ไอเดีย & นวัตกรรม</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">8+</span>
+      <span class="stat-label">แหล่งข้อมูล</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== SECTION 1: ESP32-C5 ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-indigo">🔬</div>
+      <h2 class="section-title">ESP32-C5 — Dual-Band Wi-Fi 6 ชิปใหม่ล่าสุด <small>November 2026</small></h2>
+    </div>
+    <div class="cards-grid">
+      <div class="card card-accent-blue">
+        <h3>🌐 ESP32-C5: RISC-V + Wi-Fi 6 ทั้ง 2.4 GHz และ 5 GHz</h3>
+        <p>ESP32-C5 เป็น SoC ตัวแรกของ Espressif ที่รองรับ Dual-Band Wi-Fi 6 (802.11ax) บน RISC-V core 240 MHz พร้อม BLE 5.0 และ 802.15.4 (Thread/Zigbee) ใน chip เดียว เหมาะสำหรับ IoT ที่ต้องการ latency ต่ำในสภาพแวดล้อมที่มีอุปกรณ์หนาแน่น</p>
+        <div class="card-tags">
+          <span class="tag tag-new">ใหม่</span>
+          <span class="tag">Wi-Fi 6</span>
+          <span class="tag">5 GHz</span>
+          <span class="tag">RISC-V</span>
+          <span class="tag">384 KB SRAM</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-purple">
+        <h3>🛠️ SparkFun Thing Plus – ESP32-C5</h3>
+        <p>บอร์ดพัฒนาใหม่จาก SparkFun รองรับ Adafruit Feather Pinout, มีช่อง LiPo Battery และ OTA-safe bootloader ใน ESP-IDF v6.0 ทำให้ OTA Update ปลอดภัยกว่าเดิม เหมาะกับ prototyping ที่ต้องการ 5 GHz Wi-Fi</p>
+        <div class="card-tags">
+          <span class="tag">SparkFun</span>
+          <span class="tag">Feather</span>
+          <span class="tag">OTA</span>
+          <span class="tag">ESP-IDF v6</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-teal">
+        <h3>📦 Seeed XIAO ESP32-C5 — บอร์ดจิ๋ว 5 GHz</h3>
+        <p>XIAO รุ่นแรกที่มี 5 GHz Wi-Fi ขนาดเพียง 21×17.5 mm เหมาะกับ wearable และ embedded projects ที่ต้องการ connectivity ทั้ง 2 ย่านความถี่ในฟอร์มแฟคเตอร์เล็ก สามารถใช้ร่วมกับ Grove ecosystem ได้ทันที</p>
+        <div class="card-tags">
+          <span class="tag">Seeed XIAO</span>
+          <span class="tag">Compact</span>
+          <span class="tag">Grove</span>
+          <span class="tag">Wearable</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-blue card-wide">
+        <h3>⚡ ทำไม Dual-Band Wi-Fi 6 ถึงสำคัญสำหรับ IoT?</h3>
+        <div class="highlight-box">
+          <p>
+            <strong>Target Wake Time (TWT):</strong> ลด power consumption อย่างมีนัยสำคัญ เพราะ AP กำหนดเวลา "นาฬิกา" ให้อุปกรณ์ตื่นมารับข้อมูล<br>
+            <strong>MU-MIMO + OFDMA:</strong> ส่งข้อมูลหลายอุปกรณ์พร้อมกันใน time slot เดียว ลดความแออัดใน Smart Home / Smart Building<br>
+            <strong>5 GHz Band:</strong> แยก IoT critical device ออกจาก 2.4 GHz ที่มีสัญญาณรบกวนจาก Bluetooth, Zigbee, ไมโครเวฟ<br>
+            <strong>Matter over Wi-Fi:</strong> ESP32-C5 รองรับ Matter protocol บน Wi-Fi 6 ทั้งสองย่านความถี่
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: Edge AI / TinyML ===== -->
+  <section id="ai">
+    <div class="section-header">
+      <div class="section-icon icon-pink">🧠</div>
+      <h2 class="section-title">Edge AI & TinyML บน ESP32-S3 <small>ทำงานแบบ Offline</small></h2>
+    </div>
+    <div class="cards-grid">
+      <div class="card card-accent-pink">
+        <h3>🎤 Offline Voice Assistant ด้วย Edge Impulse</h3>
+        <p>สร้าง voice assistant ที่ทำงาน 100% บน chip โดยไม่ต้องพึ่ง cloud ด้วย Edge Impulse + ESP32-S3 รองรับ keyword detection, voice command, และ anomaly detection ใน audio stream เหมาะกับโปรเจกต์ privacy-first ที่ไม่ต้องการ internet</p>
+        <div class="card-tags">
+          <span class="tag tag-new">ยอดนิยม</span>
+          <span class="tag">Edge Impulse</span>
+          <span class="tag">Keyword Spotting</span>
+          <span class="tag">Privacy</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-pink">
+        <h3>👁️ Person Detection ด้วย ESP32-CAM + LiteRT Micro</h3>
+        <p>ใช้ Google LiteRT Micro (TensorFlow Lite Micro รุ่นใหม่) บน ESP32-CAM เพื่อตรวจจับคนแบบ real-time โดยไม่ต้องส่งภาพไป cloud ลด latency จาก >500ms เหลือ <100ms เหมาะกับระบบ Home Security ราคาประหยัด</p>
+        <div class="card-tags">
+          <span class="tag">LiteRT Micro</span>
+          <span class="tag">ESP32-CAM</span>
+          <span class="tag">Object Detection</span>
+          <span class="tag">Real-time</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-purple">
+        <h3>⚠️ Anomaly Detection สำหรับ Industrial IoT</h3>
+        <p>Train autoencoder model ด้วย TensorFlow เรียนรู้ pattern ปกติของ vibration, temperature, หรือ current แล้ว deploy บน ESP32-S3 เพื่อตรวจจับ anomaly ในเครื่องจักร โดยไม่ต้องใช้ internet — เหมาะกับ factory ในพื้นที่ห่างไกล</p>
+        <div class="card-tags">
+          <span class="tag">Autoencoder</span>
+          <span class="tag">Industrial</span>
+          <span class="tag">Predictive Maintenance</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-purple">
+        <h3>🤲 Gesture Recognition ด้วย MPU-6050 + Edge Impulse</h3>
+        <p>train model จากข้อมูล accelerometer/gyroscope ของ MPU-6050 ผ่าน Edge Impulse แล้ว deploy เป็น Arduino library บน ESP32 จดจำ gesture ได้ >95% accuracy เหมาะกับ wearable controller, smart prosthetics, หรือ ระบบ HCI ใหม่ๆ</p>
+        <div class="card-tags">
+          <span class="tag">MPU-6050</span>
+          <span class="tag">Gesture</span>
+          <span class="tag">Wearable</span>
+          <span class="tag">IMU</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-blue card-wide">
+        <h3>⚠️ ข้อควรระวัง: Arduino Core 3.x vs TinyML Libraries</h3>
+        <div class="highlight-box">
+          <p>
+            ณ เดือนพฤษภาคม 2026 มีรายงานว่า <strong>tflm_esp32</strong> และ <strong>EloquentEsp32Cam</strong> ยังไม่เข้ากันกับ ESP32 Arduino Core 3.x ที่ introduce breaking changes ใน camera และ peripheral APIs — แนะนำให้ใช้ <strong>Arduino Core 2.x</strong> สำหรับโปรเจกต์ TinyML จนกว่า library จะอัปเดต<br><br>
+            สำหรับ ESP-IDF framework ให้ใช้ <strong>ESP-DL</strong> ที่ Espressif ออกแบบมาเฉพาะสำหรับ ESP32-S3 จะให้ประสิทธิภาพสูงสุดจากการใช้ vector instructions ของ Xtensa LX7
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: Smart Agriculture ===== -->
+  <section id="agriculture">
+    <div class="section-header">
+      <div class="section-icon icon-green">🌾</div>
+      <h2 class="section-title">Smart Agriculture — ESP32 กับการเกษตรอัจฉริยะ <small>Precision Farming</small></h2>
+    </div>
+    <div class="cards-grid">
+      <div class="card card-accent-green">
+        <h3>🌱 ระบบวัดดินครบวงจร: NPK + ความชื้น + อุณหภูมิ</h3>
+        <p>ประกอบ ESP32 กับ Capacitive Soil Moisture Sensor, DS18B20 (อุณหภูมิดิน), RS485 NPK Sensor, และ ADS1115 ADC แล้ว log ข้อมูลขึ้น ThingSpeak หรือ InfluxDB + Grafana วิเคราะห์สุขภาพดินแบบ real-time</p>
+        <div class="card-tags">
+          <span class="tag tag-new">สำคัญ</span>
+          <span class="tag">NPK</span>
+          <span class="tag">DS18B20</span>
+          <span class="tag">ADS1115</span>
+          <span class="tag">RS485</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-green">
+        <h3>📡 LoRa Soil Monitor สำหรับไร่ห่างไกล</h3>
+        <p>ใช้ ESP32 + LoRa (SX1276) ส่งข้อมูล soil moisture และ temperature ระยะไกลถึง 5–10 km โดยไม่ต้องพึ่ง Wi-Fi เชื่อมต่อผ่าน The Things Network (TTN) แสดงผลบน Tago.IO dashboard ต้นทุนต่ำกว่า cellular IoT หลายเท่า</p>
+        <div class="card-tags">
+          <span class="tag">LoRa</span>
+          <span class="tag">SX1276</span>
+          <span class="tag">TTN</span>
+          <span class="tag">Long Range</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-teal">
+        <h3>💧 AI-Predictive Irrigation Controller</h3>
+        <p>โปรเจกต์ AgroNerve ใช้ ML model ทำนาย moisture level ล่วงหน้าจากข้อมูล weather forecast + soil sensor history สั่งเปิด/ปิดปั๊มน้ำอัตโนมัติ ลดการใช้น้ำได้ถึง 30-40% เมื่อเทียบกับ timer-based irrigation ทั่วไป</p>
+        <div class="card-tags">
+          <span class="tag">ML Prediction</span>
+          <span class="tag">Irrigation</span>
+          <span class="tag">Water Saving</span>
+          <span class="tag">AgroNerve</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-green">
+        <h3>☀️ Solar-Powered ESP32 Farm Node</h3>
+        <p>ออกแบบ node ภาคสนามพลังงานแสงอาทิตย์ด้วย ESP32 deep sleep (10µA), solar panel 5W, Li-Ion 2000mAh ทำงานได้ 3-5 ปีโดยไม่ต้องเปลี่ยนแบตเตอรี่ ใช้ enclosure IP67 ทนฝน/ฝุ่น เหมาะกับการติดตั้งในสวนผลไม้หรือนาข้าว</p>
+        <div class="card-tags">
+          <span class="tag">Solar</span>
+          <span class="tag">Deep Sleep</span>
+          <span class="tag">IP67</span>
+          <span class="tag">Long Life</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-teal card-wide">
+        <h3>🗺️ แผนการสร้างระบบ Smart Farm ต้นทุนต่ำ</h3>
+        <ul class="steps">
+          <li>เลือก ESP32-C3 หรือ ESP32-S3 สำหรับ node หลัก (deep sleep ดีกว่า ESP32 classic)</li>
+          <li>ติดตั้ง sensor: Capacitive soil moisture (แทน Resistive), DHT22 สำหรับ air temp/humidity, DS18B20 สำหรับ soil temperature</li>
+          <li>เลือก connectivity: Wi-Fi สำหรับไร่ใกล้บ้าน, LoRa สำหรับพื้นที่ห่างไกล (SX1278 ราคาถูกกว่า SX1276 ใน 433 MHz band)</li>
+          <li>Backend: ThingSpeak (ฟรี), InfluxDB + Grafana (self-host), หรือ Tago.IO (มี free tier)</li>
+          <li>Power: Solar panel 5W + TP4056 charger + Li-Ion 18650 2 ก้อน ประมาณงบ ฿800-1,200</li>
+          <li>Enclosure: กล่อง IP65 ราคา ฿150-300 จาก Lazada/Shopee เจาะรูสำหรับสาย sensor</li>
+        </ul>
+        <p style="margin-top:1rem;font-size:0.85rem;color:#64748b;">ต้นทุนรวมต่อ node ประมาณ ฿600-1,200 บาท เมื่อเทียบกับ commercial solution ราคา ฿3,000-10,000</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: Wearable Health ===== -->
+  <section id="wearable">
+    <div class="section-header">
+      <div class="section-icon icon-pink">❤️</div>
+      <h2 class="section-title">Wearable Health IoT — ESP32 สำหรับสุขภาพ <small>Open Source Projects</small></h2>
+    </div>
+    <div class="cards-grid">
+      <div class="card card-accent-pink">
+        <h3>⌚ TinZr — Open Source Wearable Controller (ESP32-C3)</h3>
+        <p>อุปกรณ์สวมใส่ open-source ที่ผ่านการรับรอง OSHWA (Jan 2026) ใช้ ESP32-C3 รองรับ multimodal physiological sensing รวมถึง motion tracking ขนาดกระทัดรัด เหมาะสำหรับนักวิจัยและ maker ที่ต้องการ wearable platform ที่ customize ได้เต็มที่</p>
+        <div class="card-tags">
+          <span class="tag tag-new">OSHWA 2026</span>
+          <span class="tag">Open Source</span>
+          <span class="tag">Wearable</span>
+          <span class="tag">ESP32-C3</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-orange">
+        <h3>🏥 EdgeCare Wearable Platform (ESP32-C6)</h3>
+        <p>platform wearable ตรวจวัด metabolic indicators ด้วย MAX30102 (SpO₂/heart rate), MAX30208 (อุณหภูมิผิวหนัง), และ dry electrodes วัด skin impedance เชื่อมต่อผ่าน Bluetooth 5.0 ไปยัง smartphone app แสดงผล dashboard สุขภาพแบบ real-time</p>
+        <div class="card-tags">
+          <span class="tag">MAX30102</span>
+          <span class="tag">MAX30208</span>
+          <span class="tag">Metabolic</span>
+          <span class="tag">ESP32-C6</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-orange">
+        <h3>☀️ Solar Vital Monitor สำหรับคนงานกลางแจ้ง</h3>
+        <p>wearable พลังงานแสงอาทิตย์ใช้ MAXREFDES117 optical biosensor วัด heart rate และ SpO₂ ส่งเสียงเตือนเฉพาะเมื่อค่าผิดปกติ เหมาะสำหรับ traffic police, คนงานก่อสร้าง, เกษตรกรกลางแจ้ง ลดความเสี่ยงจาก heat stroke และ hypoxia</p>
+        <div class="card-tags">
+          <span class="tag">MAXREFDES117</span>
+          <span class="tag">Solar</span>
+          <span class="tag">Outdoor Worker</span>
+          <span class="tag">Alert System</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-purple">
+        <h3>💆 Stress Monitoring ด้วย MAX30102 + ML</h3>
+        <p>วัดสัญญาณ HRV (Heart Rate Variability) จาก MAX30102 แล้วใช้ scikit-learn model บน Flask server ทำนายระดับ stress จาก HRV features ต่างๆ โค้ดอยู่บน GitHub (kathan-majithia/Smart_Physiological_Monitoring_System) พร้อม web dashboard</p>
+        <div class="card-tags">
+          <span class="tag">HRV</span>
+          <span class="tag">MAX30102</span>
+          <span class="tag">scikit-learn</span>
+          <span class="tag">Flask</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-pink card-wide">
+        <h3>🔑 Sensor สำคัญสำหรับ Health IoT Wearable</h3>
+        <div class="highlight-box">
+          <p>
+            <strong>MAX30102:</strong> Optical heart rate + SpO₂, I2C, ราคา ฿80-150 — standard choice สำหรับ DIY wearable<br>
+            <strong>MAX30208:</strong> High-accuracy body temperature (±0.1°C), เหมาะกับ medical-grade wearable<br>
+            <strong>MPU-6050:</strong> 6-axis IMU (Accel + Gyro), ราคา ฿40-80 — ใช้ตรวจ fall detection, gesture, activity recognition<br>
+            <strong>AD8232:</strong> Single-Lead ECG, ราคา ฿150-250 — วัด electrocardiogram แบบง่าย เหมาะกับ chest patch<br>
+            <strong>GSR (Galvanic Skin Response):</strong> ราคา ฿200-400 — วัด skin conductance สำหรับ stress/emotion detection
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 5: Matter 1.4 + Resources ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-teal">📚</div>
+      <h2 class="section-title">Matter 1.4.2 & แหล่งข้อมูลที่น่าสนใจ <small>Smart Home + Links</small></h2>
+    </div>
+    <div class="cards-grid">
+      <div class="card card-accent-teal">
+        <h3>🏠 Matter 1.4.2 — Thread 1.4 Mandatory</h3>
+        <p>ตั้งแต่ปี 2026 Thread Border Routers ใหม่ทุกรุ่นต้องผ่าน Thread 1.4 certification รองรับ device ได้ ≥150 nodes ต่อ mesh Matter 1.4.2 ยังเพิ่ม Access Restriction Lists (ARL) และ Wi-Fi-Only Setup ทำให้ commissioning ง่ายขึ้นสำหรับผู้ใช้ทั่วไป</p>
+        <div class="card-tags">
+          <span class="tag tag-new">2026</span>
+          <span class="tag">Thread 1.4</span>
+          <span class="tag">ARL</span>
+          <span class="tag">Wi-Fi Setup</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-teal">
+        <h3>🔗 HRAP — Home Router + Thread Border Router</h3>
+        <p>Matter 1.4 แนะนำ Home Routers and Access Points (HRAPs) ซึ่งทำหน้าที่ทั้ง Wi-Fi AP และ Thread Border Router ในกล่องเดียว ESP32-C6/H2 รองรับ Thread 1.4 สามารถ embedded ใน HRAP ได้ ลดความซับซ้อนของ Smart Home infrastructure</p>
+        <div class="card-tags">
+          <span class="tag">HRAP</span>
+          <span class="tag">ESP32-C6</span>
+          <span class="tag">ESP32-H2</span>
+          <span class="tag">Thread Border</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-blue">
+        <h3>⚡ ESP-IDF v6.0 — Feature Highlights</h3>
+        <p>ESP-IDF v6.0 นำเสนอ OTA-safe bootloader ที่ป้องกัน brick กรณี OTA update ล้มเหลว พร้อม IDF Component Manager 2.0 จัดการ dependency ได้ดีขึ้น รองรับ ESP32-C5 fully ตั้งแต่ release นี้ และปรับปรุง Matter stack integration</p>
+        <div class="card-tags">
+          <span class="tag">ESP-IDF v6</span>
+          <span class="tag">OTA Safe</span>
+          <span class="tag">Component Manager</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-green">
+        <h3>🌊 ESP32 LoRa + Water Quality สำหรับการประมง</h3>
+        <p>ประกอบ ESP32 กับ pH sensor, turbidity sensor, DO (dissolved oxygen) sensor, และ DS18B20 (อุณหภูมิน้ำ) ส่งข้อมูลผ่าน LoRaWAN ตรวจสอบสุขภาพบ่อปลา/บ่อกุ้งแบบ real-time จาก smartphone เหมาะสำหรับเกษตรกรผู้เลี้ยงสัตว์น้ำ</p>
+        <div class="card-tags">
+          <span class="tag">Water Quality</span>
+          <span class="tag">LoRaWAN</span>
+          <span class="tag">Aquaculture</span>
+          <span class="tag">pH Sensor</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:2rem;">
+      <h3 style="color:#94a3b8;font-size:0.9rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:1rem;">แหล่งข้อมูลและลิงก์อ้างอิง</h3>
+      <div class="resources-grid">
+        <div class="resource-item">
+          <span class="r-label">ชิป</span>
+          <a class="r-title" href="https://www.espressif.com/en/products/socs/esp32-c5" target="_blank">Espressif ESP32-C5 Product Page</a>
+          <span class="r-desc">ข้อมูลทางเทคนิคและ datasheet อย่างเป็นทางการ</span>
+        </div>
+        <div class="resource-item">
+          <span class="r-label">บอร์ด</span>
+          <a class="r-title" href="https://www.pulse.bot/hardware/news/sparkfun-thing-plus-esp32-c5-board-offers-dual-band-wifi-6-adafruit-feather-pinout-lipo-battery-supp-68247e6b-aafc-4afe-add7-c996092cd862/" target="_blank">SparkFun Thing Plus ESP32-C5</a>
+          <span class="r-desc">Dual-Band Wi-Fi 6, Feather pinout, LiPo</span>
+        </div>
+        <div class="resource-item">
+          <span class="r-label">Edge AI</span>
+          <a class="r-title" href="https://openelab.io/blogs/learn/esp32-s3-tinyml-image-audio-sensor-models" target="_blank">ESP32-S3 TinyML Guide (OpenELAB)</a>
+          <span class="r-desc">Image, audio, sensor models บน ESP32-S3</span>
+        </div>
+        <div class="resource-item">
+          <span class="r-label">Matter</span>
+          <a class="r-title" href="https://csa-iot.org/newsroom/matter-1-4-enables-more-capable-smart-homes/" target="_blank">Matter 1.4 — CSA Official</a>
+          <span class="r-desc">HRAPs, Multi-Admin, Energy Management</span>
+        </div>
+        <div class="resource-item">
+          <span class="r-label">Agriculture</span>
+          <a class="r-title" href="https://zbotic.in/esp32-soil-npk-sensor-agricultural-nutrient-monitoring/" target="_blank">ESP32 Soil NPK Sensor Guide</a>
+          <span class="r-desc">RS485 NPK sensor + ESP32 tutorial พร้อม code</span>
+        </div>
+        <div class="resource-item">
+          <span class="r-label">Wearable</span>
+          <a class="r-title" href="https://circuitdigest.com/microcontroller-projects/smart-life-band-an-iot-based-health-sleep-and-safety-monitoring-wearable" target="_blank">Smart Life Band — Circuit Digest</a>
+          <span class="r-desc">Heart rate, SpO₂, sleep, Firebase, GitHub code</span>
+        </div>
+        <div class="resource-item">
+          <span class="r-label">LoRa Farm</span>
+          <a class="r-title" href="https://zbotic.in/iot-soil-monitor-for-farms-esp32-lora-dashboard/" target="_blank">ESP32 LoRa Soil Monitor for Farms</a>
+          <span class="r-desc">Long-range soil monitoring สำหรับฟาร์มห่างไกล</span>
+        </div>
+        <div class="resource-item">
+          <span class="r-label">Outdoor Health</span>
+          <a class="r-title" href="https://circuitdigest.com/microcontroller-projects/solarpowered-vital-monitoring-for-traffic-police-outdoor-workers-maxrefdes117-biosensor-from-analog-devices" target="_blank">Solar Vital Monitor — CircuitDigest</a>
+          <span class="r-desc">MAXREFDES117 biosensor สำหรับคนงานกลางแจ้ง</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Researcher อัตโนมัติ &nbsp;·&nbsp; <strong>16 พฤศจิกายน 2026</strong></p>
+  <p style="margin-top:0.4rem;">แหล่งข้อมูล: Espressif, SparkFun, Seeed Studio, Circuit Digest, Zbotic.in, CSA-IoT, Edge Impulse, OpenELAB</p>
+  <p style="margin-top:0.4rem;color:#374151;">หมายเหตุ: ข้อมูลทางเทคนิคและราคาอาจเปลี่ยนแปลงได้ กรุณาตรวจสอบกับแหล่งอ้างอิงก่อนดำเนินการ</p>
+</footer>
+
+</body>
+</html>
