@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 17 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #263348;
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: #334155;
+  }
+  body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); line-height: 1.8; }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(56,189,248,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 50%, rgba(129,140,248,0.08) 0%, transparent 60%);
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.1);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.3rem 0.9rem;
+    border-radius: 999px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.9rem;
+  }
+  header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+  header .subtitle {
+    font-size: 1rem;
+    color: var(--muted);
+    position: relative;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+    position: relative;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 1.1rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .stat-chip strong { color: var(--text); }
+
+  /* Navigation */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  nav a:hover {
+    color: var(--accent);
+    border-color: rgba(56,189,248,0.3);
+    background: rgba(56,189,248,0.05);
+  }
+
+  /* Layout */
+  main { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  section { margin-bottom: 3.5rem; }
+
+  /* Section headers */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 2.2rem; height: 2.2rem;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-blue { background: rgba(56,189,248,0.15); }
+  .icon-indigo { background: rgba(129,140,248,0.15); }
+  .icon-green { background: rgba(52,211,153,0.15); }
+  .icon-orange { background: rgba(251,146,60,0.15); }
+  .section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .section-header .section-desc {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 0.1rem;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.4rem 1.5rem;
+    margin-bottom: 1.2rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .card:hover { border-color: rgba(56,189,248,0.25); box-shadow: 0 4px 24px rgba(0,0,0,0.3); }
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .card-emoji { font-size: 1.5rem; line-height: 1; flex-shrink: 0; margin-top: 0.1rem; }
+  .card-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+  .card-sub { font-size: 0.8rem; color: var(--accent); font-weight: 600; margin-top: 0.1rem; }
+  .card-body { font-size: 0.92rem; color: var(--muted); }
+  .card-body p { margin-bottom: 0.6rem; }
+  .card-body p:last-child { margin-bottom: 0; }
+
+  /* Tag chips */
+  .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.9rem; }
+  .tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+  }
+  .tag-blue { background: rgba(56,189,248,0.12); color: var(--accent); border: 1px solid rgba(56,189,248,0.25); }
+  .tag-indigo { background: rgba(129,140,248,0.12); color: var(--accent2); border: 1px solid rgba(129,140,248,0.25); }
+  .tag-green { background: rgba(52,211,153,0.12); color: var(--accent3); border: 1px solid rgba(52,211,153,0.25); }
+  .tag-orange { background: rgba(251,146,60,0.12); color: var(--accent4); border: 1px solid rgba(251,146,60,0.25); }
+  .tag-pink { background: rgba(244,114,182,0.12); color: var(--accent5); border: 1px solid rgba(244,114,182,0.25); }
+
+  /* Info box */
+  .info-box {
+    background: rgba(56,189,248,0.06);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 10px;
+    padding: 1.1rem 1.3rem;
+    margin-top: 1rem;
+    font-size: 0.88rem;
+    color: #bae6fd;
+  }
+  .info-box strong { color: var(--accent); }
+
+  .warn-box {
+    background: rgba(251,146,60,0.06);
+    border: 1px solid rgba(251,146,60,0.2);
+    border-radius: 10px;
+    padding: 1.1rem 1.3rem;
+    margin-top: 1rem;
+    font-size: 0.88rem;
+    color: #fed7aa;
+  }
+  .warn-box strong { color: var(--accent4); }
+
+  /* Grid layout for cards */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.1rem; }
+
+  /* Project idea cards */
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .project-card:hover { border-color: rgba(129,140,248,0.4); transform: translateY(-2px); }
+  .project-card .p-icon { font-size: 2rem; }
+  .project-card .p-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+  .project-card .p-desc { font-size: 0.85rem; color: var(--muted); flex-grow: 1; }
+  .project-card .p-diff {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    width: fit-content;
+    margin-top: 0.3rem;
+  }
+  .diff-easy { background: rgba(52,211,153,0.12); color: var(--accent3); }
+  .diff-medium { background: rgba(56,189,248,0.12); color: var(--accent); }
+  .diff-hard { background: rgba(251,146,60,0.12); color: var(--accent4); }
+
+  /* Sensor table */
+  .sensor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+  .sensor-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem 1.2rem;
+  }
+  .sensor-card .s-name { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
+  .sensor-card .s-spec { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+  .sensor-card .s-use { font-size: 0.78rem; color: var(--accent3); font-weight: 600; margin-top: 0.5rem; }
+
+  /* Code block */
+  pre {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    font-size: 0.82rem;
+    overflow-x: auto;
+    color: #c9d1d9;
+    margin-top: 0.75rem;
+    font-family: 'Courier New', monospace;
+    line-height: 1.6;
+  }
+  .code-comment { color: #8b949e; }
+  .code-keyword { color: #ff7b72; }
+  .code-string { color: #a5d6ff; }
+  .code-num { color: #79c0ff; }
+  .code-func { color: #d2a8ff; }
+
+  /* Resource links */
+  .resource-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .resource-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 1rem 1.2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-decoration: none;
+    transition: border-color 0.2s;
+  }
+  .resource-item:hover { border-color: rgba(56,189,248,0.3); }
+  .resource-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .resource-info { flex: 1; }
+  .resource-title { font-size: 0.92rem; font-weight: 600; color: var(--text); }
+  .resource-desc { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+  .resource-url { font-size: 0.75rem; color: var(--accent); margin-top: 0.2rem; word-break: break-all; }
+
+  /* Divider */
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+  /* Footer */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  footer strong { color: var(--text); }
+  footer .footer-links { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    main { padding: 1.5rem 1rem 3rem; }
+    .stats-row { gap: 0.75rem; }
+    .stat-chip { font-size: 0.78rem; padding: 0.4rem 0.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily ESP32 Research • 17 November 2026</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">Wireless & Radio Innovation — SDR ซ่อนอยู่ใน ESP32, Universal Remote และ ESP-NOW Mesh</p>
+  <div class="stats-row">
+    <div class="stat-chip">📅 <strong>17 พฤศจิกายน 2026</strong></div>
+    <div class="stat-chip">💡 <strong>4</strong> นวัตกรรมหลัก</div>
+    <div class="stat-chip">🔧 <strong>6</strong> ไอเดียโปรเจกต์</div>
+    <div class="stat-chip">📡 <strong>หัวข้อ:</strong> SDR + Remote + Mesh</div>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations">🚀 นวัตกรรม</a>
+  <a href="#projects">🔧 โปรเจกต์</a>
+  <a href="#sensors">🔌 Sensors & Hardware</a>
+  <a href="#code">💻 Code Guide</a>
+  <a href="#resources">🔗 แหล่งข้อมูล</a>
+</nav>
+
+<main>
+
+  <!-- SECTION 1: INNOVATIONS -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🚀</div>
+      <div>
+        <h2>นวัตกรรม ESP32 ล่าสุด — Wireless & Radio Edition</h2>
+        <div class="section-desc">ESP32 ในฐานะ SDR, Universal Remote Hub และ Mesh Network Node</div>
+      </div>
+    </div>
+
+    <!-- SDR Hidden Mode -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-emoji">📻</div>
+        <div>
+          <div class="card-title">ESP32 ซ่อน SDR Mode — 80 MS/s Spectrum Analyzer ในชิปเดียว!</div>
+          <div class="card-sub">ESPARGOS / esp-sdr Firmware • Oct–Nov 2026</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>นักวิจัยจาก ESPARGOS ค้นพบว่า ESP32 หลายรุ่นมีความสามารถซ่อนอยู่ในรูปแบบ <strong>Software Defined Radio (SDR)</strong> โดยสามารถข้ามข้ามสแต็ก Wi-Fi/Bluetooth ปกติ แล้วจับตัวอย่าง I/Q (In-phase/Quadrature) แบบ raw ได้โดยตรง ทำให้ชิปกลายเป็น Spectrum Analyzer ราคาประหยัด</p>
+        <p>ESP32 ดั้งเดิมครอบคลุม 2.2–2.7 GHz ส่วน <strong>ESP32-C5 ครอบคลุมทั้ง 4.8–6.0 GHz</strong> ด้วย รองรับ Sample Rate สูงสุดถึง <strong>80 MS/s</strong> (megasamples per second) และมี Analog Bandwidth ประมาณ 13–54 MHz ขึ้นอยู่กับรุ่นชิป</p>
+        <p>Firmware ที่ใช้ชื่อ <strong>esp-sdr</strong> และ <strong>ESP-WebSDR</strong> เผยแพร่ภายใต้ GPL-3.0 บน GitHub โดยผู้ใช้งานสามารถรับข้อมูลสเปกตรัมผ่าน WebSocket หรือแสดงผลบน touchscreen ได้เลย</p>
+        <div class="info-box">
+          <strong>ข้อสำคัญ:</strong> ESP32 ในโหมดนี้เป็นเพียง <em>Spectrum Analyzer</em> เท่านั้น ไม่สามารถ Demodulate หรือ Decode สัญญาณวิทยุต่อเนื่องได้เหมือน RTL-SDR ทั่วไป แต่ใช้สำหรับ <em>ตรวจสอบสเปกตรัม, หา Interference และวัดความแรงสัญญาณ</em> ได้เป็นอย่างดี
+        </div>
+        <div class="tags">
+          <span class="tag tag-blue">ESP32-C5</span>
+          <span class="tag tag-indigo">SDR</span>
+          <span class="tag tag-green">Spectrum Analyzer</span>
+          <span class="tag tag-orange">Open Source</span>
+          <span class="tag tag-blue">GPL-3.0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- WiFi Jam Detector -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-emoji">🛡️</div>
+        <div>
+          <div class="card-title">ESP-WiFi-Jam-Detector — ตรวจจับ Interference บน Waveshare ESP32-C5</div>
+          <div class="card-sub">Jordan's Build • RTL-SDR.com • November 2026</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>ผู้ใช้ชื่อ Jordan สร้างอุปกรณ์ตรวจจับ WiFi Interference แบบ Standalone โดยใช้ <strong>Waveshare ESP32-C5-Touch-LCD-3.5</strong> ซึ่งมีหน้าจอสัมผัสขนาด 3.5 นิ้วในตัว บนพื้นฐานโค้ด ESPARGOS esp-sdr</p>
+        <p>อุปกรณ์ทำงานเป็น <strong>Receive-Only Interference Detector</strong> สามารถสแกนทั้ง <strong>2.4 GHz และ 5 GHz</strong> พร้อมแสดงกราฟ Spectrum ในแบบ Real-time บนหน้าจอ — เหมาะสำหรับตรวจสอบ WiFi Jammer หรือ Interference ในสภาพแวดล้อม RF ที่มีสัญญาณรบกวน</p>
+        <p>ราคาบอร์ด <strong>Waveshare ESP32-C5-Touch-LCD-3.5</strong> อยู่ที่ประมาณ $20–25 USD ถือว่าคุ้มมากสำหรับ Spectrum Monitor ในย่าน 2.4/5 GHz</p>
+        <div class="warn-box">
+          <strong>⚠️ ข้อควรระวัง:</strong> การใช้งานเพื่อ <em>ตรวจจับ Interference</em> (Passive/Receive-Only) ถูกกฎหมายในไทย แต่การส่งสัญญาณรบกวน (Jamming) เป็นสิ่งผิดกฎหมาย ใช้สำหรับ <em>วิเคราะห์ RF เท่านั้น</em>
+        </div>
+        <div class="tags">
+          <span class="tag tag-blue">Waveshare C5-Touch</span>
+          <span class="tag tag-orange">Interference Detection</span>
+          <span class="tag tag-green">2.4 GHz + 5 GHz</span>
+          <span class="tag tag-indigo">Real-time Display</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- OpenInfrared Point -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-emoji">📺</div>
+        <div>
+          <div class="card-title">OpenInfrared Point — ESP32-S3 Universal Remote Hub พร้อม IR + BLE + NFC</div>
+          <div class="card-sub">CNX-Software Crowdfunding Report • July 2026</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p><strong>OpenInfrared Point</strong> เป็นอุปกรณ์ Universal Remote Hub บน <strong>ESP32-S3</strong> ที่รองรับการสื่อสารหลายช่องทาง ได้แก่ Infrared (IR), BLE (Bluetooth Low Energy), NFC และ Audio Streaming ทำให้ควบคุมอุปกรณ์ได้หลากหลายในตัวเดียว</p>
+        <p>ฟีเจอร์เด่น: <strong>Learn IR Codes</strong> จากรีโมทเดิมได้ทันที + Database รหัส IR ที่ Community สามารถแชร์ได้ร่วมกัน ทีมพัฒนาวางแผนเปิด Hardware และ Software เป็น Open Source ในอนาคต</p>
+        <p>ใช้ร่วมกับ App มือถือเพื่อ Mapping รีโมทเดิมเข้าสู่ระบบ Home Automation ได้ทันที — เหมาะสำหรับผู้ที่ต้องการรวมรีโมทหลายตัวเข้าไว้ในที่เดียวโดยไม่ต้องซื้ออุปกรณ์ Smart Home แพงๆ</p>
+        <div class="tags">
+          <span class="tag tag-blue">ESP32-S3</span>
+          <span class="tag tag-indigo">IR + BLE + NFC</span>
+          <span class="tag tag-green">Universal Remote</span>
+          <span class="tag tag-orange">Home Automation</span>
+          <span class="tag tag-pink">Crowdfunding</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- OMOTE & ESP-NOW -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-emoji">🌐</div>
+        <div>
+          <div class="card-title">ESP-NOW Mesh Networks — Sensor ไร้ Router สูงสุด 20 Peer ต่อโหนด</div>
+          <div class="card-sub">Espressif Official + Community Tutorials 2026</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p><strong>ESP-NOW</strong> เป็น Protocol ของ Espressif ที่ให้ ESP32 หลายตัวสื่อสารกันโดยตรงโดย <em>ไม่ต้องใช้ Router หรือ Access Point</em> ทำงานที่ Layer 2 (MAC Layer) บน Wi-Fi Radio มี Latency ต่ำมาก (~2 ms) และ Overhead น้อย เหมาะสำหรับ Sensor Network ที่ต้องการ Battery Life ยาวนาน</p>
+        <p>แต่ละโหนด ESP32 ลงทะเบียนได้ <strong>สูงสุด 20 Peer</strong> และส่งข้อมูลได้สูงสุด 250 bytes ต่อ Packet Library ที่ใช้งานบ่อย ได้แก่ <strong>painlessMesh</strong> (Arduino, Wi-Fi based) และ <strong>zh_network</strong> (ESP-NOW based, GitHub: aZholtikov) สำหรับ Production แนะนำใช้ <code>esp_mesh.h</code> ใน ESP-IDF โดยตรง</p>
+        <div class="info-box">
+          <strong>เปรียบเทียบ Mesh Options:</strong>
+          <br>• <strong>painlessMesh</strong> — ง่าย, Arduino-friendly, ใช้ Wi-Fi (ไม่ต้องพ่วง Router แต่กินไฟมากกว่า)
+          <br>• <strong>zh_network</strong> — ESP-NOW จริงๆ, Lightweight, ประหยัดพลังงาน
+          <br>• <strong>esp_mesh.h (ESP-IDF)</strong> — Official, ยืดหยุ่นสูงสุด, เหมาะ Production
+        </div>
+        <div class="tags">
+          <span class="tag tag-blue">ESP-NOW</span>
+          <span class="tag tag-green">painlessMesh</span>
+          <span class="tag tag-indigo">zh_network</span>
+          <span class="tag tag-orange">Low Latency</span>
+          <span class="tag tag-pink">Battery Friendly</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: PROJECTS -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-indigo">🔧</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์ที่น่าสร้าง — Wireless & Radio</h2>
+        <div class="section-desc">ไอเดียสำหรับ DIY จาก ESP32 SDR, Universal Remote และ ESP-NOW Mesh</div>
+      </div>
+    </div>
+    <div class="card-grid">
+
+      <div class="project-card">
+        <div class="p-icon">📡</div>
+        <div class="p-title">ESP32-C5 WiFi Spectrum Monitor</div>
+        <div class="p-desc">สร้าง Spectrum Analyzer ตรวจสอบ Interference ใน 2.4 GHz และ 5 GHz โดยใช้ esp-sdr บน Waveshare ESP32-C5-Touch-LCD-3.5 ดูกราฟ Real-time บนหน้าจอสัมผัส 3.5 นิ้ว</div>
+        <div class="tags">
+          <span class="tag tag-blue">ESP32-C5</span>
+          <span class="tag tag-indigo">SDR</span>
+        </div>
+        <div class="p-diff diff-medium">⚙️ ระดับกลาง</div>
+      </div>
+
+      <div class="project-card">
+        <div class="p-icon">📺</div>
+        <div class="p-title">DIY Universal IR Hub บ้าน OMOTE Style</div>
+        <div class="p-desc">สร้าง Universal Remote Hub ด้วย ESP32-S3 + LVGL + Touchscreen เรียนรู้รหัส IR จากรีโมทเดิม และควบคุมผ่าน App หรือ Web Interface ได้ครบในอุปกรณ์เดียว</div>
+        <div class="tags">
+          <span class="tag tag-blue">ESP32-S3</span>
+          <span class="tag tag-green">IR + BLE</span>
+        </div>
+        <div class="p-diff diff-medium">⚙️ ระดับกลาง</div>
+      </div>
+
+      <div class="project-card">
+        <div class="p-icon">🌡️</div>
+        <div class="p-title">ESP-NOW Sensor Mesh ไม่ต้องพ่วง Router</div>
+        <div class="p-desc">ระบบ Sensor Network สำหรับบ้านหรือสวน ใช้ ESP32 หลายตัวส่งข้อมูลอุณหภูมิ/ความชื้น ผ่าน ESP-NOW โดยมีโหนดหลักรวบรวมข้อมูลส่งต่อไปยัง MQTT หรือ InfluxDB</div>
+        <div class="tags">
+          <span class="tag tag-indigo">ESP-NOW</span>
+          <span class="tag tag-orange">Mesh</span>
+        </div>
+        <div class="p-diff diff-easy">✅ ระดับเริ่มต้น</div>
+      </div>
+
+      <div class="project-card">
+        <div class="p-icon">🏠</div>
+        <div class="p-title">RF Security Monitor สำหรับบ้าน</div>
+        <div class="p-desc">ใช้ ESP32-C5 SDR Mode ตรวจจับสัญญาณผิดปกติใน 2.4 GHz แจ้งเตือนผ่าน LINE Notify เมื่อพบ Deauth Attack หรือ Flood Attack บน WiFi ของบ้าน</div>
+        <div class="tags">
+          <span class="tag tag-pink">Security</span>
+          <span class="tag tag-blue">ESP32-C5</span>
+        </div>
+        <div class="p-diff diff-hard">🔥 ระดับสูง</div>
+      </div>
+
+      <div class="project-card">
+        <div class="p-icon">🎮</div>
+        <div class="p-title">Multi-ESP32 Wireless Game Controller</div>
+        <div class="p-desc">สร้าง Controller ไร้สายสำหรับเกมหรือ RC Car โดยใช้ ESP-NOW ส่ง Joystick/Button State ระหว่าง ESP32 Transmitter และ Receiver Latency ต่ำกว่า 2ms เหมาะมากสำหรับ Real-time Control</div>
+        <div class="tags">
+          <span class="tag tag-green">ESP-NOW</span>
+          <span class="tag tag-orange">RC/Gaming</span>
+        </div>
+        <div class="p-diff diff-easy">✅ ระดับเริ่มต้น</div>
+      </div>
+
+      <div class="project-card">
+        <div class="p-icon">🏭</div>
+        <div class="p-title">Industrial Wireless Sensor Grid</div>
+        <div class="p-desc">ระบบ Sensor Grid สำหรับโรงงานหรือคลังสินค้า ใช้ ESP32 + Vibration Sensor + Temperature บนเครื่องจักร ส่งข้อมูลผ่าน ESP-NOW Mesh ไปยัง Gateway กลาง วิเคราะห์ Predictive Maintenance</div>
+        <div class="tags">
+          <span class="tag tag-indigo">Industrial IoT</span>
+          <span class="tag tag-pink">Predictive</span>
+        </div>
+        <div class="p-diff diff-hard">🔥 ระดับสูง</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 3: SENSORS & HARDWARE -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-green">🔌</div>
+      <div>
+        <h2>Sensors & Hardware ที่เกี่ยวข้อง</h2>
+        <div class="section-desc">ชิป, บอร์ด และ Sensor สำหรับโปรเจกต์ Wireless & Radio</div>
+      </div>
+    </div>
+    <div class="sensor-grid">
+
+      <div class="sensor-card">
+        <div class="s-name">🔲 Waveshare ESP32-C5-Touch-LCD-3.5</div>
+        <div class="s-spec">
+          CPU: ESP32-C5 (RISC-V)<br>
+          Display: 3.5" Capacitive Touch IPS LCD<br>
+          Wireless: Wi-Fi 6 (2.4+5 GHz), BLE 5.0, Zigbee 3.0<br>
+          SDR Mode: 2.2–6.0 GHz ด้วย esp-sdr<br>
+          ราคา: ~$20–25 USD
+        </div>
+        <div class="s-use">✅ ใช้สำหรับ: Spectrum Analyzer, WiFi Jam Detector</div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="s-name">📡 TSSP77038 — Vishay IR Receiver</div>
+        <div class="s-spec">
+          Carrier Frequency: 38 kHz<br>
+          Supply Voltage: 2.7–5.5V<br>
+          Range: สูงสุด 45 เมตร<br>
+          Package: DIP-3<br>
+          ราคา: ~15–25 บาท
+        </div>
+        <div class="s-use">✅ ใช้สำหรับ: Universal Remote (Learn IR codes)</div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="s-name">💡 TSAL6200 — IR LED Emitter</div>
+        <div class="s-spec">
+          Wavelength: 940 nm<br>
+          Forward Current: 100 mA (continuous), 2A pulse<br>
+          Viewing Angle: ±10°<br>
+          ราคา: ~5–10 บาท ต่อตัว
+        </div>
+        <div class="s-use">✅ ใช้สำหรับ: ส่งสัญญาณ IR ควบคุม TV, AC, etc.</div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="s-name">🌡️ SHT41 — Sensirion Temp/Humidity</div>
+        <div class="s-spec">
+          Interface: I2C<br>
+          Temp Accuracy: ±0.2°C<br>
+          Humidity Accuracy: ±1.8% RH<br>
+          Supply: 1.08–3.6V (เหมาะ Battery)<br>
+          ราคา: ~80–120 บาท
+        </div>
+        <div class="s-use">✅ ใช้สำหรับ: ESP-NOW Sensor Node ประหยัดพลังงาน</div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="s-name">📳 MPU-6050 — IMU 6-Axis</div>
+        <div class="s-spec">
+          Interface: I2C / SPI<br>
+          3-Axis Gyro + 3-Axis Accel<br>
+          Supply: 2.375–3.46V<br>
+          DMP: Digital Motion Processor ในตัว<br>
+          ราคา: ~30–60 บาท
+        </div>
+        <div class="s-use">✅ ใช้สำหรับ: Wireless Game Controller, Vibration Sensor</div>
+      </div>
+
+      <div class="sensor-card">
+        <div class="s-name">🔋 SparkFun IoT RedBoard ESP32-P4+C5</div>
+        <div class="s-spec">
+          CPU: ESP32-P4 v3.x (400 MHz)<br>
+          Wireless Co-proc: ESP32-C5 (Wi-Fi 6 Dual-Band + BLE 5)<br>
+          Form Factor: Arduino UNO R3<br>
+          Files: KiCad files เปิดเผย<br>
+          ราคา: TBD (Nov 2026)
+        </div>
+        <div class="s-use">✅ ใช้สำหรับ: High-performance IoT ที่ต้องการ Dual-Band Wi-Fi 6</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 4: CODE GUIDE -->
+  <section id="code">
+    <div class="section-header">
+      <div class="section-icon icon-orange">💻</div>
+      <div>
+        <h2>Code Guide — ESP-NOW Basic Mesh Setup</h2>
+        <div class="section-desc">ตัวอย่างโค้ดพื้นฐานสำหรับ ESP-NOW Sensor Node</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-emoji">📡</div>
+        <div>
+          <div class="card-title">ESP-NOW Sender Node — ส่ง Sensor Data ไปยัง Gateway</div>
+          <div class="card-sub">Arduino / ESP-IDF Compatible • ไม่ต้องใช้ Router</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>โค้ดด้านล่างเป็นตัวอย่าง Sender Node ส่งข้อมูล Temperature/Humidity ผ่าน ESP-NOW ไปยัง Gateway (Receiver) โดยตรง ไม่ต้องพ่วง WiFi Router</p>
+<pre><span class="code-comment">// ESP-NOW Sender Node — Arduino IDE (ESP32)</span>
+<span class="code-keyword">#include</span> <span class="code-string">&lt;esp_now.h&gt;</span>
+<span class="code-keyword">#include</span> <span class="code-string">&lt;WiFi.h&gt;</span>
+
+<span class="code-comment">// MAC Address ของ Gateway (Receiver Node)</span>
+uint8_t <span class="code-func">gatewayMAC</span>[] = {<span class="code-num">0xAA</span>, <span class="code-num">0xBB</span>, <span class="code-num">0xCC</span>, <span class="code-num">0xDD</span>, <span class="code-num">0xEE</span>, <span class="code-num">0xFF</span>};
+
+<span class="code-comment">// โครงสร้างข้อมูลที่ส่ง</span>
+<span class="code-keyword">typedef struct</span> {
+  uint8_t  nodeID;
+  <span class="code-keyword">float</span>    temperature;
+  <span class="code-keyword">float</span>    humidity;
+  uint32_t uptime;
+} SensorPacket;
+
+SensorPacket packet;
+
+<span class="code-keyword">void</span> <span class="code-func">onDataSent</span>(const uint8_t *mac, esp_now_send_status_t status) {
+  Serial.println(status == ESP_NOW_SEND_SUCCESS ? <span class="code-string">"OK"</span> : <span class="code-string">"FAIL"</span>);
+}
+
+<span class="code-keyword">void</span> <span class="code-func">setup</span>() {
+  Serial.begin(<span class="code-num">115200</span>);
+  WiFi.mode(WIFI_STA);       <span class="code-comment">// STA mode ก่อน init ESP-NOW</span>
+
+  esp_now_init();
+  esp_now_register_send_cb(onDataSent);
+
+  esp_now_peer_info_t peer = {};
+  memcpy(peer.peer_addr, gatewayMAC, <span class="code-num">6</span>);
+  peer.channel = <span class="code-num">0</span>;
+  peer.encrypt = <span class="code-keyword">false</span>;
+  esp_now_add_peer(&amp;peer);
+
+  packet.nodeID = <span class="code-num">1</span>;         <span class="code-comment">// กำหนด Node ID</span>
+}
+
+<span class="code-keyword">void</span> <span class="code-func">loop</span>() {
+  packet.temperature = <span class="code-num">28.5</span>;  <span class="code-comment">// อ่านจาก SHT41 ในโปรเจกต์จริง</span>
+  packet.humidity     = <span class="code-num">65.0</span>;
+  packet.uptime       = millis() / <span class="code-num">1000</span>;
+
+  esp_now_send(gatewayMAC, (uint8_t*)&amp;packet, <span class="code-keyword">sizeof</span>(packet));
+
+  <span class="code-comment">// Deep Sleep ระหว่างรอบ — ประหยัดพลังงาน</span>
+  esp_deep_sleep(<span class="code-num">30</span> * <span class="code-num">1000000</span>);  <span class="code-comment">// ตื่นทุก 30 วิ</span>
+}</pre>
+        <div class="info-box">
+          <strong>เคล็ดลับ Deep Sleep + ESP-NOW:</strong> การใช้ <code>esp_deep_sleep()</code> หลังส่งข้อมูลช่วยลดการกินไฟลงได้มาก Node ใช้แบตเตอรีอย่างยาวนานหลายเดือน ควรใช้ <code>RTC_DATA_ATTR</code> เก็บค่าที่ต้องการรักษาระหว่าง Deep Sleep เช่น Counter หรือ State
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-emoji">🔌</div>
+        <div>
+          <div class="card-title">หาค่า MAC Address ของ Gateway Node</div>
+          <div class="card-sub">รันบน Gateway ESP32 เพื่อหา MAC Address</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p>ก่อนตั้งค่า Sender Node ต้องรู้ MAC Address ของ Gateway ก่อน ใช้โค้ดนี้รันบนบอร์ด Gateway:</p>
+<pre><span class="code-keyword">#include</span> <span class="code-string">&lt;WiFi.h&gt;</span>
+<span class="code-keyword">void</span> <span class="code-func">setup</span>() {
+  Serial.begin(<span class="code-num">115200</span>);
+  WiFi.mode(WIFI_STA);
+  Serial.print(<span class="code-string">"Gateway MAC: "</span>);
+  Serial.println(WiFi.macAddress());  <span class="code-comment">// copy ค่านี้ใส่ gatewayMAC[]</span>
+}
+<span class="code-keyword">void</span> <span class="code-func">loop</span>() {}</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: RESOURCES -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🔗</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+        <div class="section-desc">แหล่งข้อมูลสำหรับหัวข้อ Wireless & Radio ESP32 ประจำวันนี้</div>
+      </div>
+    </div>
+    <div class="resource-list">
+
+      <div class="resource-item">
+        <div class="resource-icon">📻</div>
+        <div class="resource-info">
+          <div class="resource-title">ESP-WiFi-Jam-Detector — Standalone 2.4/5 GHz Interference Detector</div>
+          <div class="resource-desc">RTL-SDR.com — Build โดย Jordan บน ESPARGOS esp-sdr และ Waveshare ESP32-C5 Touchscreen</div>
+          <div class="resource-url">rtl-sdr.com/esp-wifi-jam-detector-a-standalone-2-4-and-5-ghz-interference-detector-built-on-an-esp32-c5-touchscreen-board/</div>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <div class="resource-icon">🔧</div>
+        <div class="resource-info">
+          <div class="resource-title">ESP-SDR Firmware — ESP32 as 2.4/5 GHz SDR (Oct 2026)</div>
+          <div class="resource-desc">CNX-Software — Firmware ที่เปลี่ยน ESP32-C5 ให้เป็น Software Defined Radio แบบ Open Source</div>
+          <div class="resource-url">cnx-software.com/2026/10/04/esp-sdr-firmware-turns-esp32-into-a-2-4-5-ghz-software-defined-radio-sdr/</div>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <div class="resource-icon">📡</div>
+        <div class="resource-info">
+          <div class="resource-title">Various Projects Find Hidden SDR Capabilities in ESP32</div>
+          <div class="resource-desc">RTL-SDR.com — ภาพรวมการค้นพบ SDR Mode ของ ESP32 จากหลาย Project ที่เป็นอิสระต่อกัน</div>
+          <div class="resource-url">rtl-sdr.com/various-projects-independently-find-hidden-sdr-capabilities-in-esp32-microcontrollers</div>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <div class="resource-icon">📺</div>
+        <div class="resource-info">
+          <div class="resource-title">OpenInfrared Point — ESP32-S3 Universal Remote Hub</div>
+          <div class="resource-desc">CNX-Software — IR + BLE + NFC + Audio Hub บน ESP32-S3 (Crowdfunding Jul 2026)</div>
+          <div class="resource-url">cnx-software.com/2026/07/16/openinfrared-point-esp32-s3-universal-remote-hub-infrared-ble-nfc-audio-streaming/</div>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <div class="resource-icon">🕹️</div>
+        <div class="resource-info">
+          <div class="resource-title">OMOTE — Open Source ESP32 Universal Remote (Hackaday)</div>
+          <div class="resource-desc">Hackaday.io — DIY Universal Remote พร้อม 2.8" Touchscreen, LVGL, IR Send/Receive</div>
+          <div class="resource-url">hackaday.io/project/191752-omote-diy-universal-remote</div>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <div class="resource-icon">🌐</div>
+        <div class="resource-info">
+          <div class="resource-title">SparkFun IoT RedBoard ESP32-P4+C5 — Dual-Chip Arduino UNO Form Factor</div>
+          <div class="resource-desc">CNX-Software — บอร์ด ESP32-P4 v3.x พร้อม ESP32-C5 Co-processor, KiCad files เปิดเผย</div>
+          <div class="resource-url">cnx-software.com/2026/11/09/sparkfun-iot-redboard-esp32-p4-arduino-uno-like-esp32-p4-v3-x-development-boards-with-wifi-6-or-poe-options/</div>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <div class="resource-icon">📚</div>
+        <div class="resource-info">
+          <div class="resource-title">zh_network — ESP-NOW Mesh Network Library (GitHub)</div>
+          <div class="resource-desc">GitHub: aZholtikov/zh_network — Lightweight ESP-NOW Mesh ที่ต่อยอดจาก Project เดิมที่ Deprecated</div>
+          <div class="resource-url">github.com/aZholtikov/zh_network</div>
+        </div>
+      </div>
+
+      <div class="resource-item">
+        <div class="resource-icon">🔗</div>
+        <div class="resource-info">
+          <div class="resource-title">Adafruit: 6 ESP32 Projects — OLED Pulse Oximeter, ESP-NOW Multi-Sensor</div>
+          <div class="resource-desc">Adafruit Blog (Nov 2, 2026) — รวม 6 โปรเจกต์รวมถึง Pulse Oximeter และ Environmental Monitor ด้วย ESP-NOW</div>
+          <div class="resource-url">blog.adafruit.com/2026/11/02/6-esp32-projects-to-build-including-an-oled-pulse-oximeter/</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div>สร้างโดย <strong>AI ESP32 Research Bot</strong> — อัปเดตทุกวันอัตโนมัติ</div>
+  <div style="margin-top:0.5rem; color: #64748b; font-size: 0.78rem;">
+    วันที่สร้าง: 17 พฤศจิกายน 2026 | หัวข้อ: Wireless & Radio — ESP32 SDR, Universal Remote, ESP-NOW Mesh
+  </div>
+  <div class="footer-links">
+    <a href="esp32-ideas-2026-11-16.html">← เมื่อวาน</a>
+    <a href="https://github.com/somchaipiw/claude-01">GitHub Repository</a>
+    <a href="https://espressif.com">Espressif.com</a>
+    <a href="https://rtl-sdr.com">RTL-SDR Blog</a>
+  </div>
+</footer>
+
+</body>
+</html>
