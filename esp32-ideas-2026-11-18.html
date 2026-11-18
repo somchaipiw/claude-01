@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 18 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #263147;
+    --border: #334155;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent: #f97316;
+    --accent2: #fb923c;
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --yellow: #eab308;
+    --red: #ef4444;
+    --cyan: #06b6d4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #1a0a00 0%, #2d1300 40%, #0f172a 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 60% 40%, rgba(249,115,22,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(249,115,22,0.15);
+    border: 1px solid rgba(249,115,22,0.4);
+    color: var(--accent2);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.4rem;
+    text-shadow: 0 0 30px rgba(249,115,22,0.3);
+  }
+  header .subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .stat-chip strong { color: var(--accent2); }
+
+  /* Layout */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem 3rem;
+  }
+
+  /* Section */
+  .section {
+    margin-bottom: 3rem;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .section-label {
+    margin-left: auto;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .label-orange { background: rgba(249,115,22,0.15); color: var(--accent2); border: 1px solid rgba(249,115,22,0.3); }
+  .label-green  { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  .label-blue   { background: rgba(59,130,246,0.12); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+  .label-purple { background: rgba(168,85,247,0.12); color: var(--purple); border: 1px solid rgba(168,85,247,0.3); }
+
+  /* Grid */
+  .grid { display: grid; gap: 1.2rem; grid-template-columns: 1fr; }
+  @media (min-width: 640px) { .grid-2 { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 900px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.4rem;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .card-accent-orange { border-left: 3px solid var(--accent); }
+  .card-accent-green  { border-left: 3px solid var(--green); }
+  .card-accent-blue   { border-left: 3px solid var(--blue); }
+  .card-accent-purple { border-left: 3px solid var(--purple); }
+  .card-accent-yellow { border-left: 3px solid var(--yellow); }
+  .card-accent-cyan   { border-left: 3px solid var(--cyan); }
+  .card-accent-red    { border-left: 3px solid var(--red); }
+
+  .card-emoji { font-size: 1.6rem; margin-bottom: 0.6rem; display: block; }
+  .card-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .card-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; }
+
+  /* Tag */
+  .tag-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.8rem; }
+  .tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.15rem 0.55rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .tag-orange { background: rgba(249,115,22,0.15); color: var(--accent2); }
+  .tag-green  { background: rgba(34,197,94,0.12);  color: var(--green); }
+  .tag-blue   { background: rgba(59,130,246,0.12);  color: var(--blue); }
+  .tag-purple { background: rgba(168,85,247,0.12);  color: var(--purple); }
+  .tag-yellow { background: rgba(234,179,8,0.12);   color: var(--yellow); }
+  .tag-cyan   { background: rgba(6,182,212,0.12);   color: var(--cyan); }
+  .tag-red    { background: rgba(239,68,68,0.12);   color: var(--red); }
+
+  /* Highlight box */
+  .highlight-box {
+    background: rgba(249,115,22,0.07);
+    border: 1px solid rgba(249,115,22,0.2);
+    border-radius: 10px;
+    padding: 1.2rem 1.4rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.92rem;
+    color: var(--text-muted);
+  }
+  .highlight-box strong { color: var(--accent2); }
+
+  /* Code block */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    color: #a8d8a8;
+    overflow-x: auto;
+    margin-top: 0.8rem;
+    line-height: 1.6;
+  }
+  .code-comment { color: #6b7280; }
+  .code-keyword { color: #f97316; }
+  .code-string  { color: #22c55e; }
+  .code-num     { color: #3b82f6; }
+
+  /* Spec table */
+  .spec-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-top: 0.8rem; }
+  .spec-table th {
+    background: var(--surface2);
+    color: var(--text-muted);
+    font-weight: 600;
+    padding: 0.5rem 0.8rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .spec-table td {
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    color: var(--text-muted);
+  }
+  .spec-table td:first-child { color: var(--text); font-weight: 500; }
+  .spec-table tr:last-child td { border-bottom: none; }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  /* Wide card */
+  .card-wide {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.6rem;
+    margin-bottom: 1.2rem;
+  }
+  .card-wide:hover { border-color: var(--accent); }
+
+  /* Resource list */
+  .resource-list { list-style: none; }
+  .resource-list li {
+    padding: 0.7rem 0;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    font-size: 0.9rem;
+  }
+  .resource-list li:last-child { border-bottom: none; }
+  .resource-list .r-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; }
+  .resource-list a { color: var(--blue); text-decoration: none; }
+  .resource-list a:hover { text-decoration: underline; color: var(--accent2); }
+  .resource-list .r-desc { color: var(--text-muted); font-size: 0.82rem; }
+
+  /* Footer */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 1.8rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  footer strong { color: var(--accent2); }
+  .footer-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: 0.8rem; }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-badge">Industrial &amp; Power Electronics Edition</div>
+  <h1>⚙️ ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">18 พฤศจิกายน 2026 — Industrial IoT, Energy Monitoring, Motor Control &amp; e-Paper Dashboards</p>
+  <div class="stats-row">
+    <div class="stat-chip">🏭 <strong>4</strong> หัวข้อหลัก</div>
+    <div class="stat-chip">🔧 <strong>18+</strong> ไอเดียโปรเจกต์</div>
+    <div class="stat-chip">📦 <strong>8</strong> ผลิตภัณฑ์ใหม่</div>
+    <div class="stat-chip">📚 <strong>12</strong> แหล่งอ้างอิง</div>
+  </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<main>
+
+  <!-- ======================================================
+       SECTION 1: INDUSTRIAL IoT / MODBUS / SCADA
+  ====================================================== -->
+  <section id="industrial" class="section">
+    <div class="section-header">
+      <span class="section-icon">🏭</span>
+      <h2 class="section-title">Industrial IoT — Modbus, RS485 &amp; OPC-UA</h2>
+      <span class="section-label label-orange">นวัตกรรม</span>
+    </div>
+
+    <div class="highlight-box">
+      <strong>แนวโน้ม 2026:</strong> ESP32 กลายเป็น Edge Gateway ยอดนิยมสำหรับโรงงาน
+      ทำหน้าที่เชื่อม Modbus RTU เครื่องจักรเก่าเข้ากับ MQTT, Modbus TCP และ OPC-UA
+      โดยไม่ต้องลงทุน PLC ราคาสูง ค่าใช้จ่ายลดลงมากกว่า <strong>80%</strong> เมื่อเทียบกับ gateway เชิงพาณิชย์
+    </div>
+
+    <div class="grid grid-3">
+
+      <div class="card card-accent-orange">
+        <span class="card-emoji">🌐</span>
+        <div class="card-title">FlowSense Pro — ESP32 OPC-UA SCADA Gateway</div>
+        <div class="card-desc">
+          โปรเจกต์ล่าสุด (ต.ค. 2026) ใช้ ESP32-S3 เป็น OPC-UA Server เชื่อมตรงกับ SCADA
+          ผ่าน TCP/IP โดยไม่ต้องผ่าน MQTT Broker รองรับ node สูงสุด 50 tag
+          และ timestamp accuracy ระดับ millisecond
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-orange">OPC-UA</span>
+          <span class="tag tag-blue">ESP32-S3</span>
+          <span class="tag tag-green">SCADA</span>
+          <span class="tag tag-yellow">Industrial</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-blue">
+        <span class="card-emoji">🔁</span>
+        <div class="card-title">Modbus RTU → MQTT Edge Gateway</div>
+        <div class="card-desc">
+          Pattern ยอดนิยมที่สุด: ESP32 + MAX485 ทำ Modbus RTU Master
+          poll device ทุก X วินาที แปลงเป็น JSON แล้วส่งผ่าน MQTT
+          ไปยัง Home Assistant, Node-RED หรือ Cloud Platform
+          รองรับ multi-slave (up to 247 device บน bus เดียว)
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-blue">Modbus RTU</span>
+          <span class="tag tag-orange">MQTT</span>
+          <span class="tag tag-green">MAX485</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-green">
+        <span class="card-emoji">📦</span>
+        <div class="card-title">Waveshare ESP32-S3-RS485-CAN — บอร์ด DIN Rail</div>
+        <div class="card-desc">
+          บอร์ด industrial ใหม่จาก Waveshare เปิดตัว ก.พ. 2026 มา DIN-rail housing
+          พร้อม isolated RS485 + CAN, ไฟเลี้ยง 7–36V DC ขนาด 91.6×23.3 mm
+          เหมาะสำหรับติดตั้งในตู้ control panel จริง
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-green">DIN Rail</span>
+          <span class="tag tag-orange">RS485 + CAN</span>
+          <span class="tag tag-blue">36V DC</span>
+          <span class="tag tag-yellow">Isolated</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-purple">
+        <span class="card-emoji">💾</span>
+        <div class="card-title">Offline Data Logger — Buffer หลายสัปดาห์</div>
+        <div class="card-desc">
+          ESP32-S3 WROVER (8 MB PSRAM) บัฟเฟอร์ข้อมูล Modbus
+          ไว้ใน flash ได้หลายสัปดาห์เมื่อ cloud connection หาย
+          เมื่อ reconnect จะ sync ข้อมูลย้อนหลังอัตโนมัติ
+          เหมาะกับโรงงานในพื้นที่ห่างไกล
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-purple">PSRAM</span>
+          <span class="tag tag-blue">Offline Buffer</span>
+          <span class="tag tag-green">Auto Sync</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-yellow">
+        <span class="card-emoji">🏗️</span>
+        <div class="card-title">Waveshare ESP32-S3-POE-ETH-8DI-8DO</div>
+        <div class="card-desc">
+          รุ่น DIN-rail อีกรุ่นที่มี PoE (Power over Ethernet), 8 digital input,
+          8 digital output เหมาะกับ PLC-replacement ระดับเบา
+          ควบคุมผ่าน Ethernet LAN โดยตรง ไม่ต้องพึ่ง Wi-Fi
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-yellow">PoE</span>
+          <span class="tag tag-blue">Ethernet</span>
+          <span class="tag tag-orange">8DI/8DO</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-cyan">
+        <span class="card-emoji">⚠️</span>
+        <div class="card-title">ข้อควรระวัง: RS485 Wiring บน ESP32</div>
+        <div class="card-desc">
+          Bus termination (120Ω) ต้องใส่เองที่ปลายสาย — บอร์ดส่วนใหญ่ไม่มีในตัว
+          ระยะสายไม่ควรเกิน 1,200 m ที่ 100 kbps
+          ใช้ Shielded twisted pair และ bias resistor เมื่อมี noise สูง
+          Baud rate ที่นิยม: 9600 / 19200 / 38400 bps
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-red">Termination</span>
+          <span class="tag tag-orange">120Ω</span>
+          <span class="tag tag-yellow">Wiring</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Code snippet -->
+    <div class="card-wide" style="margin-top:1.2rem;">
+      <div class="card-title" style="margin-bottom:0.8rem;">📋 Modbus RTU Master — ตัวอย่าง Code (ESP-IDF / Arduino)</div>
+      <div class="code-block">
+<span class="code-comment">// ใช้ library: ModbusMaster หรือ esp32ModbusRTU</span>
+<span class="code-comment">// RS485: GPIO16=RX, GPIO17=TX, GPIO4=DE/RE (direction control)</span>
+
+<span class="code-keyword">#include</span> <span class="code-string">&lt;ModbusMaster.h&gt;</span>
+
+ModbusMaster node;
+HardwareSerial RS485Serial(<span class="code-num">2</span>);  <span class="code-comment">// UART2</span>
+
+<span class="code-keyword">void</span> preTransmission()  { digitalWrite(<span class="code-num">4</span>, HIGH); }
+<span class="code-keyword">void</span> postTransmission() { digitalWrite(<span class="code-num">4</span>, LOW);  }
+
+<span class="code-keyword">void</span> setup() {
+  RS485Serial.begin(<span class="code-num">9600</span>, SERIAL_8N1, <span class="code-num">16</span>, <span class="code-num">17</span>);
+  node.begin(<span class="code-num">1</span>, RS485Serial);              <span class="code-comment">// slave ID = 1</span>
+  node.preTransmission(preTransmission);
+  node.postTransmission(postTransmission);
+}
+
+<span class="code-keyword">void</span> loop() {
+  uint8_t result = node.readHoldingRegisters(<span class="code-num">0x00</span>, <span class="code-num">2</span>);
+  <span class="code-keyword">if</span> (result == ModbusMaster::ku8MBSuccess) {
+    float voltage = node.getResponseBuffer(<span class="code-num">0</span>) / <span class="code-num">10.0</span>;
+    Serial.printf(<span class="code-string">"Voltage: %.1f V\n"</span>, voltage);
+  }
+  delay(<span class="code-num">1000</span>);
+}
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================
+       SECTION 2: ENERGY MONITORING
+  ====================================================== -->
+  <section id="energy" class="section">
+    <div class="section-header">
+      <span class="section-icon">⚡</span>
+      <h2 class="section-title">Energy Monitoring — Smart Power Metering</h2>
+      <span class="section-label label-green">ไอเดียโปรเจกต์</span>
+    </div>
+
+    <div class="highlight-box">
+      <strong>PZEM-004T v3.0</strong> ยังคงเป็นตัวเลือกอันดับหนึ่งสำหรับ energy monitoring ราคาประหยัด
+      วัด Voltage, Current, Power, Frequency, Power Factor และ Cumulative Energy ครบในโมดูลเดียว
+      ความแม่นยำ <strong>±0.5% voltage / ±1% power</strong> เพียงพอสำหรับ home monitoring
+    </div>
+
+    <div class="grid grid-2">
+
+      <div class="card card-accent-green">
+        <span class="card-emoji">🔌</span>
+        <div class="card-title">PZEM-004T + ESP32 — Smart Energy Dashboard</div>
+        <div class="card-desc">
+          วัด AC 80–260V / 0–100A ผ่าน UART (GPIO16/17) ส่ง JSON ผ่าน MQTT
+          ไปยัง InfluxDB + Grafana dashboard ดู consumption real-time
+          เพิ่ม SMS alert เมื่อ power เกิน threshold ผ่าน Twilio หรือ Line Notify
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-green">PZEM-004T</span>
+          <span class="tag tag-blue">MQTT</span>
+          <span class="tag tag-orange">Grafana</span>
+          <span class="tag tag-yellow">SMS Alert</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-blue">
+        <span class="card-emoji">🏠</span>
+        <div class="card-title">Smart Power Strip — Monitor ทุก Socket</div>
+        <div class="card-desc">
+          ติด PZEM-004T หรือ CT sensor แต่ละปลั๊กใน power strip
+          ระบุว่าอุปกรณ์ไหนกินไฟเท่าไร คำนวณค่าไฟรายวัน/รายเดือน
+          แสดงผลบน OLED หรือ web dashboard ผ่าน ESP32 built-in Wi-Fi
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-blue">Multi-socket</span>
+          <span class="tag tag-green">CT Sensor</span>
+          <span class="tag tag-orange">Cost Calc</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-yellow">
+        <span class="card-emoji">☀️</span>
+        <div class="card-title">Solar Panel Monitor — Production vs Consumption</div>
+        <div class="card-desc">
+          วัดกำลังผลิตจาก solar panel (CT sensor ที่ inverter output)
+          และการใช้งานในบ้าน (PZEM-004T ที่ main breaker) พร้อมกัน
+          คำนวณ grid import/export อัตโนมัติ บน ESP32-S3 + e-Paper display
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-yellow">Solar</span>
+          <span class="tag tag-green">Net Metering</span>
+          <span class="tag tag-blue">Inverter</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-purple">
+        <span class="card-emoji">🏭</span>
+        <div class="card-title">Industrial 3-Phase Power Monitor</div>
+        <div class="card-desc">
+          ใช้ PZEM-004T 3 ตัว วัดทั้ง 3 phase พร้อมกัน หาค่า unbalance
+          และ power factor รวม เหมาะกับโรงงานที่มีมอเตอร์ 3 phase
+          ส่งข้อมูลผ่าน Modbus TCP ไปยัง SCADA ได้โดยตรง
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-purple">3-Phase</span>
+          <span class="tag tag-orange">Power Factor</span>
+          <span class="tag tag-yellow">Unbalance</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Spec table -->
+    <div class="card-wide">
+      <div class="card-title" style="margin-bottom:0.8rem;">📊 เปรียบเทียบ Energy Sensor สำหรับ ESP32</div>
+      <div style="overflow-x:auto;">
+        <table class="spec-table">
+          <thead>
+            <tr>
+              <th>Sensor</th>
+              <th>Voltage Range</th>
+              <th>Current Max</th>
+              <th>Interface</th>
+              <th>ราคา (บาท)</th>
+              <th>เหมาะกับ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>PZEM-004T v3</td>
+              <td>80–260V AC</td>
+              <td>100A (ext CT)</td>
+              <td>UART / Modbus</td>
+              <td>~180–250</td>
+              <td>Home, โรงงานเบา</td>
+            </tr>
+            <tr>
+              <td>SCT-013-030 CT</td>
+              <td>—</td>
+              <td>30A (100A รุ่นอื่น)</td>
+              <td>Analog + EmonLib</td>
+              <td>~80–120</td>
+              <td>Non-invasive</td>
+            </tr>
+            <tr>
+              <td>ACS712 / ACS758</td>
+              <td>—</td>
+              <td>5A / 50A / 100A</td>
+              <td>Analog</td>
+              <td>~40–90</td>
+              <td>DC circuit</td>
+            </tr>
+            <tr>
+              <td>INA226 / INA3221</td>
+              <td>0–36V DC</td>
+              <td>±3A (shunt)</td>
+              <td>I²C</td>
+              <td>~60–150</td>
+              <td>Low-voltage DC</td>
+            </tr>
+            <tr>
+              <td>ATM90E32AS</td>
+              <td>Up to 600V</td>
+              <td>Multi-channel</td>
+              <td>SPI</td>
+              <td>~400–600</td>
+              <td>3-phase industrial</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================
+       SECTION 3: MOTOR CONTROL & ROBOTICS
+  ====================================================== -->
+  <section id="motor" class="section">
+    <div class="section-header">
+      <span class="section-icon">🤖</span>
+      <h2 class="section-title">Motor Control &amp; Robotics — BLDC, Stepper &amp; Servo</h2>
+      <span class="section-label label-blue">Hardware</span>
+    </div>
+
+    <div class="highlight-box">
+      <strong>ESP32 MCPWM (Motor Control PWM)</strong> เป็น hardware peripheral พิเศษที่ออกแบบมาสำหรับ motor control โดยเฉพาะ
+      รองรับ <strong>dead-time generation, fault protection, capture</strong> และ sync กับ ADC ได้
+      ทำให้ ESP32 เป็นตัวเลือกที่ทรงพลังสำหรับงาน robotics และ automation ราคาต่ำ
+    </div>
+
+    <div class="grid grid-3">
+
+      <div class="card card-accent-blue">
+        <span class="card-emoji">🌀</span>
+        <div class="card-title">espFoC v2.0 — Field-Oriented Control สำหรับ BLDC</div>
+        <div class="card-desc">
+          Library FOC สำหรับ PMSM/BLDC บน Espressif Component Registry
+          velocity loop และ position loop ผ่าน callback ให้ app กำหนดเอง
+          ใช้ MCPWM hardware บน ESP32 ประสิทธิภาพสูง เหมาะกับ drone,
+          electric skateboard และ CNC spindle
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-blue">FOC</span>
+          <span class="tag tag-orange">BLDC</span>
+          <span class="tag tag-green">MCPWM</span>
+          <span class="tag tag-purple">v2.0.0</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-green">
+        <span class="card-emoji">📐</span>
+        <div class="card-title">ESP-FlexyStepper — Stepper ที่ยืดหยุ่น</div>
+        <div class="card-desc">
+          Library stepper motor แบบ non-blocking, smooth acceleration/deceleration
+          รองรับ position, velocity และ homing mode ผ่าน FreeRTOS task
+          ใช้กับ A4988, DRV8825, TMC2208/2209 ได้ทันที
+          เหมาะกับ 3D printer, CNC, pick-and-place
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-green">Stepper</span>
+          <span class="tag tag-blue">Non-blocking</span>
+          <span class="tag tag-yellow">TMC2209</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-orange">
+        <span class="card-emoji">🔧</span>
+        <div class="card-title">ESP-StepperMotor-Server — Web UI + REST API</div>
+        <div class="card-desc">
+          สร้าง stepper motor controller แบบ standalone ที่มี
+          web interface, REST API และ serial control ในตัว
+          เปิด browser ก็ควบคุม motor ได้ทันที ไม่ต้องเขียน code เพิ่ม
+          อัปเดตล่าสุด กุมภาพันธ์ 2026
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-orange">Web UI</span>
+          <span class="tag tag-blue">REST API</span>
+          <span class="tag tag-green">Standalone</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-purple">
+        <span class="card-emoji">🎮</span>
+        <div class="card-title">DJIMotorCtrlESP — ควบคุมมอเตอร์ DJI</div>
+        <div class="card-desc">
+          Library ESP32 สำหรับควบคุม DJI M3508, M2006 และ GM6020 ผ่าน CAN bus
+          มอเตอร์เหล่านี้มี encoder built-in และ torque control ที่แม่นยำ
+          เหมาะกับ robot arm, competition robot (RoboMaster)
+          ต้องใช้ CAN transceiver (TJA1050/MCP2551)
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-purple">DJI Motor</span>
+          <span class="tag tag-orange">CAN Bus</span>
+          <span class="tag tag-blue">RoboMaster</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-cyan">
+        <span class="card-emoji">⚙️</span>
+        <div class="card-title">NocMotion — Professional Motor Library</div>
+        <div class="card-desc">
+          Library ใหม่ (เม.ย. 2026) ที่อ้างว่า professional-grade
+          รองรับ ESP32 และ Arduino สำหรับ motor control หลากหลายรูปแบบ
+          ยังเป็น community project ขอแนะนำให้ทดสอบก่อนใช้งาน production
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-cyan">Multi-motor</span>
+          <span class="tag tag-yellow">Apr 2026</span>
+          <span class="tag tag-blue">Arduino Compat</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-yellow">
+        <span class="card-emoji">🦾</span>
+        <div class="card-title">ไอเดีย: 6-DOF Robot Arm ราคาต่ำ</div>
+        <div class="card-desc">
+          ใช้ ESP32 + 6× servo MG996R + PCA9685 PWM expander
+          ควบคุมผ่าน inverse kinematics library บน ESP32-S3 (512KB RAM)
+          รับคำสั่งจาก computer ผ่าน WebSocket หรือ BLE
+          งบประมาณเริ่มต้นประมาณ 1,500–2,500 บาท
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-yellow">6-DOF</span>
+          <span class="tag tag-orange">IK</span>
+          <span class="tag tag-blue">WebSocket</span>
+          <span class="tag tag-green">ต้นทุนต่ำ</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Code snippet -->
+    <div class="card-wide">
+      <div class="card-title" style="margin-bottom:0.8rem;">📋 MCPWM BLDC Control — ESP-IDF v5.x</div>
+      <div class="code-block">
+<span class="code-comment">// ตัวอย่าง 3-phase BLDC ด้วย MCPWM + Hall sensor interrupt</span>
+<span class="code-keyword">#include</span> <span class="code-string">"driver/mcpwm_prelude.h"</span>
+
+<span class="code-comment">// สร้าง MCPWM timer 20 kHz สำหรับ 3-phase bridge</span>
+mcpwm_timer_config_t timer_config = {
+    .group_id = <span class="code-num">0</span>,
+    .clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT,
+    .resolution_hz = <span class="code-num">10000000</span>,   <span class="code-comment">// 10 MHz</span>
+    .period_ticks  = <span class="code-num">500</span>,            <span class="code-comment">// → 20 kHz PWM</span>
+    .count_mode    = MCPWM_TIMER_COUNT_MODE_UP,
+};
+<span class="code-comment">// ใช้ espFoC v2.0 แทนสำหรับ FOC algorithm ที่สมบูรณ์กว่า</span>
+<span class="code-comment">// components.espressif.com/components/ulipe/espfoc</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================
+       SECTION 4: e-PAPER DISPLAY
+  ====================================================== -->
+  <section id="epaper" class="section">
+    <div class="section-header">
+      <span class="section-icon">🖥️</span>
+      <h2 class="section-title">e-Paper Display — Dashboard ที่ประหยัดพลังงาน</h2>
+      <span class="section-label label-purple">Sensors &amp; Hardware</span>
+    </div>
+
+    <div class="highlight-box">
+      <strong>e-Paper + ESP32</strong> คือคู่ที่สมบูรณ์แบบสำหรับ battery-powered dashboard:
+      หน้าจอ e-Paper กินไฟแทบศูนย์เมื่อแสดงผลนิ่ง ผสมกับ deep sleep ของ ESP32
+      ทำให้ระบบทำงานได้นาน <strong>หลายเดือน</strong> จากแบตเตอรี่ก้อนเดียว
+    </div>
+
+    <div class="grid grid-2">
+
+      <div class="card card-accent-purple">
+        <span class="card-emoji">📱</span>
+        <div class="card-title">Elecrow CrowPanel 5.79" — ESPHome + LVGL</div>
+        <div class="card-desc">
+          จอ 792×272 pixel dual-driver (SSD1683×2) รองรับ partial refresh
+          Community driver สำหรับ ESPHome พร้อม LVGL v9 integration
+          แสดง weather, sensor data, calendar บน dashboard สวยงาม
+          เหมาะติดผนังห้อง/ประตูบ้าน
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-purple">5.79"</span>
+          <span class="tag tag-blue">ESPHome</span>
+          <span class="tag tag-orange">LVGL v9</span>
+          <span class="tag tag-green">Partial Refresh</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-cyan">
+        <span class="card-emoji">🌡️</span>
+        <div class="card-title">Waveshare ESP32-S3-ePaper-1.54G — Climate Display</div>
+        <div class="card-desc">
+          บอร์ด ESP32-S3 มาพร้อม e-Paper 1.54" 4-color (B/W/R/Y) ในตัว
+          ใช้ power-latch trick ตัดไฟ ESP32 ระหว่าง sleep อย่างสมบูรณ์
+          แสดงอุณหภูมิ/ความชื้นจาก BME280 ด้วย battery lifetime หลายเดือน
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-cyan">1.54" 4-color</span>
+          <span class="tag tag-blue">Power Latch</span>
+          <span class="tag tag-yellow">BME280</span>
+          <span class="tag tag-green">Months Battery</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-orange">
+        <span class="card-emoji">🏷️</span>
+        <div class="card-title">Electronic Price Tag / Label — ESP32 + e-Paper</div>
+        <div class="card-desc">
+          สร้าง price tag อิเล็กทรอนิกส์ด้วย ESP32-C3 + 2.9" e-Paper
+          อัปเดตราคาแบบ wireless ผ่าน BLE หรือ Wi-Fi จาก server กลาง
+          ประหยัดพลังงานมาก 1 charge อยู่ได้นานหลายปีในโหมด static display
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-orange">Price Tag</span>
+          <span class="tag tag-blue">BLE Update</span>
+          <span class="tag tag-green">ESP32-C3</span>
+          <span class="tag tag-purple">Retail IoT</span>
+        </div>
+      </div>
+
+      <div class="card card-accent-green">
+        <span class="card-emoji">🏭</span>
+        <div class="card-title">Industrial Status Board — Modbus + e-Paper</div>
+        <div class="card-desc">
+          รวมหัวข้อ Industrial IoT + e-Paper: ESP32 อ่านค่า sensor จาก Modbus
+          แสดงบนจอ 7.5" e-Paper ที่ติดข้างเครื่องจักร อัปเดตทุก 5 นาที
+          มองเห็นชัดทุกแสงไฟ ไม่ต้องกลัว glare เหมือน LCD
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-green">7.5" e-Paper</span>
+          <span class="tag tag-orange">Modbus Read</span>
+          <span class="tag tag-blue">Machine Status</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Pattern guide -->
+    <div class="card-wide">
+      <div class="card-title" style="margin-bottom:1rem;">🔄 Pattern: Battery e-Paper Dashboard ด้วย Deep Sleep</div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
+        <div style="background:var(--surface2); border-radius:8px; padding:1rem; text-align:center;">
+          <div style="font-size:1.8rem; margin-bottom:0.4rem;">⏰</div>
+          <div style="font-weight:700; color:var(--accent2); margin-bottom:0.3rem;">1. Wake Up</div>
+          <div style="font-size:0.82rem; color:var(--text-muted);">Timer หรือ external trigger ปลุก ESP32 จาก deep sleep</div>
+        </div>
+        <div style="background:var(--surface2); border-radius:8px; padding:1rem; text-align:center;">
+          <div style="font-size:1.8rem; margin-bottom:0.4rem;">📡</div>
+          <div style="font-weight:700; color:var(--blue); margin-bottom:0.3rem;">2. Fetch Data</div>
+          <div style="font-size:0.82rem; color:var(--text-muted);">เชื่อม Wi-Fi, ดึงข้อมูลจาก sensor หรือ API (~1-3 วินาที)</div>
+        </div>
+        <div style="background:var(--surface2); border-radius:8px; padding:1rem; text-align:center;">
+          <div style="font-size:1.8rem; margin-bottom:0.4rem;">🖥️</div>
+          <div style="font-weight:700; color:var(--purple); margin-bottom:0.3rem;">3. Draw</div>
+          <div style="font-size:0.82rem; color:var(--text-muted);">render หน้าจอด้วย LVGL หรือ Adafruit GFX (~2-5 วินาที)</div>
+        </div>
+        <div style="background:var(--surface2); border-radius:8px; padding:1rem; text-align:center;">
+          <div style="font-size:1.8rem; margin-bottom:0.4rem;">💤</div>
+          <div style="font-weight:700; color:var(--green); margin-bottom:0.3rem;">4. Sleep</div>
+          <div style="font-size:0.82rem; color:var(--text-muted);">เข้า deep sleep ทันที กินไฟ &lt;10 µA นาน 5–60 นาที</div>
+        </div>
+      </div>
+      <div style="margin-top:0.8rem; font-size:0.85rem; color:var(--text-muted);">
+        ⚡ ใช้เวลา active เพียง <strong style="color:var(--accent2);">~5 วินาที</strong> ต่อรอบ
+        แบตเตอรี่ 3000 mAh อยู่ได้ <strong style="color:var(--green);">2–6 เดือน</strong> ที่ refresh ทุก 15 นาที
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ======================================================
+       SECTION 5: RESOURCES
+  ====================================================== -->
+  <section id="resources" class="section">
+    <div class="section-header">
+      <span class="section-icon">📚</span>
+      <h2 class="section-title">แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+      <span class="section-label label-purple">Resources</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:0.8rem;">🏭 Industrial IoT</div>
+        <ul class="resource-list">
+          <li>
+            <span class="r-icon">🌐</span>
+            <div>
+              <div><a href="https://www.cnx-software.com/2025/08/19/esp32-modbus-gateway-handles-rtu-tcp-ip-and-mqtt-for-industrial-iot" target="_blank">ESP32 Modbus gateway — RTU, TCP/IP, MQTT</a></div>
+              <div class="r-desc">CNX Software — industrial gateway overview</div>
+            </div>
+          </li>
+          <li>
+            <span class="r-icon">🔧</span>
+            <div>
+              <div><a href="https://shillehtek.com/blogs/news/esp32-max485-modbus-rtu-to-tcp-gateway" target="_blank">ESP32 MAX485 Modbus RTU to TCP Gateway</a></div>
+              <div class="r-desc">ShillehTek — tutorial + wiring, Oct 2026</div>
+            </div>
+          </li>
+          <li>
+            <span class="r-icon">📦</span>
+            <div>
+              <div><a href="https://docs.waveshare.com/ESP32-S3-RS485-CAN" target="_blank">Waveshare ESP32-S3-RS485-CAN Docs</a></div>
+              <div class="r-desc">Official docs — DIN-rail industrial board</div>
+            </div>
+          </li>
+          <li>
+            <span class="r-icon">🔗</span>
+            <div>
+              <div><a href="https://www.hackster.io/omar-pelo/esp32-industrial-modbus-to-mqtt-edge-gateway-a45cf6" target="_blank">ESP32 Modbus to MQTT Edge Gateway (Hackster)</a></div>
+              <div class="r-desc">Community project with full source code</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:0.8rem;">⚡ Energy Monitoring</div>
+        <ul class="resource-list">
+          <li>
+            <span class="r-icon">🔌</span>
+            <div>
+              <div><a href="https://www.atomic14.com/esp32/sensors/pzem-004t/" target="_blank">PZEM-004T Complete Guide (atomic14)</a></div>
+              <div class="r-desc">Wiring, library, code examples</div>
+            </div>
+          </li>
+          <li>
+            <span class="r-icon">🏠</span>
+            <div>
+              <div><a href="https://how2electronics.com/iot-ac-energy-meter-with-pzem-004t-esp32-webserver/" target="_blank">IoT AC Energy Meter + ESP32 Web Server</a></div>
+              <div class="r-desc">how2electronics — step-by-step tutorial</div>
+            </div>
+          </li>
+          <li>
+            <span class="r-icon">📊</span>
+            <div>
+              <div><a href="https://circuitcellar.com/research-design-hub/projects/build-a-smart-energy-meter-to-track-home-power-use/" target="_blank">Smart Energy Meter — Circuit Cellar</a></div>
+              <div class="r-desc">Professional-grade design guide</div>
+            </div>
+          </li>
+          <li>
+            <span class="r-icon">📱</span>
+            <div>
+              <div><a href="https://zbotic.in/smart-plug-build-energy-monitoring-with-esp32-and-blynk/" target="_blank">Smart Plug Energy Monitor + Blynk (Zbotic)</a></div>
+              <div class="r-desc">Mobile dashboard integration, Mar 2026</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:0.8rem;">🤖 Motor Control</div>
+        <ul class="resource-list">
+          <li>
+            <span class="r-icon">🌀</span>
+            <div>
+              <div><a href="https://components.espressif.com/components/ulipe/espfoc/versions/2.0.0/readme" target="_blank">espFoC v2.0 — Espressif Component Registry</a></div>
+              <div class="r-desc">FOC library สำหรับ BLDC/PMSM บน ESP32</div>
+            </div>
+          </li>
+          <li>
+            <span class="r-icon">📐</span>
+            <div>
+              <div><a href="https://relatedrepos.com/gh/pkerspe/ESP-StepperMotor-Server" target="_blank">ESP-StepperMotor-Server (GitHub)</a></div>
+              <div class="r-desc">Web UI + REST API สำหรับ stepper control</div>
+            </div>
+          </li>
+          <li>
+            <span class="r-icon">🎮</span>
+            <div>
+              <div><a href="https://relatedrepos.com/gh/CQUPTHXC/DJIMotorCtrlESP" target="_blank">DJIMotorCtrlESP — DJI Motor Library</a></div>
+              <div class="r-desc">M3508, M2006, GM6020 via CAN bus</div>
+            </div>
+          </li>
+          <li>
+            <span class="r-icon">📋</span>
+            <div>
+              <div><a href="https://reference.arduino.cc/reference/en/libraries/esp32motorcontrol" target="_blank">ESP32MotorControl — Arduino Reference</a></div>
+              <div class="r-desc">DC motor ด้วย MCPWM สำหรับ beginners</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:0.8rem;">🖥️ e-Paper Display</div>
+        <ul class="resource-list">
+          <li>
+            <span class="r-icon">🖼️</span>
+            <div>
+              <div><a href="https://www.espboards.dev/blog/elecrow-crowpanel-epaper-esphome-lvgl/" target="_blank">Elecrow CrowPanel ePaper + ESPHome LVGL</a></div>
+              <div class="r-desc">espboards.dev — setup guide + config</div>
+            </div>
+          </li>
+          <li>
+            <span class="r-icon">🌡️</span>
+            <div>
+              <div><a href="https://www.espboards.dev/blog/waveshare-esp32-s3-epaper-esphome-climate/" target="_blank">Waveshare ESP32-S3-ePaper Climate Display</a></div>
+              <div class="r-desc">Battery-powered climate monitor guide</div>
+            </div>
+          </li>
+          <li>
+            <span class="r-icon">⚡</span>
+            <div>
+              <div><a href="https://www.atomic14.com/esp32/boards/epaper-vs-lcd/" target="_blank">e-Paper vs LCD — เลือกอะไรดี?</a></div>
+              <div class="r-desc">atomic14 — เปรียบเทียบ power, speed, cost</div>
+            </div>
+          </li>
+          <li>
+            <span class="r-icon">🏠</span>
+            <div>
+              <div><a href="https://computingforgeeks.com/best-e-ink-display-home-assistant/" target="_blank">Best e-Ink Display สำหรับ Home Assistant</a></div>
+              <div class="r-desc">ตัวเลือก 2026 — ranking และ setup guide</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div>สร้างเมื่อ <strong>18 พฤศจิกายน 2026</strong> — ธีม: <strong>Industrial &amp; Power Electronics</strong></div>
+  <div style="margin-top:0.3rem; font-size:0.8rem;">
+    หัวข้อที่ครอบคลุม: Industrial IoT / Modbus / SCADA • Energy Monitoring • Motor Control • e-Paper Displays
+  </div>
+  <div class="footer-tags">
+    <span class="tag tag-orange">ESP32-S3</span>
+    <span class="tag tag-blue">Modbus RTU</span>
+    <span class="tag tag-green">PZEM-004T</span>
+    <span class="tag tag-purple">FOC / BLDC</span>
+    <span class="tag tag-cyan">e-Paper</span>
+    <span class="tag tag-yellow">Industrial IoT</span>
+    <span class="tag tag-red">OPC-UA</span>
+    <span class="tag tag-blue">ESPHome</span>
+    <span class="tag tag-orange">DIN Rail</span>
+    <span class="tag tag-green">Deep Sleep</span>
+  </div>
+</footer>
+
+</body>
+</html>
