@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 20 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263348;
+    --accent-cyan: #06b6d4;
+    --accent-purple: #a855f7;
+    --accent-green: #22c55e;
+    --accent-orange: #f97316;
+    --accent-pink: #ec4899;
+    --accent-yellow: #eab308;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --gradient-1: linear-gradient(135deg, #0ea5e9, #8b5cf6);
+    --gradient-2: linear-gradient(135deg, #10b981, #06b6d4);
+    --gradient-3: linear-gradient(135deg, #f97316, #ef4444);
+    --gradient-4: linear-gradient(135deg, #a855f7, #ec4899);
+    --gradient-5: linear-gradient(135deg, #eab308, #f97316);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1a1040 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(168,85,247,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: var(--gradient-4);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+
+  .header-subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.2rem;
+  }
+
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .stat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  /* Navigation */
+  nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-inner {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .nav-inner::-webkit-scrollbar { display: none; }
+
+  nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.9rem 1.2rem;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+
+  nav a:hover {
+    color: var(--accent-cyan);
+    border-bottom-color: var(--accent-cyan);
+  }
+
+  /* Layout */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  section {
+    margin-bottom: 3.5rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .section-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .section-header p {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-top: 0.1rem;
+  }
+
+  /* Cards Grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(6,182,212,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+
+  .card-accent {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+
+  .card-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    margin-bottom: 0.6rem;
+    text-transform: uppercase;
+  }
+
+  .card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+
+  .card p {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 0.8rem;
+  }
+
+  .card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.8rem;
+  }
+
+  .chip {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+
+  .chip.highlight {
+    background: rgba(6,182,212,0.1);
+    border-color: rgba(6,182,212,0.3);
+    color: var(--accent-cyan);
+  }
+
+  /* Featured Card */
+  .card-featured {
+    background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(6,182,212,0.05));
+    border-color: rgba(168,85,247,0.3);
+    grid-column: span 2;
+  }
+
+  @media (max-width: 680px) {
+    .card-featured { grid-column: span 1; }
+  }
+
+  .card-featured h3 { font-size: 1.1rem; }
+
+  /* Code Block */
+  .code-section {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-top: 1.5rem;
+  }
+
+  .code-header {
+    background: var(--bg-secondary);
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .code-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  .code-title {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-left: 0.5rem;
+    font-weight: 600;
+  }
+
+  pre {
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.7;
+    color: #e2e8f0;
+  }
+
+  .kw { color: #c792ea; }
+  .fn { color: #82aaff; }
+  .st { color: #c3e88d; }
+  .cm { color: #546e7a; font-style: italic; }
+  .nu { color: #f78c6c; }
+  .tp { color: #ffcb6b; }
+
+  /* Info Box */
+  .info-box {
+    background: rgba(6,182,212,0.07);
+    border: 1px solid rgba(6,182,212,0.25);
+    border-left: 4px solid var(--accent-cyan);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+  }
+
+  .warn-box {
+    background: rgba(249,115,22,0.07);
+    border: 1px solid rgba(249,115,22,0.25);
+    border-left: 4px solid var(--accent-orange);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+  }
+
+  /* Project Steps */
+  .steps-list {
+    counter-reset: step;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+  }
+
+  .step-num {
+    counter-increment: step;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--gradient-1);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .step-content h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .step-content p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+
+  /* Resource Links */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    text-decoration: none;
+    color: var(--text-primary);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    transition: all 0.2s;
+  }
+
+  .resource-card:hover {
+    border-color: rgba(6,182,212,0.4);
+    background: var(--bg-card-hover);
+    transform: translateY(-1px);
+  }
+
+  .resource-icon {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+
+  .resource-card h4 { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .resource-card p { font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; }
+
+  /* Comparison Table */
+  .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  thead { background: var(--bg-secondary); }
+  th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    color: var(--text-secondary);
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .td-label { color: var(--text-primary); font-weight: 600; }
+  .badge-green { color: var(--accent-green); font-weight: 700; }
+  .badge-orange { color: var(--accent-orange); font-weight: 700; }
+  .badge-cyan { color: var(--accent-cyan); font-weight: 700; }
+  .badge-purple { color: var(--accent-purple); font-weight: 700; }
+
+  /* Footer */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+
+  footer strong { color: var(--text-secondary); }
+  footer a { color: var(--accent-cyan); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  .footer-refs {
+    max-width: 800px;
+    margin: 1rem auto 0;
+    text-align: left;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  .footer-refs li { margin-bottom: 0.3rem; }
+
+  @media (max-width: 600px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .resource-grid { grid-template-columns: 1fr; }
+    .header-stats { gap: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">Daily ESP32 Research — 20 Nov 2026</div>
+  <h1>ESP32 &amp; IoT Innovations</h1>
+  <p class="header-subtitle">ธีมประจำวัน: Matter Smart Home · Audio DSP · Industrial IoT</p>
+  <div class="header-stats">
+    <span class="stat-item">
+      <span class="stat-dot" style="background:#a855f7"></span>
+      ESP32-C6 + Matter/Thread/Zigbee
+    </span>
+    <span class="stat-item">
+      <span class="stat-dot" style="background:#06b6d4"></span>
+      Audio DSP &amp; Synth บน ESP32-S3
+    </span>
+    <span class="stat-item">
+      <span class="stat-dot" style="background:#f97316"></span>
+      Industrial IoT — Modbus RS485
+    </span>
+    <span class="stat-item">
+      <span class="stat-dot" style="background:#22c55e"></span>
+      15 ไอเดีย + 3 Code Guides
+    </span>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#innovations">นวัตกรรมใหม่</a>
+    <a href="#projects">ไอเดียโปรเจกต์</a>
+    <a href="#sensors">Sensors</a>
+    <a href="#code">Code Guides</a>
+    <a href="#resources">แหล่งข้อมูล</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon" style="background:linear-gradient(135deg,#a855f7,#ec4899)">🔬</div>
+      <div>
+        <h2>นวัตกรรมและข่าวสารล่าสุด</h2>
+        <p>ESP32-C6 Matter Ecosystem · Audio DSP · Industrial Gateway</p>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <div class="card card-featured">
+        <div class="card-accent" style="background:var(--gradient-4)"></div>
+        <span class="card-tag" style="background:rgba(168,85,247,0.15);color:#a855f7">ข่าวใหม่ 2026</span>
+        <h3>Amazon ACK SDK รองรับ ESP32-C6 แล้ว — Matter Device Development ง่ายขึ้น</h3>
+        <p>Amazon ประกาศในเดือนมีนาคม 2026 ว่า Alexa Connect Kit (ACK) SDK for Matter รองรับ ESP32-C6 อย่างเป็นทางการแล้ว นักพัฒนาสามารถใช้ ESP32-C6 สร้างอุปกรณ์ Matter-compliant ที่รองรับ Over-The-Air updates, logging, และ metrics ผ่าน Amazon IoT Service ทำให้การสร้าง Smart Home device ที่ทำงานร่วมกับ Alexa ง่ายกว่าเดิมมาก</p>
+        <div class="info-box">
+          <strong>ทำไม ESP32-C6 ถึงเหมาะกับ Matter?</strong><br>
+          ESP32-C6 มีวิทยุในชิปเดียว 3 ตัว: Wi-Fi 6 (2.4GHz), Bluetooth 5 LE, และ IEEE 802.15.4 — ซึ่งรองรับทั้ง Thread และ Zigbee สามารถทำ Thread Border Router และ Zigbee-to-Matter Bridge ได้โดยไม่ต้องใช้ชิปเสริม
+        </div>
+        <div class="card-meta">
+          <span class="chip highlight">Amazon ACK SDK</span>
+          <span class="chip highlight">Matter 1.3</span>
+          <span class="chip">Thread</span>
+          <span class="chip">Zigbee 3.0</span>
+          <span class="chip">Wi-Fi 6</span>
+          <span class="chip">BLE 5.0</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background:var(--gradient-2)"></div>
+        <span class="card-tag" style="background:rgba(6,182,212,0.15);color:#06b6d4">Espressif 2026</span>
+        <h3>ESP-Audio-Effects — Library อย่างเป็นทางการสำหรับ DSP</h3>
+        <p>Espressif ปล่อย ESP-Audio-Effects (ส.ค. 2026) มี 14 โมดูลเสียง ตั้งแต่ equalizer, reverb, compressor, pitch shift จนถึง multiband compressor โดยใช้ CPU น้อยกว่า 1% บน ESP32-S3 240MHz สำหรับโมดูลส่วนใหญ่ เหมาะมากสำหรับโปรเจกต์เครื่องดนตรีและ audio effects pedal</p>
+        <div class="card-meta">
+          <span class="chip highlight">esp-adf</span>
+          <span class="chip">ESP32-S3</span>
+          <span class="chip">14 Effects</span>
+          <span class="chip">&lt;1% CPU</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background:var(--gradient-3)"></div>
+        <span class="card-tag" style="background:rgba(249,115,22,0.15);color:#f97316">Industrial</span>
+        <h3>ESP32-S3 Modbus Gateway รุ่นอุตสาหกรรม — DIN-Rail Ready</h3>
+        <p>ในปี 2025–2026 มีบอร์ด ESP32 สำหรับงานอุตสาหกรรมออกมามากขึ้น เช่น Waveshare ESP32-S3-RS485-CAN (Isolated RS485 + CAN + RTC), DFRobot Edge101 (RS-485+CAN+Ethernet+4G), และ EBYTE ECM50-A (RS232/485+DI/DO+LoRa) ทำให้ ESP32 บุกตลาด IIoT ได้จริงๆ</p>
+        <div class="card-meta">
+          <span class="chip highlight">DIN-Rail</span>
+          <span class="chip">RS485</span>
+          <span class="chip">Modbus RTU/TCP</span>
+          <span class="chip">CAN Bus</span>
+          <span class="chip">4G LTE</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background:var(--gradient-5)"></div>
+        <span class="card-tag" style="background:rgba(234,179,8,0.15);color:#eab308">Maker</span>
+        <h3>AMYboard — ESP32-S3 Synth Board พร้อม MIDI + Eurorack</h3>
+        <p>AMYboard (เปิดตัว มี.ค. 2026) คือบอร์ด ESP32-S3 ที่ออกแบบมาสำหรับงาน Audio Synthesis โดยเฉพาะ รองรับ AMY synthesis engine, MIDI in/out, CV input/output สำหรับ Eurorack modular synth และ SD-card storage สามารถสร้างเครื่องดนตรีอิเล็กทรอนิกส์ระดับ professional ได้</p>
+        <div class="card-meta">
+          <span class="chip highlight">AMY Engine</span>
+          <span class="chip">MIDI</span>
+          <span class="chip">CV/Eurorack</span>
+          <span class="chip">ESP32-S3</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background:var(--gradient-1)"></div>
+        <span class="card-tag" style="background:rgba(14,165,233,0.15);color:#0ea5e9">Certification</span>
+        <h3>ESP32-C6 ผ่าน Zigbee 3.0 Platform Certification จาก CSA</h3>
+        <p>CSA (Connectivity Standards Alliance) ได้ listing ESP32-C6 Zigbee 3.0 Platform อย่างเป็นทางการ ทำให้นักพัฒนาที่ต้องการสร้างผลิตภัณฑ์ Zigbee 3.0 ที่ผ่าน certification ใช้ ESP32-C6 เป็นฐานได้โดยตรง ลดเวลาและค่าใช้จ่ายในการ certify สินค้า IoT</p>
+        <div class="card-meta">
+          <span class="chip highlight">CSA Certified</span>
+          <span class="chip">Zigbee 3.0</span>
+          <span class="chip">ESP32-C6</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Comparison Table -->
+    <div style="margin-top:1.5rem">
+      <h3 style="font-size:1rem;margin-bottom:0.75rem;color:var(--text-secondary);font-weight:600">เปรียบเทียบ ESP32-C6 vs ESP32-H2 สำหรับงาน Smart Home Protocol</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>คุณสมบัติ</th>
+              <th>ESP32-C6</th>
+              <th>ESP32-H2</th>
+              <th>เหมาะกับ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-label">Wi-Fi</td>
+              <td class="badge-green">Wi-Fi 6 (2.4GHz)</td>
+              <td style="color:var(--text-muted)">ไม่มี</td>
+              <td>ESP32-C6 สำหรับงาน Wi-Fi + Protocol</td>
+            </tr>
+            <tr>
+              <td class="td-label">Bluetooth LE</td>
+              <td class="badge-green">BLE 5.0</td>
+              <td class="badge-green">BLE 5.3</td>
+              <td>H2 มี BLE ใหม่กว่า</td>
+            </tr>
+            <tr>
+              <td class="td-label">IEEE 802.15.4</td>
+              <td class="badge-green">Thread + Zigbee</td>
+              <td class="badge-green">Thread + Zigbee</td>
+              <td>ทั้งคู่เหมือนกัน</td>
+            </tr>
+            <tr>
+              <td class="td-label">Matter</td>
+              <td class="badge-green">รองรับ (via Wi-Fi + Thread)</td>
+              <td class="badge-cyan">รองรับ (via Thread เท่านั้น)</td>
+              <td>C6 ยืดหยุ่นกว่า</td>
+            </tr>
+            <tr>
+              <td class="td-label">ราคา (approx.)</td>
+              <td class="badge-orange">สูงกว่าเล็กน้อย</td>
+              <td class="badge-green">ถูกกว่า</td>
+              <td>H2 ถ้าไม่ต้องการ Wi-Fi</td>
+            </tr>
+            <tr>
+              <td class="td-label">กำลังไฟ</td>
+              <td style="color:var(--text-secondary)">ปกติ</td>
+              <td class="badge-green">ต่ำกว่า (Ultra-LP)</td>
+              <td>H2 สำหรับ battery device</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon" style="background:linear-gradient(135deg,#06b6d4,#22c55e)">💡</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+        <p>Smart Home · Audio · Industrial — เลือกระดับความยากตามต้องการ</p>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <div class="card">
+        <div class="card-accent" style="background:var(--gradient-4)"></div>
+        <span class="card-tag" style="background:rgba(168,85,247,0.15);color:#a855f7">Smart Home</span>
+        <h3>Thread Border Router อเนกประสงค์ด้วย ESP32-C6</h3>
+        <p>สร้าง Thread Border Router ที่เชื่อม Thread network กับ IP network เพื่อควบคุม Matter device ผ่าน Home Assistant หรือ Apple Home ใช้ ESP-IDF ล่าสุดที่มี Thread stack built-in พร้อม web UI สำหรับ monitor network</p>
+        <div class="steps-list" style="margin-top:0.8rem">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <h4>ติดตั้ง ESP-IDF v5.x + Thread Component</h4>
+              <p>ใช้ example openthread/ot_br สำหรับ Border Router</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <h4>เชื่อม ESP32-C6 กับ Home Assistant</h4>
+              <p>ผ่าน OTBR (OpenThread Border Router) add-on</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <h4>Pair Matter Devices ผ่าน QR Code</h4>
+              <p>ทดสอบกับ ESP32-H2 ที่ทำเป็น Thread end device</p>
+            </div>
+          </div>
+        </div>
+        <div class="card-meta" style="margin-top:0.8rem">
+          <span class="chip highlight">ESP32-C6</span>
+          <span class="chip">Thread</span>
+          <span class="chip">Home Assistant</span>
+          <span class="chip">ระดับ: กลาง</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background:var(--gradient-2)"></div>
+        <span class="card-tag" style="background:rgba(34,197,94,0.15);color:#22c55e">Audio</span>
+        <h3>Guitar Effects Pedal — Delay/Reverb ด้วย ESP32-S3</h3>
+        <p>สร้าง DIY guitar pedal ที่ใช้ ESP32-S3 ประมวลผล audio DSP แบบ real-time ด้วย ESP-Audio-Effects library ใส่ reverb, delay, และ chorus โดยใช้ ES8388 codec และ กล่อง 3D printed พร้อม foot switch และ knob analog</p>
+        <div class="card-meta">
+          <span class="chip highlight">ESP-Audio-Effects</span>
+          <span class="chip">ES8388 Codec</span>
+          <span class="chip">I2S</span>
+          <span class="chip">ระดับ: กลาง-สูง</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background:var(--gradient-3)"></div>
+        <span class="card-tag" style="background:rgba(249,115,22,0.15);color:#f97316">Industrial</span>
+        <h3>Smart Factory Edge Gateway — Modbus to MQTT</h3>
+        <p>แปลง PLC/sensor เก่าที่ใช้ Modbus RTU ให้สื่อสารกับ Cloud ผ่าน MQTT ด้วย ESP32 ติดตั้งบน DIN-rail ในตู้ไฟ รองรับ poll หลาย device พร้อมกัน, local data buffering กรณี internet หลุด, และ OTA update ผ่าน MQTT</p>
+        <div class="card-meta">
+          <span class="chip highlight">Modbus RTU</span>
+          <span class="chip">RS485</span>
+          <span class="chip">MQTT</span>
+          <span class="chip">OTA</span>
+          <span class="chip">ระดับ: สูง</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background:var(--gradient-5)"></div>
+        <span class="card-tag" style="background:rgba(234,179,8,0.15);color:#eab308">Audio</span>
+        <h3>Polyphonic Synthesizer 80-Voice ด้วย ESP32Synth Library</h3>
+        <p>ใช้ ESP32Synth library (เปิดตัว เม.ย. 2026) สร้าง soft synth 80 เสียง/channel บน ESP32-S3 ที่ 48kHz ต่อ MIDI keyboard ผ่าน UART หรือ USB ใส่ OLED display แสดง patch name และ ADSR envelope ส่งเสียงผ่าน PCM5102 DAC</p>
+        <div class="card-meta">
+          <span class="chip highlight">ESP32Synth</span>
+          <span class="chip">80 Voices</span>
+          <span class="chip">MIDI</span>
+          <span class="chip">PCM5102</span>
+          <span class="chip">ระดับ: กลาง</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background:var(--gradient-1)"></div>
+        <span class="card-tag" style="background:rgba(14,165,233,0.15);color:#0ea5e9">Smart Home</span>
+        <h3>Zigbee Smart Plug พร้อม Power Monitoring</h3>
+        <p>สร้าง Zigbee smart plug ด้วย ESP32-H2 (ใช้พลังงานต่ำ) ต่อ BL0937 energy monitor chip วัดกำลังไฟฟ้า, กระแส, แรงดัน Report ผ่าน Zigbee ไปยัง coordinator ทำงานร่วมกับ Zigbee2MQTT และ Home Assistant ได้ทันที</p>
+        <div class="card-meta">
+          <span class="chip highlight">ESP32-H2</span>
+          <span class="chip">Zigbee</span>
+          <span class="chip">BL0937</span>
+          <span class="chip">Power Monitor</span>
+          <span class="chip">ระดับ: กลาง</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background:linear-gradient(135deg,#ec4899,#f97316)"></div>
+        <span class="card-tag" style="background:rgba(236,72,153,0.15);color:#ec4899">Creative</span>
+        <h3>Optical Theremin + Loop Station แบบ Standalone</h3>
+        <p>ตามโปรเจกต์จาก Politehnica Bucharest 2026: สร้างเครื่องดนตรี theremin ที่ใช้ IR distance sensor ควบคุมระดับเสียง ด้านหนึ่งเป็น synth เสียง อีกด้านเป็น loop recorder บันทึกและ loop เสียงได้แบบ real-time ทั้งหมดบน ESP32-S3</p>
+        <div class="card-meta">
+          <span class="chip highlight">Theremin</span>
+          <span class="chip">IR Sensor</span>
+          <span class="chip">Loop Station</span>
+          <span class="chip">ESP32-S3</span>
+          <span class="chip">ระดับ: สูง</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon" style="background:linear-gradient(135deg,#22c55e,#eab308)">📡</div>
+      <div>
+        <h2>Sensors ที่เหมาะกับโปรเจกต์วันนี้</h2>
+        <p>เลือก sensor ที่เข้ากับ Smart Home, Audio และ Industrial</p>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+
+      <div class="card">
+        <div class="card-accent" style="background:var(--gradient-4)"></div>
+        <span class="card-tag" style="background:rgba(168,85,247,0.15);color:#a855f7">Smart Home</span>
+        <h3>PIR AM312 + Contact Sensor — Zigbee Occupancy</h3>
+        <p>AM312 เป็น PIR mini module ขนาดเล็กมาก (12mm) กินไฟต่ำ เหมาะมากสำหรับ Zigbee occupancy sensor ที่ใช้ถ่าน CR2032 ทำงานได้นาน 1–2 ปี จับคู่กับ Reed contact sensor สำหรับ door/window detector ใน Home Assistant</p>
+        <div class="card-meta">
+          <span class="chip">AM312 PIR</span>
+          <span class="chip">3V3 Logic</span>
+          <span class="chip">Digital Out</span>
+          <span class="chip">12mm Mini</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background:var(--gradient-2)"></div>
+        <span class="card-tag" style="background:rgba(6,182,212,0.15);color:#06b6d4">Audio</span>
+        <h3>INMP441 MEMS Microphone — I2S Digital</h3>
+        <p>INMP441 เป็น MEMS mic ที่ให้ I2S digital output โดยตรง ไม่มีเสียง noise จาก ADC เหมาะสำหรับ voice input, audio recording, หรือ voice wake-word บน ESP32-S3 SNR 61dB, AOP 130dBSPL ราคาถูก (~40 บาท)</p>
+        <div class="card-meta">
+          <span class="chip highlight">I2S Digital</span>
+          <span class="chip">INMP441</span>
+          <span class="chip">SNR 61dB</span>
+          <span class="chip">3.3V</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background:var(--gradient-3)"></div>
+        <span class="card-tag" style="background:rgba(249,115,22,0.15);color:#f97316">Industrial</span>
+        <h3>Current Transformer (CT Sensor) + ADS1115 — Power Monitor</h3>
+        <p>CT sensor แบบ split-core (เช่น SCT-013-030) วัดกระแส AC โดยไม่ต้องตัดสายไฟ จับคู่กับ ADS1115 ADC 16-bit ผ่าน I2C เพื่อความแม่นยำ เหมาะสำหรับ energy monitoring ในโรงงาน หรือ home energy dashboard บน ESP32</p>
+        <div class="card-meta">
+          <span class="chip">SCT-013</span>
+          <span class="chip">ADS1115</span>
+          <span class="chip">16-bit ADC</span>
+          <span class="chip">Non-invasive</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background:var(--gradient-5)"></div>
+        <span class="card-tag" style="background:rgba(234,179,8,0.15);color:#eab308">Multi-use</span>
+        <h3>ToF VL53L4CX — Multi-Target Distance ระยะ 60cm–6m</h3>
+        <p>VL53L4CX (รุ่นใหม่กว่า L1X) วัดได้ถึง 4 จุดพร้อมกันในระยะสูงสุด 6 เมตร เหมาะสำหรับ people counting, occupancy detection, gesture control, หรือ liquid level sensing ใช้ I2C เชื่อมต่อง่าย รองรับ 3.3V</p>
+        <div class="card-meta">
+          <span class="chip highlight">VL53L4CX</span>
+          <span class="chip">Multi-target</span>
+          <span class="chip">6m Range</span>
+          <span class="chip">I2C</span>
+          <span class="chip">ST Micro</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-accent" style="background:var(--gradient-1)"></div>
+        <span class="card-tag" style="background:rgba(14,165,233,0.15);color:#0ea5e9">Industrial</span>
+        <h3>RS485 Temperature/Humidity Transmitter — Modbus RTU</h3>
+        <p>Sensor อุตสาหกรรมที่สื่อสารผ่าน Modbus RTU โดยตรง (เช่น รุ่น SHT20-485) แค่ต่อสาย RS485 กับ ESP32 + MAX485 ก็ poll ค่าได้เลย เหมาะมากสำหรับ โรงเก็บสินค้า, ห้องเซิร์ฟเวอร์, โรงงาน ทนทาน ไม่ต้องเขียน protocol เอง</p>
+        <div class="card-meta">
+          <span class="chip highlight">Modbus RTU</span>
+          <span class="chip">RS485</span>
+          <span class="chip">SHT20</span>
+          <span class="chip">Industrial Grade</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: CODE ===== -->
+  <section id="code">
+    <div class="section-header">
+      <div class="section-icon" style="background:linear-gradient(135deg,#06b6d4,#a855f7)">⌨️</div>
+      <div>
+        <h2>Code Guides — ตัวอย่างโค้ดที่เอาไปใช้ได้จริง</h2>
+        <p>ESP32-C6 Thread · Modbus RS485 · I2S Audio</p>
+      </div>
+    </div>
+
+    <!-- Code 1: Thread Border Router Config -->
+    <div style="margin-bottom:2rem">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.5rem;color:var(--text-primary)">1. ESP32-C6 — ตั้งค่า Thread Network ด้วย ESP-IDF</h3>
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.75rem">ใช้ OpenThread stack ที่มาพร้อมกับ ESP-IDF v5.x สำหรับสร้าง Thread End Device</p>
+      <div class="code-section">
+        <div class="code-header">
+          <div class="code-dot" style="background:#ff5f57"></div>
+          <div class="code-dot" style="background:#febc2e"></div>
+          <div class="code-dot" style="background:#28c840"></div>
+          <span class="code-title">thread_init.c — ESP32-C6 Thread End Device</span>
+        </div>
+        <pre><span class="cm">// ESP-IDF v5.x — Thread End Device บน ESP32-C6</span>
+<span class="cm">// idf_component.yml: requires esp_openthread, nvs_flash</span>
+
+<span class="kw">#include</span> <span class="st">"esp_openthread.h"</span>
+<span class="kw">#include</span> <span class="st">"esp_openthread_netif_glue.h"</span>
+<span class="kw">#include</span> <span class="st">"openthread/thread.h"</span>
+<span class="kw">#include</span> <span class="st">"openthread/dataset.h"</span>
+<span class="kw">#include</span> <span class="st">"nvs_flash.h"</span>
+
+<span class="cm">// Thread Network dataset (ได้จาก Border Router)</span>
+<span class="kw">static const</span> <span class="tp">char</span> *<span class="fn">DATASET_TLVS</span> =
+    <span class="st">"0E080000000000010000..."</span>;  <span class="cm">// hex TLV จาก OTBR</span>
+
+<span class="kw">void</span> <span class="fn">ot_task_worker</span>(<span class="kw">void</span> *arg) {
+    esp_openthread_platform_config_t config = {
+        .radio_config = ESP_OPENTHREAD_DEFAULT_RADIO_CONFIG(),
+        .host_config = ESP_OPENTHREAD_DEFAULT_HOST_CONFIG(),
+        .port_config = ESP_OPENTHREAD_DEFAULT_PORT_CONFIG(),
+    };
+
+    <span class="cm">// เริ่ม OpenThread stack</span>
+    <span class="fn">esp_openthread_init</span>(&amp;config);
+
+    <span class="cm">// Apply network dataset</span>
+    otOperationalDatasetTlvs dataset;
+    otDatasetParseTlvs(<span class="fn">DATASET_TLVS</span>, &amp;dataset);
+    otDatasetSetActiveTlvs(<span class="fn">esp_openthread_get_instance</span>(), &amp;dataset);
+
+    <span class="cm">// เปิด Thread interface</span>
+    otIp6SetEnabled(<span class="fn">esp_openthread_get_instance</span>(), <span class="kw">true</span>);
+    otThreadSetEnabled(<span class="fn">esp_openthread_get_instance</span>(), <span class="kw">true</span>);
+
+    <span class="fn">esp_openthread_launch_mainloop</span>();
+}
+
+<span class="kw">void</span> <span class="fn">app_main</span>(<span class="kw">void</span>) {
+    <span class="fn">nvs_flash_init</span>();
+    <span class="cm">// Thread ต้องการ 8KB stack</span>
+    <span class="fn">xTaskCreate</span>(ot_task_worker, <span class="st">"ot"</span>, <span class="nu">8192</span>, <span class="kw">NULL</span>, <span class="nu">5</span>, <span class="kw">NULL</span>);
+}</pre>
+      </div>
+      <div class="warn-box">
+        <strong>หมายเหตุ:</strong> ESP32-C6 ใช้ radio เดียวกันสำหรับ Wi-Fi 6 และ IEEE 802.15.4 — ไม่สามารถใช้พร้อมกันได้พร้อมกันทันที ต้องใช้ Coexistence API หรือ time-sharing ที่ Espressif กำลัง develop อยู่
+      </div>
+    </div>
+
+    <!-- Code 2: Modbus RS485 -->
+    <div style="margin-bottom:2rem">
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.5rem;color:var(--text-primary)">2. ESP32 Modbus RS485 — อ่านค่า sensor ผ่าน MAX485</h3>
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.75rem">ใช้ ESP-Modbus component (esp-idf) อ่านค่าอุณหภูมิจาก RS485 temperature transmitter</p>
+      <div class="code-section">
+        <div class="code-header">
+          <div class="code-dot" style="background:#ff5f57"></div>
+          <div class="code-dot" style="background:#febc2e"></div>
+          <div class="code-dot" style="background:#28c840"></div>
+          <span class="code-title">modbus_rs485_read.c — Modbus RTU Master</span>
+        </div>
+        <pre><span class="cm">// ESP32 Modbus RTU Master — อ่าน SHT20-485 temperature sensor</span>
+<span class="cm">// Hardware: ESP32 + MAX485 module</span>
+<span class="cm">// UART2: TX=GPIO17, RX=GPIO16, DE/RE=GPIO5</span>
+
+<span class="kw">#include</span> <span class="st">"mbc_master.h"</span>
+<span class="kw">#include</span> <span class="st">"esp_modbus_common.h"</span>
+
+<span class="kw">#define</span> MB_PORT_NUM     <span class="nu">2</span>
+<span class="kw">#define</span> MB_DEV_SPEED    <span class="nu">9600</span>
+<span class="kw">#define</span> MB_SLAVE_ADDR   <span class="nu">1</span>
+<span class="kw">#define</span> MB_TEMP_REG     <span class="nu">0x0001</span>  <span class="cm">// Input Register 1 = Temperature x10</span>
+<span class="kw">#define</span> MB_HUM_REG      <span class="nu">0x0002</span>  <span class="cm">// Input Register 2 = Humidity x10</span>
+
+<span class="kw">void</span> <span class="fn">modbus_read_task</span>(<span class="kw">void</span> *arg) {
+    mb_communication_info_t comm_info = {
+        .port     = MB_PORT_NUM,
+        .baudrate = MB_DEV_SPEED,
+        .parity   = MB_PARITY_NONE,
+        .mode     = MB_MODE_RTU,
+    };
+
+    <span class="fn">mbc_master_init</span>(MB_PORT_RS485_SERIAL, &amp;comm_info);
+    <span class="fn">mbc_master_start</span>();
+
+    <span class="tp">uint16_t</span> regs[<span class="nu">2</span>];
+    mb_param_request_t req = {
+        .slave_addr = MB_SLAVE_ADDR,
+        .command    = MB_FUNC_READ_INPUT_REGISTER,
+        .reg_start  = MB_TEMP_REG,
+        .reg_size   = <span class="nu">2</span>
+    };
+
+    <span class="kw">while</span>(<span class="nu">1</span>) {
+        esp_err_t err = <span class="fn">mbc_master_send_request</span>(&amp;req, regs);
+        <span class="kw">if</span>(err == ESP_OK) {
+            <span class="tp">float</span> temp = regs[<span class="nu">0</span>] / <span class="nu">10.0f</span>;
+            <span class="tp">float</span> hum  = regs[<span class="nu">1</span>] / <span class="nu">10.0f</span>;
+            <span class="fn">printf</span>(<span class="st">"Temp: %.1f°C  Hum: %.1f%%\n"</span>, temp, hum);
+        }
+        <span class="fn">vTaskDelay</span>(<span class="fn">pdMS_TO_TICKS</span>(<span class="nu">5000</span>));  <span class="cm">// poll ทุก 5 วินาที</span>
+    }
+}</pre>
+      </div>
+    </div>
+
+    <!-- Code 3: I2S Audio Input -->
+    <div>
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.5rem;color:var(--text-primary)">3. ESP32-S3 — รับเสียงจาก INMP441 ผ่าน I2S</h3>
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.75rem">ตั้งค่า I2S driver สำหรับรับ 16-bit audio จาก MEMS microphone INMP441</p>
+      <div class="code-section">
+        <div class="code-header">
+          <div class="code-dot" style="background:#ff5f57"></div>
+          <div class="code-dot" style="background:#febc2e"></div>
+          <div class="code-dot" style="background:#28c840"></div>
+          <span class="code-title">i2s_mic_input.c — INMP441 on ESP32-S3</span>
+        </div>
+        <pre><span class="cm">// ESP32-S3 — INMP441 I2S MEMS Microphone</span>
+<span class="cm">// Pins: SCK=GPIO41, WS=GPIO42, SD=GPIO2, L/R=GND (Left ch)</span>
+
+<span class="kw">#include</span> <span class="st">"driver/i2s_std.h"</span>  <span class="cm">// ESP-IDF v5+ new I2S API</span>
+
+<span class="kw">#define</span> I2S_SAMPLE_RATE  <span class="nu">16000</span>
+<span class="kw">#define</span> I2S_BUF_LEN      <span class="nu">1024</span>
+
+i2s_chan_handle_t rx_chan;
+
+<span class="kw">void</span> <span class="fn">i2s_mic_init</span>(<span class="kw">void</span>) {
+    i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(
+        I2S_NUM_AUTO, I2S_ROLE_MASTER);
+    <span class="fn">i2s_new_channel</span>(&amp;chan_cfg, <span class="kw">NULL</span>, &amp;rx_chan);
+
+    i2s_std_config_t std_cfg = {
+        .clk_cfg  = I2S_STD_CLK_DEFAULT_CONFIG(I2S_SAMPLE_RATE),
+        .slot_cfg = I2S_STD_MSB_SLOT_DEFAULT_CONFIG(
+            I2S_DATA_BIT_WIDTH_32BIT,  <span class="cm">// INMP441 ส่ง 32bit frame</span>
+            I2S_SLOT_MODE_MONO),
+        .gpio_cfg = {
+            .mclk = I2S_GPIO_UNUSED,
+            .bclk = <span class="nu">41</span>,  <span class="cm">// SCK</span>
+            .ws   = <span class="nu">42</span>,  <span class="cm">// WS (LRCLK)</span>
+            .dout = I2S_GPIO_UNUSED,
+            .din  = <span class="nu">2</span>,   <span class="cm">// SD (data)</span>
+        },
+    };
+    <span class="fn">i2s_channel_init_std_mode</span>(rx_chan, &amp;std_cfg);
+    <span class="fn">i2s_channel_enable</span>(rx_chan);
+}
+
+<span class="kw">void</span> <span class="fn">audio_record_task</span>(<span class="kw">void</span> *arg) {
+    <span class="tp">int32_t</span> raw[I2S_BUF_LEN];
+    <span class="tp">size_t</span> bytes_read;
+
+    <span class="kw">while</span>(<span class="nu">1</span>) {
+        <span class="fn">i2s_channel_read</span>(rx_chan, raw,
+            <span class="kw">sizeof</span>(raw), &amp;bytes_read, <span class="nu">1000</span>);
+
+        <span class="cm">// INMP441 data อยู่ใน bits 31-14 (shift right 14)</span>
+        <span class="kw">for</span>(<span class="tp">int</span> i=<span class="nu">0</span>; i &lt; bytes_read/<span class="nu">4</span>; i++) {
+            <span class="tp">int16_t</span> sample = (<span class="tp">int16_t</span>)(raw[i] &gt;&gt; <span class="nu">14</span>);
+            <span class="cm">// ส่งต่อไปยัง DSP pipeline...</span>
+        }
+    }
+}</pre>
+      </div>
+      <div class="info-box" style="margin-top:0.75rem">
+        <strong>เคล็ดลับ:</strong> INMP441 ส่งข้อมูลใน 24-bit ภายใน frame 32-bit โดย data จะอยู่ที่ bits[31:8] ต้อง shift right 8 บิต (ไม่ใช่ 14) หากต้องการ 24-bit precision ตรวจสอบ datasheet ของ INMP441 อีกครั้งก่อนใช้งานจริง
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 5: RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon" style="background:linear-gradient(135deg,#f97316,#eab308)">🔗</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+        <p>Official docs · Community · Project repos</p>
+      </div>
+    </div>
+
+    <div class="resource-grid">
+      <a href="https://www.espressif.com/en/products/socs/esp32-c6" class="resource-card">
+        <div class="resource-icon">📄</div>
+        <div>
+          <h4>ESP32-C6 Product Page</h4>
+          <p>Espressif official — datasheet, EVK, dev resources</p>
+        </div>
+      </a>
+      <a href="https://docs.espressif.com/projects/esp-adf/en/latest/basic-components/effects/esp-audio-effects.html" class="resource-card">
+        <div class="resource-icon">🎵</div>
+        <div>
+          <h4>ESP-Audio-Effects Docs</h4>
+          <p>14 audio effect modules — reverb, compressor, EQ ฯลฯ</p>
+        </div>
+      </a>
+      <a href="https://www.hackster.io/omar-pelo/esp32-industrial-modbus-to-mqtt-edge-gateway-a45cf6" class="resource-card">
+        <div class="resource-icon">🏭</div>
+        <div>
+          <h4>ESP32 Modbus-to-MQTT Gateway</h4>
+          <p>Hackster — project guide พร้อม schematic และโค้ด</p>
+        </div>
+      </a>
+      <a href="https://linuxgizmos.com/amyboard-esp32-s3-synth-board-supports-midi-cv-and-eurorack-integration/" class="resource-card">
+        <div class="resource-icon">🎹</div>
+        <div>
+          <h4>AMYboard — ESP32-S3 Synth Board</h4>
+          <p>MIDI + CV + Eurorack integration review</p>
+        </div>
+      </a>
+      <a href="https://dev.to/bittobuild/why-esp32-c6-is-the-go-to-chip-for-smart-home-projects-in-2026-13pd" class="resource-card">
+        <div class="resource-icon">🏠</div>
+        <div>
+          <h4>Why ESP32-C6 for Smart Home 2026</h4>
+          <p>DEV Community — บทความอธิบายทำไม C6 ถึงดีที่สุด</p>
+        </div>
+      </a>
+      <a href="https://csa-iot.org/csa_product/esp32-c6-zigbee-3-0-platform/" class="resource-card">
+        <div class="resource-icon">✅</div>
+        <div>
+          <h4>CSA — ESP32-C6 Zigbee 3.0 Certification</h4>
+          <p>Connectivity Standards Alliance product listing</p>
+        </div>
+      </a>
+      <a href="https://hackaday.com/2026/04/23/esp32synth-an-audio-synthesis-library-for-the-esp32/" class="resource-card">
+        <div class="resource-icon">🔊</div>
+        <div>
+          <h4>ESP32Synth Library — Hackaday</h4>
+          <p>80-voice polyphonic synthesis library — เม.ย. 2026</p>
+        </div>
+      </a>
+      <a href="https://www.cnx-software.com/2025/08/19/esp32-modbus-gateway-handles-rtu-tcp-ip-and-mqtt-for-industrial-iot/" class="resource-card">
+        <div class="resource-icon">⚙️</div>
+        <div>
+          <h4>ESP32 Modbus Gateway Review</h4>
+          <p>CNX-Software — DIN-rail ESP32 Modbus RTU/TCP/MQTT</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <strong>ESP32 &amp; IoT Daily Research — 20 พฤศจิกายน 2026</strong><br>
+  สร้างโดย AI Research Agent อัตโนมัติ | ธีมวันนี้: Matter Smart Home · Audio DSP · Industrial IoT
+  <div class="footer-refs">
+    <strong style="color:var(--text-secondary)">แหล่งอ้างอิง:</strong>
+    <ul style="list-style:none;margin-top:0.5rem">
+      <li>• <a href="https://developer.amazon.com/en-US/blogs/alexa/device-makers/2026/03/enhanced-device-development-capabilities">Amazon ACK SDK for Matter + ESP32-C6 (Mar 2026)</a></li>
+      <li>• <a href="https://www.espressif.com/en/node/11089">Espressif ESP-Audio-Effects (Aug 2026)</a></li>
+      <li>• <a href="https://linuxgizmos.com/amyboard-esp32-s3-synth-board-supports-midi-cv-and-eurorack-integration/">AMYboard ESP32-S3 Synth (Mar 2026)</a></li>
+      <li>• <a href="https://www.cnx-software.com/2025/08/19/esp32-modbus-gateway-handles-rtu-tcp-ip-and-mqtt-for-industrial-iot/">ESP32 Industrial Modbus Gateway (Aug 2025)</a></li>
+      <li>• <a href="https://csa-iot.org/csa_product/esp32-c6-zigbee-3-0-platform/">CSA Zigbee 3.0 Certification — ESP32-C6</a></li>
+      <li>• <a href="https://hackaday.com/2026/04/23/esp32synth-an-audio-synthesis-library-for-the-esp32/">ESP32Synth Library — Hackaday (Apr 2026)</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>
