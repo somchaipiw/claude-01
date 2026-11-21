@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 21 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Sarabun', sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.8; }
+
+  header {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0d1f3c 50%, #1a1040 100%);
+    border-bottom: 1px solid #334155;
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+  }
+  header .badge {
+    display: inline-block;
+    background: linear-gradient(90deg, #38bdf8, #818cf8);
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    margin-bottom: 0.9rem;
+    text-transform: uppercase;
+  }
+  header h1 { font-size: clamp(1.5rem, 4vw, 2.4rem); font-weight: 700; color: #f1f5f9; margin-bottom: 0.4rem; }
+  header .subtitle { color: #94a3b8; font-size: 0.95rem; }
+  header .stats {
+    display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-top: 1.4rem;
+  }
+  header .stat-item {
+    background: rgba(255,255,255,0.06); border: 1px solid #334155;
+    border-radius: 10px; padding: 0.5rem 1.2rem; text-align: center;
+  }
+  header .stat-item .num { font-size: 1.5rem; font-weight: 700; color: #38bdf8; }
+  header .stat-item .lbl { font-size: 0.75rem; color: #64748b; }
+
+  main { max-width: 960px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #38bdf8;
+    border: 1px solid #1e40af; background: rgba(56,189,248,0.08);
+    padding: 0.2rem 0.7rem; border-radius: 999px; margin-bottom: 0.6rem;
+  }
+  section { margin-bottom: 3rem; }
+  section > h2 {
+    font-size: 1.35rem; font-weight: 700; color: #f1f5f9;
+    margin-bottom: 1.2rem; padding-bottom: 0.6rem;
+    border-bottom: 2px solid #1e3a5f;
+  }
+
+  .card {
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 14px; padding: 1.4rem 1.5rem; margin-bottom: 1.2rem;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: #38bdf8; }
+  .card h3 { font-size: 1.05rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.5rem; }
+  .card p { color: #94a3b8; font-size: 0.95rem; margin-bottom: 0.6rem; }
+  .card ul { color: #94a3b8; font-size: 0.93rem; padding-left: 1.3rem; }
+  .card ul li { margin-bottom: 0.3rem; }
+
+  .tag {
+    display: inline-block; font-size: 0.72rem; font-weight: 600;
+    padding: 0.15rem 0.65rem; border-radius: 999px; margin: 0.15rem 0.1rem 0.5rem;
+  }
+  .tag-blue  { background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid #1e3a8a; }
+  .tag-green { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid #064e3b; }
+  .tag-purple{ background: rgba(167,139,250,0.15); color: #a78bfa; border: 1px solid #3b0764; }
+  .tag-orange{ background: rgba(251,146,60,0.15);  color: #fb923c; border: 1px solid #7c2d12; }
+  .tag-red   { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid #7f1d1d; }
+
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(56,189,248,0.07), rgba(129,140,248,0.07));
+    border: 1px solid #334155; border-left: 4px solid #38bdf8;
+    border-radius: 10px; padding: 1rem 1.3rem; margin-bottom: 0.9rem;
+  }
+  .highlight-box strong { color: #38bdf8; }
+
+  .spec-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px,1fr)); gap: 0.8rem; margin-top: 0.8rem;
+  }
+  .spec-item {
+    background: #0f172a; border: 1px solid #1e3a5f;
+    border-radius: 8px; padding: 0.7rem 1rem;
+  }
+  .spec-item .key { font-size: 0.72rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; }
+  .spec-item .val { font-size: 0.95rem; font-weight: 600; color: #e2e8f0; }
+
+  .project-card {
+    background: #1e293b; border: 1px solid #334155;
+    border-radius: 14px; padding: 1.4rem 1.5rem; margin-bottom: 1.2rem;
+  }
+  .project-card h3 { font-size: 1.05rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.4rem; }
+  .project-card .difficulty {
+    display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.65rem;
+    border-radius: 999px; margin-bottom: 0.6rem;
+  }
+  .diff-easy   { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid #064e3b; }
+  .diff-medium { background: rgba(251,146,60,0.15);  color: #fb923c; border: 1px solid #7c2d12; }
+  .diff-hard   { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid #7f1d1d; }
+  .component-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
+
+  .sensor-card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 14px;
+    padding: 1.4rem 1.5rem; margin-bottom: 1.2rem; display: grid;
+    grid-template-columns: 1fr auto; gap: 1rem; align-items: start;
+  }
+  .sensor-card .sensor-name { font-size: 1rem; font-weight: 700; color: #e2e8f0; }
+  .sensor-card .sensor-maker { font-size: 0.8rem; color: #64748b; margin-bottom: 0.4rem; }
+  .sensor-card .sensor-desc { color: #94a3b8; font-size: 0.93rem; }
+  .sensor-card .price-badge {
+    background: rgba(52,211,153,0.15); color: #34d399;
+    border: 1px solid #064e3b; border-radius: 8px;
+    padding: 0.4rem 0.8rem; font-size: 0.85rem; font-weight: 700; white-space: nowrap;
+  }
+
+  pre {
+    background: #0d1f3c; border: 1px solid #1e3a5f; border-radius: 10px;
+    padding: 1.2rem 1.3rem; overflow-x: auto; font-family: 'Courier New', monospace;
+    font-size: 0.82rem; line-height: 1.6; color: #93c5fd; margin-top: 0.8rem;
+  }
+  pre .kw { color: #818cf8; } /* keyword */
+  pre .cm { color: #475569; } /* comment */
+  pre .st { color: #34d399; } /* string */
+  pre .nm { color: #fb923c; } /* number */
+  pre .fn { color: #38bdf8; } /* function */
+
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 1rem; }
+  .resource-card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 12px;
+    padding: 1rem 1.2rem;
+  }
+  .resource-card h4 { font-size: 0.9rem; font-weight: 700; color: #e2e8f0; margin-bottom: 0.3rem; }
+  .resource-card a { color: #38bdf8; font-size: 0.85rem; word-break: break-all; text-decoration: none; }
+  .resource-card a:hover { color: #93c5fd; text-decoration: underline; }
+  .resource-card p { color: #64748b; font-size: 0.82rem; margin-top: 0.25rem; }
+
+  footer {
+    background: #0d1f3c; border-top: 1px solid #1e3a5f;
+    text-align: center; padding: 1.5rem 1rem; color: #475569; font-size: 0.82rem;
+  }
+  footer a { color: #38bdf8; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    .sensor-card { grid-template-columns: 1fr; }
+    .sensor-card .price-badge { display: inline-block; }
+    header .stats { gap: 0.6rem; }
+    header .stat-item { padding: 0.4rem 0.9rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Daily Research · ESP32 & IoT</div>
+  <h1>ESP32 & Sensor Innovations</h1>
+  <p class="subtitle">21 พฤศจิกายน 2026 — ESP32-H21 · ESP-IDF v6.0 · LoRaWAN · Predictive Maintenance · Air Quality</p>
+  <div class="stats">
+    <div class="stat-item"><div class="num">2</div><div class="lbl">ข่าวสำคัญ</div></div>
+    <div class="stat-item"><div class="num">4</div><div class="lbl">ไอเดียโปรเจกต์</div></div>
+    <div class="stat-item"><div class="num">4</div><div class="lbl">Sensors ใหม่</div></div>
+    <div class="stat-item"><div class="num">1</div><div class="lbl">Code Guide</div></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- SECTION 1: INNOVATIONS -->
+  <section id="innovations">
+    <div class="section-label">นวัตกรรมและข่าวสารล่าสุด</div>
+    <h2>Chip & Framework ใหม่ในปี 2026</h2>
+
+    <!-- ESP32-H21 -->
+    <div class="card">
+      <span class="tag tag-blue">ชิปใหม่</span>
+      <span class="tag tag-green">ประหยัดพลังงาน</span>
+      <span class="tag tag-purple">BLE · Thread · Zigbee</span>
+      <h3>ESP32-H21 — ชิปพลังงานต่ำสุดจาก Espressif (มีนาคม 2026)</h3>
+      <p>Espressif ประกาศ <strong>ESP32-H21</strong> เมื่อ 3 มีนาคม 2026 ซึ่งเป็นการอัปเกรดจาก ESP32-H2 โดยเพิ่ม <strong>DC-DC Converter ในตัวชิป</strong> (on-chip) ทำให้ลดกระแสไฟในโหมด Active ลงได้อย่างมีนัยสำคัญ เหมาะสำหรับอุปกรณ์ IoT ที่ต้องใช้ถ่านเป็นเวลานาน เช่น Smart Home Sensor, Building Automation และ Wearable</p>
+      <div class="highlight-box">
+        <strong>จุดเด่นหลัก:</strong> กระแส RX Active ลดเหลือ ~8.2 mA — เปรียบเทียบกับ H2 ที่สูงกว่า ทำให้อายุถ่านยาวนานขึ้นมากในโหมดรับสัญญาณต่อเนื่อง
+      </div>
+      <div class="spec-grid">
+        <div class="spec-item"><div class="key">Core</div><div class="val">32-bit RISC-V</div></div>
+        <div class="spec-item"><div class="key">RX Active Current</div><div class="val">~8.2 mA</div></div>
+        <div class="spec-item"><div class="key">Light Sleep</div><div class="val">~9 µA</div></div>
+        <div class="spec-item"><div class="key">Deep Sleep</div><div class="val">~5 µA</div></div>
+        <div class="spec-item"><div class="key">TX Power</div><div class="val">สูงสุด 20 dBm</div></div>
+        <div class="spec-item"><div class="key">GPIO</div><div class="val">สูงสุด 19 พิน</div></div>
+        <div class="spec-item"><div class="key">Protocols</div><div class="val">BLE 5.3, Thread, Zigbee, Matter</div></div>
+        <div class="spec-item"><div class="key">DC-DC</div><div class="val">In-chip (ใหม่จาก H2)</div></div>
+      </div>
+      <p style="margin-top:0.9rem; font-size:0.88rem; color:#64748b;">⚠️ Pinout ของ H21 ไม่เหมือนกับ H2 จึงไม่ใช่การ Drop-in Replacement — ต้องออกแบบ PCB ใหม่</p>
+    </div>
+
+    <!-- ESP-IDF v6.0 -->
+    <div class="card">
+      <span class="tag tag-purple">Framework</span>
+      <span class="tag tag-orange">Security</span>
+      <span class="tag tag-blue">Major Release</span>
+      <h3>ESP-IDF v6.0 — Major Release พร้อม PSA Crypto & MbedTLS 4.x (มีนาคม 2026)</h3>
+      <p><strong>ESP-IDF v6.0</strong> เป็น major release ที่ออกในเดือนมีนาคม 2026 มีการเปลี่ยนแปลงสำคัญหลายด้าน โดยเฉพาะด้านความปลอดภัยที่ย้ายมาใช้มาตรฐาน <strong>PSA Crypto API</strong> และอัปเกรด MbedTLS เป็นเวอร์ชัน 4.x ซึ่งจำเป็นต้องแก้ไข code ที่ใช้ legacy API เดิม</p>
+      <ul>
+        <li><strong>MbedTLS v4.x + PSA Crypto API:</strong> Legacy cryptographic API ถูก deprecated — ต้องเรียก <code>psa_crypto_init()</code> ก่อนทำ cryptographic operation ใดๆ</li>
+        <li><strong>Hardware Acceleration ผ่าน PSA Driver:</strong> HMAC peripheral และอื่นๆ ใช้งานผ่าน PSA driver แทน esp_hmac_calculate() เดิม</li>
+        <li><strong>Picolibc แทน Newlib:</strong> C Standard Library เปลี่ยนมาใช้ Picolibc ที่เบากว่าและ modern กว่า</li>
+        <li><strong>ESP-IDF Installation Manager:</strong> เครื่องมือใหม่สำหรับจัดการ SDK version ง่ายขึ้น</li>
+        <li><strong>MCP Server:</strong> มี MCP (Model Context Protocol) server ในตัว — เชื่อมต่อกับ AI tools ได้</li>
+        <li><strong>Wi-Fi Proximity Discovery + WPA3 Compatibility Mode:</strong> ค้นพบอุปกรณ์ใกล้เคียงผ่าน Wi-Fi ง่ายขึ้น</li>
+        <li><strong>TLS 1.2 / DTLS 1.2:</strong> ระวัง — MbedTLS v4 ลบการรองรับ DHE และ RSA key exchange แบบไม่มี forward secrecy</li>
+      </ul>
+      <div class="highlight-box" style="margin-top:0.9rem;">
+        <strong>สำหรับโปรเจกต์ใหม่ในปี 2026:</strong> แนะนำให้เริ่มด้วย ESP-IDF v6.x โดยตรง สำหรับโปรเจกต์เก่าที่ใช้ v5.x ให้ตรวจสอบ migration guide อย่างละเอียดก่อน port ขึ้น
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: PROJECT IDEAS -->
+  <section id="projects">
+    <div class="section-label">ไอเดียโปรเจกต์</div>
+    <h2>โปรเจกต์ที่น่าสร้างในสัปดาห์นี้</h2>
+
+    <!-- Indoor Air Quality -->
+    <div class="project-card">
+      <h3>🌬️ เครื่องวัดคุณภาพอากาศในอาคาร (Indoor Air Quality Monitor)</h3>
+      <span class="difficulty diff-easy">ระดับ: เริ่มต้น-กลาง</span>
+      <p>สร้างเครื่องตรวจวัดคุณภาพอากาศแบบ All-in-One ด้วย ESP32-S3 ผสาน Sensor Sensirion สองตัว ได้แก่ <strong>SCD41</strong> สำหรับ CO₂ แบบ NDIR ที่แม่นยำสูง และ <strong>SGP41</strong> สำหรับ VOC + NOx — แสดงผลบน e-paper display และส่งข้อมูลไป Home Assistant ผ่าน MQTT</p>
+      <ul>
+        <li>SCD41 วัด CO₂ ได้ถึง 5,000 ppm พร้อม temp+humidity ในตัว — ไม่ต้องใช้ BME280 เพิ่ม</li>
+        <li>SGP41 มี 2 pixel — pixel แรกวัด VOC Index, pixel ที่สองวัด NOx Index (ต่างจาก SGP40 ที่วัดแค่ VOC)</li>
+        <li>Alert เมื่อ CO₂ &gt; 1200 ppm (อากาศไม่ดี) หรือ VOC Index &gt; 150</li>
+        <li>สรุปข้อมูลใน Grafana Dashboard ผ่าน InfluxDB</li>
+      </ul>
+      <div class="component-list">
+        <span class="tag tag-blue">ESP32-S3</span>
+        <span class="tag tag-green">SCD41 (CO₂)</span>
+        <span class="tag tag-green">SGP41 (VOC/NOx)</span>
+        <span class="tag tag-purple">e-Paper 2.9"</span>
+        <span class="tag tag-orange">Home Assistant</span>
+        <span class="tag tag-orange">MQTT</span>
+      </div>
+    </div>
+
+    <!-- LoRaWAN Long Range Node -->
+    <div class="project-card">
+      <h3>📡 LoRaWAN Environmental Node พลังงานแสงอาทิตย์ (Off-Grid)</h3>
+      <span class="difficulty diff-medium">ระดับ: กลาง</span>
+      <p>สร้าง Node ตรวจสภาพอากาศระยะไกลที่ไม่ต้องพึ่งไฟฟ้า — ใช้ ESP32-S3 + โมดูล LoRa E22-900M22S (SX1262) ส่งข้อมูลผ่าน LoRaWAN ไปยัง Gateway ระยะ 1–10 km ชาร์จด้วยโซล่าเซลล์ขนาดเล็ก เหมาะสำหรับฟาร์ม สวน สถานีอากาศ หรือพื้นที่ห่างไกล</p>
+      <ul>
+        <li>LoRa SX1262: ระยะ 600 m ในเมือง → 10+ km ในพื้นที่โล่ง ขึ้นอยู่กับเสาอากาศและภูมิประเทศ</li>
+        <li>BME280: อุณหภูมิ ความชื้น ความดันบรรยากาศ + คำนวณ Dew Point และ VPD</li>
+        <li>Meshtastic Protocol: ทางเลือกสำหรับ peer-to-peer mesh relay ไม่ต้องพึ่ง Gateway</li>
+        <li>Deep sleep 99% ของเวลา → ถ่าน 18650 (3,000 mAh) + โซล่า 2W ใช้งานได้ไม่จำกัด</li>
+        <li>รองรับ The Things Network (TTN) และ ChirpStack ในฝั่ง Server</li>
+      </ul>
+      <div class="component-list">
+        <span class="tag tag-blue">ESP32-S3</span>
+        <span class="tag tag-blue">E22-900M22S (SX1262)</span>
+        <span class="tag tag-green">BME280</span>
+        <span class="tag tag-orange">Solar 2W + 18650</span>
+        <span class="tag tag-purple">TTN / ChirpStack</span>
+      </div>
+    </div>
+
+    <!-- Predictive Maintenance -->
+    <div class="project-card">
+      <h3>⚙️ Predictive Maintenance Node สำหรับมอเตอร์อุตสาหกรรม</h3>
+      <span class="difficulty diff-hard">ระดับ: สูง</span>
+      <p>ระบบตรวจสอบสภาพมอเตอร์แบบ Real-time ด้วย ESP32 + เซนเซอร์ Accelerometer ความแม่นยำสูง <strong>ADXL355</strong> วิเคราะห์ Vibration Spectrum เพื่อตรวจจับ Bearing Fault, Imbalance และ Misalignment ก่อนที่จะเกิดความเสียหาย — ส่งแจ้งเตือนผ่าน MQTT ไปยัง Dashboard</p>
+      <ul>
+        <li>ADXL355 มี Noise ต่ำกว่า ADXL345 มาก เหมาะกับการวิเคราะห์ Vibration ความถี่สูง (0–1000 Hz)</li>
+        <li>ทำ FFT บน ESP32 เพื่อดู Frequency Spectrum — ตรวจจับ characteristic frequency ของ bearing fault</li>
+        <li>ใช้ TFLite Micro หรือ threshold-based alert เพื่อ classify สภาพ: Normal / Warning / Critical</li>
+        <li>ต้นทุนต่อจุดวัด ~1,500–2,000 บาท ประหยัดกว่า Industrial Sensor แบบ proprietary มาก</li>
+        <li>รองรับ Modbus RTU ส่งข้อมูลไปยัง PLC / SCADA ได้</li>
+      </ul>
+      <div class="component-list">
+        <span class="tag tag-blue">ESP32 / ESP32-S3</span>
+        <span class="tag tag-green">ADXL355 (SPI)</span>
+        <span class="tag tag-orange">FFT Analysis</span>
+        <span class="tag tag-purple">TFLite Micro</span>
+        <span class="tag tag-red">Modbus RTU</span>
+      </div>
+    </div>
+
+    <!-- ESP32-H21 Zigbee Node -->
+    <div class="project-card">
+      <h3>🔋 Ultra-Low Power Zigbee Sensor Node ด้วย ESP32-H21</h3>
+      <span class="difficulty diff-medium">ระดับ: กลาง</span>
+      <p>ออกแบบ Sensor Node ประหยัดพลังงานสุดขีดด้วย ESP32-H21 ใหม่ — DC-DC converter ในชิปช่วยลดกระแสไฟในโหมด light sleep เหลือเพียง 9 µA ทำให้ถ่าน CR2032 ใช้ได้นาน 2–3 ปี เหมาะสำหรับ Door/Window sensor, Temperature node ใน Smart Home</p>
+      <ul>
+        <li>Zigbee 3.0 End Device: Join กับ Zigbee coordinator (เช่น Home Assistant Zigbee2MQTT) ได้เลย</li>
+        <li>Thread/Matter ในตัว: รองรับทั้ง ecosystem ล่าสุด ไม่ต้องซื้อชิปอื่นเพิ่ม</li>
+        <li>ตื่นทุก 30 วินาที วัดค่า ส่ง Zigbee Report กลับ sleep ใช้พลังงานน้อยมาก</li>
+        <li>Transmit power 20 dBm: ทะลุกำแพงและระยะ indoor ได้ดี ไม่ต้องใช้ router node ถี่</li>
+        <li>⚠️ Pinout เปลี่ยนจาก H2 — ต้องใช้ module ใหม่ (H21-MINI หรือ custom PCB)</li>
+      </ul>
+      <div class="component-list">
+        <span class="tag tag-blue">ESP32-H21</span>
+        <span class="tag tag-green">SHT45 (temp/hum)</span>
+        <span class="tag tag-green">Reed Switch / PIR</span>
+        <span class="tag tag-purple">Zigbee 3.0</span>
+        <span class="tag tag-orange">CR2032 / CR2477</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: SENSORS -->
+  <section id="sensors">
+    <div class="section-label">Sensors น่าสนใจ</div>
+    <h2>เซนเซอร์ที่เหมาะกับโปรเจกต์วันนี้</h2>
+
+    <div class="sensor-card">
+      <div>
+        <div class="sensor-name">SCD41 — NDIR CO₂ + Temperature + Humidity</div>
+        <div class="sensor-maker">Sensirion · Interface: I2C</div>
+        <span class="tag tag-green">Indoor Air Quality</span>
+        <span class="tag tag-blue">NDIR Technology</span>
+        <div class="sensor-desc">
+          เซนเซอร์ CO₂ แบบ NDIR (Non-Dispersive Infrared) ที่ให้ค่าที่ถูกต้องจริง ต่างจาก MOX sensor ที่ประมาณ CO₂ ทางอ้อม วัดได้ 0–5000 ppm พร้อม Self-calibration อัตโนมัติ มีทั้ง Temperature และ Humidity built-in จึงไม่ต้องใช้ BME280 เพิ่ม footprint เล็ก (10.1 × 33.5 mm) เหมาะกับ indoor monitor ทุกรูปแบบ ค่าที่ได้น่าเชื่อถือสำหรับ IAQ application
+        </div>
+        <div class="spec-grid" style="margin-top:0.7rem;">
+          <div class="spec-item"><div class="key">CO₂ Range</div><div class="val">0–5000 ppm</div></div>
+          <div class="spec-item"><div class="key">CO₂ Accuracy</div><div class="val">±(40 ppm + 5%)</div></div>
+          <div class="spec-item"><div class="key">Interface</div><div class="val">I2C (0x62)</div></div>
+          <div class="spec-item"><div class="key">Voltage</div><div class="val">2.4–5.5 V</div></div>
+        </div>
+      </div>
+      <div class="price-badge">~$30–45</div>
+    </div>
+
+    <div class="sensor-card">
+      <div>
+        <div class="sensor-name">SGP41 — VOC + NOx Dual-Pixel Sensor</div>
+        <div class="sensor-maker">Sensirion · Interface: I2C</div>
+        <span class="tag tag-blue">VOC Index</span>
+        <span class="tag tag-orange">NOx Index</span>
+        <div class="sensor-desc">
+          อัปเกรดจาก SGP40 ด้วยการเพิ่ม <strong>pixel ที่สองสำหรับ NOx (Nitrogen Oxides)</strong> ทำให้วัดได้ทั้ง VOC Index (0–500) และ NOx Index (1–500) ในชิปเดียว เหมาะสำหรับ Indoor Air Quality ที่ต้องการตรวจสอบก๊าซจากการปรุงอาหาร การจราจร หรือเครื่องใช้ไฟฟ้า ต้องใช้ Sensirion's Gas Index Algorithm library ใน firmware
+        </div>
+        <div class="spec-grid" style="margin-top:0.7rem;">
+          <div class="spec-item"><div class="key">Output</div><div class="val">VOC + NOx Index</div></div>
+          <div class="spec-item"><div class="key">Interface</div><div class="val">I2C (0x59)</div></div>
+          <div class="spec-item"><div class="key">Sampling</div><div class="val">1 Hz</div></div>
+          <div class="spec-item"><div class="key">Voltage</div><div class="val">1.7–3.6 V</div></div>
+        </div>
+      </div>
+      <div class="price-badge">~$15–20</div>
+    </div>
+
+    <div class="sensor-card">
+      <div>
+        <div class="sensor-name">ADXL355 — 3-Axis MEMS Accelerometer ความแม่นยำสูง</div>
+        <div class="sensor-maker">Analog Devices · Interface: SPI / I2C</div>
+        <span class="tag tag-red">Vibration Analysis</span>
+        <span class="tag tag-orange">Predictive Maintenance</span>
+        <div class="sensor-desc">
+          เซนเซอร์ Accelerometer สำหรับงาน Precision ที่ต้องการ Noise ต่ำมาก เหมาะกับ Condition Monitoring ของมอเตอร์ ปั๊ม Bearing และ Rotating Machinery ต่างจาก ADXL345 (ตัวยอดนิยม) ที่ ADXL355 มี Noise Density ต่ำกว่า 10 เท่า ทำให้ตรวจจับ Vibration ระดับ micro-g ได้ รองรับ bandwidth 0–1000 Hz สำหรับ FFT analysis แบบ Full spectrum
+        </div>
+        <div class="spec-grid" style="margin-top:0.7rem;">
+          <div class="spec-item"><div class="key">Range</div><div class="val">±2g / ±4g / ±8g</div></div>
+          <div class="spec-item"><div class="key">Noise</div><div class="val">25 µg/√Hz</div></div>
+          <div class="spec-item"><div class="key">Interface</div><div class="val">SPI / I2C</div></div>
+          <div class="spec-item"><div class="key">Bandwidth</div><div class="val">0–1000 Hz</div></div>
+        </div>
+      </div>
+      <div class="price-badge">~$10–15</div>
+    </div>
+
+    <div class="sensor-card">
+      <div>
+        <div class="sensor-name">E22-900M22S — LoRa Module (SX1262)</div>
+        <div class="sensor-maker">EBYTE · Interface: SPI/UART</div>
+        <span class="tag tag-blue">LoRa / LoRaWAN</span>
+        <span class="tag tag-green">Long Range</span>
+        <div class="sensor-desc">
+          โมดูล LoRa ที่ใช้ชิป Semtech SX1262 — ทำงานที่ 915 MHz (US/AU/Asia) รองรับทั้ง LoRa และ LoRaWAN Protocol ระยะส่งข้อมูลสูงสุด 1–3 km ในเมือง และ 10+ km ในพื้นที่โล่ง Power consumption ในโหมด Sleep เพียง 1.6 µA เหมาะมากสำหรับ Solar-powered node ที่ต้องการ battery life หลายปี
+        </div>
+        <div class="spec-grid" style="margin-top:0.7rem;">
+          <div class="spec-item"><div class="key">Frequency</div><div class="val">850–930 MHz</div></div>
+          <div class="spec-item"><div class="key">TX Power</div><div class="val">สูงสุด 22 dBm</div></div>
+          <div class="spec-item"><div class="key">Sleep Current</div><div class="val">1.6 µA</div></div>
+          <div class="spec-item"><div class="key">Range</div><div class="val">1–10+ km</div></div>
+        </div>
+      </div>
+      <div class="price-badge">~$6–10</div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: CODE GUIDE -->
+  <section id="code">
+    <div class="section-label">Code Guide</div>
+    <h2>ตัวอย่างโค้ด: ESP32 + SCD41 CO₂ Monitor พื้นฐาน</h2>
+
+    <div class="card">
+      <h3>อ่านค่า CO₂, อุณหภูมิ และความชื้นจาก SCD41 ผ่าน I2C (Arduino)</h3>
+      <p>ใช้ library <code>Sensirion I2C SCD4x</code> ของ Sensirion ที่มีบน Arduino Library Manager โดยตรง — ติดตั้งผ่าน Library Manager ค้นหา "Sensirion I2C SCD4x"</p>
+<pre>
+<span class="kw">#include</span> <span class="st">&lt;Arduino.h&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;SensirionI2CScd4x.h&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;Wire.h&gt;</span>
+
+SensirionI2CScd4x scd4x;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  Serial.<span class="fn">begin</span>(<span class="nm">115200</span>);
+  Wire.<span class="fn">begin</span>(); <span class="cm">// SDA=21, SCL=22 (default ESP32)</span>
+  scd4x.<span class="fn">begin</span>(Wire);
+
+  uint16_t error;
+  error = scd4x.<span class="fn">startPeriodicMeasurement</span>();
+  <span class="kw">if</span> (error) {
+    Serial.<span class="fn">println</span>(<span class="st">"Error starting SCD41 measurement"</span>);
+  }
+  <span class="fn">delay</span>(<span class="nm">1000</span>); <span class="cm">// รอให้ sensor stabilize</span>
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  uint16_t co2 = <span class="nm">0</span>;
+  <span class="kw">float</span> temperature = <span class="nm">0.0</span>, humidity = <span class="nm">0.0</span>;
+  <span class="kw">bool</span> isDataReady = <span class="nm">false</span>;
+
+  <span class="cm">// ตรวจสอบว่า data พร้อมหรือยัง</span>
+  scd4x.<span class="fn">getDataReadyFlag</span>(isDataReady);
+  <span class="kw">if</span> (!isDataReady) {
+    <span class="fn">delay</span>(<span class="nm">100</span>);
+    <span class="kw">return</span>;
+  }
+
+  uint16_t error = scd4x.<span class="fn">readMeasurement</span>(co2, temperature, humidity);
+  <span class="kw">if</span> (error == <span class="nm">0</span> &amp;&amp; co2 != <span class="nm">0</span>) {
+    Serial.<span class="fn">printf</span>(<span class="st">"CO2: %d ppm | Temp: %.1f°C | Humidity: %.1f%%\n"</span>,
+                   co2, temperature, humidity);
+
+    <span class="cm">// แสดงสถานะคุณภาพอากาศ</span>
+    <span class="kw">if</span> (co2 &lt; <span class="nm">800</span>)        Serial.<span class="fn">println</span>(<span class="st">"✅ อากาศดี"</span>);
+    <span class="kw">else if</span> (co2 &lt; <span class="nm">1200</span>)   Serial.<span class="fn">println</span>(<span class="st">"⚠️ อากาศปานกลาง"</span>);
+    <span class="kw">else</span>                   Serial.<span class="fn">println</span>(<span class="st">"❌ อากาศไม่ดี — เปิดหน้าต่าง!"</span>);
+  }
+
+  <span class="fn">delay</span>(<span class="nm">5000</span>); <span class="cm">// SCD41 อ่านทุก 5 วินาที</span>
+}
+</pre>
+      <p style="margin-top:0.8rem; color:#64748b; font-size:0.88rem;">💡 <strong>Tips:</strong> ใช้ scd4x.performForcedRecalibration(400) เพื่อ calibrate CO₂ baseline เมื่อใช้งานครั้งแรกในพื้นที่โล่ง ค่า 400 ppm คือ CO₂ ในอากาศปกติ</p>
+    </div>
+  </section>
+
+  <!-- SECTION 5: RESOURCES -->
+  <section id="resources">
+    <div class="section-label">แหล่งข้อมูล</div>
+    <h2>ลิงก์และเอกสารอ้างอิง</h2>
+    <div class="resource-grid">
+      <div class="resource-card">
+        <h4>ESP32-H21 Product Page</h4>
+        <a href="https://www.espressif.com/en/products/socs/esp32-h21" target="_blank">espressif.com/en/products/socs/esp32-h21</a>
+        <p>ข้อมูลชิปใหม่ ESP32-H21 จาก Espressif อย่างเป็นทางการ</p>
+      </div>
+      <div class="resource-card">
+        <h4>ESP32-H21 Announcement (3 มีนาคม 2026)</h4>
+        <a href="https://www.espressif.com/en/news/ESP32_H21" target="_blank">espressif.com/en/news/ESP32_H21</a>
+        <p>ข่าวประกาศ ESP32-H21 พร้อม feature highlights</p>
+      </div>
+      <div class="resource-card">
+        <h4>ESP-IDF v6.0 Release Notes</h4>
+        <a href="https://developer.espressif.com/blog/2026/03/idf-v6-0-release/" target="_blank">developer.espressif.com — IDF v6.0 Release</a>
+        <p>รายละเอียด ESP-IDF v6.0 รวมถึง PSA Crypto, Picolibc และ MCP server</p>
+      </div>
+      <div class="resource-card">
+        <h4>ESP-IDF v6.0 Security Migration Guide</h4>
+        <a href="https://docs.espressif.com/projects/esp-idf/en/v6.0.1/esp32s3/migration-guides/release-6.x/6.0/security.html" target="_blank">docs.espressif.com — v6.0 Security Migration</a>
+        <p>คู่มือย้าย code จาก legacy MbedTLS ไป PSA Crypto API</p>
+      </div>
+      <div class="resource-card">
+        <h4>DFRobot LoRaWAN ESP32-S3 Board</h4>
+        <a href="https://www.mouser.in/new/dfrobot/dfrobot-lorawan-esp32-s3-dev-board/" target="_blank">mouser.in — DFRobot LoRaWAN ESP32-S3</a>
+        <p>บอร์ด dev ที่รองรับ LoRa, LoRaWAN และ Meshtastic พร้อมใช้</p>
+      </div>
+      <div class="resource-card">
+        <h4>ESP32 LoRa Guide (Seeed Studio, พ.ค. 2026)</h4>
+        <a href="https://www.seeedstudio.com/blog/2026/05/26/esp32-lora-guide/" target="_blank">seeedstudio.com — ESP32 LoRa Guide 2026</a>
+        <p>Hardware setup, real-world range tests และ multi-hop mesh relay</p>
+      </div>
+      <div class="resource-card">
+        <h4>Predictive Maintenance + ESP32 + ADXL355</h4>
+        <a href="https://zbotic.in/iot-predictive-maintenance-vibration-sensors-on-esp32/" target="_blank">zbotic.in — Vibration Sensors on ESP32</a>
+        <p>คู่มือสร้าง predictive maintenance node ด้วย ADXL355 (มีนาคม 2026)</p>
+      </div>
+      <div class="resource-card">
+        <h4>Project Aura — Open Source Air Quality Monitor</h4>
+        <a href="https://hackaday.io/project/204993-project-aura-open-source-esp32-air-quality" target="_blank">hackaday.io — Project Aura (ESP32-S3)</a>
+        <p>Open source ESP32-S3 monitor + Sensirion sensors + 4.3" touch display</p>
+      </div>
+      <div class="resource-card">
+        <h4>ESP32-C3 CO₂ Station + Home Assistant</h4>
+        <a href="https://www.hackster.io/antonpetrusevichmobile/esp32-c3-co2-station-with-mqtt-home-assistant-integration-b83ea3" target="_blank">hackster.io — CO₂ Station (ESP32-C3)</a>
+        <p>โปรเจกต์ตรวจ CO₂ + MQTT integration กับ Home Assistant</p>
+      </div>
+      <div class="resource-card">
+        <h4>ESP32-H21 Deep Dive (Notebookcheck)</h4>
+        <a href="https://www.notebookcheck.net/ESP32-H21-wireless-SoC-supports-Thread-ZigBee-Matter-and-Bluetooth-LE-for-always-on-IoT-devices.1242601.0.html" target="_blank">notebookcheck.net — ESP32-H21 Analysis</a>
+        <p>วิเคราะห์ spec และ use case ของ ESP32-H21</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>สร้างโดย AI Research Agent · 21 พฤศจิกายน 2026</p>
+  <p style="margin-top:0.4rem;">แหล่งอ้างอิง: <a href="https://www.espressif.com" target="_blank">Espressif Systems</a> · <a href="https://developer.espressif.com" target="_blank">ESP Developer Blog</a> · <a href="https://www.hackster.io" target="_blank">Hackster.io</a> · <a href="https://www.seeedstudio.com" target="_blank">Seeed Studio</a> · <a href="https://zbotic.in" target="_blank">Zbotic</a></p>
+</footer>
+
+</body>
+</html>
