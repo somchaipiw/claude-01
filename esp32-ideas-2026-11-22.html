@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 22 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263148;
+    --accent-cyan: #06b6d4;
+    --accent-purple: #8b5cf6;
+    --accent-green: #10b981;
+    --accent-orange: #f59e0b;
+    --accent-pink: #ec4899;
+    --accent-blue: #3b82f6;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --gradient-header: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0c1a2e 100%);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: var(--gradient-header);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(6,182,212,0.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(6,182,212,0.15);
+    border: 1px solid rgba(6,182,212,0.4);
+    color: var(--accent-cyan);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.5rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-number {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ===== NAVIGATION ===== */
+  nav {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 0.9rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  nav a:hover {
+    color: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    background: rgba(6,182,212,0.08);
+  }
+
+  /* ===== LAYOUT ===== */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  /* ===== SECTION ===== */
+  .section-block {
+    margin-bottom: 3rem;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border);
+  }
+  .section-icon {
+    font-size: 1.5rem;
+  }
+  .section-block h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-tag {
+    margin-left: auto;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .tag-new { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
+  .tag-hot { background: rgba(245,158,11,0.15); color: var(--accent-orange); border: 1px solid rgba(245,158,11,0.3); }
+  .tag-code { background: rgba(139,92,246,0.15); color: var(--accent-purple); border: 1px solid rgba(139,92,246,0.3); }
+
+  /* ===== CARDS ===== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: all 0.25s;
+  }
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--accent-cyan);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(6,182,212,0.1);
+  }
+  .card-chip {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.6rem;
+  }
+  .chip-cyan { background: rgba(6,182,212,0.15); color: var(--accent-cyan); }
+  .chip-purple { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+  .chip-green { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+  .chip-orange { background: rgba(245,158,11,0.15); color: var(--accent-orange); }
+  .chip-pink { background: rgba(236,72,153,0.15); color: var(--accent-pink); }
+  .chip-blue { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+  .card h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .card p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .card-meta a {
+    color: var(--accent-cyan);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .card-meta a:hover { text-decoration: underline; }
+
+  /* ===== HIGHLIGHT CARD ===== */
+  .card-highlight {
+    background: linear-gradient(135deg, rgba(6,182,212,0.08), rgba(139,92,246,0.08));
+    border-color: rgba(6,182,212,0.3);
+    grid-column: span 2;
+  }
+  @media (max-width: 680px) { .card-highlight { grid-column: span 1; } }
+
+  /* ===== PROJECT STEPS ===== */
+  .steps-list {
+    list-style: none;
+    counter-reset: step-counter;
+  }
+  .steps-list li {
+    counter-increment: step-counter;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    align-items: flex-start;
+  }
+  .steps-list li::before {
+    content: counter(step-counter);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.75rem;
+    height: 1.75rem;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+  .steps-list li p { font-size: 0.88rem; color: var(--text-secondary); }
+  .steps-list li strong { color: var(--text-primary); }
+
+  /* ===== SENSOR TABLE ===== */
+  .sensor-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .sensor-table th {
+    text-align: left;
+    padding: 0.6rem 0.9rem;
+    background: rgba(6,182,212,0.1);
+    color: var(--accent-cyan);
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border);
+  }
+  .sensor-table td {
+    padding: 0.65rem 0.9rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .sensor-table tr:last-child td { border-bottom: none; }
+  .sensor-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .sensor-name { color: var(--text-primary); font-weight: 600; }
+  .price-tag {
+    display: inline-block;
+    background: rgba(16,185,129,0.12);
+    color: var(--accent-green);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  /* ===== CODE BLOCK ===== */
+  .code-container {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 1rem;
+    background: #161b22;
+    border-bottom: 1px solid var(--border);
+  }
+  .code-header span { font-size: 0.8rem; color: var(--text-muted); }
+  .code-lang {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(6,182,212,0.15);
+    color: var(--accent-cyan);
+  }
+  pre {
+    padding: 1.25rem;
+    overflow-x: auto;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: #e6edf3;
+  }
+  code { font-family: 'Cascadia Code', 'Consolas', 'Monaco', monospace; }
+  .kw { color: #ff7b72; }
+  .fn { color: #d2a8ff; }
+  .str { color: #a5d6ff; }
+  .cmt { color: #8b949e; font-style: italic; }
+  .num { color: #79c0ff; }
+  .type { color: #ffa657; }
+
+  /* ===== RESOURCES ===== */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.75rem;
+  }
+  .resource-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .resource-item:hover {
+    border-color: var(--accent-cyan);
+    background: var(--bg-card-hover);
+  }
+  .resource-icon { font-size: 1.25rem; flex-shrink: 0; }
+  .resource-text { overflow: hidden; }
+  .resource-title { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .resource-desc { font-size: 0.72rem; color: var(--text-muted); }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    text-align: center;
+  }
+  footer p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+  footer strong { color: var(--text-secondary); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 600px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .resource-grid { grid-template-columns: 1fr; }
+    .stats-row { gap: 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">AI Research Daily — ESP32 & IoT</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p>22 พฤศจิกายน 2026 · หัวข้อวันนี้: Motor Control, NFC/RFID &amp; BLE Mesh</p>
+  <div class="stats-row">
+    <div class="stat-item">
+      <span class="stat-number">4</span>
+      <span class="stat-label">นวัตกรรมใหม่</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">5</span>
+      <span class="stat-label">ไอเดียโปรเจกต์</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">5</span>
+      <span class="stat-label">Sensors</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">1</span>
+      <span class="stat-label">Code Guide</span>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <a href="#innovations">นวัตกรรม</a>
+  <a href="#projects">โปรเจกต์</a>
+  <a href="#sensors">Sensors</a>
+  <a href="#code">Code Guide</a>
+  <a href="#resources">ลิงก์</a>
+</nav>
+
+<main>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <section class="section-block" id="innovations">
+    <div class="section-header">
+      <span class="section-icon">⚡</span>
+      <h2>นวัตกรรมและข่าวสารล่าสุด</h2>
+      <span class="section-tag tag-new">ใหม่</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="card card-highlight">
+        <span class="card-chip chip-cyan">ESP32-S3 + SimpleFOC</span>
+        <h3>Field-Oriented Control (FOC) บน ESP32 — ควบคุม BLDC Motor แบบ Professional</h3>
+        <p>
+          Espressif ออก BLDC Solution อย่างเป็นทางการรองรับ SimpleFOC Library บน ESP32-S3 และ ESP32-C3 แล้ว
+          ระบบ FOC ให้การควบคุม Torque, Speed และ Position ที่แม่นยำโดยไม่ต้องใช้ DSP ชิปแยก
+          รองรับ Speed Loop, Angle Loop และ Torque Loop ผ่าน Arduino IDE ด้วย SimpleFOC v3.x
+        </p>
+        <ul style="margin-top:0.75rem; padding-left:1.1rem; font-size:0.84rem; color:var(--text-secondary);">
+          <li>ESP32-S3 ใช้ MCPWM (Motor Control PWM) hardware สำหรับ 3-Phase gate drive</li>
+          <li>จับคู่กับ TMC6300 (3-Phase gate driver สำหรับ BLDC ขนาดเล็ก) หรือ DRV8313</li>
+          <li>SparkFun IoT Brushless Motor Driver รวม ESP32-WROOM + TMC6300 ในบอร์ดเดียว</li>
+          <li>ใช้งานได้กับ Gimbal Motor, Drone Motor และ Robotic Joint ขนาด 2208–4114</li>
+        </ul>
+        <div class="card-meta">
+          <span>🔗</span>
+          <a href="https://docs.espressif.com/projects/esp-techpedia/en/latest/esp-friends/solution-introduction/bldc/bldc-solution.html" target="_blank">Espressif BLDC Solution</a>
+          &nbsp;·&nbsp;
+          <a href="https://docs.sparkfun.com/SparkFun_IoT_Brushless_Motor_Driver/print_view/" target="_blank">SparkFun IoT Brushless Driver</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-chip chip-purple">ESP32-S3 + NFC</span>
+        <h3>ESP32-S3 HomeKey NFC Reader — เปิดประตูด้วย iPhone/Apple Watch</h3>
+        <p>
+          โปรเจกต์บน Instructables สาธิตการสร้าง HomeKey Reader ด้วย ESP32-S3 + PN532 NFC Module
+          รองรับ Apple HomeKey ผ่าน Home app โดยไม่ต้องใช้ Hub เฉพาะ
+          สื่อสารผ่าน ISO 18013 / NFC DP และ ECDH key exchange สำหรับ secure handshake
+        </p>
+        <div class="card-meta">
+          <span>🔗</span>
+          <a href="https://instructables.com/ESP32-S3-HomeKey-NFC-Reader" target="_blank">Instructables Guide</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-chip chip-orange">Wireless Stepper</span>
+        <h3>Wireless Stepper Controller ด้วย ESP32 + TMC2240 + AS5600</h3>
+        <p>
+          Digi-Key Maker.io เผย Project สร้าง Wireless Stepper Controller ที่ใช้ TMC2240 Driver
+          ร่วมกับ AS5600 Magnetic Encoder ให้ Closed-loop Position Control ผ่าน WiFi/BLE
+          ค่า RMS Current สูงสุด 3A, StealthChop และ SpreadCycle ใน Chip เดียว
+        </p>
+        <div class="card-meta">
+          <span>🔗</span>
+          <a href="https://www.digikey.com/en/maker/projects/wireless-stepper-motor-controller-with-esp32-and-tmc2240/1a922139a33c47e99edb43ae7f6f6229" target="_blank">Digi-Key Maker Project</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-chip chip-green">NullTag RFID Toolkit</span>
+        <h3>NullTag — RFID Toolkit Accidental Build บน ESP32 (PN532)</h3>
+        <p>
+          Hackaday.io นำเสนอ NullTag โปรเจกต์ Toolkit สำหรับทดสอบและ Debug ระบบ RFID/NFC
+          รองรับ MIFARE Classic, NTAG21x, ISO14443A/B ด้วย PN532 + ESP32
+          มีระยะอ่าน 2–5 cm และ Web UI สำหรับการจัดการ Card Database
+        </p>
+        <div class="card-meta">
+          <span>🔗</span>
+          <a href="https://hackaday.io/project/203196-nulltag-my-accidental-rfid-toolkit-built-on-esp32" target="_blank">Hackaday.io — NullTag</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <section class="section-block" id="projects">
+    <div class="section-header">
+      <span class="section-icon">🛠️</span>
+      <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+      <span class="section-tag tag-hot">แนะนำ</span>
+    </div>
+    <div class="card-grid">
+
+      <div class="card">
+        <span class="card-chip chip-cyan">Robotics</span>
+        <h3>🤖 แขนกลควบคุมผ่าน WiFi/BLE ด้วย ESP32-S3 + SimpleFOC</h3>
+        <p>สร้างแขนกล 3-6 แกนที่ควบคุมผ่าน Web UI โดยใช้ ESP32-S3 ร่วมกับ SimpleFOC และ Gimbal Motor
+        ใช้ AS5600 Magnetic Encoder ทุกข้อเพื่อ Closed-loop Position Control ที่แม่นยำ</p>
+        <div style="margin-top:0.75rem;">
+          <strong style="font-size:0.8rem; color:var(--accent-cyan);">อุปกรณ์หลัก:</strong>
+          <p style="font-size:0.8rem; margin-top:0.25rem;">ESP32-S3 DevKit · SimpleFOC Shield · AS5600 x3 · Gimbal Motor 2208 x3</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-chip chip-purple">Smart Access</span>
+        <h3>🔐 ระบบ Access Control RFID + Firebase + ESP32-S3</h3>
+        <p>ระบบควบคุมประตูที่ใช้ RC522 อ่านบัตร RFID และบันทึก Log ลง Firebase Realtime Database
+        แสดงผลบน Dashboard Web App รองรับการเพิ่ม/ลบบัตรแบบ Remote และส่ง Notification ผ่าน Line Notify</p>
+        <div class="card-meta">
+          <span>📌</span>
+          <a href="https://www.hackster.io/Himanshudada/esp32-s3-rfid-access-control-system-using-rc522-217600" target="_blank">Hackster.io — ESP32-S3 RFID</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-chip chip-green">Inventory</span>
+        <h3>📦 Smart Inventory Management ด้วย ESP32 + RC522</h3>
+        <p>ระบบจัดการสินค้าคงคลังอัตโนมัติโดยติด RFID Tag ที่สินค้าและใช้ ESP32 อ่าน Tag แล้วส่งข้อมูล
+        ไปยัง Web Dashboard ผ่าน WiFi บันทึก In/Out Log และแจ้งเตือนเมื่อสินค้าต่ำกว่า Threshold</p>
+        <div class="card-meta">
+          <span>🔗</span>
+          <a href="https://hackaday.io/project/206133-smart-inventory-management-with-esp32" target="_blank">Hackaday.io — Smart Inventory</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-chip chip-orange">Hackerspace Lock</span>
+        <h3>🔒 Hackerspace NFC Door Lock — ESP32-C3 + PN532 (งบ $10)</h3>
+        <p>ประตูล็อก NFC สำหรับ Hackerspace ที่ใช้ ESP32-C3 + PN532 Module ราคาต่ำกว่า $10
+        บันทึก Access Log ว่าใครใช้เมื่อไหร่ รองรับ MIFARE Card และ NFC-enabled Smartphone</p>
+        <div class="card-meta">
+          <span>💰</span> <span style="color:var(--accent-green); font-weight:700;">~$10 ต้นทุน</span>
+          &nbsp;·&nbsp;
+          <a href="https://hackaday.io/project/206354-prismo/discussion-209681" target="_blank">Hackaday.io Discussion</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="card-chip chip-blue">BLE Mesh</span>
+        <h3>🌐 BLE Mesh Power Monitoring Network ด้วย ESP32-C6 + INA260</h3>
+        <p>ตาข่าย Sensor Node ที่ใช้ ESP32-C6 แต่ละ Node วัดแรงดันและกระแสด้วย INA260 (I2C)
+        และส่งข้อมูลผ่าน BLE Mesh ไปยัง Raspberry Pi Gateway รองรับ Deep Sleep 30 วินาที
+        เหมาะกับ Smart Grid, Solar Monitoring และ Building Energy Management</p>
+        <div>
+          <ul class="steps-list" style="margin-top:0.75rem;">
+            <li><p><strong>Node:</strong> ESP32-C6 + INA260 ผ่าน I2C</p></li>
+            <li><p><strong>Mesh:</strong> ESP-BLE-Mesh Stack บน ESP-IDF v5.x</p></li>
+            <li><p><strong>Gateway:</strong> Raspberry Pi 5 รับข้อมูลและส่ง MQTT → InfluxDB</p></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <section class="section-block" id="sensors">
+    <div class="section-header">
+      <span class="section-icon">🔬</span>
+      <h2>Sensors &amp; Modules ที่เหมาะกับโปรเจกต์วันนี้</h2>
+    </div>
+    <div style="overflow-x:auto; border: 1px solid var(--border); border-radius: 10px;">
+      <table class="sensor-table">
+        <thead>
+          <tr>
+            <th>Module / Sensor</th>
+            <th>Protocol</th>
+            <th>ใช้สำหรับ</th>
+            <th>ราคาโดยประมาณ</th>
+            <th>หมายเหตุ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="sensor-name">RC522 (MFRC522)</span></td>
+            <td>SPI</td>
+            <td>RFID Access Control, Card Reader 13.56 MHz</td>
+            <td><span class="price-tag">~45 บาท</span></td>
+            <td>พบมากที่สุด ใช้กับ MIFARE Classic 1K/4K</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">PN532 NFC Module</span></td>
+            <td>I2C / SPI / UART</td>
+            <td>NFC Read/Write, HomeKey, NTAG21x</td>
+            <td><span class="price-tag">~180 บาท</span></td>
+            <td>รองรับ Phone NFC, ISO 14443A/B, Felica</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">TMC2240 Stepper Driver</span></td>
+            <td>SPI (config) + STEP/DIR</td>
+            <td>Stepper Motor Control สำหรับ CNC, Robot Arm</td>
+            <td><span class="price-tag">~350 บาท</span></td>
+            <td>StealthChop + SpreadCycle, 3A RMS, SPI diagnostics</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">AS5600 Magnetic Encoder</span></td>
+            <td>I2C / Analog</td>
+            <td>Closed-loop Position Feedback สำหรับ Motor</td>
+            <td><span class="price-tag">~90 บาท</span></td>
+            <td>12-bit resolution, ใช้คู่กับ SimpleFOC</td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">INA260 Current/Power Monitor</span></td>
+            <td>I2C</td>
+            <td>วัดแรงดัน/กระแส/กำลัง DC 0–36V สูงสุด 15A</td>
+            <td><span class="price-tag">~220 บาท</span></td>
+            <td>Built-in Shunt, ± 1.25mA ความแม่นยำ</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: CODE GUIDE ===== -->
+  <section class="section-block" id="code">
+    <div class="section-header">
+      <span class="section-icon">💻</span>
+      <h2>Code Guide — ESP32 + RC522 RFID Access Control พื้นฐาน</h2>
+      <span class="section-tag tag-code">Arduino / C++</span>
+    </div>
+    <div class="card" style="margin-bottom:1rem;">
+      <h3 style="font-size:0.9rem; margin-bottom:0.5rem;">อ่าน RFID Card UID ด้วย RC522 + ESP32 (SPI)</h3>
+      <p style="font-size:0.83rem; color:var(--text-secondary);">
+        ติดตั้ง Library: <code style="background:rgba(6,182,212,0.12); padding:0.1rem 0.4rem; border-radius:4px; font-size:0.8rem;">MFRC522 by GithubCommunity</code> ผ่าน Arduino Library Manager
+        · การต่อขา: SDA→GPIO5, SCK→GPIO18, MOSI→GPIO23, MISO→GPIO19, RST→GPIO27
+      </p>
+    </div>
+    <div class="code-container">
+      <div class="code-header">
+        <span>esp32_rfid_access.ino</span>
+        <span class="code-lang">Arduino C++</span>
+      </div>
+      <pre><code><span class="cmt">// ESP32 + RC522 RFID Access Control</span>
+<span class="cmt">// Library: MFRC522 by GithubCommunity</span>
+
+<span class="kw">#include</span> <span class="str">&lt;SPI.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;MFRC522.h&gt;</span>
+
+<span class="kw">#define</span> <span class="type">SS_PIN</span>   <span class="num">5</span>
+<span class="kw">#define</span> <span class="type">RST_PIN</span>  <span class="num">27</span>
+<span class="kw">#define</span> <span class="type">RELAY_PIN</span> <span class="num">4</span>   <span class="cmt">// ต่อ Relay เปิด/ปิดประตู</span>
+
+<span class="type">MFRC522</span> rfid(<span class="type">SS_PIN</span>, <span class="type">RST_PIN</span>);
+
+<span class="cmt">// รายการ UID ที่ได้รับอนุญาต (แก้ไขตาม Card จริง)</span>
+<span class="kw">const</span> <span class="type">byte</span> authorizedCards[][<span class="num">4</span>] = {
+  {<span class="num">0xDE</span>, <span class="num">0xAD</span>, <span class="num">0xBE</span>, <span class="num">0xEF</span>},  <span class="cmt">// Card 1</span>
+  {<span class="num">0xA1</span>, <span class="num">0xB2</span>, <span class="num">0xC3</span>, <span class="num">0xD4</span>}   <span class="cmt">// Card 2</span>
+};
+<span class="kw">const</span> <span class="type">int</span> numCards = <span class="kw">sizeof</span>(authorizedCards) / <span class="num">4</span>;
+
+<span class="kw">void</span> <span class="fn">setup</span>() {
+  Serial.<span class="fn">begin</span>(<span class="num">115200</span>);
+  SPI.<span class="fn">begin</span>();
+  rfid.<span class="fn">PCD_Init</span>();
+  <span class="fn">pinMode</span>(<span class="type">RELAY_PIN</span>, OUTPUT);
+  <span class="fn">digitalWrite</span>(<span class="type">RELAY_PIN</span>, LOW);
+  Serial.<span class="fn">println</span>(<span class="str">"RFID Reader Ready — แตะบัตร"</span>);
+}
+
+<span class="kw">bool</span> <span class="fn">isAuthorized</span>(<span class="type">byte</span>* uid, <span class="type">byte</span> size) {
+  <span class="kw">if</span> (size != <span class="num">4</span>) <span class="kw">return false</span>;
+  <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; numCards; i++) {
+    <span class="kw">if</span> (<span class="fn">memcmp</span>(uid, authorizedCards[i], <span class="num">4</span>) == <span class="num">0</span>)
+      <span class="kw">return true</span>;
+  }
+  <span class="kw">return false</span>;
+}
+
+<span class="kw">void</span> <span class="fn">loop</span>() {
+  <span class="kw">if</span> (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial())
+    <span class="kw">return</span>;
+
+  Serial.<span class="fn">print</span>(<span class="str">"UID: "</span>);
+  <span class="kw">for</span> (<span class="type">byte</span> i = <span class="num">0</span>; i &lt; rfid.uid.size; i++) {
+    Serial.<span class="fn">printf</span>(<span class="str">"%02X "</span>, rfid.uid.uidByte[i]);
+  }
+  Serial.<span class="fn">println</span>();
+
+  <span class="kw">if</span> (<span class="fn">isAuthorized</span>(rfid.uid.uidByte, rfid.uid.size)) {
+    Serial.<span class="fn">println</span>(<span class="str">"✅ อนุญาต — เปิดประตู"</span>);
+    <span class="fn">digitalWrite</span>(<span class="type">RELAY_PIN</span>, HIGH);
+    <span class="fn">delay</span>(<span class="num">3000</span>);  <span class="cmt">// เปิด 3 วินาที</span>
+    <span class="fn">digitalWrite</span>(<span class="type">RELAY_PIN</span>, LOW);
+  } <span class="kw">else</span> {
+    Serial.<span class="fn">println</span>(<span class="str">"❌ ไม่อนุญาต — บัตรไม่ถูกต้อง"</span>);
+  }
+
+  rfid.PICC_HaltA();
+  rfid.PCD_StopCrypto1();
+}</code></pre>
+    </div>
+    <div class="card" style="margin-top:1rem; border-color: rgba(245,158,11,0.3);">
+      <span class="card-chip chip-orange">หมายเหตุความปลอดภัย</span>
+      <h3 style="font-size:0.88rem;">ระบบ RFID แบบ UID-only ถือว่าความปลอดภัยต่ำ</h3>
+      <p>สำหรับการใช้งานจริงที่ต้องการความปลอดภัยสูง ควรใช้ Encrypted MIFARE DESFire, Mutual Authentication หรือ
+      Backend Verification แทนการตรวจสอบ UID อย่างเดียว — UID สามารถ Clone ได้ด้วย Hardware ราคาถูก</p>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 5: RESOURCES ===== -->
+  <section class="section-block" id="resources">
+    <div class="section-header">
+      <span class="section-icon">🔗</span>
+      <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+    </div>
+    <div class="resource-grid">
+      <a class="resource-item" href="https://docs.espressif.com/projects/esp-techpedia/en/latest/esp-friends/solution-introduction/bldc/bldc-solution.html" target="_blank">
+        <span class="resource-icon">📄</span>
+        <div class="resource-text">
+          <span class="resource-title">Espressif BLDC Solution</span>
+          <span class="resource-desc">FOC บน ESP32-S3/C3 อย่างเป็นทางการ</span>
+        </div>
+      </a>
+      <a class="resource-item" href="https://docs.sparkfun.com/SparkFun_IoT_Brushless_Motor_Driver/print_view/" target="_blank">
+        <span class="resource-icon">🔧</span>
+        <div class="resource-text">
+          <span class="resource-title">SparkFun IoT Brushless Driver</span>
+          <span class="resource-desc">ESP32-WROOM + TMC6300 Docs</span>
+        </div>
+      </a>
+      <a class="resource-item" href="https://www.digikey.com/en/maker/projects/wireless-stepper-motor-controller-with-esp32-and-tmc2240/1a922139a33c47e99edb43ae7f6f6229" target="_blank">
+        <span class="resource-icon">⚙️</span>
+        <div class="resource-text">
+          <span class="resource-title">Wireless Stepper + TMC2240</span>
+          <span class="resource-desc">Digi-Key Maker Project Guide</span>
+        </div>
+      </a>
+      <a class="resource-item" href="https://instructables.com/ESP32-S3-HomeKey-NFC-Reader" target="_blank">
+        <span class="resource-icon">🏠</span>
+        <div class="resource-text">
+          <span class="resource-title">ESP32-S3 HomeKey NFC</span>
+          <span class="resource-desc">Instructables — Apple HomeKey</span>
+        </div>
+      </a>
+      <a class="resource-item" href="https://hackaday.io/project/203196-nulltag-my-accidental-rfid-toolkit-built-on-esp32" target="_blank">
+        <span class="resource-icon">🛠️</span>
+        <div class="resource-text">
+          <span class="resource-title">NullTag RFID Toolkit</span>
+          <span class="resource-desc">PN532 + ESP32 — Hackaday.io</span>
+        </div>
+      </a>
+      <a class="resource-item" href="https://hackaday.io/project/206133-smart-inventory-management-with-esp32" target="_blank">
+        <span class="resource-icon">📦</span>
+        <div class="resource-text">
+          <span class="resource-title">Smart Inventory ESP32</span>
+          <span class="resource-desc">RC522 + WiFi Dashboard</span>
+        </div>
+      </a>
+      <a class="resource-item" href="https://www.espressif.com/en/products/sdks/esp-idf/esp-ble-mesh" target="_blank">
+        <span class="resource-icon">🌐</span>
+        <div class="resource-text">
+          <span class="resource-title">ESP-BLE-Mesh SDK</span>
+          <span class="resource-desc">Official Espressif BLE Mesh</span>
+        </div>
+      </a>
+      <a class="resource-item" href="https://github.com/simplefoc/Arduino-FOC" target="_blank">
+        <span class="resource-icon">🤖</span>
+        <div class="resource-text">
+          <span class="resource-title">Arduino-FOC (SimpleFOC)</span>
+          <span class="resource-desc">GitHub — SimpleFOC Library</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p><strong>ESP32 &amp; Sensor Innovations Daily</strong> — สร้างโดย AI Research Agent</p>
+  <p>22 พฤศจิกายน 2026 · หัวข้อวันนี้: Motor Control (FOC/Stepper), NFC/RFID Access, BLE Mesh Power Monitoring</p>
+  <p style="margin-top:0.75rem; font-size:0.72rem;">
+    แหล่งอ้างอิง: Espressif Tech Pedia · SparkFun Docs · Digi-Key Maker.io · Instructables · Hackaday.io · CircuitDigest
+  </p>
+</footer>
+
+</body>
+</html>
