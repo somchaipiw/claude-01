@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 23 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263450;
+    --accent-1: #38bdf8;
+    --accent-2: #818cf8;
+    --accent-3: #34d399;
+    --accent-4: #fb923c;
+    --accent-5: #f472b6;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --tag-bg: #1e3a5f;
+    --tag-text: #7dd3fc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1a2744 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(56,189,248,0.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.3);
+    color: var(--accent-1);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #38bdf8, #818cf8, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .header-sub {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .header-stats {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.4rem 1.2rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .stat-pill span { color: var(--accent-1); font-weight: 700; }
+
+  /* ===== LAYOUT ===== */
+  main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 1rem 3rem; }
+
+  /* ===== SECTION HEADERS ===== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 3rem 0 1.5rem;
+  }
+  .section-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .icon-blue   { background: rgba(56,189,248,0.15); }
+  .icon-purple { background: rgba(129,140,248,0.15); }
+  .icon-green  { background: rgba(52,211,153,0.15); }
+  .icon-orange { background: rgba(251,146,60,0.15); }
+  .icon-pink   { background: rgba(244,114,182,0.15); }
+  .section-title { font-size: 1.3rem; font-weight: 700; }
+  .section-title .section-en { font-size: 0.85rem; font-weight: 400; color: var(--text-muted); display: block; }
+  .section-line {
+    flex: 1; height: 1px;
+    background: linear-gradient(to right, var(--border), transparent);
+  }
+
+  /* ===== CARDS GRID ===== */
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.25rem; }
+  .cards-grid-2 { grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); }
+
+  /* ===== CARD ===== */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem 1.5rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(56,189,248,0.3);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+  .card-top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 0.75rem; margin-bottom: 0.75rem;
+  }
+  .card-icon { font-size: 1.6rem; flex-shrink: 0; }
+  .card-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .badge {
+    font-size: 0.72rem; font-weight: 600; padding: 0.2rem 0.6rem;
+    border-radius: 999px; letter-spacing: 0.03em;
+  }
+  .badge-blue   { background: rgba(56,189,248,0.15);  color: #7dd3fc; border: 1px solid rgba(56,189,248,0.3); }
+  .badge-purple { background: rgba(129,140,248,0.15); color: #a5b4fc; border: 1px solid rgba(129,140,248,0.3); }
+  .badge-green  { background: rgba(52,211,153,0.15);  color: #6ee7b7; border: 1px solid rgba(52,211,153,0.3); }
+  .badge-orange { background: rgba(251,146,60,0.15);  color: #fdba74; border: 1px solid rgba(251,146,60,0.3); }
+  .badge-pink   { background: rgba(244,114,182,0.15); color: #f9a8d4; border: 1px solid rgba(244,114,182,0.3); }
+  .card-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary); }
+  .card-desc { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; }
+  .card-list { margin-top: 0.75rem; padding-left: 0; list-style: none; }
+  .card-list li {
+    font-size: 0.88rem; color: var(--text-secondary); padding: 0.2rem 0;
+    padding-left: 1.2rem; position: relative;
+  }
+  .card-list li::before {
+    content: '▸'; position: absolute; left: 0;
+    color: var(--accent-1); font-size: 0.75rem;
+  }
+  .card-highlight {
+    margin-top: 0.9rem; padding: 0.65rem 1rem;
+    background: rgba(56,189,248,0.07);
+    border-left: 3px solid var(--accent-1);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.85rem; color: var(--accent-1);
+  }
+  .card-highlight.green  { background: rgba(52,211,153,0.07);  border-color: var(--accent-3); color: var(--accent-3); }
+  .card-highlight.orange { background: rgba(251,146,60,0.07);  border-color: var(--accent-4); color: var(--accent-4); }
+  .card-highlight.purple { background: rgba(129,140,248,0.07); border-color: var(--accent-2); color: var(--accent-2); }
+  .card-highlight.pink   { background: rgba(244,114,182,0.07); border-color: var(--accent-5); color: var(--accent-5); }
+
+  /* ===== SPEC TABLE ===== */
+  .spec-table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.87rem; }
+  .spec-table tr { border-bottom: 1px solid rgba(51,65,85,0.5); }
+  .spec-table tr:last-child { border-bottom: none; }
+  .spec-table td { padding: 0.4rem 0.2rem; color: var(--text-secondary); }
+  .spec-table td:first-child { color: var(--text-muted); width: 42%; font-size: 0.82rem; }
+  .spec-table td:last-child { font-weight: 600; color: var(--text-primary); }
+
+  /* ===== ALERT BOX ===== */
+  .alert-box {
+    background: rgba(251,146,60,0.08);
+    border: 1px solid rgba(251,146,60,0.25);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-top: 1.2rem;
+    font-size: 0.88rem;
+    color: #fdba74;
+    display: flex; gap: 0.6rem; align-items: flex-start;
+  }
+  .alert-box .alert-icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem; }
+
+  /* ===== CODE BLOCK ===== */
+  .code-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+  }
+  .code-header {
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+    padding: 0.7rem 1.2rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .code-header-left { display: flex; align-items: center; gap: 0.6rem; }
+  .code-dots { display: flex; gap: 0.35rem; }
+  .code-dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dot-red    { background: #ef4444; }
+  .dot-yellow { background: #eab308; }
+  .dot-green  { background: #22c55e; }
+  .code-label { font-size: 0.82rem; color: var(--text-muted); font-family: monospace; }
+  .code-lang { font-size: 0.75rem; color: var(--accent-1); font-family: monospace; }
+  pre {
+    padding: 1.2rem 1.3rem;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.65;
+    font-family: 'Courier New', Courier, monospace;
+    color: #cbd5e1;
+    margin: 0;
+  }
+  .c-kw  { color: #818cf8; }
+  .c-fn  { color: #38bdf8; }
+  .c-str { color: #34d399; }
+  .c-num { color: #fb923c; }
+  .c-cm  { color: #64748b; font-style: italic; }
+  .c-pp  { color: #f472b6; }
+  .c-var { color: #e2e8f0; }
+
+  /* ===== PROJECT CARDS ===== */
+  .project-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    gap: 1.2rem;
+    align-items: flex-start;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .project-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(129,140,248,0.3);
+  }
+  .project-num {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: linear-gradient(135deg, rgba(129,140,248,0.2), rgba(56,189,248,0.2));
+    border: 1px solid rgba(129,140,248,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 700; color: var(--accent-2);
+    flex-shrink: 0;
+  }
+  .project-body { flex: 1; }
+  .project-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .project-desc { font-size: 0.88rem; color: var(--text-secondary); }
+  .project-tags { margin-top: 0.6rem; display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .project-tag {
+    font-size: 0.74rem; padding: 0.15rem 0.6rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-muted);
+  }
+  .project-difficulty {
+    font-size: 0.75rem; padding: 0.15rem 0.6rem;
+    border-radius: 999px; font-weight: 600;
+  }
+  .diff-easy   { background: rgba(52,211,153,0.15); color: #6ee7b7; }
+  .diff-medium { background: rgba(251,146,60,0.15); color: #fdba74; }
+  .diff-hard   { background: rgba(244,114,182,0.15); color: #f9a8d4; }
+
+  /* ===== RESOURCES ===== */
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    display: flex; gap: 0.9rem; align-items: center;
+    transition: border-color 0.2s;
+  }
+  .resource-card:hover { border-color: rgba(56,189,248,0.3); }
+  .resource-icon-wrap {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; flex-shrink: 0;
+  }
+  .resource-info { flex: 1; min-width: 0; }
+  .resource-name { font-size: 0.9rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .resource-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+  footer strong { color: var(--text-secondary); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 600px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .cards-grid-2 { grid-template-columns: 1fr; }
+    .project-card { flex-direction: column; gap: 0.8rem; }
+    .resources-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- =================== HEADER =================== -->
+<header>
+  <div class="header-badge">Daily ESP32 Research · 23 November 2026</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="header-sub">ข้อมูลใหม่ล่าสุด · ESP32-P4 HMI · Edge AI · Smart Agriculture · Wearable Health · ESPHome 2026</p>
+  <div class="header-stats">
+    <div class="stat-pill">📦 นวัตกรรม <span>5</span> หัวข้อ</div>
+    <div class="stat-pill">💡 โปรเจกต์ <span>8</span> ไอเดีย</div>
+    <div class="stat-pill">🔬 Sensors <span>7</span> รายการ</div>
+    <div class="stat-pill">📅 <span>23 พ.ย. 2569</span></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- =================== SECTION 1: INNOVATIONS =================== -->
+  <div class="section-header">
+    <div class="section-icon icon-blue">🚀</div>
+    <div class="section-title">
+      นวัตกรรมและข่าวสารล่าสุด
+      <span class="section-en">Latest Innovations &amp; News</span>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="cards-grid">
+
+    <!-- ESP32-P4 SparkFun -->
+    <div class="card">
+      <div class="card-top">
+        <div class="card-icon">⚡</div>
+        <div class="card-badges">
+          <span class="badge badge-orange">ESP32-P4</span>
+          <span class="badge badge-blue">ใหม่ พ.ย. 2026</span>
+        </div>
+      </div>
+      <div class="card-title">SparkFun ESP32-P4 IoT RedBoard — บอร์ดสองรุ่นใหม่พร้อม PoE</div>
+      <div class="card-desc">SparkFun เปิดตัว IoT RedBoard สองรุ่นในปลายพฤศจิกายน 2026 บนชิป ESP32-P4 ซึ่งเร็วกว่า ESP32-S3 ถึง 2 เท่า</div>
+      <table class="spec-table">
+        <tr><td>CPU</td><td>Dual-core 400 MHz (rev 3.x)</td></tr>
+        <tr><td>PSRAM</td><td>32 MB PSRAM</td></tr>
+        <tr><td>Flash</td><td>16 MB flash</td></tr>
+        <tr><td>รุ่น WiFi</td><td>+ ESP32-C5 (dual-band Wi-Fi 6)</td></tr>
+        <tr><td>รุ่น Wired</td><td>+ PoE Ethernet</td></tr>
+        <tr><td>Video I/O</td><td>MIPI CSI camera + MIPI DSI display</td></tr>
+      </table>
+      <div class="card-highlight orange">ข้อควรรู้: ESP32-P4 ไม่มี Wi-Fi/BT ในตัว ต้องใช้ชิปคู่ (C5/C6) สำหรับงานไร้สาย</div>
+    </div>
+
+    <!-- ESP32-P4 Rev 3.x -->
+    <div class="card">
+      <div class="card-top">
+        <div class="card-icon">🔧</div>
+        <div class="card-badges">
+          <span class="badge badge-orange">ESP32-P4</span>
+          <span class="badge badge-purple">Chip Rev v3</span>
+        </div>
+      </div>
+      <div class="card-title">ESP32-P4 Chip Revision v3.x — อัปเกรดประสิทธิภาพสำคัญ (พ.ค. 2026)</div>
+      <div class="card-desc">Espressif อัปเกรด ESP32-P4 revision ใหม่ เพิ่มความสามารถระดับฮาร์ดแวร์หลายด้านสำหรับงาน HMI และ multimedia</div>
+      <ul class="card-list">
+        <li>Clock สูงสุดจาก 360 MHz → <strong>400 MHz</strong></li>
+        <li>เพิ่ม Zb Bit-Manipulation Extension สำหรับประมวลผลข้อมูลเร็วขึ้น</li>
+        <li>Dedicated Hardware RNG ที่ปลอดภัยกว่าเดิม</li>
+        <li>160 MHz I2S Clock Source รองรับ AES67 Audio-over-IP</li>
+        <li>เหมาะกับ Matter 1.5 Smart Home Camera</li>
+      </ul>
+      <div class="card-highlight">Use case หลัก: Touchscreen HMI, Large MIPI DSI Display, NuttX Web Panel</div>
+    </div>
+
+    <!-- ESPHome 2026 Major Update -->
+    <div class="card">
+      <div class="card-top">
+        <div class="card-icon">🏠</div>
+        <div class="card-badges">
+          <span class="badge badge-green">ESPHome</span>
+          <span class="badge badge-blue">2026 Updates</span>
+        </div>
+      </div>
+      <div class="card-title">ESPHome 2026 — ESP-IDF กลายเป็น Default + LVGL v9.5</div>
+      <div class="card-desc">ปี 2026 ESPHome มีการเปลี่ยนแปลงสำคัญหลายรอบ ส่งผลต่อผู้ใช้งานทุกคน</div>
+      <ul class="card-list">
+        <li><strong>2026.1.0:</strong> Wi-Fi Roaming อัตโนมัติ; ESP-IDF เป็น default backend แทน Arduino</li>
+        <li><strong>2026.2.0:</strong> เพิ่ม DLMS Smart Meter, CH423 I/O Expander, SY6970 Battery Management</li>
+        <li><strong>2026.4.0:</strong> LVGL v9.5.0, Mitsubishi CN105 HVAC native support, 4 sensor ใหม่</li>
+        <li>ESP-IDF 5.5.4 + Arduino core 3.3.8 (component mode)</li>
+      </ul>
+      <div class="card-highlight green">Migration note: โปรเจกต์เก่าที่ใช้ Arduino core อาจต้อง test ใหม่ เพราะ ESP-IDF เป็น default แล้ว</div>
+    </div>
+
+    <!-- ESP32-S31 New Chip -->
+    <div class="card">
+      <div class="card-top">
+        <div class="card-icon">🆕</div>
+        <div class="card-badges">
+          <span class="badge badge-pink">ESP32-S31</span>
+          <span class="badge badge-blue">ก.ค. 2026</span>
+        </div>
+      </div>
+      <div class="card-title">ESP32-S31 — Chip รุ่นใหม่เข้าสู่ Mass Production (กรกฎาคม 2026)</div>
+      <div class="card-desc">Espressif เริ่มผลิต ESP32-S31 จำนวนมากตั้งแต่ กรกฎาคม 2026 เป็นอัปเกรดจาก ESP32-S3 ที่มีในตลาดอยู่แล้ว</div>
+      <ul class="card-list">
+        <li>เข้ากันได้กับ pinout ESP32-S3 เดิม (drop-in upgrade)</li>
+        <li>ปรับปรุงประสิทธิภาพด้าน RF และ power management</li>
+        <li>รองรับ ESP-IDF v6.0 เต็มรูปแบบ</li>
+        <li>เหมาะสำหรับโปรเจกต์ AI Camera และ Audio ที่ต้องการ stability สูง</li>
+      </ul>
+      <div class="card-highlight purple">ยังอยู่ระหว่างรวบรวม datasheet สมบูรณ์ — ติดตาม Espressif Blog ต่อเนื่อง</div>
+    </div>
+
+  </div><!-- /cards-grid -->
+
+
+  <!-- =================== SECTION 2: PROJECTS =================== -->
+  <div class="section-header">
+    <div class="section-icon icon-purple">💡</div>
+    <div class="section-title">
+      ไอเดียโปรเจกต์ที่น่าสร้าง
+      <span class="section-en">Project Ideas to Build</span>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:1rem;">
+
+    <div class="project-card">
+      <div class="project-num">1</div>
+      <div class="project-body">
+        <div class="project-title">🖥️ Touchscreen Smart Home HMI ด้วย ESP32-P4 + MIPI DSI Display</div>
+        <div class="project-desc">ใช้ ESP32-P4 กับจอ MIPI DSI ขนาด 7 นิ้ว พร้อม LVGL v9 สร้าง dashboard ควบคุม smart home — อุณหภูมิ, ไฟ, มูลค่าพลังงาน — เชื่อมกับ Home Assistant ผ่าน ESP32-C6 ที่เป็น Wi-Fi module คู่</div>
+        <div class="project-tags">
+          <span class="project-tag">ESP32-P4</span>
+          <span class="project-tag">MIPI DSI</span>
+          <span class="project-tag">LVGL</span>
+          <span class="project-tag">Home Assistant</span>
+          <span class="project-difficulty diff-hard">ซับซ้อน</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">2</div>
+      <div class="project-body">
+        <div class="project-title">🎥 Real-time Face Detection ด้วย LILYGO T-Camera S3 + ESP-DL</div>
+        <div class="project-desc">ใช้บอร์ด LILYGO T-Camera S3 (ESP32-S3 + OV2640 camera + display) กับไลบรารี ESP-DL ของ Espressif สร้างระบบตรวจจับใบหน้าแบบ offline ทำงาน ~10–15 fps โดยไม่ต้องพึ่ง cloud</div>
+        <div class="project-tags">
+          <span class="project-tag">ESP32-S3</span>
+          <span class="project-tag">ESP-DL</span>
+          <span class="project-tag">OV2640</span>
+          <span class="project-tag">TinyML</span>
+          <span class="project-tag">Offline AI</span>
+          <span class="project-difficulty diff-medium">ปานกลาง</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">3</div>
+      <div class="project-body">
+        <div class="project-title">🌱 Smart Hydroponics Controller — ESP32-S3 + Closed-Loop Nutrient Dosing</div>
+        <div class="project-desc">ระบบควบคุมไฮโดรโปนิกส์อัตโนมัติ: วัดค่า pH, EC/TDS, อุณหภูมิน้ำ, ระดับน้ำ — ควบคุมปั๊มน้ำยาสารอาหารและปั๊มปรับ pH แบบ closed-loop แสดงผลผ่าน dashboard บน MQTT/Home Assistant</div>
+        <div class="project-tags">
+          <span class="project-tag">ESP32-S3</span>
+          <span class="project-tag">pH Probe</span>
+          <span class="project-tag">EC Sensor</span>
+          <span class="project-tag">DS18B20</span>
+          <span class="project-tag">MQTT</span>
+          <span class="project-difficulty diff-medium">ปานกลาง</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">4</div>
+      <div class="project-body">
+        <div class="project-title">💓 Wearable Health Monitor — ESP32-C6 + MAX30102 + ECG</div>
+        <div class="project-desc">อุปกรณ์สวมใส่ตรวจสุขภาพ: วัด heart rate, SpO2 (MAX30102), อุณหภูมิผิวหนัง, ECG เบื้องต้น (MAX30003), 3-axis accelerometer (LSM6DS3) ส่งข้อมูลผ่าน BLE ไปยัง smartphone app หรือ dashboard</div>
+        <div class="project-tags">
+          <span class="project-tag">ESP32-C6</span>
+          <span class="project-tag">MAX30102</span>
+          <span class="project-tag">ECG</span>
+          <span class="project-tag">BLE</span>
+          <span class="project-tag">Wearable</span>
+          <span class="project-difficulty diff-hard">ซับซ้อน</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">5</div>
+      <div class="project-body">
+        <div class="project-title">🐟 Aquaponics Monitoring Station — pH + Water Level + Pump Control</div>
+        <div class="project-desc">ระบบ monitoring ระบบ aquaponics (ปลา + ผัก): วัด pH น้ำ, ระดับน้ำ, อุณหภูมิน้ำ, ออกซิเจนละลายน้ำ ควบคุมปั๊มน้ำอัตโนมัติ ส่งข้อมูลขึ้น Blynk/Home Assistant แจ้งเตือน LINE เมื่อ pH ผิดปกติ</div>
+        <div class="project-tags">
+          <span class="project-tag">ESP32</span>
+          <span class="project-tag">pH Sensor</span>
+          <span class="project-tag">Water Level</span>
+          <span class="project-tag">Blynk</span>
+          <span class="project-tag">LINE Notify</span>
+          <span class="project-difficulty diff-easy">ง่าย</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">6</div>
+      <div class="project-body">
+        <div class="project-title">🔊 Wake-Word Spotting แบบ Offline ด้วย XIAO ESP32-S3 Sense</div>
+        <div class="project-desc">ใช้ Seeed XIAO ESP32-S3 Sense (มี microphone ในตัว + 8 MB PSRAM) train โมเดล wake-word ด้วย Edge Impulse ให้จำคำสั่งเสียง 5–10 คำ ทำงานได้โดยสมบูรณ์แบบ offline ไม่ต้องใช้ internet</div>
+        <div class="project-tags">
+          <span class="project-tag">ESP32-S3</span>
+          <span class="project-tag">Edge Impulse</span>
+          <span class="project-tag">TFLite Micro</span>
+          <span class="project-tag">MEMS Mic</span>
+          <span class="project-tag">Offline AI</span>
+          <span class="project-difficulty diff-medium">ปานกลาง</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">7</div>
+      <div class="project-body">
+        <div class="project-title">⚙️ Vibration Anomaly Detection บน ESP32-S3 (Predictive Maintenance)</div>
+        <div class="project-desc">train quantized autoencoder ด้วย Edge Impulse จากข้อมูล IMU ของมอเตอร์ที่ปกติ จากนั้น deploy บน ESP32-S3 ตรวจจับ anomaly แบบ real-time เมื่อเครื่องจักรเริ่มมีความผิดปกติ แจ้งเตือนผ่าน MQTT</div>
+        <div class="project-tags">
+          <span class="project-tag">ESP32-S3</span>
+          <span class="project-tag">IMU / Accelerometer</span>
+          <span class="project-tag">Autoencoder</span>
+          <span class="project-tag">Edge Impulse</span>
+          <span class="project-tag">Industry 4.0</span>
+          <span class="project-difficulty diff-hard">ซับซ้อน</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <div class="project-num">8</div>
+      <div class="project-body">
+        <div class="project-title">🌊 Water Quality Logger — PoE + ESP32-P4 สำหรับโรงงานและบ่อเพาะเลี้ยง</div>
+        <div class="project-desc">ใช้ ESP32-P4 RedBoard รุ่น PoE Ethernet ติดตั้งในบ่อน้ำ/บ่อบำบัด วัด pH, EC, turbidity, DO, อุณหภูมิ บันทึกข้อมูลลง InfluxDB ผ่าน MQTT โดยไม่ต้องใช้แบตเตอรี่ รับไฟจาก PoE</div>
+        <div class="project-tags">
+          <span class="project-tag">ESP32-P4</span>
+          <span class="project-tag">PoE Ethernet</span>
+          <span class="project-tag">Water Quality</span>
+          <span class="project-tag">InfluxDB</span>
+          <span class="project-tag">Industrial IoT</span>
+          <span class="project-difficulty diff-hard">ซับซ้อน</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /projects list -->
+
+
+  <!-- =================== SECTION 3: SENSORS =================== -->
+  <div class="section-header">
+    <div class="section-icon icon-green">🔬</div>
+    <div class="section-title">
+      Sensors &amp; Modules ที่เหมาะกับโปรเจกต์วันนี้
+      <span class="section-en">Recommended Sensors &amp; Modules</span>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="cards-grid">
+
+    <div class="card">
+      <div class="card-top">
+        <div class="card-icon">💧</div>
+        <div class="card-badges">
+          <span class="badge badge-blue">Water Quality</span>
+          <span class="badge badge-green">I2C/Analog</span>
+        </div>
+      </div>
+      <div class="card-title">Atlas Scientific EZO-pH + EZO-EC</div>
+      <div class="card-desc">โปรบ pH และ EC (Electrical Conductivity/TDS) ระดับ industrial ที่เชื่อมต่อผ่าน I2C โดยตรง ไม่ต้องวงจร analog เพิ่ม เหมาะกับ hydroponics และ aquaponics</div>
+      <ul class="card-list">
+        <li>EZO-pH: ช่วง 0–14 pH, ความแม่นยำ ±0.001 pH</li>
+        <li>EZO-EC: วัด EC, TDS, Salinity, SG</li>
+        <li>Calibration ง่ายผ่าน I2C command</li>
+        <li>งบสูง (~$50–100/ชิ้น) แต่ทนทานกว่า clone มาก</li>
+      </ul>
+      <div class="card-highlight green">ใช้คู่กับ DS18B20 temperature สำหรับ temperature compensation ของ EC</div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="card-icon">❤️</div>
+        <div class="card-badges">
+          <span class="badge badge-pink">Biometric</span>
+          <span class="badge badge-blue">I2C</span>
+        </div>
+      </div>
+      <div class="card-title">MAX30102 — Heart Rate &amp; SpO2 Sensor</div>
+      <div class="card-desc">IC วัด heart rate และออกซิเจนในเลือด (SpO2) ผ่าน Photoplethysmography (PPG) เชื่อมต่อผ่าน I2C ใช้ในงาน wearable ได้ดี</div>
+      <ul class="card-list">
+        <li>ใช้ไฟ 1.8–3.3V, กระแสต่ำมาก (600 µA ขณะวัด)</li>
+        <li>SpO2 accuracy ±2% (เทียบกับ Contec CMS50D)</li>
+        <li>Library: <code>SparkFun_MAX3010x_Sensor_Library</code></li>
+        <li>espressif/esp_health component รองรับ MAX30102 แล้ว</li>
+      </ul>
+      <div class="alert-box">
+        <span class="alert-icon">⚠️</span>
+        <span>ค่าที่อ่านได้เป็น experimental grade เท่านั้น ไม่ผ่านมาตรฐาน medical ใช้เพื่อ hobby/research เท่านั้น</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="card-icon">🌊</div>
+        <div class="card-badges">
+          <span class="badge badge-blue">Water Quality</span>
+          <span class="badge badge-orange">Analog</span>
+        </div>
+      </div>
+      <div class="card-title">Turbidity Sensor + TDS/EC Probe แบบ DFRobot</div>
+      <div class="card-desc">ชุด sensor ราคาประหยัดสำหรับตรวจสอบคุณภาพน้ำเบื้องต้น ทำงานได้ดีกับ ESP32 ADC</div>
+      <ul class="card-list">
+        <li>DFRobot Turbidity Sensor: Analog output 0–4.5V</li>
+        <li>DFRobot TDS Probe: Analog + temperature compensation</li>
+        <li>งบ ~$10–25/ชุด เหมาะสำหรับ DIY และ prototype</li>
+        <li>ต้องใช้ Analog Isolation เพื่อยืดอายุ probe</li>
+      </ul>
+      <div class="card-highlight">ใช้ ESP32 ADC ร่วมกับ ADS1115 (16-bit) เพื่อความแม่นยำสูงขึ้น</div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="card-icon">📸</div>
+        <div class="card-badges">
+          <span class="badge badge-purple">AI Vision</span>
+          <span class="badge badge-blue">PSRAM</span>
+        </div>
+      </div>
+      <div class="card-title">Seeed XIAO ESP32-S3 Sense — TinyML Starter Kit ยอดนิยมปี 2026</div>
+      <div class="card-desc">บอร์ดเล็กพิเศษ (21×17.5mm) ที่มีทุกอย่างสำหรับ TinyML ในตัว: ESP32-S3, camera, microphone, 8 MB PSRAM</div>
+      <ul class="card-list">
+        <li>ESP32-S3 Dual-core 240 MHz + 8 MB PSRAM</li>
+        <li>OV2640 2MP camera module (detachable)</li>
+        <li>MEMS Microphone ในตัว</li>
+        <li>MicroSD slot สำหรับเก็บ dataset</li>
+        <li>รองรับ Edge Impulse Studio อย่างสมบูรณ์</li>
+      </ul>
+      <div class="card-highlight purple">Face detection ~10–15 fps ใช้ ESP-DL library — ทำงาน offline สมบูรณ์</div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="card-icon">🩺</div>
+        <div class="card-badges">
+          <span class="badge badge-pink">ECG</span>
+          <span class="badge badge-blue">SPI/I2C</span>
+        </div>
+      </div>
+      <div class="card-title">MAX30003 — Single-Channel ECG AFE</div>
+      <div class="card-desc">IC สำหรับ Electrocardiogram (ECG) front-end วัดสัญญาณหัวใจ 1 ช่อง เชื่อมต่อผ่าน SPI ให้ค่าความละเอียดสูง</div>
+      <ul class="card-list">
+        <li>18-bit ADC, Noise &lt; 9 µV rms</li>
+        <li>Built-in R-to-R detector, Lead-off detection</li>
+        <li>ใช้ไฟ 1.8V core + 1.8–3.3V digital I/O</li>
+        <li>ใช้คู่ MAX30102 (PPG) + LSM6DS3 (IMU) ในบอร์ด wearable</li>
+      </ul>
+      <div class="card-highlight pink">Reference: Illinois ECE445 2026 — เปิดเผย schematic wearable health monitor ทั้งหมด</div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="card-icon">🔵</div>
+        <div class="card-badges">
+          <span class="badge badge-blue">Flow Sensor</span>
+          <span class="badge badge-green">Digital</span>
+        </div>
+      </div>
+      <div class="card-title">YF-S201 / FS300A — Water Flow Sensor สำหรับ Hydroponics</div>
+      <div class="card-desc">flow sensor แบบ Hall-effect ราคาประหยัดสำหรับวัดปริมาณน้ำที่ไหลผ่านท่อ เหมาะกับระบบ hydroponics และ aquaponics</div>
+      <ul class="card-list">
+        <li>Output: Pulse signal (Hall effect) อ่านด้วย GPIO interrupt</li>
+        <li>YF-S201: ช่วง 1–30 L/min, Pulse: ~450 pulses/liter</li>
+        <li>FS300A: ช่วง 10–200 L/min สำหรับท่อใหญ่</li>
+        <li>ติดตั้งง่าย เชื่อมต่อ ESP32 GPIO + 10kΩ pull-up</li>
+      </ul>
+      <div class="card-highlight green">ใช้ ESP32 MCPWM หรือ PCNT hardware counter เพื่อนับ pulse แม่นยำกว่า software interrupt</div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <div class="card-icon">🌡️</div>
+        <div class="card-badges">
+          <span class="badge badge-orange">DO Sensor</span>
+          <span class="badge badge-blue">Analog</span>
+        </div>
+      </div>
+      <div class="card-title">Dissolved Oxygen (DO) Probe — Atlas Scientific EZO-DO</div>
+      <div class="card-desc">sensor วัดออกซิเจนละลายน้ำ สำคัญมากสำหรับระบบ aquaponics เพราะปลาต้องการ DO ≥ 5 mg/L</div>
+      <ul class="card-list">
+        <li>ช่วงวัด: 0–35.99 mg/L</li>
+        <li>Accuracy: ±0.05 mg/L</li>
+        <li>Interface: I2C (EZO circuit) หรือ UART</li>
+        <li>ต้อง calibrate กับน้ำอิ่มตัวออกซิเจน (100% air saturation)</li>
+      </ul>
+      <div class="card-highlight orange">ค่า DO ขึ้นอยู่กับอุณหภูมิน้ำ — ใช้ DS18B20 คู่กันเสมอ</div>
+    </div>
+
+  </div><!-- /sensors cards-grid -->
+
+
+  <!-- =================== SECTION 4: CODE GUIDE =================== -->
+  <div class="section-header">
+    <div class="section-icon icon-orange">💻</div>
+    <div class="section-title">
+      Code Guide — ESP32-S3 Face Detection ด้วย ESP-DL
+      <span class="section-en">Quick Code Reference: Face Detection with ESP-DL</span>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="code-section">
+    <div class="code-header">
+      <div class="code-header-left">
+        <div class="code-dots">
+          <div class="code-dot dot-red"></div>
+          <div class="code-dot dot-yellow"></div>
+          <div class="code-dot dot-green"></div>
+        </div>
+        <span class="code-label">esp32s3_face_detect.ino — ESP-DL + OV2640 Camera (Arduino)</span>
+      </div>
+      <span class="code-lang">C++ / Arduino</span>
+    </div>
+<pre><span class="c-pp">#include</span> <span class="c-str">"esp_camera.h"</span>
+<span class="c-pp">#include</span> <span class="c-str">"dl_detect_mnp.hpp"</span>   <span class="c-cm">// ESP-DL MobileNet face detector</span>
+<span class="c-pp">#include</span> <span class="c-str">"dl_image.hpp"</span>
+
+<span class="c-cm">// LILYGO T-Camera S3 camera pin config</span>
+<span class="c-pp">#define</span> <span class="c-var">PWDN_GPIO_NUM</span>  <span class="c-num">-1</span>
+<span class="c-pp">#define</span> <span class="c-var">RESET_GPIO_NUM</span> <span class="c-num">-1</span>
+<span class="c-pp">#define</span> <span class="c-var">XCLK_GPIO_NUM</span>  <span class="c-num">8</span>
+<span class="c-pp">#define</span> <span class="c-var">SIOD_GPIO_NUM</span>  <span class="c-num">2</span>
+<span class="c-pp">#define</span> <span class="c-var">SIOC_GPIO_NUM</span>  <span class="c-num">3</span>
+<span class="c-pp">#define</span> <span class="c-var">Y9_GPIO_NUM</span>    <span class="c-num">37</span>
+<span class="c-pp">#define</span> <span class="c-var">Y8_GPIO_NUM</span>    <span class="c-num">36</span>
+<span class="c-pp">#define</span> <span class="c-var">Y7_GPIO_NUM</span>    <span class="c-num">35</span>
+<span class="c-pp">#define</span> <span class="c-var">Y6_GPIO_NUM</span>    <span class="c-num">34</span>
+<span class="c-pp">#define</span> <span class="c-var">Y5_GPIO_NUM</span>    <span class="c-num">33</span>
+<span class="c-pp">#define</span> <span class="c-var">Y4_GPIO_NUM</span>    <span class="c-num">17</span>
+<span class="c-pp">#define</span> <span class="c-var">Y3_GPIO_NUM</span>    <span class="c-num">15</span>
+<span class="c-pp">#define</span> <span class="c-var">Y2_GPIO_NUM</span>    <span class="c-num">14</span>
+<span class="c-pp">#define</span> <span class="c-var">VSYNC_GPIO_NUM</span> <span class="c-num">6</span>
+<span class="c-pp">#define</span> <span class="c-var">HREF_GPIO_NUM</span>  <span class="c-num">7</span>
+<span class="c-pp">#define</span> <span class="c-var">PCLK_GPIO_NUM</span>  <span class="c-num">13</span>
+
+<span class="c-var">dl::detect::MNP</span> <span class="c-var">detector</span>;   <span class="c-cm">// ESP-DL face detection model</span>
+
+<span class="c-kw">void</span> <span class="c-fn">setup</span>() {
+  Serial.<span class="c-fn">begin</span>(<span class="c-num">115200</span>);
+
+  camera_config_t <span class="c-var">config</span>;
+  <span class="c-var">config</span>.ledc_channel = <span class="c-var">LEDC_CHANNEL_0</span>;
+  <span class="c-var">config</span>.ledc_timer   = <span class="c-var">LEDC_TIMER_0</span>;
+  <span class="c-var">config</span>.pin_d0       = <span class="c-var">Y2_GPIO_NUM</span>;
+  <span class="c-cm">// ... (ใส่ pin ที่เหลือตามตัวแปรด้านบน) ...</span>
+  <span class="c-var">config</span>.xclk_freq_hz = <span class="c-num">20000000</span>;
+  <span class="c-var">config</span>.pixel_format = <span class="c-var">PIXFORMAT_RGB565</span>;
+  <span class="c-var">config</span>.frame_size   = <span class="c-var">FRAMESIZE_240X240</span>;   <span class="c-cm">// 240x240 สำหรับ inference</span>
+  <span class="c-var">config</span>.fb_count     = <span class="c-num">2</span>;
+  <span class="c-var">config</span>.fb_location  = <span class="c-var">CAMERA_FB_IN_PSRAM</span>;   <span class="c-cm">// ใช้ PSRAM</span>
+  <span class="c-var">config</span>.grab_mode    = <span class="c-var">CAMERA_GRAB_LATEST</span>;
+
+  esp_err_t <span class="c-var">err</span> = <span class="c-fn">esp_camera_init</span>(&<span class="c-var">config</span>);
+  <span class="c-kw">if</span> (<span class="c-var">err</span> != <span class="c-var">ESP_OK</span>) {
+    Serial.<span class="c-fn">printf</span>(<span class="c-str">"Camera init failed: 0x%x\n"</span>, <span class="c-var">err</span>);
+    <span class="c-kw">return</span>;
+  }
+  Serial.<span class="c-fn">println</span>(<span class="c-str">"Camera ready — ESP-DL face detect running"</span>);
+}
+
+<span class="c-kw">void</span> <span class="c-fn">loop</span>() {
+  camera_fb_t *<span class="c-var">fb</span> = <span class="c-fn">esp_camera_fb_get</span>();
+  <span class="c-kw">if</span> (!<span class="c-var">fb</span>) <span class="c-kw">return</span>;
+
+  <span class="c-cm">// สร้าง Tensor จาก frame buffer</span>
+  <span class="c-var">dl::image::img_t</span> <span class="c-var">img</span>;
+  <span class="c-var">img</span>.data   = (<span class="c-kw">uint16_t</span> *)<span class="c-var">fb</span>->buf;
+  <span class="c-var">img</span>.width  = <span class="c-var">fb</span>->width;
+  <span class="c-var">img</span>.height = <span class="c-var">fb</span>->height;
+  <span class="c-var">img</span>.pix_type = <span class="c-var">dl::image::DL_IMAGE_PIX_TYPE_RGB565</span>;
+
+  <span class="c-cm">// รัน inference</span>
+  <span class="c-kw">auto</span> <span class="c-var">results</span> = <span class="c-var">detector</span>.<span class="c-fn">infer</span>(&<span class="c-var">img</span>);
+
+  Serial.<span class="c-fn">printf</span>(<span class="c-str">"พบใบหน้า: %d ใบ\n"</span>, <span class="c-var">results</span>.<span class="c-fn">size</span>());
+  <span class="c-kw">for</span> (<span class="c-kw">auto</span> &<span class="c-var">r</span> : <span class="c-var">results</span>) {
+    Serial.<span class="c-fn">printf</span>(<span class="c-str">"  box=[%d,%d,%d,%d] score=%.2f\n"</span>,
+      <span class="c-var">r</span>.box[<span class="c-num">0</span>], <span class="c-var">r</span>.box[<span class="c-num">1</span>], <span class="c-var">r</span>.box[<span class="c-num">2</span>], <span class="c-var">r</span>.box[<span class="c-num">3</span>], <span class="c-var">r</span>.score);
+  }
+
+  <span class="c-fn">esp_camera_fb_return</span>(<span class="c-var">fb</span>);
+  <span class="c-fn">delay</span>(<span class="c-num">33</span>);  <span class="c-cm">// ~30 fps target (จริงๆ ได้ 10–15 fps)</span>
+}</pre>
+  </div>
+
+  <div class="code-section">
+    <div class="code-header">
+      <div class="code-header-left">
+        <div class="code-dots">
+          <div class="code-dot dot-red"></div>
+          <div class="code-dot dot-yellow"></div>
+          <div class="code-dot dot-green"></div>
+        </div>
+        <span class="code-label">hydroponics_ph_ec.ino — ESP32 + Atlas Scientific EZO (I2C)</span>
+      </div>
+      <span class="code-lang">C++ / Arduino</span>
+    </div>
+<pre><span class="c-pp">#include</span> <span class="c-str">"Wire.h"</span>
+
+<span class="c-pp">#define</span> <span class="c-var">PH_ADDR</span>   <span class="c-num">0x63</span>   <span class="c-cm">// Atlas EZO-pH default I2C address</span>
+<span class="c-pp">#define</span> <span class="c-var">EC_ADDR</span>   <span class="c-num">0x64</span>   <span class="c-cm">// Atlas EZO-EC default I2C address</span>
+
+<span class="c-kw">float</span> <span class="c-fn">readEZO</span>(<span class="c-kw">uint8_t</span> <span class="c-var">addr</span>, <span class="c-kw">const char</span>* <span class="c-var">cmd</span>, <span class="c-kw">int</span> <span class="c-var">waitMs</span>) {
+  Wire.<span class="c-fn">beginTransmission</span>(<span class="c-var">addr</span>);
+  Wire.<span class="c-fn">print</span>(<span class="c-var">cmd</span>);
+  Wire.<span class="c-fn">endTransmission</span>();
+  <span class="c-fn">delay</span>(<span class="c-var">waitMs</span>);
+
+  Wire.<span class="c-fn">requestFrom</span>(<span class="c-var">addr</span>, (<span class="c-kw">uint8_t</span>)<span class="c-num">20</span>);
+  Wire.<span class="c-fn">read</span>();  <span class="c-cm">// response code (1 = success)</span>
+  <span class="c-kw">char</span> <span class="c-var">buf</span>[<span class="c-num">20</span>] = {<span class="c-num">0</span>};
+  <span class="c-kw">int</span> <span class="c-var">i</span> = <span class="c-num">0</span>;
+  <span class="c-kw">while</span> (Wire.<span class="c-fn">available</span>()) <span class="c-var">buf</span>[<span class="c-var">i</span>++] = Wire.<span class="c-fn">read</span>();
+  <span class="c-kw">return</span> <span class="c-fn">atof</span>(<span class="c-var">buf</span>);
+}
+
+<span class="c-kw">void</span> <span class="c-fn">setup</span>() {
+  Serial.<span class="c-fn">begin</span>(<span class="c-num">115200</span>);
+  Wire.<span class="c-fn">begin</span>(<span class="c-num">21</span>, <span class="c-num">22</span>);  <span class="c-cm">// SDA=21, SCL=22</span>
+
+  <span class="c-cm">// ตั้ง continuous mode ปิด ใช้ single-read แทน</span>
+  Wire.<span class="c-fn">beginTransmission</span>(<span class="c-var">PH_ADDR</span>); Wire.<span class="c-fn">print</span>(<span class="c-str">"C,0"</span>); Wire.<span class="c-fn">endTransmission</span>();
+  Wire.<span class="c-fn">beginTransmission</span>(<span class="c-var">EC_ADDR</span>); Wire.<span class="c-fn">print</span>(<span class="c-str">"C,0"</span>); Wire.<span class="c-fn">endTransmission</span>();
+  <span class="c-fn">delay</span>(<span class="c-num">300</span>);
+}
+
+<span class="c-kw">void</span> <span class="c-fn">loop</span>() {
+  <span class="c-kw">float</span> <span class="c-var">ph</span> = <span class="c-fn">readEZO</span>(<span class="c-var">PH_ADDR</span>, <span class="c-str">"R"</span>, <span class="c-num">900</span>);    <span class="c-cm">// รอ 900ms สำหรับ pH</span>
+  <span class="c-kw">float</span> <span class="c-var">ec</span> = <span class="c-fn">readEZO</span>(<span class="c-var">EC_ADDR</span>, <span class="c-str">"R"</span>, <span class="c-num">600</span>);    <span class="c-cm">// รอ 600ms สำหรับ EC</span>
+
+  Serial.<span class="c-fn">printf</span>(<span class="c-str">"pH: %.3f | EC: %.2f µS/cm\n"</span>, <span class="c-var">ph</span>, <span class="c-var">ec</span>);
+
+  <span class="c-cm">// ตรรกะ dosing pump ตัวอย่าง</span>
+  <span class="c-kw">if</span> (<span class="c-var">ph</span> > <span class="c-num">6.5</span>) {
+    Serial.<span class="c-fn">println</span>(<span class="c-str">"pH สูงเกิน — เปิดปั๊ม pH-down"</span>);
+    <span class="c-cm">// digitalWrite(PUMP_PH_DOWN_PIN, HIGH);</span>
+  } <span class="c-kw">else if</span> (<span class="c-var">ph</span> < <span class="c-num">5.5</span>) {
+    Serial.<span class="c-fn">println</span>(<span class="c-str">"pH ต่ำเกิน — เปิดปั๊ม pH-up"</span>);
+  }
+
+  <span class="c-fn">delay</span>(<span class="c-num">10000</span>);  <span class="c-cm">// วัดทุก 10 วินาที</span>
+}</pre>
+  </div>
+
+
+  <!-- =================== SECTION 5: RESOURCES =================== -->
+  <div class="section-header">
+    <div class="section-icon icon-pink">🔗</div>
+    <div class="section-title">
+      แหล่งข้อมูลและลิงก์อ้างอิง
+      <span class="section-en">Resources &amp; Reference Links</span>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="resources-grid">
+    <div class="resource-card">
+      <div class="resource-icon-wrap" style="background:rgba(251,146,60,0.12);">📦</div>
+      <div class="resource-info">
+        <div class="resource-name">SparkFun ESP32-P4 IoT RedBoard</div>
+        <div class="resource-desc">sparkfun.com — บอร์ด P4 รุ่น Wi-Fi 6 และ PoE Ethernet (พ.ย. 2026)</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon-wrap" style="background:rgba(56,189,248,0.12);">🤖</div>
+      <div class="resource-info">
+        <div class="resource-name">ESP-DL Library (Espressif)</div>
+        <div class="resource-desc">github.com/espressif/esp-dl — Face detect, YOLO, TFLite Micro บน ESP32-S3</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon-wrap" style="background:rgba(129,140,248,0.12);">⚡</div>
+      <div class="resource-info">
+        <div class="resource-name">Edge Impulse Studio</div>
+        <div class="resource-desc">edgeimpulse.com — Train + deploy TinyML model บน ESP32-S3 ฟรี</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon-wrap" style="background:rgba(52,211,153,0.12);">🌱</div>
+      <div class="resource-info">
+        <div class="resource-name">Atlas Scientific EZO Circuits</div>
+        <div class="resource-desc">atlas-scientific.com — EZO-pH, EZO-EC, EZO-DO สำหรับงาน hydroponics/aquaponics</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon-wrap" style="background:rgba(244,114,182,0.12);">❤️</div>
+      <div class="resource-info">
+        <div class="resource-name">espressif/esp_health Component</div>
+        <div class="resource-desc">components.espressif.com — Official ESP32 health sensor component (MAX30102)</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon-wrap" style="background:rgba(56,189,248,0.12);">🏠</div>
+      <div class="resource-info">
+        <div class="resource-name">ESPHome 2026 Changelog</div>
+        <div class="resource-desc">esphome.io/changelog — ESP-IDF default, LVGL v9.5, DLMS, CH423 ใหม่</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon-wrap" style="background:rgba(251,146,60,0.12);">🎓</div>
+      <div class="resource-info">
+        <div class="resource-name">LILYGO T-Camera S3 Docs</div>
+        <div class="resource-desc">github.com/Xinyuan-LilyGO/LilyGo-Camera-Series — ESP32-S3 camera สำหรับ TinyML</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon-wrap" style="background:rgba(129,140,248,0.12);">🔬</div>
+      <div class="resource-info">
+        <div class="resource-name">Illinois ECE445 Wearable Health (2026)</div>
+        <div class="resource-desc">publish.illinois.edu — Design report: ESP32-C3 + ECG + PPG + IMU wearable</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon-wrap" style="background:rgba(52,211,153,0.12);">🌿</div>
+      <div class="resource-info">
+        <div class="resource-name">Seeed XIAO ESP32-S3 Sense</div>
+        <div class="resource-desc">seeedstudio.com — บอร์ด TinyML พร้อม camera + mic + 8 MB PSRAM ราคา ~$15</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon-wrap" style="background:rgba(56,189,248,0.12);">📄</div>
+      <div class="resource-info">
+        <div class="resource-name">ESP32-P4 Technical Reference Manual</div>
+        <div class="resource-desc">docs.espressif.com — Full TRM สำหรับ ESP32-P4 chip revision 3.x</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon-wrap" style="background:rgba(244,114,182,0.12);">🌊</div>
+      <div class="resource-info">
+        <div class="resource-name">DFRobot Water Quality Sensors Guide</div>
+        <div class="resource-desc">wiki.dfrobot.com — pH, TDS, Turbidity, DO sensor guides สำหรับ ESP32</div>
+      </div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon-wrap" style="background:rgba(251,146,60,0.12);">🧪</div>
+      <div class="resource-info">
+        <div class="resource-name">Wokwi ESP32 Simulator</div>
+        <div class="resource-desc">wokwi.com — ทดสอบ ESP32 + sensors ออนไลน์ ไม่ต้องใช้บอร์ดจริง</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- =================== FOOTER =================== -->
+<footer>
+  <strong>ESP32 &amp; Sensor Innovations Daily</strong> · สร้างเมื่อวันที่ 23 พฤศจิกายน 2026<br>
+  <span style="color:var(--text-muted)">ข้อมูลรวบรวมจาก Espressif Systems, SparkFun, Seeed Studio, Atlas Scientific, Edge Impulse, ESPHome · เนื้อหาเพื่อการศึกษาและ prototyping</span>
+</footer>
+
+</body>
+</html>
