@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 24 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263348;
+    --border: #334155;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent-blue: #38bdf8;
+    --accent-green: #4ade80;
+    --accent-purple: #c084fc;
+    --accent-orange: #fb923c;
+    --accent-pink: #f472b6;
+    --accent-yellow: #facc15;
+    --accent-teal: #2dd4bf;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.4);
+    border-radius: 999px;
+    padding: 0.3rem 1rem;
+    font-size: 0.8rem;
+    color: #a5b4fc;
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+  }
+  header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.4rem 1.2rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .stat-pill span { color: var(--accent-blue); font-weight: 600; }
+
+  /* ─── LAYOUT ─── */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  /* ─── SECTION ─── */
+  section { margin-bottom: 3.5rem; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .section-header p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.1rem;
+  }
+
+  /* ─── CARD GRID ─── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(99,102,241,0.5);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.9rem;
+  }
+  .card-emoji {
+    font-size: 1.8rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+  .card-desc {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 1rem;
+  }
+  .tag {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .tag-blue   { background: rgba(56,189,248,0.12); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); }
+  .tag-green  { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+  .tag-purple { background: rgba(192,132,252,0.12); color: #c084fc; border: 1px solid rgba(192,132,252,0.3); }
+  .tag-orange { background: rgba(251,146,60,0.12);  color: #fb923c; border: 1px solid rgba(251,146,60,0.3); }
+  .tag-pink   { background: rgba(244,114,182,0.12); color: #f472b6; border: 1px solid rgba(244,114,182,0.3); }
+  .tag-yellow { background: rgba(250,204,21,0.12);  color: #facc15; border: 1px solid rgba(250,204,21,0.3); }
+  .tag-teal   { background: rgba(45,212,191,0.12);  color: #2dd4bf; border: 1px solid rgba(45,212,191,0.3); }
+
+  /* ─── FEATURED CARD ─── */
+  .card-featured {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(192,132,252,0.08));
+    border-color: rgba(99,102,241,0.4);
+  }
+  .card-featured .card-title { font-size: 1.1rem; }
+
+  /* ─── NEW BADGE ─── */
+  .badge-new {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: rgba(74,222,128,0.15);
+    border: 1px solid rgba(74,222,128,0.4);
+    color: #4ade80;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  /* ─── CODE BLOCK ─── */
+  .code-wrapper {
+    margin-top: 1.5rem;
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    background: #161b22;
+    border-bottom: 1px solid var(--border);
+  }
+  .code-lang {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .code-dots { display: flex; gap: 0.4rem; }
+  .code-dots span { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-red    { background: #ff5f57; }
+  .dot-yellow { background: #febc2e; }
+  .dot-green  { background: #28c840; }
+  pre {
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.65;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  }
+  .kw  { color: #ff79c6; }
+  .fn  { color: #50fa7b; }
+  .st  { color: #f1fa8c; }
+  .cm  { color: #6272a4; }
+  .nb  { color: #8be9fd; }
+  .nu  { color: #bd93f9; }
+
+  /* ─── SENSOR TABLE ─── */
+  .sensor-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .sensor-table th {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .sensor-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+  .sensor-table tr:last-child td { border-bottom: none; }
+  .sensor-table tr:hover td { background: rgba(255,255,255,0.03); }
+  .sensor-name { color: var(--text-primary); font-weight: 600; }
+  .sensor-rating {
+    display: inline-flex;
+    gap: 2px;
+    font-size: 0.8rem;
+  }
+  .s-full  { color: var(--accent-yellow); }
+  .s-empty { color: var(--border); }
+
+  /* ─── RESOURCE CARD ─── */
+  .resource-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .resource-card:hover {
+    border-color: rgba(56,189,248,0.4);
+    transform: translateX(4px);
+  }
+  .resource-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .resource-title { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+  .resource-desc  { font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.1rem; }
+  .resource-link  { font-size: 0.75rem; color: var(--accent-blue); margin-top: 0.2rem; }
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+  }
+
+  /* ─── HIGHLIGHT BOX ─── */
+  .highlight-box {
+    background: rgba(99,102,241,0.08);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-left: 3px solid #818cf8;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-top: 1rem;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+  }
+  .highlight-box strong { color: var(--text-primary); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+  footer p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.9; }
+  footer strong { color: var(--text-secondary); }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 600px) {
+    .card-grid { grid-template-columns: 1fr; }
+    .card-featured { grid-column: 1; }
+    header h1 { font-size: 1.4rem; }
+    .sensor-table { font-size: 0.78rem; }
+    .sensor-table th, .sensor-table td { padding: 0.6rem 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── HEADER ─── -->
+<header>
+  <div class="header-badge">🤖 AI Researcher Daily Brief — ESP32 &amp; IoT</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">24 พฤศจิกายน 2026 · TinyML on-device · Smart Agriculture · ESP32-P4 v3.x</p>
+  <div class="header-stats">
+    <div class="stat-pill"><span>4</span> นวัตกรรม</div>
+    <div class="stat-pill"><span>5</span> ไอเดียโปรเจกต์</div>
+    <div class="stat-pill"><span>6</span> Sensors</div>
+    <div class="stat-pill"><span>3</span> Code Guides</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ─── SECTION 1: INNOVATIONS ─── -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">🔬</div>
+      <div>
+        <h2>นวัตกรรมและข่าวสารล่าสุด</h2>
+        <p>on-device ML training · ESP32-P4 v3.x · ESP32-S31 · AgriIoT papers</p>
+      </div>
+    </div>
+    <div class="card-grid">
+
+      <div class="card card-featured">
+        <div class="card-top">
+          <div class="card-emoji">🧠</div>
+          <div>
+            <div class="card-title">
+              On-Device Training + Inference บน ESP32-S3 — ครั้งแรกที่ทำได้จริง
+              <span class="badge-new">arXiv 2026</span>
+            </div>
+          </div>
+        </div>
+        <p class="card-desc">
+          งานวิจัย (arXiv เมษายน 2026) สาธิตการ <strong>ฝึก model</strong> และ <strong>inference</strong> ทั้งหมดบน
+          Seeed XIAO ESP32S3 (8 MB PSRAM) โดยไม่ต้องพึ่งคลาวด์เลย
+          ทำ image classification 3 class ขนาด 64×64 pixels ใช้เวลาฝึก ~9 นาที
+          และ inference ที่ <strong>6.3 FPS แบบ real-time</strong>
+          งานคู่กันอีกชิ้นหนึ่งเสนอ <code>webmcu-vision-web</code> ซึ่งเป็น
+          browser app (zero-install) ที่ใช้ WebSerial ฝึก TinyML vision model
+          แล้ว flash ลง ESP32-S3 ผ่านเบราว์เซอร์โดยตรง
+        </p>
+        <div class="highlight-box">
+          <strong>ความสำคัญ:</strong> จนถึงปี 2025 การฝึก ML บน microcontroller ต้องทำบนคลาวด์ก่อน
+          แล้วค่อย deploy แต่งานนี้พิสูจน์ว่า ESP32-S3 มี PSRAM เพียงพอสำหรับ
+          on-device training ซึ่งเปิดประตูให้อุปกรณ์เรียนรู้จากสภาพแวดล้อมจริงได้โดยอัตโนมัติ
+        </div>
+        <div class="tag-row">
+          <span class="tag tag-purple">TinyML</span>
+          <span class="tag tag-blue">ESP32-S3</span>
+          <span class="tag tag-green">On-Device Training</span>
+          <span class="tag tag-teal">Computer Vision</span>
+          <span class="tag tag-orange">arXiv 2026</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">⚡</div>
+          <div>
+            <div class="card-title">ESP32-P4 v3.x — 400 MHz + RNG เฉพาะ + P-384</div>
+          </div>
+        </div>
+        <p class="card-desc">
+          Espressif ประกาศ chip revision <strong>ESP32-P4 v3.x</strong> (พฤษภาคม 2026)
+          เพิ่ม clock เสถียรที่ <strong>400 MHz</strong>, Pixel Processing Accelerator (PPA)
+          รองรับ block 32×32, เพิ่ม 160 MHz clock สำหรับ I2S, เพิ่ม
+          <strong>Random Number Generator เฉพาะ</strong> และ AES anti-DPA + P-384 ใน ECC accelerator
+          หมายเหตุ: v1.3 (รุ่นเก่า) จะ EOL — ผู้ใช้ควรแจ้งความต้องการก่อน มิ.ย. 2026
+        </p>
+        <div class="tag-row">
+          <span class="tag tag-blue">ESP32-P4</span>
+          <span class="tag tag-orange">400 MHz</span>
+          <span class="tag tag-purple">Security</span>
+          <span class="tag tag-yellow">HMI</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">📡</div>
+          <div>
+            <div class="card-title">ESP32-P4 + ESP32-C5/C6 — Matter Camera Solution</div>
+          </div>
+        </div>
+        <p class="card-desc">
+          Espressif เปิดตัว reference design (มกราคม 2026) สำหรับ <strong>Matter camera</strong>
+          โดยใช้ ESP32-P4 เป็น application processor ทำ AI inference + H.264 encode ที่ 1080p@30fps
+          และใช้ ESP32-C5 หรือ ESP32-C6 เป็น companion wireless SoC แยกชิป
+          แนวทาง dual-chip นี้ทำให้ smart home camera ปฏิบัติตาม Matter standard ได้ครบถ้วน
+        </p>
+        <div class="tag-row">
+          <span class="tag tag-teal">Matter</span>
+          <span class="tag tag-blue">ESP32-P4</span>
+          <span class="tag tag-green">1080p H.264</span>
+          <span class="tag tag-purple">Smart Home</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">🌱</div>
+          <div>
+            <div class="card-title">ESP32 + RS485 NPK Sensor — Smart Lemongrass Farm (2026)</div>
+          </div>
+        </div>
+        <p class="card-desc">
+          งานวิจัยล่าสุด (พฤษภาคม 2026) ใช้ ESP32 ร่วมกับ <strong>capacitive soil moisture sensor</strong>
+          + <strong>RS485 NPK sensor</strong> + relay-driven pump ในการทำเกษตรอัจฉริยะ
+          ระบบ log ข้อมูลขึ้น cloud อัตโนมัติ ควบคุมการรดน้ำตามค่า nitrogen-phosphorus-potassium
+          จริง ไม่ใช่แค่ความชื้น ทำให้ประหยัดน้ำและปุ๋ยได้มากขึ้น
+        </p>
+        <div class="tag-row">
+          <span class="tag tag-green">Smart Farm</span>
+          <span class="tag tag-orange">NPK Sensor</span>
+          <span class="tag tag-blue">RS485</span>
+          <span class="tag tag-teal">Cloud Logging</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── SECTION 2: PROJECTS ─── -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon" style="background:linear-gradient(135deg,#06b6d4,#22c55e)">💡</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+        <p>TinyML · Smart Agriculture · Edge AI Camera · On-device Learning</p>
+      </div>
+    </div>
+    <div class="card-grid">
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">🌾</div>
+          <div><div class="card-title">Smart Farm Node — ESP32 + NPK + Moisture + LoRa</div></div>
+        </div>
+        <p class="card-desc">
+          สร้าง sensor node สำหรับไร่นา วัดค่า <strong>Nitrogen-Phosphorus-Potassium</strong> ผ่าน RS485,
+          ความชื้นดินแบบ capacitive, อุณหภูมิ/ความชื้นอากาศ (SHT40),
+          และส่งข้อมูลผ่าน <strong>LoRa SX1276</strong> ไปยัง gateway
+          งบประมาณต่อ node ~700 บาท เหมาะกับพื้นที่ห่างไกลที่ไม่มี WiFi
+        </p>
+        <div class="tag-row">
+          <span class="tag tag-green">LoRa</span>
+          <span class="tag tag-orange">NPK</span>
+          <span class="tag tag-blue">SHT40</span>
+          <span class="tag tag-yellow">~700฿/node</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">🔍</div>
+          <div><div class="card-title">Plant Disease Detector — ESP32-S3 + OV5640 + Edge Impulse</div></div>
+        </div>
+        <p class="card-desc">
+          ใช้ XIAO ESP32S3-Sense หรือ ESP32-S3-EYE ถ่ายรูปใบพืช
+          ฝึก TinyML model บน <strong>Edge Impulse</strong> แยกแยะโรค 3-5 ประเภท
+          (healthy / rust / blight / mildew) inference ที่ ~6 FPS โดยไม่ต้องอินเทอร์เน็ต
+          แสดงผลบน OLED หรือส่ง alert ผ่าน WiFi ไปยัง LINE Notify
+        </p>
+        <div class="tag-row">
+          <span class="tag tag-purple">TinyML</span>
+          <span class="tag tag-blue">OV5640</span>
+          <span class="tag tag-teal">Edge Impulse</span>
+          <span class="tag tag-pink">LINE Notify</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">💧</div>
+          <div><div class="card-title">AI Irrigation Controller — ESP32 + Soil Sensor + ML Model</div></div>
+        </div>
+        <p class="card-desc">
+          สร้างระบบรดน้ำอัจฉริยะที่ <strong>เรียนรู้ pattern</strong> ของพืชแต่ละชนิด
+          รับค่าจาก soil moisture + อุณหภูมิ + แสง ผ่าน ML model ขนาดเล็ก (TFLite)
+          ที่ฝึกด้วย on-device learning และตัดสินใจว่าควรรดน้ำตอนใด
+          บันทึก log ลง SD card + แสดงกราฟ realtime บน web dashboard
+        </p>
+        <div class="tag-row">
+          <span class="tag tag-green">Auto-Irrigation</span>
+          <span class="tag tag-purple">TFLite</span>
+          <span class="tag tag-teal">Web Dashboard</span>
+          <span class="tag tag-orange">SD Card</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">📦</div>
+          <div><div class="card-title">Fruit Sorter — ESP32-P4 + Camera + AI Classification</div></div>
+        </div>
+        <p class="card-desc">
+          ใช้ ESP32-P4 ที่ 400 MHz รัน CNN model จัดเกรดผลไม้ตาม
+          สี/ขนาด/ตำหนิ ผ่านกล้อง OV5640 resolution สูง
+          ส่งสัญญาณไปยัง servo/solenoid คัดแยก real-time
+          ทดลองใช้กับมะม่วง/ทุเรียน ซึ่งมีคุณค่าสูงในตลาดส่งออก
+        </p>
+        <div class="tag-row">
+          <span class="tag tag-blue">ESP32-P4</span>
+          <span class="tag tag-purple">CNN</span>
+          <span class="tag tag-orange">Servo Control</span>
+          <span class="tag tag-yellow">Export Grading</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-emoji">🌡️</div>
+          <div><div class="card-title">LoRaWAN Microclimate Station — 10+ Sensors, Solar-Powered</div></div>
+        </div>
+        <p class="card-desc">
+          สถานีตรวจวัดภูมิอากาศย่อยใช้พลังงานแสงอาทิตย์ วัด อุณหภูมิ/ความชื้น/ความดัน (BME280),
+          UV index (VEML6075), ปริมาณฝน (tipping bucket), ความเร็วลม (anemometer)
+          ส่งข้อมูลผ่าน LoRaWAN ทุก 10 นาที เหมาะกับสวนเกษตร/สถาบันการศึกษา
+        </p>
+        <div class="tag-row">
+          <span class="tag tag-green">Solar</span>
+          <span class="tag tag-blue">LoRaWAN</span>
+          <span class="tag tag-orange">BME280</span>
+          <span class="tag tag-teal">VEML6075</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── SECTION 3: SENSORS ─── -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon" style="background:linear-gradient(135deg,#22c55e,#eab308)">📡</div>
+      <div>
+        <h2>Sensors ที่เหมาะกับโปรเจกต์วันนี้</h2>
+        <p>เน้นสำหรับ Smart Agriculture, Environmental Monitoring &amp; Edge AI</p>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="sensor-table">
+        <thead>
+          <tr>
+            <th>Sensor / Module</th>
+            <th>วัดอะไร</th>
+            <th>Interface</th>
+            <th>ราคาโดยประมาณ</th>
+            <th>ความน่าสนใจ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="sensor-name">RS485 NPK Sensor</span><br><small>Soil Nutrient Sensor 7-in-1</small></td>
+            <td>N, P, K, pH, อุณหภูมิ, ความชื้น, ค่าไฟฟ้า</td>
+            <td><span class="tag tag-orange" style="font-size:0.7rem">RS485 Modbus</span></td>
+            <td>~800–1,200 บาท</td>
+            <td><span class="sensor-rating"><span class="s-full">★★★★★</span></span></td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">Capacitive Soil Moisture v2.0</span><br><small>(ไม่กัดกร่อน)</small></td>
+            <td>ความชื้นดิน 0–100%</td>
+            <td><span class="tag tag-green" style="font-size:0.7rem">Analog</span></td>
+            <td>~60–120 บาท</td>
+            <td><span class="sensor-rating"><span class="s-full">★★★★</span><span class="s-empty">★</span></span></td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">OV5640 AF Camera</span><br><small>5MP Autofocus</small></td>
+            <td>ภาพ 5 ล้านพิกเซล, AF</td>
+            <td><span class="tag tag-purple" style="font-size:0.7rem">DVP / MIPI</span></td>
+            <td>~400–600 บาท</td>
+            <td><span class="sensor-rating"><span class="s-full">★★★★★</span></span></td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">SHT40</span><br><small>Sensirion High-Precision</small></td>
+            <td>Temperature ±0.2°C, Humidity ±1.8%</td>
+            <td><span class="tag tag-blue" style="font-size:0.7rem">I2C</span></td>
+            <td>~150–200 บาท</td>
+            <td><span class="sensor-rating"><span class="s-full">★★★★★</span></span></td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">VEML6075</span><br><small>UV Index Sensor</small></td>
+            <td>UVA, UVB, UV Index</td>
+            <td><span class="tag tag-blue" style="font-size:0.7rem">I2C</span></td>
+            <td>~80–130 บาท</td>
+            <td><span class="sensor-rating"><span class="s-full">★★★★</span><span class="s-empty">★</span></span></td>
+          </tr>
+          <tr>
+            <td><span class="sensor-name">LoRa SX1276 Module</span><br><small>Ra-02 / RFM95</small></td>
+            <td>Long-range radio (ถึง 10 km)</td>
+            <td><span class="tag tag-teal" style="font-size:0.7rem">SPI</span></td>
+            <td>~150–280 บาท</td>
+            <td><span class="sensor-rating"><span class="s-full">★★★★★</span></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 4: CODE GUIDES ─── -->
+  <section id="code">
+    <div class="section-header">
+      <div class="section-icon" style="background:linear-gradient(135deg,#06b6d4,#a855f7)">⌨️</div>
+      <div>
+        <h2>Code Guides — ตัวอย่างโค้ดที่เอาไปใช้ได้จริง</h2>
+        <p>ESP32-S3 TFLite · RS485 NPK · LoRa SX1276</p>
+      </div>
+    </div>
+
+    <!-- Code 1: TFLite on ESP32-S3 -->
+    <div class="card" style="margin-bottom:1.25rem">
+      <div class="card-title" style="margin-bottom:0.5rem">1. ESP32-S3 — รัน TensorFlow Lite model (image inference)</div>
+      <p class="card-desc" style="margin-bottom:0.5rem">
+        ใช้ ESP-DL หรือ <code>esp32-camera</code> + TFLite Micro สำหรับ inference บน XIAO ESP32S3-Sense
+      </p>
+      <div class="code-wrapper">
+        <div class="code-header">
+          <div class="code-dots">
+            <span class="dot-red"></span><span class="dot-yellow"></span><span class="dot-green"></span>
+          </div>
+          <span class="code-lang">C++ / Arduino</span>
+        </div>
+        <pre><span class="cm">// TFLite Micro image inference on ESP32-S3</span>
+<span class="kw">#include</span> <span class="st">"esp_camera.h"</span>
+<span class="kw">#include</span> <span class="st">"tensorflow/lite/micro/all_ops_resolver.h"</span>
+<span class="kw">#include</span> <span class="st">"tensorflow/lite/micro/micro_interpreter.h"</span>
+<span class="kw">#include</span> <span class="st">"model_data.h"</span>  <span class="cm">// model.tflite converted to C array</span>
+
+<span class="kw">const int</span> <span class="nb">kArenaSize</span> = <span class="nu">150</span> * <span class="nu">1024</span>;  <span class="cm">// 150 KB tensor arena</span>
+<span class="kw">uint8_t</span> <span class="nb">tensor_arena</span>[<span class="nb">kArenaSize</span>];
+
+tflite::AllOpsResolver resolver;
+<span class="kw">const</span> tflite::Model* model;
+tflite::MicroInterpreter* interpreter;
+
+<span class="fn">void</span> <span class="fn">setup</span>() {
+  Serial.<span class="fn">begin</span>(<span class="nu">115200</span>);
+  <span class="fn">initCamera</span>();  <span class="cm">// init OV2640/OV5640</span>
+
+  model = tflite::<span class="fn">GetModel</span>(g_model_data);
+  <span class="kw">static</span> tflite::MicroInterpreter <span class="fn">static_interpreter</span>(
+    model, resolver, tensor_arena, kArenaSize);
+  interpreter = &amp;static_interpreter;
+  interpreter-&gt;<span class="fn">AllocateTensors</span>();
+}
+
+<span class="fn">void</span> <span class="fn">loop</span>() {
+  camera_fb_t* fb = <span class="fn">esp_camera_fb_get</span>();
+  <span class="kw">if</span> (!fb) <span class="kw">return</span>;
+
+  <span class="cm">// Copy resized 64x64 grayscale into input tensor</span>
+  TfLiteTensor* input = interpreter-&gt;<span class="fn">input</span>(<span class="nu">0</span>);
+  <span class="fn">resizeAndCopyToTensor</span>(fb-&gt;buf, input-&gt;data.uint8, <span class="nu">64</span>, <span class="nu">64</span>);
+  <span class="fn">esp_camera_fb_return</span>(fb);
+
+  interpreter-&gt;<span class="fn">Invoke</span>();
+
+  TfLiteTensor* output = interpreter-&gt;<span class="fn">output</span>(<span class="nu">0</span>);
+  <span class="kw">int</span> label = <span class="fn">argmax</span>(output-&gt;data.uint8, <span class="nu">3</span>);
+  Serial.<span class="fn">printf</span>(<span class="st">"Prediction: %s\n"</span>, labels[label]);
+}</pre>
+      </div>
+    </div>
+
+    <!-- Code 2: RS485 NPK Sensor -->
+    <div class="card" style="margin-bottom:1.25rem">
+      <div class="card-title" style="margin-bottom:0.5rem">2. ESP32 — อ่านค่า NPK Sensor ผ่าน RS485 Modbus RTU</div>
+      <p class="card-desc" style="margin-bottom:0.5rem">
+        ต้องการ MAX485 TTL-RS485 module ต่อที่ UART2 (GPIO16/17)
+      </p>
+      <div class="code-wrapper">
+        <div class="code-header">
+          <div class="code-dots">
+            <span class="dot-red"></span><span class="dot-yellow"></span><span class="dot-green"></span>
+          </div>
+          <span class="code-lang">C++ / Arduino</span>
+        </div>
+        <pre><span class="cm">// ESP32 + MAX485 → RS485 NPK 7-in-1 Soil Sensor</span>
+<span class="kw">#define</span> <span class="nb">DE_PIN</span>    <span class="nu">4</span>   <span class="cm">// MAX485 DE/RE control</span>
+<span class="kw">#define</span> <span class="nb">RXD2</span>     <span class="nu">16</span>
+<span class="kw">#define</span> <span class="nb">TXD2</span>     <span class="nu">17</span>
+
+HardwareSerial <span class="nb">rs485</span>(<span class="nu">2</span>);
+
+<span class="cm">// Modbus RTU request: อ่าน 7 register จาก address 0x01</span>
+<span class="kw">const uint8_t</span> query[] = {<span class="nu">0x01</span>, <span class="nu">0x03</span>, <span class="nu">0x00</span>, <span class="nu">0x00</span>, <span class="nu">0x00</span>, <span class="nu">0x07</span>, <span class="nu">0x04</span>, <span class="nu">0x08</span>};
+
+<span class="fn">void</span> <span class="fn">setup</span>() {
+  Serial.<span class="fn">begin</span>(<span class="nu">115200</span>);
+  rs485.<span class="fn">begin</span>(<span class="nu">9600</span>, SERIAL_8N1, RXD2, TXD2);
+  <span class="fn">pinMode</span>(DE_PIN, OUTPUT);
+}
+
+<span class="fn">void</span> <span class="fn">readNPK</span>() {
+  <span class="fn">digitalWrite</span>(DE_PIN, HIGH);  <span class="cm">// TX mode</span>
+  rs485.<span class="fn">write</span>(query, <span class="kw">sizeof</span>(query));
+  rs485.<span class="fn">flush</span>();
+  <span class="fn">digitalWrite</span>(DE_PIN, LOW);   <span class="cm">// RX mode</span>
+
+  <span class="fn">delay</span>(<span class="nu">200</span>);
+  <span class="kw">uint8_t</span> resp[<span class="nu">19</span>];
+  <span class="kw">int</span> len = rs485.<span class="fn">readBytes</span>(resp, <span class="nu">19</span>);
+  <span class="kw">if</span> (len &lt; <span class="nu">19</span>) { Serial.<span class="fn">println</span>(<span class="st">"No response"</span>); <span class="kw">return</span>; }
+
+  <span class="kw">float</span> moisture =  (resp[<span class="nu">3</span>]  &lt;&lt; <span class="nu">8</span> | resp[<span class="nu">4</span>])  / <span class="nu">10.0</span>;
+  <span class="kw">float</span> temp     =  (resp[<span class="nu">5</span>]  &lt;&lt; <span class="nu">8</span> | resp[<span class="nu">6</span>])  / <span class="nu">10.0</span>;
+  <span class="kw">int</span>   nitrogen  =  (resp[<span class="nu">7</span>]  &lt;&lt; <span class="nu">8</span> | resp[<span class="nu">8</span>]);
+  <span class="kw">int</span>   phosphorus = (resp[<span class="nu">9</span>]  &lt;&lt; <span class="nu">8</span> | resp[<span class="nu">10</span>]);
+  <span class="kw">int</span>   potassium  = (resp[<span class="nu">11</span>] &lt;&lt; <span class="nu">8</span> | resp[<span class="nu">12</span>]);
+  <span class="kw">float</span> ph        = (resp[<span class="nu">13</span>] &lt;&lt; <span class="nu">8</span> | resp[<span class="nu">14</span>]) / <span class="nu">10.0</span>;
+
+  Serial.<span class="fn">printf</span>(<span class="st">"Moisture:%.1f%% Temp:%.1f°C N:%d P:%d K:%d pH:%.1f\n"</span>,
+                moisture, temp, nitrogen, phosphorus, potassium, ph);
+}
+
+<span class="fn">void</span> <span class="fn">loop</span>() { <span class="fn">readNPK</span>(); <span class="fn">delay</span>(<span class="nu">5000</span>); }</pre>
+      </div>
+    </div>
+
+    <!-- Code 3: LoRa SX1276 -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:0.5rem">3. ESP32 + LoRa SX1276 — ส่งข้อมูล Sensor ระยะไกล</div>
+      <p class="card-desc" style="margin-bottom:0.5rem">
+        ใช้ library <code>LoRa</code> by sandeep mistry ส่งค่า sensor ทุก 30 วินาที
+        SX1276 ต่อผ่าน SPI (GPIO5/18/19/23)
+      </p>
+      <div class="code-wrapper">
+        <div class="code-header">
+          <div class="code-dots">
+            <span class="dot-red"></span><span class="dot-yellow"></span><span class="dot-green"></span>
+          </div>
+          <span class="code-lang">C++ / Arduino</span>
+        </div>
+        <pre><span class="kw">#include</span> <span class="st">&lt;SPI.h&gt;</span>
+<span class="kw">#include</span> <span class="st">&lt;LoRa.h&gt;</span>
+
+<span class="kw">#define</span> <span class="nb">LORA_SS</span>   <span class="nu">5</span>
+<span class="kw">#define</span> <span class="nb">LORA_RST</span>  <span class="nu">14</span>
+<span class="kw">#define</span> <span class="nb">LORA_DIO0</span> <span class="nu">2</span>
+<span class="kw">#define</span> <span class="nb">FREQ</span>      <span class="nu">433E6</span>   <span class="cm">// 433 MHz สำหรับไทย</span>
+
+<span class="fn">void</span> <span class="fn">setup</span>() {
+  Serial.<span class="fn">begin</span>(<span class="nu">115200</span>);
+  LoRa.<span class="fn">setPins</span>(LORA_SS, LORA_RST, LORA_DIO0);
+  <span class="kw">if</span> (!LoRa.<span class="fn">begin</span>(FREQ)) {
+    Serial.<span class="fn">println</span>(<span class="st">"LoRa init failed!"</span>);
+    <span class="kw">while</span> (<span class="nu">1</span>);
+  }
+  LoRa.<span class="fn">setSpreadingFactor</span>(<span class="nu">9</span>);       <span class="cm">// SF9 — balance range/speed</span>
+  LoRa.<span class="fn">setSignalBandwidth</span>(<span class="nu">125E3</span>);  <span class="cm">// 125 kHz BW</span>
+  LoRa.<span class="fn">setCodingRate4</span>(<span class="nu">5</span>);          <span class="cm">// CR 4/5</span>
+  Serial.<span class="fn">println</span>(<span class="st">"LoRa ready"</span>);
+}
+
+<span class="fn">void</span> <span class="fn">loop</span>() {
+  <span class="kw">float</span> moisture  = <span class="fn">readMoisture</span>();
+  <span class="kw">int</span>   nitrogen  = <span class="fn">readNitrogen</span>();
+  <span class="kw">float</span> temp      = <span class="fn">readTemp</span>();
+
+  LoRa.<span class="fn">beginPacket</span>();
+  LoRa.<span class="fn">printf</span>(<span class="st">"{\"id\":1,\"m\":%.1f,\"n\":%d,\"t\":%.1f}"</span>,
+              moisture, nitrogen, temp);
+  LoRa.<span class="fn">endPacket</span>();
+
+  Serial.<span class="fn">printf</span>(<span class="st">"Sent: m=%.1f n=%d t=%.1f\n"</span>, moisture, nitrogen, temp);
+  <span class="fn">esp_deep_sleep</span>(<span class="nu">30</span>e6);  <span class="cm">// deep sleep 30 วินาที ประหยัดแบต</span>
+}</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SECTION 5: RESOURCES ─── -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon" style="background:linear-gradient(135deg,#f97316,#eab308)">🔗</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+        <p>Papers · Workshops · Libraries · Repositories</p>
+      </div>
+    </div>
+    <div class="resource-grid">
+      <a href="https://arxiv.org/abs/2604.23012" target="_blank" class="resource-card">
+        <div class="resource-icon">📄</div>
+        <div>
+          <div class="resource-title">On-Device Vision Training on ESP32-S3</div>
+          <div class="resource-desc">arXiv paper — 3-class 64×64 image classifier trained on-device</div>
+          <div class="resource-link">arxiv.org/abs/2604.23012</div>
+        </div>
+      </a>
+      <a href="https://www.alphaxiv.org/abs/2604.22834.md" target="_blank" class="resource-card">
+        <div class="resource-icon">🌐</div>
+        <div>
+          <div class="resource-title">WebSerial Vision Training for Microcontrollers</div>
+          <div class="resource-desc">Browser-based TinyML training + deploy ผ่าน WebSerial</div>
+          <div class="resource-link">alphaxiv.org</div>
+        </div>
+      </a>
+      <a href="https://developer.espressif.com/workshops/edge-ai-with-esp32-s3/introduction/" target="_blank" class="resource-card">
+        <div class="resource-icon">🏫</div>
+        <div>
+          <div class="resource-title">Espressif Edge AI Workshop</div>
+          <div class="resource-desc">Workshop official สำหรับ ESP-DL/ESP-WHO บน ESP32-S3-EYE</div>
+          <div class="resource-link">developer.espressif.com</div>
+        </div>
+      </a>
+      <a href="https://www.hackster.io/norvi/esp32-s3-camera-object-detection-714291" target="_blank" class="resource-card">
+        <div class="resource-icon">🔧</div>
+        <div>
+          <div class="resource-title">ESP32-S3 Object Detection (Hackster)</div>
+          <div class="resource-desc">Collect training data via WiFi → Edge Impulse → deploy</div>
+          <div class="resource-link">hackster.io/norvi</div>
+        </div>
+      </a>
+      <a href="https://www.espressif.com/en/news/ESP32_P4_v3.x_Upgrade" target="_blank" class="resource-card">
+        <div class="resource-icon">⚡</div>
+        <div>
+          <div class="resource-title">ESP32-P4 v3.x Upgrade Notice</div>
+          <div class="resource-desc">Official Espressif: 400 MHz, RNG, P-384, fixes &amp; EOL notice</div>
+          <div class="resource-link">espressif.com</div>
+        </div>
+      </a>
+      <a href="https://mjrovai.github.io/TinyML_Made_Easy_XIAO_ESP32S3_ebook/TinyML-Made-Easy.pdf" target="_blank" class="resource-card">
+        <div class="resource-icon">📚</div>
+        <div>
+          <div class="resource-title">TinyML Made Easy — XIAO ESP32S3 eBook</div>
+          <div class="resource-desc">หนังสือฟรี — TinyML image, motion, sound classification</div>
+          <div class="resource-link">mjrovai.github.io</div>
+        </div>
+      </a>
+      <a href="https://arxiv.org/abs/2601.15830" target="_blank" class="resource-card">
+        <div class="resource-icon">🌱</div>
+        <div>
+          <div class="resource-title">ESP32 Smart Soil Monitoring (arXiv 2026)</div>
+          <div class="resource-desc">DHT22 + capacitive soil + HC-SR04 + OLED, งบ ~$45</div>
+          <div class="resource-link">arxiv.org/abs/2601.15830</div>
+        </div>
+      </a>
+      <a href="https://docs.zephyrproject.org/latest/boards/espressif/common/soc-esp32p4-features.html" target="_blank" class="resource-card">
+        <div class="resource-icon">🗂️</div>
+        <div>
+          <div class="resource-title">ESP32-P4 Features (Zephyr RTOS Docs)</div>
+          <div class="resource-desc">รายละเอียดสถาปัตยกรรม dual-core RISC-V, peripherals</div>
+          <div class="resource-link">docs.zephyrproject.org</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <p>
+    <strong>ESP32 &amp; Sensor Innovations Daily Brief</strong><br>
+    สร้างเมื่อ 24 พฤศจิกายน 2026 · หัวข้อวันนี้: TinyML On-Device Training · Smart Agriculture IoT · ESP32-P4 v3.x<br>
+    แหล่งอ้างอิง: arXiv (2604.23012, 2604.22834, 2601.15830) · Espressif Official · Hackster.io · Seeed Studio Wiki
+  </p>
+</footer>
+
+</body>
+</html>
