@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 26 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263348;
+    --accent-cyan: #06b6d4;
+    --accent-violet: #8b5cf6;
+    --accent-emerald: #10b981;
+    --accent-amber: #f59e0b;
+    --accent-rose: #f43f5e;
+    --accent-blue: #3b82f6;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --tag-bg: #1e3a5f;
+    --tag-text: #93c5fd;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #0f172a 0%, #1a1035 50%, #0f2342 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 1rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(6,182,212,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 50%, rgba(139,92,246,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: rgba(6,182,212,0.12);
+    border: 1px solid rgba(6,182,212,0.3);
+    color: var(--accent-cyan);
+    font-size: 0.75rem; font-weight: 600;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--accent-cyan), var(--accent-violet));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  header .subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+  }
+  .header-stats {
+    display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.3rem 1rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+  .stat-pill span { color: var(--accent-cyan); font-weight: 700; }
+
+  /* ===== LAYOUT ===== */
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  /* ===== SECTION HEADER ===== */
+  .section-header {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .icon-cyan  { background: rgba(6,182,212,0.15); }
+  .icon-violet { background: rgba(139,92,246,0.15); }
+  .icon-emerald { background: rgba(16,185,129,0.15); }
+  .icon-amber { background: rgba(245,158,11,0.15); }
+  .icon-blue  { background: rgba(59,130,246,0.15); }
+  .section-title { font-size: 1.25rem; font-weight: 700; }
+  .section-title.cyan   { color: var(--accent-cyan); }
+  .section-title.violet { color: var(--accent-violet); }
+  .section-title.emerald{ color: var(--accent-emerald); }
+  .section-title.amber  { color: var(--accent-amber); }
+  .section-title.blue   { color: var(--accent-blue); }
+
+  /* ===== CARDS ===== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.4rem;
+    transition: transform 0.2s, border-color 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    background: var(--bg-card-hover);
+  }
+  .card.featured {
+    grid-column: 1 / -1;
+    border-color: rgba(6,182,212,0.3);
+  }
+  .card.featured::before {
+    content: '★ Featured';
+    position: absolute; top: 0; right: 1.2rem;
+    background: var(--accent-cyan);
+    color: #0f172a;
+    font-size: 0.65rem; font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0 0 6px 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .card-accent-bar {
+    position: absolute; top: 0; left: 0;
+    height: 3px; width: 100%;
+    border-radius: 14px 14px 0 0;
+  }
+  .bar-cyan    { background: linear-gradient(90deg, var(--accent-cyan), transparent); }
+  .bar-violet  { background: linear-gradient(90deg, var(--accent-violet), transparent); }
+  .bar-emerald { background: linear-gradient(90deg, var(--accent-emerald), transparent); }
+  .bar-amber   { background: linear-gradient(90deg, var(--accent-amber), transparent); }
+  .bar-rose    { background: linear-gradient(90deg, var(--accent-rose), transparent); }
+  .bar-blue    { background: linear-gradient(90deg, var(--accent-blue), transparent); }
+
+  .card-eyebrow {
+    font-size: 0.7rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
+    opacity: 0.75;
+  }
+  .card-title {
+    font-size: 1.05rem; font-weight: 700;
+    margin-bottom: 0.6rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+  .card-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.9rem;
+    line-height: 1.7;
+  }
+  .card-desc strong { color: var(--text-primary); }
+
+  .tag-row {
+    display: flex; flex-wrap: wrap; gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+  .tag {
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.25);
+    color: #93c5fd;
+    font-size: 0.72rem; font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+  }
+  .tag.green  { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); color: #6ee7b7; }
+  .tag.purple { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.3); color: #c4b5fd; }
+  .tag.amber  { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); color: #fcd34d; }
+  .tag.rose   { background: rgba(244,63,94,0.1);  border-color: rgba(244,63,94,0.3);  color: #fda4af; }
+  .tag.cyan   { background: rgba(6,182,212,0.1);  border-color: rgba(6,182,212,0.3);  color: #67e8f9; }
+
+  /* ===== SPEC TABLE ===== */
+  .spec-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 0.85rem; margin-top: 0.6rem;
+  }
+  .spec-table tr { border-bottom: 1px solid rgba(51,65,85,0.6); }
+  .spec-table tr:last-child { border-bottom: none; }
+  .spec-table td { padding: 0.4rem 0.5rem; }
+  .spec-table td:first-child {
+    color: var(--text-muted); font-weight: 600;
+    white-space: nowrap; width: 40%;
+  }
+  .spec-table td:last-child { color: var(--text-primary); }
+
+  /* ===== CODE BLOCK ===== */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    font-family: 'Courier New', Consolas, monospace;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    color: #e2e8f0;
+    margin-top: 0.75rem;
+    position: relative;
+  }
+  .code-block .c-comment { color: #64748b; }
+  .code-block .c-keyword { color: #c084fc; }
+  .code-block .c-type    { color: #67e8f9; }
+  .code-block .c-str     { color: #86efac; }
+  .code-block .c-num     { color: #fda4af; }
+  .code-block .c-fn      { color: #fde68a; }
+  .code-label {
+    font-size: 0.72rem; font-weight: 600;
+    color: var(--text-muted); letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .code-wrapper { margin-bottom: 2.5rem; }
+
+  /* ===== RESOURCES ===== */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.2rem;
+    transition: transform 0.2s, border-color 0.2s;
+    text-decoration: none;
+    display: block;
+    color: inherit;
+  }
+  .resource-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-cyan);
+  }
+  .resource-title {
+    font-size: 0.9rem; font-weight: 700;
+    color: var(--accent-cyan);
+    margin-bottom: 0.3rem;
+  }
+  .resource-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .resource-type {
+    font-size: 0.68rem; font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.4rem;
+  }
+
+  /* ===== PROJECT STEPS ===== */
+  .steps-list {
+    list-style: none;
+    counter-reset: step;
+    display: flex; flex-direction: column; gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+  .steps-list li {
+    counter-increment: step;
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    font-size: 0.88rem; color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .steps-list li::before {
+    content: counter(step);
+    background: rgba(6,182,212,0.15);
+    border: 1px solid rgba(6,182,212,0.3);
+    color: var(--accent-cyan);
+    font-size: 0.75rem; font-weight: 700;
+    min-width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 0.1rem;
+  }
+  .steps-list li strong { color: var(--text-primary); }
+
+  /* ===== HIGHLIGHT BOX ===== */
+  .highlight-box {
+    background: rgba(6,182,212,0.07);
+    border: 1px solid rgba(6,182,212,0.2);
+    border-left: 3px solid var(--accent-cyan);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin-top: 0.75rem;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .highlight-box.amber {
+    background: rgba(245,158,11,0.07);
+    border-color: rgba(245,158,11,0.2);
+    border-left-color: var(--accent-amber);
+  }
+  .highlight-box.violet {
+    background: rgba(139,92,246,0.07);
+    border-color: rgba(139,92,246,0.2);
+    border-left-color: var(--accent-violet);
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 2rem 1rem;
+    margin-top: 2rem;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    line-height: 2;
+  }
+  footer a { color: var(--accent-cyan); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ===== SENSOR BADGE ===== */
+  .sensor-badge {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.25);
+    color: #6ee7b7;
+    font-size: 0.75rem; font-weight: 600;
+    padding: 0.25rem 0.65rem;
+    border-radius: 6px;
+    margin: 0.2rem 0.1rem;
+    white-space: nowrap;
+  }
+
+  /* ===== DIVIDER ===== */
+  .section-divider { margin: 0.5rem 0 2rem; }
+
+  @media (max-width: 600px) {
+    .card.featured { grid-column: auto; }
+    header { padding: 1.8rem 1rem 1.5rem; }
+    .container { padding: 1.2rem 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-badge">🔬 Daily Research Brief</div>
+  <h1>ESP32 &amp; Sensor Innovations</h1>
+  <p class="subtitle">26 พฤศจิกายน 2026 · Thermal Imaging · mmWave Radar · IAQ Sensors · Dual-Band WiFi 6</p>
+  <div class="header-stats">
+    <div class="stat-pill"><span>4</span> นวัตกรรมใหม่</div>
+    <div class="stat-pill"><span>4</span> ไอเดียโปรเจกต์</div>
+    <div class="stat-pill"><span>4</span> Sensors</div>
+    <div class="stat-pill"><span>2</span> Code Guides</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <div class="section-header">
+    <div class="section-icon icon-cyan">🚀</div>
+    <h2 class="section-title cyan">นวัตกรรมและข่าวสารล่าสุด</h2>
+  </div>
+
+  <div class="card-grid">
+
+    <!-- Card 1: XIAO ESP32-C5 -->
+    <div class="card featured">
+      <div class="card-accent-bar bar-cyan"></div>
+      <div class="card-eyebrow" style="color:var(--accent-cyan)">📡 New Board · มกราคม 2026</div>
+      <div class="card-title">XIAO ESP32-C5 — Dual-Band WiFi 6 + Zigbee + Thread ในบอร์ดขนาดนิ้วโป้ง</div>
+      <div class="card-desc">
+        Seeed Studio เปิดตัว <strong>XIAO ESP32-C5</strong> บอร์ด USB-C ขนาดเล็กที่สุดในตระกูล XIAO ที่มาพร้อม WiFi 6 แบบ Dual-Band (2.4GHz + 5GHz) เป็นครั้งแรก พร้อม Bluetooth 5.0 LE, Zigbee และ Thread connectivity ในตัวเดียวกัน<br><br>
+        เมื่อเทียบกับ XIAO ESP32-C6 รุ่นก่อน ชิป C5 ทำงานที่ <strong>240 MHz</strong> (เพิ่มจาก 160 MHz) และมี RAM/Flash มากขึ้น เหมาะสำหรับโปรเจกต์ Matter smart home และ IoT ที่ต้องการ latency ต่ำ
+      </div>
+      <table class="spec-table">
+        <tr><td>CPU</td><td>RISC-V 240 MHz (Dual-core)</td></tr>
+        <tr><td>WiFi</td><td>802.11a/b/g/n/ac/ax Dual-Band (2.4 + 5 GHz)</td></tr>
+        <tr><td>BT</td><td>Bluetooth 5.0 LE</td></tr>
+        <tr><td>802.15.4</td><td>Zigbee + Thread (Matter-ready)</td></tr>
+        <tr><td>Interface</td><td>USB-C, I2C, SPI, UART, GPIO</td></tr>
+        <tr><td>ขนาด</td><td>21 × 17.5 mm (เล็กกว่า ESP32-S3)</td></tr>
+      </table>
+      <div class="highlight-box">
+        💡 <strong>ข้อดีหลัก:</strong> Dual-band WiFi 6 ช่วยให้แบ่งอุปกรณ์ IoT ไปที่ 5GHz หลีกเลี่ยงการรบกวนจากอุปกรณ์ 2.4GHz อื่นๆ โดยตั้งค่าด้วย <code>esp_wifi_set_band_mode()</code> ใน ESP-IDF
+      </div>
+      <div class="tag-row">
+        <span class="tag cyan">ESP32-C5</span>
+        <span class="tag">WiFi 6</span>
+        <span class="tag">Dual-Band</span>
+        <span class="tag green">Zigbee</span>
+        <span class="tag green">Thread</span>
+        <span class="tag amber">Matter</span>
+      </div>
+    </div>
+
+    <!-- Card 2: MoreSense MS-07 -->
+    <div class="card">
+      <div class="card-accent-bar bar-emerald"></div>
+      <div class="card-eyebrow" style="color:var(--accent-emerald)">🌿 Product · เมษายน 2026</div>
+      <div class="card-title">MoreSense MS-07 — ESP32-S3 + SEN66 All-in-One IAQ Monitor</div>
+      <div class="card-desc">
+        อุปกรณ์ตรวจสอบคุณภาพอากาศในอาคารที่ใช้ <strong>Sensirion SEN66</strong> ตรวจวัดพารามิเตอร์ถึง 9 ค่าในชิปเซ็นเซอร์เดียว พร้อมหน้าจอ IPS touchscreen 3.5 นิ้ว และรองรับ <strong>Home Assistant</strong> แบบ native
+      </div>
+      <div class="highlight-box" style="margin-top: 0.5rem;">
+        📊 วัดได้: <strong>PM1.0, PM2.5, PM4, PM10, CO₂, VOC, NOx, อุณหภูมิ, ความชื้น</strong>
+      </div>
+      <div class="tag-row">
+        <span class="tag green">SEN66</span>
+        <span class="tag cyan">ESP32-S3</span>
+        <span class="tag">Home Assistant</span>
+        <span class="tag amber">IAQ</span>
+      </div>
+    </div>
+
+    <!-- Card 3: Sensirion SEN66 -->
+    <div class="card">
+      <div class="card-accent-bar bar-violet"></div>
+      <div class="card-eyebrow" style="color:var(--accent-violet)">🔬 Sensor Release · ธ.ค. 2025</div>
+      <div class="card-title">Sensirion SEN66 — All-in-One 9-Parameter Air Quality Platform</div>
+      <div class="card-desc">
+        <strong>SEN66</strong> คือเซ็นเซอร์รวมล่าสุดจาก Sensirion ที่รวม PM sensor, NDIR CO₂, VOC+NOx index และ T/RH ไว้ในโมดูลขนาดเดียว ลดการ wiring และ calibration ที่ซับซ้อน Datasheet version 0.92 (ธ.ค. 2025) ระบุค่า accuracy สูงกว่า SEN55 รุ่นก่อน
+      </div>
+      <table class="spec-table">
+        <tr><td>PM Range</td><td>0–1,000 µg/m³ (±5 µg/m³)</td></tr>
+        <tr><td>CO₂ Range</td><td>400–5,000 ppm</td></tr>
+        <tr><td>Temperature</td><td>-10°C ~ +60°C (±0.45°C)</td></tr>
+        <tr><td>Humidity</td><td>0–100% RH (±4.5%)</td></tr>
+        <tr><td>Interface</td><td>I²C + UART</td></tr>
+        <tr><td>Auto-Cal</td><td>ASC (CO₂ self-calibration)</td></tr>
+      </table>
+      <div class="tag-row">
+        <span class="tag green">Multi-Sensor</span>
+        <span class="tag cyan">I2C</span>
+        <span class="tag amber">CO₂ NDIR</span>
+        <span class="tag purple">PM2.5</span>
+      </div>
+    </div>
+
+    <!-- Card 4: mmWave Radar LD2410 -->
+    <div class="card">
+      <div class="card-accent-bar bar-amber"></div>
+      <div class="card-eyebrow" style="color:var(--accent-amber)">📡 Radar · มิถุนายน 2026</div>
+      <div class="card-title">HLK-LD2410B + ESP32 — Smart Human Presence Detection</div>
+      <div class="card-desc">
+        <strong>HLK-LD2410B</strong> คือ 24GHz FMCW radar module ที่ตรวจจับทั้งการเคลื่อนไหว (motion) และการหยุดนิ่ง (still presence) เช่น คนนอนหลับหรือนั่งอยู่เฉยๆ ซึ่ง PIR sensor ทำไม่ได้ เชื่อมต่อ ESP32 ผ่าน UART2 (GPIO16/17) ง่ายมาก
+      </div>
+      <div class="highlight-box amber">
+        ⚡ ต่างจาก PIR: LD2410B ตรวจจับคนหายใจที่อยู่นิ่งๆ ใต้ผ้าห่มได้ — ใช้ใน Smart Bedroom/Office automation ที่ต้องการความแม่นยำสูง
+      </div>
+      <div class="tag-row">
+        <span class="tag amber">24GHz mmWave</span>
+        <span class="tag cyan">UART</span>
+        <span class="tag">Home Assistant</span>
+        <span class="tag green">Still Presence</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== SECTION 2: PROJECTS ===== -->
+  <div class="section-header">
+    <div class="section-icon icon-violet">💡</div>
+    <h2 class="section-title violet">ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+  </div>
+
+  <div class="card-grid">
+
+    <!-- Project 1: Thermal Heatmap Camera -->
+    <div class="card">
+      <div class="card-accent-bar bar-rose"></div>
+      <div class="card-eyebrow" style="color:#f43f5e">🔥 ระดับ Intermediate · 2–3 วัน</div>
+      <div class="card-title">DIY Thermal Heatmap Camera — ESP32-WROVER + MLX90640 + Web Dashboard</div>
+      <div class="card-desc">
+        สร้างกล้อง Thermal Imaging แบบ DIY ด้วย <strong>MLX90640 (32×24 pixels)</strong> เชื่อมต่อผ่าน I²C แล้ว stream frame ผ่าน WebSocket ไปแสดงผลเป็น heatmap บนเว็บบราวเซอร์แบบ real-time
+      </div>
+      <ul class="steps-list">
+        <li><strong>Hardware:</strong> ESP32-WROVER + MLX90640 breakout + จ่ายไฟ 3.3V</li>
+        <li><strong>Firmware:</strong> ใช้ library <code>melexis/mlx90640-library</code>, อ่านค่า 32×24=768 pixels ทุก ~100ms</li>
+        <li><strong>Web UI:</strong> Canvas API + bilinear interpolation แสดง false-color (blue→red)</li>
+        <li><strong>Use case:</strong> ตรวจหาจุดร้อนใน PCB, ตรวจผนังฉนวนรั่ว, นับคนใน room</li>
+      </ul>
+      <div class="highlight-box" style="margin-top: 0.75rem;">
+        📐 <strong>เปรียบเทียบเซ็นเซอร์:</strong> AMG8833 (8×8, ~$10) สำหรับฝึกหัด | MLX90640 (32×24, ~$18) สำหรับโปรเจกต์จริง | MLX90641 (16×12, ~$12) สมดุลราคา/คุณภาพ
+      </div>
+      <div class="tag-row">
+        <span class="tag rose">MLX90640</span>
+        <span class="tag cyan">WebSocket</span>
+        <span class="tag">Canvas API</span>
+        <span class="tag amber">I2C</span>
+      </div>
+    </div>
+
+    <!-- Project 2: Smart IAQ Station -->
+    <div class="card">
+      <div class="card-accent-bar bar-emerald"></div>
+      <div class="card-eyebrow" style="color:var(--accent-emerald)">🌿 ระดับ Advanced · 3–5 วัน</div>
+      <div class="card-title">Smart IAQ Station — ESP32-S3 + SEN66 + InfluxDB + Grafana Dashboard</div>
+      <div class="card-desc">
+        สร้างสถานีตรวจวัดคุณภาพอากาศในอาคารแบบครบวงจร ส่งข้อมูลไปยัง <strong>InfluxDB</strong> และแสดงผล <strong>Grafana</strong> พร้อม alert เมื่อ CO₂ &gt; 1000 ppm หรือ PM2.5 เกินมาตรฐาน WHO
+      </div>
+      <ul class="steps-list">
+        <li><strong>Sensor:</strong> Sensirion SEN66 ต่อ I²C (SDA/SCL) กับ ESP32-S3</li>
+        <li><strong>Firmware:</strong> ESP-IDF + sensirion-embedded-i2c-hal, ส่งข้อมูลทุก 60s</li>
+        <li><strong>Protocol:</strong> MQTT → Telegraf → InfluxDB (self-hosted หรือ cloud)</li>
+        <li><strong>Dashboard:</strong> Grafana panel: PM2.5 gauge, CO₂ trend, VOC index heatmap</li>
+        <li><strong>Alert:</strong> PagerDuty/LINE Notify เมื่อค่าเกิน threshold</li>
+      </ul>
+      <div class="tag-row">
+        <span class="tag green">SEN66</span>
+        <span class="tag cyan">InfluxDB</span>
+        <span class="tag purple">Grafana</span>
+        <span class="tag">MQTT</span>
+        <span class="tag amber">CO₂ Alert</span>
+      </div>
+    </div>
+
+    <!-- Project 3: mmWave Smart Lighting -->
+    <div class="card">
+      <div class="card-accent-bar bar-amber"></div>
+      <div class="card-eyebrow" style="color:var(--accent-amber)">💡 ระดับ Beginner · 1 วัน</div>
+      <div class="card-title">mmWave Smart Lighting — ESP32 + HLK-LD2410 ไฟอัตโนมัติแม่นยำ 100%</div>
+      <div class="card-desc">
+        สร้างระบบไฟอัตโนมัติที่ <strong>ไม่ดับทิ้งคนที่นั่งอยู่เฉยๆ</strong> (ปัญหาหลักของ PIR) ด้วย mmWave radar ตรวจจับ still presence ผ่าน UART parse และ relay ควบคุมหลอดไฟ
+      </div>
+      <ul class="steps-list">
+        <li><strong>Wiring:</strong> LD2410B TX→GPIO16, RX→GPIO17 (UART2), OUT pin→GPIO4</li>
+        <li><strong>Mode:</strong> ใช้ OUT pin (simple HIGH/LOW) สำหรับ basic presence, หรือ UART parse สำหรับ zone detection</li>
+        <li><strong>Logic:</strong> debounce 5s ก่อนดับไฟ, ปรับ sensitivity ผ่าน BLE config app</li>
+        <li><strong>Upgrade:</strong> ต่อ ESPHome integration เข้า Home Assistant ได้ทันที</li>
+      </ul>
+      <div class="highlight-box amber">
+        🏠 <strong>Use cases:</strong> ห้องน้ำ (ไฟดับทิ้งคนที่ยืนนิ่งๆ), ห้องประชุม (auto-off), ห้องนอน (ไฟกลางคืนอัตโนมัติ)
+      </div>
+      <div class="tag-row">
+        <span class="tag amber">HLK-LD2410B</span>
+        <span class="tag cyan">UART</span>
+        <span class="tag green">ESPHome</span>
+        <span class="tag">Relay</span>
+      </div>
+    </div>
+
+    <!-- Project 4: Solar Energy Harvesting Monitor -->
+    <div class="card">
+      <div class="card-accent-bar bar-blue"></div>
+      <div class="card-eyebrow" style="color:var(--accent-blue)">☀️ ระดับ Advanced · 1 สัปดาห์</div>
+      <div class="card-title">Solar-Harvested Sensor Node — ESP32 + BQ25570 + Deep Sleep ไม่ต้องชาร์จ</div>
+      <div class="card-desc">
+        สร้าง outdoor sensor node ที่ทำงานจากพลังงานแสงอาทิตย์ล้วนๆ ใช้ <strong>BQ25570 PMIC</strong> (Ultra-Low Power Harvester) ชาร์จ supercapacitor แล้วปลุก ESP32 จาก deep sleep ทุก 15 นาที วัดข้อมูลและส่ง LoRa ก่อนกลับไปนอน
+      </div>
+      <ul class="steps-list">
+        <li><strong>Panel:</strong> Solar cell เล็ก 0.5W, V_OC = 5–6V → BQ25570 input</li>
+        <li><strong>Storage:</strong> Supercapacitor 10F หรือ LiPo 500mAh</li>
+        <li><strong>MCU:</strong> ESP32 deep sleep mode (ใช้ไฟ ~10µA) ปลุกทุก 15 นาที</li>
+        <li><strong>Sensor:</strong> BME280 (T/H/P) อ่านค่าใน 1 วินาที แล้ว shutdown</li>
+        <li><strong>Radio:</strong> LoRa SX1276 ส่งข้อมูล 50 bytes ไป gateway</li>
+        <li><strong>Power budget:</strong> 15 นาที/cycle = ใช้พลังงานเฉลี่ย &lt;1mA</li>
+      </ul>
+      <div class="highlight-box violet">
+        🔋 <strong>Energy Budget tip:</strong> Active time ~2 วินาที @ 150mA = 300mAs, Deep sleep 897 วินาที @ 0.01mA = 9mAs → รวม ~309mAs ต่อ cycle หรือเฉลี่ย <strong>0.34mA</strong> — แผงโซลาร์ 0.5W ชาร์จได้สบาย
+      </div>
+      <div class="tag-row">
+        <span class="tag blue">Solar</span>
+        <span class="tag cyan">BQ25570</span>
+        <span class="tag amber">Deep Sleep</span>
+        <span class="tag green">LoRa</span>
+        <span class="tag purple">Energy Harvesting</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== SECTION 3: SENSORS ===== -->
+  <div class="section-header">
+    <div class="section-icon icon-emerald">🔭</div>
+    <h2 class="section-title emerald">Sensors ที่เหมาะกับโปรเจกต์วันนี้</h2>
+  </div>
+
+  <div class="card-grid">
+
+    <div class="card">
+      <div class="card-accent-bar bar-emerald"></div>
+      <div class="card-eyebrow" style="color:var(--accent-emerald)">All-in-One IAQ</div>
+      <div class="card-title">Sensirion SEN66</div>
+      <div class="card-desc">
+        เซ็นเซอร์รวม 9 พารามิเตอร์ในโมดูลเดียว เหมาะสำหรับ indoor air quality station
+      </div>
+      <div>
+        <span class="sensor-badge">PM1.0/2.5/4/10</span>
+        <span class="sensor-badge">CO₂ NDIR</span>
+        <span class="sensor-badge">VOC Index</span>
+        <span class="sensor-badge">NOx Index</span>
+        <span class="sensor-badge">T/RH</span>
+      </div>
+      <table class="spec-table" style="margin-top: 0.75rem;">
+        <tr><td>Interface</td><td>I²C (0x6B) + UART</td></tr>
+        <tr><td>Voltage</td><td>4.5–5.5V (ต้องการ 5V)</td></tr>
+        <tr><td>Price</td><td>~$45–55 USD</td></tr>
+        <tr><td>Library</td><td>sensirion/arduino-core-sen6x</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-bar bar-amber"></div>
+      <div class="card-eyebrow" style="color:var(--accent-amber)">24GHz mmWave Radar</div>
+      <div class="card-title">HLK-LD2410B — Human Presence Sensor</div>
+      <div class="card-desc">
+        FMCW radar module ตรวจจับทั้ง moving และ still presence ในระยะสูงสุด 6 เมตร ไม่ได้รับผลกระทบจากอุณหภูมิหรือแสง
+      </div>
+      <div>
+        <span class="sensor-badge" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#fcd34d;">Motion Detection</span>
+        <span class="sensor-badge" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#fcd34d;">Still Detection</span>
+      </div>
+      <table class="spec-table" style="margin-top: 0.75rem;">
+        <tr><td>Frequency</td><td>24GHz FMCW</td></tr>
+        <tr><td>Range</td><td>0.2–6 m (adjustable)</td></tr>
+        <tr><td>Interface</td><td>UART (256000 baud) + OUT pin</td></tr>
+        <tr><td>Price</td><td>~$4–8 USD</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-bar bar-rose"></div>
+      <div class="card-eyebrow" style="color:#f43f5e">Thermal IR Array</div>
+      <div class="card-title">MLX90640 — 32×24 Far-Infrared Sensor Array</div>
+      <div class="card-desc">
+        กล้อง thermal resolution 32×24 pixels อ่านค่าอุณหภูมิ -40°C ถึง 300°C ผ่าน I²C เหมาะสำหรับ occupancy detection, predictive maintenance และ fire detection
+      </div>
+      <table class="spec-table">
+        <tr><td>Resolution</td><td>32 × 24 pixels (768 points)</td></tr>
+        <tr><td>Field of View</td><td>55° × 35° (BAB) หรือ 110° × 75° (BCF)</td></tr>
+        <tr><td>Accuracy</td><td>±1.5°C</td></tr>
+        <tr><td>Frame Rate</td><td>0.5–64 Hz</td></tr>
+        <tr><td>Price</td><td>~$15–20 USD</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-accent-bar bar-violet"></div>
+      <div class="card-eyebrow" style="color:var(--accent-violet)">60GHz Vital Signs Radar</div>
+      <div class="card-title">Seeed MR60BHA1 — Breathing &amp; Heart Rate Radar</div>
+      <div class="card-desc">
+        60GHz mmWave radar ที่ตรวจจับ <strong>การหายใจ</strong> (อัตรา 10–30/min) และ <strong>อัตราการเต้นหัวใจ</strong> (50–100 BPM) แบบ contactless เชื่อมต่อ ESP32 ผ่าน UART — ใช้ใน sleep monitoring และ elderly care
+      </div>
+      <table class="spec-table">
+        <tr><td>Frequency</td><td>60GHz FMCW</td></tr>
+        <tr><td>Breathing Rate</td><td>10–30 breath/min</td></tr>
+        <tr><td>Heart Rate</td><td>50–100 BPM</td></tr>
+        <tr><td>Interface</td><td>UART (115200)</td></tr>
+        <tr><td>Price</td><td>~$20–25 USD</td></tr>
+      </table>
+      <div class="tag-row">
+        <span class="tag purple">Vital Signs</span>
+        <span class="tag cyan">60GHz</span>
+        <span class="tag green">Sleep Monitor</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== SECTION 4: CODE GUIDES ===== -->
+  <div class="section-header">
+    <div class="section-icon icon-blue">👨‍💻</div>
+    <h2 class="section-title blue">Code Guides — ตัวอย่างโค้ดที่เอาไปใช้ได้จริง</h2>
+  </div>
+
+  <!-- Code 1: MLX90640 -->
+  <div class="code-wrapper">
+    <div class="code-label">ตัวอย่างที่ 1: ESP32 + MLX90640 — อ่านค่า Thermal Array ผ่าน I²C และ stream WebSocket</div>
+    <div class="code-block">
+<span class="c-comment">// ESP32 + MLX90640 Thermal Camera (ต้องการ: Melexis MLX90640 library)</span>
+<span class="c-comment">// pip: https://github.com/melexis/mlx90640-library</span>
+
+<span class="c-keyword">#include</span> <span class="c-str">&lt;Wire.h&gt;</span>
+<span class="c-keyword">#include</span> <span class="c-str">&lt;MLX90640_API.h&gt;</span>
+<span class="c-keyword">#include</span> <span class="c-str">&lt;WebSocketsServer.h&gt;</span>
+<span class="c-keyword">#include</span> <span class="c-str">&lt;ArduinoJson.h&gt;</span>
+
+<span class="c-keyword">#define</span> MLX_ADDR  <span class="c-num">0x33</span>
+<span class="c-keyword">#define</span> FRAME_RATE <span class="c-num">4</span>  <span class="c-comment">// Hz (0.5, 1, 2, 4, 8, 16, 32, 64)</span>
+
+<span class="c-type">float</span> mlxFrame[<span class="c-num">768</span>];       <span class="c-comment">// 32x24 = 768 pixels</span>
+<span class="c-type">float</span> emissivity = <span class="c-num">0.95</span>;   <span class="c-comment">// ค่า emissivity ของวัสดุ (ผิวคน ~0.98)</span>
+paramsMLX90640 mlxParams;
+WebSocketsServer ws(<span class="c-num">81</span>);
+
+<span class="c-type">void</span> <span class="c-fn">setup</span>() {
+  Wire.<span class="c-fn">begin</span>(<span class="c-num">21</span>, <span class="c-num">22</span>);
+  Wire.<span class="c-fn">setClock</span>(<span class="c-num">400000</span>);  <span class="c-comment">// Fast mode I2C 400kHz</span>
+
+  <span class="c-comment">// โหลด calibration data จาก EEPROM ใน sensor</span>
+  <span class="c-type">uint16_t</span> eeData[<span class="c-num">832</span>];
+  MLX90640_DumpEE(MLX_ADDR, eeData);
+  MLX90640_ExtractParameters(eeData, &amp;mlxParams);
+
+  <span class="c-comment">// ตั้ง frame rate</span>
+  MLX90640_SetRefreshRate(MLX_ADDR, <span class="c-num">0x03</span>); <span class="c-comment">// 0x03 = 4Hz</span>
+
+  ws.<span class="c-fn">begin</span>();
+  WiFi.<span class="c-fn">begin</span>(<span class="c-str">"SSID"</span>, <span class="c-str">"PASSWORD"</span>);
+}
+
+<span class="c-type">void</span> <span class="c-fn">loop</span>() {
+  ws.<span class="c-fn">loop</span>();
+  <span class="c-type">uint16_t</span> rawData[<span class="c-num">834</span>];
+  MLX90640_GetFrameData(MLX_ADDR, rawData);
+  MLX90640_CalculateTo(rawData, &amp;mlxParams, emissivity, <span class="c-num">25.0</span>, mlxFrame);
+
+  <span class="c-comment">// ส่ง 768 ค่าผ่าน WebSocket เป็น binary array</span>
+  ws.<span class="c-fn">broadcastBIN</span>((<span class="c-type">uint8_t</span>*)mlxFrame, <span class="c-keyword">sizeof</span>(mlxFrame));
+  delay(<span class="c-num">250</span>);
+}
+<span class="c-comment">// หมายเหตุ: ใช้ Canvas API ฝั่ง browser ทำ bilinear interpolation</span>
+<span class="c-comment">// และ map temperature → color (blue 20°C → red 40°C)</span>
+    </div>
+  </div>
+
+  <!-- Code 2: HLK-LD2410B -->
+  <div class="code-wrapper">
+    <div class="code-label">ตัวอย่างที่ 2: ESP32 + HLK-LD2410B — อ่าน UART และควบคุม Relay ตาม Presence Zone</div>
+    <div class="code-block">
+<span class="c-comment">// ESP32 + HLK-LD2410B mmWave Radar — UART Protocol Parser</span>
+<span class="c-comment">// Wiring: LD2410 TX → GPIO16, LD2410 RX → GPIO17</span>
+
+<span class="c-keyword">#define</span> RADAR_RX <span class="c-num">16</span>
+<span class="c-keyword">#define</span> RADAR_TX <span class="c-num">17</span>
+<span class="c-keyword">#define</span> RELAY_PIN <span class="c-num">26</span>
+
+HardwareSerial radarSerial(<span class="c-num">2</span>);  <span class="c-comment">// UART2</span>
+
+<span class="c-type">struct</span> RadarData {
+  <span class="c-type">bool</span>   hasMotion;
+  <span class="c-type">bool</span>   hasStill;
+  <span class="c-type">uint8_t</span> motionDist;  <span class="c-comment">// cm units (gate)</span>
+  <span class="c-type">uint8_t</span> stillDist;
+  <span class="c-type">uint8_t</span> motionEnergy;
+  <span class="c-type">uint8_t</span> stillEnergy;
+};
+
+RadarData <span class="c-fn">parseLD2410Frame</span>(<span class="c-type">uint8_t</span>* buf, <span class="c-type">int</span> len) {
+  RadarData d = {<span class="c-num">false</span>, <span class="c-num">false</span>, <span class="c-num">0</span>, <span class="c-num">0</span>, <span class="c-num">0</span>, <span class="c-num">0</span>};
+  <span class="c-comment">// LD2410 Basic Frame: FD FC FB FA [len_lo len_hi] [data] 04 03 02 01</span>
+  <span class="c-keyword">if</span> (len &lt; <span class="c-num">13</span>) <span class="c-keyword">return</span> d;
+  <span class="c-keyword">if</span> (buf[<span class="c-num">0</span>] != <span class="c-num">0xF4</span> || buf[<span class="c-num">1</span>] != <span class="c-num">0xF3</span>) <span class="c-keyword">return</span> d;
+
+  d.hasMotion    = (buf[<span class="c-num">8</span>] == <span class="c-num">0x01</span> || buf[<span class="c-num">8</span>] == <span class="c-num">0x03</span>);
+  d.hasStill     = (buf[<span class="c-num">8</span>] == <span class="c-num">0x02</span> || buf[<span class="c-num">8</span>] == <span class="c-num">0x03</span>);
+  d.motionDist   = buf[<span class="c-num">9</span>];   <span class="c-comment">// distance gate (1 gate ≈ 0.75m)</span>
+  d.motionEnergy = buf[<span class="c-num">10</span>];
+  d.stillDist    = buf[<span class="c-num">11</span>];
+  d.stillEnergy  = buf[<span class="c-num">12</span>];
+  <span class="c-keyword">return</span> d;
+}
+
+<span class="c-type">void</span> <span class="c-fn">setup</span>() {
+  radarSerial.<span class="c-fn">begin</span>(<span class="c-num">256000</span>, SERIAL_8N1, RADAR_RX, RADAR_TX);
+  <span class="c-fn">pinMode</span>(RELAY_PIN, OUTPUT);
+}
+
+<span class="c-type">unsigned long</span> lastPresence = <span class="c-num">0</span>;
+<span class="c-keyword">const</span> <span class="c-type">unsigned long</span> OFF_DELAY = <span class="c-num">10000</span>;  <span class="c-comment">// ดับไฟหลัง 10 วินาที</span>
+
+<span class="c-type">void</span> <span class="c-fn">loop</span>() {
+  <span class="c-keyword">if</span> (radarSerial.<span class="c-fn">available</span>() &gt; <span class="c-num">12</span>) {
+    <span class="c-type">uint8_t</span> buf[<span class="c-num">64</span>];
+    <span class="c-type">int</span> n = radarSerial.<span class="c-fn">readBytes</span>(buf, <span class="c-num">64</span>);
+    RadarData r = <span class="c-fn">parseLD2410Frame</span>(buf, n);
+
+    <span class="c-keyword">if</span> (r.hasMotion || r.hasStill) {
+      lastPresence = <span class="c-fn">millis</span>();
+      <span class="c-fn">digitalWrite</span>(RELAY_PIN, HIGH);  <span class="c-comment">// เปิดไฟ</span>
+    }
+  }
+
+  <span class="c-keyword">if</span> (<span class="c-fn">millis</span>() - lastPresence &gt; OFF_DELAY) {
+    <span class="c-fn">digitalWrite</span>(RELAY_PIN, LOW);  <span class="c-comment">// ดับไฟ</span>
+  }
+}
+    </div>
+  </div>
+
+  <!-- ===== SECTION 5: RESOURCES ===== -->
+  <div class="section-header">
+    <div class="section-icon icon-amber">🔗</div>
+    <h2 class="section-title amber">แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+  </div>
+
+  <div class="resource-grid">
+
+    <a href="https://www.cnx-software.com/2026/01/16/xiao-esp32-c5-a-tiny-usb-c-iot-board-with-dual-band-wifi-6-bluetooth-5-0-le-zigbee-and-thread-connectivity/" class="resource-card" target="_blank" rel="noopener">
+      <div class="resource-type">📋 CNX Software</div>
+      <div class="resource-title">XIAO ESP32-C5 — Dual-Band WiFi 6 Review</div>
+      <div class="resource-desc">รีวิวและ spec ครบของ XIAO ESP32-C5 บอร์ดใหม่ จาก CNX Software มกราคม 2026</div>
+    </a>
+
+    <a href="https://www.cnx-software.com/2026/04/29/moresense-ms-07-an-esp32-s3-indoor-air-quality-monitor-with-sen66-multisensor-and-home-assistant-support/" class="resource-card" target="_blank" rel="noopener">
+      <div class="resource-type">📋 CNX Software</div>
+      <div class="resource-title">MoreSense MS-07 — ESP32-S3 + SEN66 Review</div>
+      <div class="resource-desc">รีวิวอุปกรณ์ IAQ ที่ใช้ SEN66 กับ ESP32-S3 และ Home Assistant เมษายน 2026</div>
+    </a>
+
+    <a href="https://sensirion.com/products/catalog/SEN66" class="resource-card" target="_blank" rel="noopener">
+      <div class="resource-type">🏭 Sensirion Official</div>
+      <div class="resource-title">Sensirion SEN66 — Product Page &amp; Datasheet</div>
+      <div class="resource-desc">หน้า product ทางการ, datasheet, และ SEK-SEN66 evaluation kit ราคาและ spec ล่าสุด</div>
+    </a>
+
+    <a href="https://www.instructables.com/Millimeter-Wave-Presence-Sensors-With-ESP32/" class="resource-card" target="_blank" rel="noopener">
+      <div class="resource-type">🛠 Instructables</div>
+      <div class="resource-title">mmWave Presence Sensors With ESP32</div>
+      <div class="resource-desc">Tutorial ครบถ้วนการใช้ mmWave radar module กับ ESP32 จาก Instructables</div>
+    </a>
+
+    <a href="https://how2electronics.com/diy-esp32-mlx90640-ir-thermal-camera-with-live-web-display/" class="resource-card" target="_blank" rel="noopener">
+      <div class="resource-type">🔬 How2Electronics</div>
+      <div class="resource-title">ESP32 + MLX90640 Thermal Camera Web Display</div>
+      <div class="resource-desc">Tutorial สร้าง Thermal Camera ครบ schematic, code, และ web UI อัปเดตพฤษภาคม 2026</div>
+    </a>
+
+    <a href="https://developer.espressif.com/workshops/esp-idf-with-esp32-c5/" class="resource-card" target="_blank" rel="noopener">
+      <div class="resource-type">📚 Espressif Developer</div>
+      <div class="resource-title">ESP-IDF Workshop: ESP32-C5 Dual-Band WiFi</div>
+      <div class="resource-desc">Workshop ทางการจาก Espressif ครอบคลุม esp_wifi_set_band_mode() และ auto band selection</div>
+    </a>
+
+    <a href="https://www.hackster.io/vinayyn/seeed-mr60bha1-presence-breathing-and-heartbeat-sensing-f5f5ae" class="resource-card" target="_blank" rel="noopener">
+      <div class="resource-type">🛠 Hackster.io</div>
+      <div class="resource-title">MR60BHA1 — Breathing &amp; Heart Rate Sensing</div>
+      <div class="resource-desc">โปรเจกต์ใช้ 60GHz radar ตรวจ breathing rate และ heart rate แบบ contactless</div>
+    </a>
+
+    <a href="https://jondleary.github.io//mmwave/radar/2025/02/02/ESP32-mmWave-Radar-HA-switch.html" class="resource-card" target="_blank" rel="noopener">
+      <div class="resource-type">📝 Personal Blog</div>
+      <div class="resource-title">ESP32 mmWave Radar HA Smart Switch</div>
+      <div class="resource-desc">ออกแบบ IoT mmWave Radar switch สำหรับ Home Assistant พร้อม PCB design</div>
+    </a>
+
+  </div>
+
+</div><!-- /container -->
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <strong style="color: var(--text-secondary);">ESP32 &amp; Sensor Innovations Daily Brief</strong><br>
+  สร้างเมื่อ 26 พฤศจิกายน 2026 · หัวข้อวันนี้: Thermal Imaging · mmWave Radar · SEN66 IAQ · XIAO ESP32-C5 · Solar Harvesting<br>
+  <span style="font-size: 0.75rem;">
+    แหล่งอ้างอิง:
+    <a href="https://www.cnx-software.com">CNX Software</a> ·
+    <a href="https://sensirion.com">Sensirion</a> ·
+    <a href="https://www.hackster.io">Hackster.io</a> ·
+    <a href="https://www.instructables.com">Instructables</a> ·
+    <a href="https://espressif.com">Espressif</a>
+  </span>
+</footer>
+
+</body>
+</html>
