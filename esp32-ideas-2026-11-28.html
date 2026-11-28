@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 & Sensor Innovations - 28 พฤศจิกายน 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --bg-card-hover: #263348;
+    --accent-green: #10b981;
+    --accent-blue: #3b82f6;
+    --accent-purple: #8b5cf6;
+    --accent-orange: #f59e0b;
+    --accent-red: #ef4444;
+    --accent-cyan: #06b6d4;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --gradient-header: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+  }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: var(--gradient-header);
+    border-bottom: 1px solid #312e81;
+    padding: 3rem 1rem 2.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(99,102,241,0.2);
+    border: 1px solid rgba(99,102,241,0.4);
+    color: #a5b4fc;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
+  }
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+  }
+  header h1 span {
+    background: linear-gradient(90deg, #818cf8, #38bdf8, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-sub {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .header-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .stat-item {
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #818cf8;
+  }
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ===== LAYOUT ===== */
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  /* ===== NAV ===== */
+  .toc {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    align-items: center;
+  }
+  .toc-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .toc a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .toc a:hover { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+
+  /* ===== SECTIONS ===== */
+  section { margin-bottom: 3rem; }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .icon-indigo { background: rgba(99,102,241,0.15); }
+  .icon-green  { background: rgba(16,185,129,0.15); }
+  .icon-blue   { background: rgba(59,130,246,0.15); }
+  .icon-purple { background: rgba(139,92,246,0.15); }
+  .icon-orange { background: rgba(245,158,11,0.15); }
+  .icon-cyan   { background: rgba(6,182,212,0.15); }
+
+  .section-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.2rem;
+  }
+  .section-header p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+
+  /* ===== CARDS ===== */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.4rem;
+    transition: transform 0.2s, border-color 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    background: var(--bg-card-hover);
+    border-color: rgba(99,102,241,0.4);
+  }
+  .card-top {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem;
+  }
+  .card-emoji { font-size: 1.5rem; }
+  .card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  .card-body {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+  }
+  .card-body strong { color: var(--text-primary); }
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 1rem;
+  }
+  .tag {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  .tag-indigo { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+  .tag-green  { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+  .tag-blue   { background: rgba(59,130,246,0.2); color: #93c5fd; }
+  .tag-purple { background: rgba(139,92,246,0.2); color: #c4b5fd; }
+  .tag-orange { background: rgba(245,158,11,0.2); color: #fcd34d; }
+  .tag-cyan   { background: rgba(6,182,212,0.2); color: #67e8f9; }
+  .tag-red    { background: rgba(239,68,68,0.2); color: #fca5a5; }
+
+  /* ===== HIGHLIGHT CARD (wide) ===== */
+  .card-wide {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  @media (max-width: 600px) {
+    .card-wide { grid-template-columns: 1fr; }
+  }
+  .card-wide-left h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+  }
+  .card-wide-left p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.75;
+  }
+  .card-wide-right { border-left: 1px solid var(--border); padding-left: 1.5rem; }
+  @media (max-width: 600px) {
+    .card-wide-right { border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 1rem; }
+  }
+
+  /* ===== SPEC TABLE ===== */
+  .spec-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .spec-table th {
+    background: rgba(99,102,241,0.15);
+    color: #a5b4fc;
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .spec-table td {
+    padding: 0.5rem 0.75rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(51,65,85,0.5);
+  }
+  .spec-table tr:last-child td { border-bottom: none; }
+  .spec-table td:first-child { color: var(--text-primary); font-weight: 600; }
+
+  /* ===== CODE BLOCK ===== */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: #e6edf3;
+    margin-top: 1rem;
+  }
+  .code-comment { color: #8b949e; }
+  .code-keyword { color: #ff7b72; }
+  .code-string  { color: #a5d6ff; }
+  .code-num     { color: #79c0ff; }
+  .code-func    { color: #d2a8ff; }
+  .code-var     { color: #ffa657; }
+
+  /* ===== SENSOR CARDS ===== */
+  .sensor-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+  .sensor-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem 1.2rem;
+    transition: border-color 0.2s;
+  }
+  .sensor-card:hover { border-color: rgba(99,102,241,0.5); }
+  .sensor-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #fff;
+    margin-bottom: 0.4rem;
+  }
+  .sensor-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+  .sensor-badge {
+    display: inline-block;
+    margin-top: 0.6rem;
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+  }
+
+  /* ===== RESOURCES ===== */
+  .resource-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .resource-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: border-color 0.2s;
+  }
+  .resource-item:hover { border-color: rgba(99,102,241,0.4); }
+  .resource-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .resource-title { font-weight: 600; font-size: 0.9rem; color: var(--text-primary); }
+  .resource-url  { font-size: 0.75rem; color: var(--accent-blue); margin-top: 0.1rem; word-break: break-all; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 2;
+  }
+  footer strong { color: var(--text-secondary); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 640px) {
+    header { padding: 2rem 1rem 1.5rem; }
+    .header-stats { gap: 1.25rem; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-badge">Daily ESP32 Research · AI Researcher</div>
+  <h1>ESP32 &amp; Sensor Innovations<br><span>28 พฤศจิกายน 2026</span></h1>
+  <p class="header-sub">หัวข้อวันนี้: Smart Monitoring — UWB Positioning · Water Quality · Predictive Maintenance · Zigbee H2</p>
+  <div class="header-stats">
+    <div class="stat-item"><div class="stat-num">5</div><div class="stat-label">หัวข้อหลัก</div></div>
+    <div class="stat-item"><div class="stat-num">12</div><div class="stat-label">ไอเดียโปรเจกต์</div></div>
+    <div class="stat-item"><div class="stat-num">8</div><div class="stat-label">Sensors ใหม่</div></div>
+    <div class="stat-item"><div class="stat-num">4</div><div class="stat-label">Code Snippets</div></div>
+  </div>
+</header>
+
+<div class="container">
+  <!-- ===== TOC ===== -->
+  <nav class="toc">
+    <span class="toc-label">ไปที่:</span>
+    <a href="#innovations">🔥 นวัตกรรม</a>
+    <a href="#uwb">📡 UWB Indoor</a>
+    <a href="#projects">💡 โปรเจกต์</a>
+    <a href="#sensors">🔬 Sensors</a>
+    <a href="#code">📟 Code</a>
+    <a href="#resources">🔗 แหล่งข้อมูล</a>
+  </nav>
+
+  <!-- ===== SECTION 1: INNOVATIONS ===== -->
+  <section id="innovations">
+    <div class="section-header">
+      <div class="section-icon icon-indigo">🔥</div>
+      <div>
+        <h2>นวัตกรรมและข่าวสารล่าสุด</h2>
+        <p>อัปเดต ESP32 ecosystem สำหรับสัปดาห์สุดท้ายของพฤศจิกายน 2026</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <!-- Arduino-ESP32 3.3.13 -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">📦</span>
+          <span class="card-title">Arduino-ESP32 3.3.13 ออกแล้ว!</span>
+        </div>
+        <div class="card-body">
+          Espressif ปล่อย stable core ล่าสุดเมื่อ <strong>17 พฤศจิกายน 2026</strong><br><br>
+          สิ่งที่เพิ่มเข้ามา:
+          <ul style="margin-top:0.5rem;padding-left:1.2rem;">
+            <li><strong>Custom Matter Endpoints</strong> — กำหนด cluster ของตัวเองใน Matter protocol ได้</li>
+            <li>แก้ I²C slave mode บนชิปรุ่นใหม่</li>
+            <li>แก้ BLE pairing ที่ค้างในบางกรณี</li>
+            <li>แก้ OTA update ที่ล้มเหลวเมื่อ Flash ไม่พอ</li>
+            <li>Board definitions ใหม่สำหรับบอร์ดหลายรุ่น</li>
+          </ul>
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-indigo">Arduino Core</span>
+          <span class="tag tag-green">Nov 2026</span>
+          <span class="tag tag-blue">Matter</span>
+        </div>
+      </div>
+
+      <!-- ESPHome Zigbee -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🏠</span>
+          <span class="card-title">ESPHome 2026.5+ รองรับ Zigbee End Device</span>
+        </div>
+        <div class="card-body">
+          ESPHome 2026.5.0 (พฤษภาคม 2026) เพิ่ม <strong>native Zigbee component</strong> ครั้งแรกสำหรับ ESP32<br><br>
+          รองรับชิป: <strong>ESP32-H2, ESP32-C6, ESP32-C5</strong><br>
+          เชื่อมได้กับ: Zigbee2MQTT และ Home Assistant ZHA<br><br>
+          <em>หมายเหตุ:</em> ยังเป็น early-stage — ใช้ได้เฉพาะ End Device (ยังไม่ใช่ Coordinator)
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-orange">ESPHome</span>
+          <span class="tag tag-green">Zigbee</span>
+          <span class="tag tag-purple">ESP32-H2</span>
+          <span class="tag tag-cyan">ESP32-C6</span>
+        </div>
+      </div>
+
+      <!-- esp_new_jpeg -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🖼️</span>
+          <span class="card-title">esp_new_jpeg 1.0.2 — JPEG เร็วขึ้น 3x</span>
+        </div>
+        <div class="card-body">
+          Library ใหม่จาก SunFounder R&D สำหรับ <strong>ESP32-S3</strong> โดยเฉพาะ<br><br>
+          ใช้ prebuilt static library ที่ optimize สำหรับ Xtensa LX7:<br>
+          • Decode JPEG ได้เร็วกว่า TJpgDec ถึง 3 เท่า<br>
+          • รองรับทั้ง encode + decode<br>
+          • เหมาะกับ ESP32-S3 camera projects<br>
+          • Release: 11 พฤศจิกายน 2026
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-blue">ESP32-S3</span>
+          <span class="tag tag-orange">Camera</span>
+          <span class="tag tag-green">Library</span>
+        </div>
+      </div>
+
+      <!-- Smart Agriculture paper -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🌱</span>
+          <span class="card-title">งานวิจัย: ESP32 Polyhouse Automation 2026</span>
+        </div>
+        <div class="card-body">
+          Zenodo เผยแพร่ paper เมษายน 2026 เรื่อง <strong>ESP32-based Polyhouse</strong>:<br><br>
+          • ตรวจจับ temperature, humidity, CO₂, soil moisture<br>
+          • เพิ่ม <strong>ESP32-CAM</strong> + color sensor ตรวจสุขภาพพืชด้วยภาพ<br>
+          • ต้นทุนต่ำ ~$45 ต่อโหนด<br>
+          • Cloud analytics ผ่าน ThingSpeak<br>
+          <br>
+          เหมาะกับการปลูกพืชในโรงเรือนในไทย
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-green">Agriculture</span>
+          <span class="tag tag-blue">ESP32-CAM</span>
+          <span class="tag tag-cyan">Research</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: UWB Indoor Positioning ===== -->
+  <section id="uwb">
+    <div class="section-header">
+      <div class="section-icon icon-cyan">📡</div>
+      <div>
+        <h2>โฟกัสพิเศษ: ESP32 + UWB Indoor Positioning</h2>
+        <p>ระบบระบุตำแหน่งในร่มความแม่นยำระดับเซนติเมตร ด้วย DWM3000/DW3000</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card card-wide">
+        <div class="card-wide-left">
+          <h3>UWB คืออะไร และทำไมต้องใช้กับ ESP32?</h3>
+          <p>
+            Ultra-Wideband (UWB) ใช้ <strong>Time of Flight (ToF)</strong> วัดระยะจากคลื่นวิทยุ ทำให้ได้ความแม่นยำ <strong>±10 cm</strong> ซึ่งดีกว่า WiFi (±3 m) และ BLE (±1-3 m) มาก
+          </p>
+          <p style="margin-top:0.75rem;">
+            โมดูล <strong>Qorvo DWM3000/DW3000</strong> บน Makerfabs board ต่อกับ ESP32 ผ่าน SPI ทำให้สร้าง Real-Time Location System (RTLS) ได้ในราคาไม่แพง
+          </p>
+          <div class="card-tags" style="margin-top:1rem;">
+            <span class="tag tag-cyan">UWB</span>
+            <span class="tag tag-blue">DWM3000</span>
+            <span class="tag tag-indigo">RTLS</span>
+            <span class="tag tag-green">10cm Accuracy</span>
+          </div>
+        </div>
+        <div class="card-wide-right">
+          <table class="spec-table">
+            <thead>
+              <tr><th>พารามิเตอร์</th><th>ค่า</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>ความแม่นยำ</td><td>~10 cm (ในร่ม)</td></tr>
+              <tr><td>ระยะทำงาน</td><td>50-100 m (ในร่ม)</td></tr>
+              <tr><td>Frequency</td><td>Channel 5: 6.5 GHz / Ch9: 8 GHz</td></tr>
+              <tr><td>Interface</td><td>SPI (ต่อกับ ESP32)</td></tr>
+              <tr><td>Anchors ขั้นต่ำ</td><td>3 จุด (2D) / 4 จุด (3D)</td></tr>
+              <tr><td>Algorithm</td><td>DS-TWR (Double-Sided TWR)</td></tr>
+              <tr><td>Update rate</td><td>~10 Hz</td></tr>
+              <tr><td>ราคา</td><td>~$15/โมดูล (Makerfabs)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Architecture -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🏗️</span>
+          <span class="card-title">สถาปัตยกรรมระบบ RTLS</span>
+        </div>
+        <div class="card-body">
+          <strong>Anchor (3-4 ตัว, ตำแหน่งคงที่):</strong><br>
+          ESP32 + DWM3000, flash firmware "anchor"<br>
+          วางมุมห้อง ระยะรู้จุดพิกัดชัดเจน<br><br>
+          <strong>Tag (1+ ตัว, ติดบนวัตถุ/คน):</strong><br>
+          ESP32 + DWM3000, firmware "tag"<br>
+          ส่งสัญญาณ TWR ไปหา anchor ทั้งหมด<br><br>
+          <strong>Visualization Server:</strong><br>
+          Python รับข้อมูลระยะ → คำนวณ Trilateration → plot 2D map แบบ real-time
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-blue">Anchor</span>
+          <span class="tag tag-orange">Tag</span>
+          <span class="tag tag-purple">Trilateration</span>
+        </div>
+      </div>
+
+      <!-- Use cases -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🎯</span>
+          <span class="card-title">Use Cases ที่น่าสนใจ</span>
+        </div>
+        <div class="card-body">
+          <strong>🏭 โรงงาน/คลังสินค้า:</strong><br>
+          ติดตามตำแหน่งของฟอร์กลิฟท์, พาเลต, พนักงาน<br><br>
+          <strong>⚽ กีฬา:</strong><br>
+          ติดตาม ball/นักกีฬาในสนาม (มีโปรเจกต์ indoor soccer จริง)<br><br>
+          <strong>🏥 โรงพยาบาล:</strong><br>
+          ติดตามเตียงผู้ป่วย, อุปกรณ์การแพทย์<br><br>
+          <strong>🤖 หุ่นยนต์:</strong><br>
+          Navigation ในพื้นที่ GPS ไม่ทำงาน (ร่มอาคาร)
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-indigo">Industry</span>
+          <span class="tag tag-green">Healthcare</span>
+          <span class="tag tag-cyan">Robotics</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: PROJECTS ===== -->
+  <section id="projects">
+    <div class="section-header">
+      <div class="section-icon icon-blue">💡</div>
+      <div>
+        <h2>ไอเดียโปรเจกต์ที่น่าสร้าง</h2>
+        <p>โปรเจกต์ใหม่ที่ไม่ซ้ำกับที่เคยทำ — เน้น Smart Monitoring และ Industrial IoT</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <!-- Project 1 -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">💧</span>
+          <span class="card-title">ระบบตรวจคุณภาพน้ำ 6 พารามิเตอร์</span>
+        </div>
+        <div class="card-body">
+          สร้าง water quality monitor แบบ all-in-one:<br>
+          • <strong>pH</strong> (Atlas EZO-pH หรือ SEN0161)<br>
+          • <strong>Turbidity</strong> (SEN0189 ของ DFRobot)<br>
+          • <strong>TDS / Conductivity</strong> (SEN0244)<br>
+          • <strong>Dissolved Oxygen</strong> (EZO-DO, ±0.05 mg/L)<br>
+          • <strong>Temperature</strong> (DS18B20 — ชดเชย DO reading)<br>
+          • <strong>Water Level</strong> (ultrasonic)<br><br>
+          ส่งข้อมูลไป ThingSpeak ทุก 5 นาที แจ้งเตือน LINE เมื่อค่าผิดปกติ
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-blue">Water Quality</span>
+          <span class="tag tag-cyan">6 Sensors</span>
+          <span class="tag tag-green">ThingSpeak</span>
+        </div>
+      </div>
+
+      <!-- Project 2 -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">⚙️</span>
+          <span class="card-title">Predictive Maintenance สำหรับมอเตอร์ไฟฟ้า</span>
+        </div>
+        <div class="card-body">
+          ตรวจจับความผิดปกติของมอเตอร์ก่อนพัง:<br>
+          • <strong>IIS3DWB</strong> (3-axis, 26.7 kHz) วัดการสั่นสะเทือน<br>
+          • ESP32-S3 รัน <strong>FFT ใน real-time</strong> (arduinoFFT + Hann window)<br>
+          • แบ่ง task acquisition/FFT ไว้ Core 0, WiFi/MQTT ไว้ Core 1<br>
+          • ส่ง spectrum data ไป MQTT → Grafana dashboard<br>
+          • เตือนเมื่อ vibration เกิน threshold (bearing fault frequency)
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-orange">IIS3DWB</span>
+          <span class="tag tag-indigo">FFT</span>
+          <span class="tag tag-purple">Predictive Maint.</span>
+          <span class="tag tag-blue">ESP32-S3</span>
+        </div>
+      </div>
+
+      <!-- Project 3 -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🌾</span>
+          <span class="card-title">Smart Farm Node — ดิน + อากาศ + ภาพ</span>
+        </div>
+        <div class="card-body">
+          โหนดเกษตรอัจฉริยะออล-อิน-วัน:<br>
+          • <strong>NPK sensor RS485</strong> (ต่อผ่าน MAX485) วัดธาตุอาหารดิน<br>
+          • <strong>Soil moisture + temp</strong> (SHT31 ในดิน หรือ Capacitive)<br>
+          • <strong>ESP32-CAM</strong> ถ่ายรูปใบพืชทุก 2 ชั่วโมง<br>
+          • solar panel + 18650 battery (deep sleep ทุก 15 นาที)<br>
+          • LoRa SX1276 (ถ้าไม่มี WiFi) หรือ WiFi ตรง<br>
+          • dashboard ใน Home Assistant / Node-RED
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-green">Agriculture</span>
+          <span class="tag tag-orange">NPK</span>
+          <span class="tag tag-cyan">Solar</span>
+          <span class="tag tag-blue">LoRa</span>
+        </div>
+      </div>
+
+      <!-- Project 4 -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🏷️</span>
+          <span class="card-title">Asset Tracker ในโกดังด้วย UWB</span>
+        </div>
+        <div class="card-body">
+          ระบบ RTLS สำหรับคลังสินค้า:<br>
+          • 4x ESP32 + DWM3000 เป็น Anchor มุมห้อง<br>
+          • N×ESP32 + DWM3000 เป็น Tag ติดบนพาเลต<br>
+          • Python server คำนวณตำแหน่ง Trilateration<br>
+          • Web dashboard แสดง 2D floorplan<br>
+          • แจ้งเตือนเมื่อพาเลตออกนอก zone ที่กำหนด<br>
+          <br>
+          ต้นทุน: ~$80 (anchor ×4) + $20/tag
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-cyan">UWB</span>
+          <span class="tag tag-indigo">RTLS</span>
+          <span class="tag tag-orange">Warehouse</span>
+        </div>
+      </div>
+
+      <!-- Project 5 -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🏠</span>
+          <span class="card-title">Zigbee End Device ด้วย ESP32-H2 + ESPHome</span>
+        </div>
+        <div class="card-body">
+          สร้าง Zigbee sensor node เข้า Home Assistant ได้เลย:<br>
+          • <strong>ESP32-H2</strong> + SHT40 (temp/humidity)<br>
+          • Flash ESPHome 2026.5+ พร้อม zigbee component<br>
+          • จับคู่กับ Zigbee2MQTT หรือ ZHA<br>
+          • Battery-powered (H2 ประหยัดพลังงานมาก)<br>
+          • ไม่ต้องพึ่ง Zigbee dongle แยก — H2 ทำได้ในตัว<br>
+          <br>
+          ประหยัดกว่าซื้อ Zigbee sensor สำเร็จรูปมาก
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-purple">ESP32-H2</span>
+          <span class="tag tag-green">Zigbee</span>
+          <span class="tag tag-orange">ESPHome</span>
+          <span class="tag tag-blue">Home Assistant</span>
+        </div>
+      </div>
+
+      <!-- Project 6 -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🐟</span>
+          <span class="card-title">Smart Aquarium Monitor</span>
+        </div>
+        <div class="card-body">
+          ระบบตรวจสอบตู้ปลาแบบครบวงจร:<br>
+          • <strong>Dissolved Oxygen</strong> (EZO-DO, ±0.5 mg/L)<br>
+          • <strong>pH</strong> (EZO-pH Atlas Scientific)<br>
+          • <strong>Temperature</strong> (DS18B20 waterproof probe)<br>
+          • <strong>TDS</strong> (Gravity TDS sensor)<br>
+          • <strong>Turbidity</strong> (ตรวจว่าน้ำขุ่นเกินไปไหม)<br>
+          • OLED display แสดงค่า + LINE Notify เตือน<br>
+          • สั่ง relay เปิด/ปิดปั๊มน้ำอัตโนมัติ
+        </div>
+        <div class="card-tags">
+          <span class="tag tag-blue">Aquarium</span>
+          <span class="tag tag-cyan">DO Sensor</span>
+          <span class="tag tag-green">pH</span>
+          <span class="tag tag-orange">Automation</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: SENSORS ===== -->
+  <section id="sensors">
+    <div class="section-header">
+      <div class="section-icon icon-purple">🔬</div>
+      <div>
+        <h2>Sensors ที่เหมาะกับโปรเจกต์วันนี้</h2>
+        <p>เน้น Water Quality, Vibration/Industrial และ Positioning</p>
+      </div>
+    </div>
+
+    <div class="sensor-row">
+      <div class="sensor-card">
+        <div class="sensor-name">Atlas EZO-DO</div>
+        <div class="sensor-desc">
+          วัด Dissolved Oxygen ในน้ำ<br>
+          ความแม่นยำ ±0.05 mg/L<br>
+          Interface: UART/I²C<br>
+          ใช้ใน aquarium, น้ำเสีย, เกษตร
+        </div>
+        <span class="sensor-badge tag tag-blue">Water Quality</span>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">DFRobot SEN0189</div>
+        <div class="sensor-desc">
+          วัดความขุ่น (Turbidity) ของน้ำ<br>
+          Analog output 0-4.5V<br>
+          ต่อกับ ESP32 ADC ตรงได้เลย<br>
+          ราคาถูก ~$5
+        </div>
+        <span class="sensor-badge tag tag-cyan">Turbidity</span>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">ST IIS3DWB</div>
+        <div class="sensor-desc">
+          Industrial MEMS Accelerometer<br>
+          Sample rate: 26.7 kHz (3-axis)<br>
+          Interface: SPI (ต่อ ESP32-S3)<br>
+          เหมาะ bearing fault detection
+        </div>
+        <span class="sensor-badge tag tag-orange">Vibration</span>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">Qorvo DWM3000</div>
+        <div class="sensor-desc">
+          UWB Module สำหรับ indoor positioning<br>
+          CH5 (6.5 GHz) / CH9 (8 GHz)<br>
+          ความแม่นยำ ~10 cm<br>
+          Makerfabs ESP32 board มีในตัว
+        </div>
+        <span class="sensor-badge tag tag-cyan">UWB</span>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">NPK RS485 Sensor</div>
+        <div class="sensor-desc">
+          วัด Nitrogen, Phosphorus, Potassium<br>
+          ต้องใช้ MAX485 converter<br>
+          Modbus RTU protocol<br>
+          สำหรับ smart agriculture
+        </div>
+        <span class="sensor-badge tag tag-green">Agriculture</span>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">MPU6050</div>
+        <div class="sensor-desc">
+          6-axis IMU (3 accel + 3 gyro)<br>
+          ราคาถูก ~$1, interface I²C<br>
+          Sample 100-1000 Hz<br>
+          เหมาะ basic vibration / gesture
+        </div>
+        <span class="sensor-badge tag tag-purple">IMU</span>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">DFRobot Gravity TDS</div>
+        <div class="sensor-desc">
+          วัด Total Dissolved Solids ในน้ำ<br>
+          Analog output, ง่ายต่อการใช้งาน<br>
+          Range: 0-1000 ppm<br>
+          ใช้ร่วมกับ pH + turbidity
+        </div>
+        <span class="sensor-badge tag tag-blue">Water Quality</span>
+      </div>
+
+      <div class="sensor-card">
+        <div class="sensor-name">DS18B20 Waterproof</div>
+        <div class="sensor-desc">
+          Digital temperature probe ไม่กลัวน้ำ<br>
+          OneWire protocol, ±0.5°C accuracy<br>
+          จำเป็นสำหรับชดเชยค่า DO<br>
+          ราคา ~$2 (พร้อมสาย)
+        </div>
+        <span class="sensor-badge tag tag-green">Temperature</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 5: CODE ===== -->
+  <section id="code">
+    <div class="section-header">
+      <div class="section-icon icon-orange">📟</div>
+      <div>
+        <h2>Code Snippets — เอาไปใช้ได้จริง</h2>
+        <p>โค้ดพร้อมใช้สำหรับโปรเจกต์วันนี้</p>
+      </div>
+    </div>
+
+    <div class="card-grid">
+      <!-- Code 1: TDS + Turbidity -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">💧</span>
+          <span class="card-title">Water Quality: TDS + Turbidity + Temp</span>
+        </div>
+        <div class="card-body">อ่านค่า sensor 3 ตัวพร้อมกัน และส่งไป Serial:</div>
+        <div class="code-block"><span class="code-comment">// Water Quality Monitor — ESP32</span>
+<span class="code-keyword">#include</span> <span class="code-string">&lt;OneWire.h&gt;</span>
+<span class="code-keyword">#include</span> <span class="code-string">&lt;DallasTemperature.h&gt;</span>
+
+<span class="code-keyword">#define</span> <span class="code-var">TDS_PIN</span>     <span class="code-num">34</span>
+<span class="code-keyword">#define</span> <span class="code-var">TURB_PIN</span>    <span class="code-num">35</span>
+<span class="code-keyword">#define</span> <span class="code-var">DS18_PIN</span>    <span class="code-num">4</span>
+<span class="code-keyword">#define</span> <span class="code-var">VREF</span>        <span class="code-num">3.3f</span>
+
+OneWire oneWire(<span class="code-var">DS18_PIN</span>);
+DallasTemperature ds18(&amp;oneWire);
+
+<span class="code-func">float</span> <span class="code-func">readTDS</span>(<span class="code-func">float</span> tempC) {
+  <span class="code-func">float</span> v = <span class="code-func">analogRead</span>(<span class="code-var">TDS_PIN</span>) / <span class="code-num">4095.0</span> * <span class="code-var">VREF</span>;
+  <span class="code-func">float</span> comp = <span class="code-num">1.0</span> + <span class="code-num">0.02</span> * (tempC - <span class="code-num">25.0</span>);
+  <span class="code-keyword">return</span> (v / comp) * <span class="code-num">500</span>; <span class="code-comment">// ppm</span>
+}
+
+<span class="code-func">float</span> <span class="code-func">readTurbNTU</span>() {
+  <span class="code-func">float</span> v = <span class="code-func">analogRead</span>(<span class="code-var">TURB_PIN</span>) / <span class="code-num">4095.0</span> * <span class="code-var">VREF</span>;
+  <span class="code-comment">// SEN0189: NTU = -1120.4*v^2 + 5742.3*v - 4352.9</span>
+  <span class="code-keyword">return</span> -<span class="code-num">1120.4</span>*v*v + <span class="code-num">5742.3</span>*v - <span class="code-num">4352.9</span>;
+}
+
+<span class="code-func">void</span> loop() {
+  ds18.<span class="code-func">requestTemperatures</span>();
+  <span class="code-func">float</span> t  = ds18.<span class="code-func">getTempCByIndex</span>(<span class="code-num">0</span>);
+  <span class="code-func">float</span> tds = <span class="code-func">readTDS</span>(t);
+  <span class="code-func">float</span> ntu = <span class="code-func">readTurbNTU</span>();
+  Serial.<span class="code-func">printf</span>(<span class="code-string">"T=%.1fC TDS=%.0fppm NTU=%.1f\n"</span>, t, tds, ntu);
+  <span class="code-func">delay</span>(<span class="code-num">2000</span>);
+}</div>
+      </div>
+
+      <!-- Code 2: FFT Vibration -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">📊</span>
+          <span class="card-title">Vibration FFT ด้วย MPU6050</span>
+        </div>
+        <div class="card-body">สุ่มตัวอย่าง + FFT หา dominant frequency:</div>
+        <div class="code-block"><span class="code-keyword">#include</span> <span class="code-string">&lt;Wire.h&gt;</span>
+<span class="code-keyword">#include</span> <span class="code-string">&lt;MPU6050.h&gt;</span>
+<span class="code-keyword">#include</span> <span class="code-string">&lt;arduinoFFT.h&gt;</span>
+
+<span class="code-keyword">const</span> <span class="code-func">uint16_t</span> N = <span class="code-num">512</span>;
+<span class="code-keyword">const</span> <span class="code-func">float</span>    Fs = <span class="code-num">1000.0</span>; <span class="code-comment">// Hz</span>
+
+<span class="code-func">double</span> vReal[N], vImag[N];
+MPU6050 mpu;
+ArduinoFFT&lt;<span class="code-func">double</span>&gt; FFT(vReal, vImag, N, Fs);
+
+<span class="code-func">void</span> collectSamples() {
+  <span class="code-keyword">for</span> (<span class="code-func">int</span> i = <span class="code-num">0</span>; i &lt; N; i++) {
+    <span class="code-func">int16_t</span> ax, ay, az, gx, gy, gz;
+    mpu.<span class="code-func">getMotion6</span>(&amp;ax, &amp;ay, &amp;az, &amp;gx, &amp;gy, &amp;gz);
+    vReal[i] = az / <span class="code-num">16384.0</span>; <span class="code-comment">// g</span>
+    vImag[i] = <span class="code-num">0</span>;
+    <span class="code-func">delayMicroseconds</span>(<span class="code-num">1000</span>);
+  }
+}
+
+<span class="code-func">void</span> loop() {
+  <span class="code-func">collectSamples</span>();
+  FFT.<span class="code-func">windowing</span>(FFTWindow::Hann, FFTDirection::Forward);
+  FFT.<span class="code-func">compute</span>(FFTDirection::Forward);
+  FFT.<span class="code-func">complexToMagnitude</span>();
+  <span class="code-func">float</span> peakHz = FFT.<span class="code-func">majorPeak</span>();
+  Serial.<span class="code-func">printf</span>(<span class="code-string">"Peak: %.1f Hz\n"</span>, peakHz);
+  <span class="code-comment">// เตือนถ้า peak ตรงกับ bearing fault freq</span>
+  <span class="code-func">delay</span>(<span class="code-num">500</span>);
+}</div>
+      </div>
+
+      <!-- Code 3: NPK RS485 -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">🌱</span>
+          <span class="card-title">อ่าน NPK Sensor ผ่าน RS485/Modbus</span>
+        </div>
+        <div class="card-body">ใช้ MAX485 ต่อกับ ESP32 UART2:</div>
+        <div class="code-block"><span class="code-comment">// NPK Sensor — Modbus RTU via MAX485</span>
+<span class="code-keyword">#define</span> <span class="code-var">DE_PIN</span> <span class="code-num">4</span>  <span class="code-comment">// MAX485 DE/RE</span>
+
+<span class="code-comment">// Query frame สำหรับ NPK sensor (N, P, K)</span>
+<span class="code-func">byte</span> query[] = {
+  <span class="code-num">0x01</span>, <span class="code-num">0x03</span>, <span class="code-num">0x00</span>, <span class="code-num">0x1E</span>,
+  <span class="code-num">0x00</span>, <span class="code-num">0x03</span>, <span class="code-num">0x65</span>, <span class="code-num">0xCD</span>
+};
+
+<span class="code-func">void</span> <span class="code-func">readNPK</span>() {
+  <span class="code-func">digitalWrite</span>(<span class="code-var">DE_PIN</span>, HIGH); <span class="code-comment">// TX mode</span>
+  Serial2.<span class="code-func">write</span>(query, <span class="code-keyword">sizeof</span>(query));
+  Serial2.<span class="code-func">flush</span>();
+  <span class="code-func">digitalWrite</span>(<span class="code-var">DE_PIN</span>, LOW);  <span class="code-comment">// RX mode</span>
+  <span class="code-func">delay</span>(<span class="code-num">200</span>);
+
+  <span class="code-keyword">if</span> (Serial2.<span class="code-func">available</span>() &gt;= <span class="code-num">11</span>) {
+    <span class="code-func">byte</span> res[<span class="code-num">11</span>];
+    Serial2.<span class="code-func">readBytes</span>(res, <span class="code-num">11</span>);
+    <span class="code-func">int</span> N_val = (res[<span class="code-num">3</span>] &lt;&lt; <span class="code-num">8</span>) | res[<span class="code-num">4</span>];
+    <span class="code-func">int</span> P_val = (res[<span class="code-num">5</span>] &lt;&lt; <span class="code-num">8</span>) | res[<span class="code-num">6</span>];
+    <span class="code-func">int</span> K_val = (res[<span class="code-num">7</span>] &lt;&lt; <span class="code-num">8</span>) | res[<span class="code-num">8</span>];
+    Serial.<span class="code-func">printf</span>(<span class="code-string">"N=%d P=%d K=%d mg/kg\n"</span>,
+                   N_val, P_val, K_val);
+  }
+}
+</div>
+      </div>
+
+      <!-- Code 4: ESP32-H2 Zigbee ESPHome config -->
+      <div class="card">
+        <div class="card-top">
+          <span class="card-emoji">📶</span>
+          <span class="card-title">ESPHome YAML สำหรับ ESP32-H2 Zigbee</span>
+        </div>
+        <div class="card-body">Config ESPHome 2026.5+ สร้าง Zigbee End Device:</div>
+        <div class="code-block"><span class="code-comment"># ESPHome config — ESP32-H2 Zigbee sensor</span>
+esphome:
+  name: <span class="code-string">zigbee-sensor-01</span>
+  friendly_name: <span class="code-string">"Zigbee Temp Sensor"</span>
+
+esp32:
+  board: <span class="code-string">esp32h2</span>
+  framework:
+    type: <span class="code-string">esp-idf</span>
+
+<span class="code-comment"># Zigbee component (ESPHome 2026.5+)</span>
+zigbee:
+  type: <span class="code-string">end_device</span>
+  channel: <span class="code-num">15</span>
+
+<span class="code-comment"># อ่าน SHT40 ส่งเป็น Zigbee cluster</span>
+sensor:
+  - platform: <span class="code-string">sht4x</span>
+    temperature:
+      name: <span class="code-string">"Temperature"</span>
+    humidity:
+      name: <span class="code-string">"Humidity"</span>
+    update_interval: <span class="code-string">60s</span>
+
+<span class="code-comment"># แบตเตอรี่ report</span>
+binary_sensor:
+  - platform: <span class="code-string">gpio</span>
+    pin: GPIO9
+    name: <span class="code-string">"Button"</span>
+</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 6: RESOURCES ===== -->
+  <section id="resources">
+    <div class="section-header">
+      <div class="section-icon icon-green">🔗</div>
+      <div>
+        <h2>แหล่งข้อมูลและลิงก์อ้างอิง</h2>
+        <p>แหล่งข้อมูลที่ใช้ในการสร้าง content วันนี้</p>
+      </div>
+    </div>
+
+    <div class="resource-list">
+      <div class="resource-item">
+        <span class="resource-icon">📦</span>
+        <div>
+          <div class="resource-title">Arduino-ESP32 3.3.13 — Official Release Notes</div>
+          <div class="resource-url">components.espressif.com/components/espressif/arduino-esp32/versions/3.3.13</div>
+        </div>
+      </div>
+      <div class="resource-item">
+        <span class="resource-icon">📡</span>
+        <div>
+          <div class="resource-title">DigiKey: Build UWB Indoor Positioning with ESP32 + DWM3000</div>
+          <div class="resource-url">digikey.com/en/maker/projects/how-to-build-an-uwb-indoor-positioning-system-using-esp32-and-qorvo-dwm3</div>
+        </div>
+      </div>
+      <div class="resource-item">
+        <span class="resource-icon">📡</span>
+        <div>
+          <div class="resource-title">GitHub: ESP32-DWM3000-UWB-Indoor-RTLS-Tracker (Circuit-Digest)</div>
+          <div class="resource-url">github.com/Circuit-Digest/ESP32-DWM3000-UWB-Indoor-RTLS-Tracker</div>
+        </div>
+      </div>
+      <div class="resource-item">
+        <span class="resource-icon">🏠</span>
+        <div>
+          <div class="resource-title">Home Assistant Community: ESPHome Zigbee End Device Support (2026.5.0)</div>
+          <div class="resource-url">community.home-assistant.io/t/fyi-esphome-firmware-will-very-soon-also-have-native-zigbee-component</div>
+        </div>
+      </div>
+      <div class="resource-item">
+        <span class="resource-icon">💧</span>
+        <div>
+          <div class="resource-title">arXiv 2601.21595: HydroSense — 6-Parameter ESP32 Water Quality System</div>
+          <div class="resource-url">arxiv.org/html/2601.21595v1</div>
+        </div>
+      </div>
+      <div class="resource-item">
+        <span class="resource-icon">⚙️</span>
+        <div>
+          <div class="resource-title">Hackster.io: EdgePredict-Q — AI Sensor Fusion for Motor Health (ESP32-S3)</div>
+          <div class="resource-url">hackster.io/fabio-henrique-gomes-de-moura-silva/edgepredict-q-advanced-ai-sensor-fusion-for-motor-health-8da98b</div>
+        </div>
+      </div>
+      <div class="resource-item">
+        <span class="resource-icon">🌱</span>
+        <div>
+          <div class="resource-title">Zenodo: ESP32 Polyhouse Automation with Camera (April 2026)</div>
+          <div class="resource-url">zenodo.org/records/19552468</div>
+        </div>
+      </div>
+      <div class="resource-item">
+        <span class="resource-icon">🖼️</span>
+        <div>
+          <div class="resource-title">Arduino Libraries: esp_new_jpeg 1.0.2 — JPEG for ESP32-S3</div>
+          <div class="resource-url">arduinolibraries.info/libraries/esp_new_jpeg</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /.container -->
+
+<footer>
+  <strong>ESP32 & Sensor Innovations</strong> · 28 พฤศจิกายน 2026<br>
+  สร้างโดย AI Researcher อัตโนมัติ | ข้อมูลจาก Espressif, DigiKey Maker, Hackster.io, arXiv, Home Assistant Community<br>
+  <span style="color:#475569;">หัวข้อวันนี้: UWB Indoor Positioning · Water Quality Monitoring · Predictive Maintenance · ESP32-H2 Zigbee · Smart Agriculture</span>
+</footer>
+
+</body>
+</html>
